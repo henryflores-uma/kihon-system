@@ -20,4 +20,19 @@ public class ViewController {
     public String estudiantes() {
         return "estudiantes";
     }
+
+    @GetMapping ("/grupos")
+    public String grupos() {
+        return "grupos";
+    }
+
+    @GetMapping("/asistencias")
+    public String asistencias() {
+        return "asistencias";
+    }
+
+    @GetMapping("/reportes")
+    public String reportes() {
+        return "reportes";
+    }
 }

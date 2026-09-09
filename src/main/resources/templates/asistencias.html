@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Asistencias</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+
+    <div class="app-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav">
+
+                <a href="/dashboard" class="sidebar__link">
+                    Dashboard
+                </a>
+
+                <a href="/estudiantes" class="sidebar__link">
+                    Estudiantes
+                </a>
+
+                <a href="/grupos" class="sidebar__link">
+                    Grupos
+                </a>
+
+                <a href="/asistencias" class="sidebar__link sidebar__link--active">
+                    Asistencias
+                </a>
+
+                <a href="/reportes" class="sidebar__link">
+                    Reportes
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- CONTENIDO PRINCIPAL -->
+
+        <main class="main-content">
+
+            <div class="container asistencia-page">
+
+
+                <!-- ENCABEZADO -->
+
+                <header class="asistencia-header">
+
+                    <div>
+
+                        <h1>
+                            Asistencias
+                        </h1>
+
+                        <p>
+                            Registro y control de asistencia
+                            de los estudiantes
+                        </p>
+
+                    </div>
+
+
+                    <div class="dashboard-user">
+
+                        <span id="usernameDisplay">
+                            Usuario
+                        </span>
+
+                    </div>
+
+                </header>
+
+
+                <!-- FORMULARIO -->
+
+                <section class="card asistencia-form-card">
+
+                    <div class="asistencia-form-header">
+
+                        <h2>
+                            Registrar asistencia
+                        </h2>
+
+                        <p>
+                            Registra la asistencia de un estudiante
+                            para su grupo.
+                        </p>
+
+                    </div>
+
+
+                    <form id="attendanceForm" class="asistencia-form">
+
+
+                        <div class="grid grid--2">
+
+
+                            <!-- ESTUDIANTE -->
+
+                            <div class="form-group">
+
+                                <label for="estudianteId" class="form-label">
+
+                                    Estudiante
+
+                                </label>
+
+                                <select id="estudianteId" class="form-select" required>
+
+                                    <option value="">
+                                        Cargando estudiantes...
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- GRUPO -->
+
+                            <div class="form-group">
+
+                                <label for="grupoId" class="form-label">
+
+                                    Grupo
+
+                                </label>
+
+                                <select id="grupoId" class="form-select" required>
+
+                                    <option value="">
+                                        Cargando grupos...
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- FECHA -->
+
+                            <div class="form-group">
+
+                                <label for="fecha" class="form-label">
+
+                                    Fecha
+
+                                </label>
+
+                                <input type="date" id="fecha" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- HORA -->
+
+                            <div class="form-group">
+
+                                <label for="horaLlegada" class="form-label">
+
+                                    Hora de llegada
+
+                                </label>
+
+                                <input type="time" id="horaLlegada" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- ESTADO -->
+
+                            <div class="form-group">
+
+                                <label for="estado" class="form-label">
+
+                                    Estado
+
+                                </label>
+
+                                <select id="estado" class="form-select" required>
+
+                                    <option value="PRESENTE">
+                                        PRESENTE
+                                    </option>
+
+                                    <option value="TARDANZA">
+                                        TARDANZA
+                                    </option>
+
+                                    <option value="AUSENTE">
+                                        AUSENTE
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- OBSERVACIÓN -->
+
+                            <div class="form-group">
+
+                                <label for="observacion" class="form-label">
+
+                                    Observación
+
+                                </label>
+
+                                <input type="text" id="observacion" class="form-input"
+                                    placeholder="Ej. Llegó 10 minutos tarde">
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- MENSAJE -->
+
+                        <div id="attendanceMessage" class="asistencia-message" hidden>
+                        </div>
+
+
+                        <!-- BOTÓN -->
+
+                        <div class="asistencia-form-actions">
+
+                            <button type="submit" class="btn btn--primary">
+
+                                Registrar asistencia
+
+                            </button>
+
+                        </div>
+
+
+                    </form>
+
+                </section>
+
+
+                <!-- LISTA DE ASISTENCIAS -->
+
+                <section class="card asistencia-list-card">
+
+
+                    <div class="asistencia-list-header">
+
+                        <div>
+
+                            <h2>
+                                Asistencias del día
+                            </h2>
+
+                            <p>
+                                Consulta los registros de una fecha determinada.
+                            </p>
+
+                        </div>
+
+
+                        <span id="attendanceCount">
+                            0 asistencias
+                        </span>
+
+                    </div>
+
+
+                    <!-- FILTRO DE FECHA -->
+
+                    <div class="asistencia-filter">
+
+                        <div class="form-group">
+
+                            <label for="fechaConsulta" class="form-label">
+
+                                Consultar fecha
+
+                            </label>
+
+                            <input type="date" id="fechaConsulta" class="form-input">
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- LISTA -->
+
+                    <div id="attendanceList" class="asistencia-table-wrapper">
+
+                        <div class="asistencia-loading">
+
+                            Cargando asistencias...
+
+                        </div>
+
+                    </div>
+
+
+                </section>
+
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="/js/asistencia.js"></script>
+
+</body>
+
+</html>
