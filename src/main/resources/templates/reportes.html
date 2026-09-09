@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Reportes</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+
+    <div class="app-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav">
+
+                <a href="/dashboard" class="sidebar__link">
+                    Dashboard
+                </a>
+
+                <a href="/estudiantes" class="sidebar__link">
+                    Estudiantes
+                </a>
+
+                <a href="/grupos" class="sidebar__link">
+                    Grupos
+                </a>
+
+                <a href="/asistencias" class="sidebar__link">
+                    Asistencias
+                </a>
+
+                <a href="/reportes" class="sidebar__link sidebar__link--active">
+                    Reportes
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- CONTENIDO PRINCIPAL -->
+
+        <main class="main-content">
+
+            <div class="container reportes-page">
+
+
+                <!-- ENCABEZADO -->
+
+                <header class="reportes-header">
+
+                    <div>
+
+                        <h1>
+                            Reportes
+                        </h1>
+
+                        <p>
+                            Consulta y analiza la asistencia
+                            de los estudiantes.
+                        </p>
+
+                    </div>
+
+
+                    <div class="dashboard-user">
+
+                        <span id="usernameDisplay">
+                            Usuario
+                        </span>
+
+                    </div>
+
+                </header>
+
+
+                <!-- SELECTOR DE REPORTE -->
+
+                <section class="card reportes-selector-card">
+
+                    <div class="reportes-section-header">
+
+                        <h2>
+                            Generar reporte
+                        </h2>
+
+                        <p>
+                            Selecciona el tipo de reporte
+                            que deseas consultar.
+                        </p>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="tipoReporte" class="form-label">
+
+                            Tipo de reporte
+
+                        </label>
+
+                        <select id="tipoReporte" class="form-select">
+
+                            <option value="diario">
+                                Reporte diario
+                            </option>
+
+                            <option value="semanal">
+                                Reporte semanal
+                            </option>
+
+                            <option value="mensual">
+                                Reporte mensual
+                            </option>
+
+                            <option value="estudiante">
+                                Reporte por estudiante
+                            </option>
+
+                            <option value="grupo">
+                                Reporte por grupo
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- FILTROS -->
+
+                    <div id="reporteFiltros" class="reportes-filtros">
+
+                    </div>
+
+
+                    <!-- MENSAJE -->
+
+                    <div id="reporteMessage" class="reportes-message" hidden>
+                    </div>
+
+
+                    <!-- BOTÓN -->
+
+                    <div class="reportes-actions">
+
+                        <button type="button" id="generarReporteBtn" class="btn btn--primary">
+
+                            Generar reporte
+
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+                <!-- RESULTADO -->
+
+                <section id="reporteResultado" class="card reportes-result-card" hidden>
+
+
+                    <div class="reportes-result-header">
+
+                        <div>
+
+                            <h2>
+                                Resultado del reporte
+                            </h2>
+
+                            <p id="reportePeriodo">
+                                -
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- RESUMEN -->
+
+                    <div id="reporteResumen" class="reportes-resumen">
+
+                    </div>
+
+
+                    <!-- DETALLE -->
+
+                    <div class="reportes-detalle">
+
+                        <h3>
+                            Detalle de asistencias
+                        </h3>
+
+                        <div id="reporteDetalle" class="reportes-table-wrapper">
+
+                        </div>
+
+                    </div>
+
+
+                </section>
+
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="/js/reportes.js"></script>
+
+</body>
+
+</html>

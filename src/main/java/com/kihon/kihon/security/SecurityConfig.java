@@ -63,15 +63,21 @@ public class SecurityConfig {
 
                                                 // Gestión de estudiantes
                                                 .requestMatchers("/api/estudiantes/**")
-                                                .hasAnyRole("ADMIN", "SECRETARIA")
+                                                .hasAnyRole(
+                                                                "ADMIN",
+                                                                "SECRETARIA")
 
                                                 // Gestión de grupos
                                                 .requestMatchers("/api/grupos/**")
-                                                .hasAnyRole("ADMIN", "SECRETARIA")
+                                                .hasAnyRole(
+                                                                "ADMIN",
+                                                                "SECRETARIA")
 
                                                 // Asignación de estudiantes a grupos
                                                 .requestMatchers("/api/estudiantes-grupos/**")
-                                                .hasAnyRole("ADMIN", "SECRETARIA")
+                                                .hasAnyRole(
+                                                                "ADMIN",
+                                                                "SECRETARIA")
 
                                                 // Registro y consulta de asistencias
                                                 .requestMatchers("/api/asistencias/**")
@@ -99,7 +105,6 @@ public class SecurityConfig {
                                                 .authenticationEntryPoint(
                                                                 authenticationEntryPoint))
 
-                                // HTTP Basic sin ventana emergente
                                 .httpBasic(httpBasic -> httpBasic
                                                 .authenticationEntryPoint(
                                                                 authenticationEntryPoint));
