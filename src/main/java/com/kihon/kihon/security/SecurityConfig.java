@@ -87,15 +87,17 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/estudiante/**")
                                                 .hasRole("ESTUDIANTE")
 
-                                                // Cualquier otro endpoint requiere autenticación
+                                                // Resto de endpoints
                                                 .anyRequest().authenticated())
 
                                 .exceptionHandling(exception -> exception
                                                 .authenticationEntryPoint(
                                                                 authenticationEntryPoint))
 
-                                .httpBasic(httpBasic -> {
-                                });
+                                // HTTP Basic sin ventana emergente
+                                .httpBasic(httpBasic -> httpBasic
+                                                .authenticationEntryPoint(
+                                                                authenticationEntryPoint));
 
                 return http.build();
         }
