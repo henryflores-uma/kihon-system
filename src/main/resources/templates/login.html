@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Iniciar sesión</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body class="login-page">
+
+    <main class="login-container">
+
+        <section class="login-card">
+
+            <div class="login-header">
+                <div class="login-logo">
+                    KIHON
+                </div>
+
+                <p class="login-subtitle">
+                    Sistema de Gestión del Dojo
+                </p>
+            </div>
+
+
+            <form id="loginForm" class="login-form">
+
+                <div class="form-group">
+                    <label for="username" class="form-label">
+                        Usuario
+                    </label>
+
+                    <input type="text" id="username" name="username" class="form-input" placeholder="Ingresa tu usuario"
+                        required>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        Contraseña
+                    </label>
+
+                    <input type="password" id="password" name="password" class="form-input"
+                        placeholder="Ingresa tu contraseña" required>
+                </div>
+
+
+                <p id="loginError" class="form-error" hidden>
+                </p>
+
+
+                <button type="submit" class="btn btn--primary login-button">
+                    Iniciar sesión
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+
+    <script src="/js/login.js"></script>
+
+</body>
+
+</html>
