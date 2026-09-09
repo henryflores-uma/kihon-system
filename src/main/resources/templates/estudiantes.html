@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Estudiantes</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+
+    <div class="app-layout">
+
+        <aside class="sidebar">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav">
+
+                <a href="/dashboard" class="sidebar__link">
+                    Dashboard
+                </a>
+
+                <a href="/estudiantes" class="sidebar__link sidebar__link--active">
+                    Estudiantes
+                </a>
+
+                <a href="#" class="sidebar__link">
+                    Grupos
+                </a>
+
+                <a href="#" class="sidebar__link">
+                    Asistencias
+                </a>
+
+                <a href="#" class="sidebar__link">
+                    Reportes
+                </a>
+
+            </nav>
+
+        </aside>
+
+        <main class="main-content">
+
+            <div class="container">
+
+                <header class="dashboard-header">
+
+                    <div>
+                        <h1>Estudiantes</h1>
+
+                        <p>
+                            Gestión de estudiantes del dojo
+                        </p>
+                    </div>
+
+                    <div class="dashboard-user">
+                        <span id="usernameDisplay">
+                            Usuario
+                        </span>
+                    </div>
+
+                </header>
+
+                <section class="card">
+
+                    <div class="dashboard-section">
+
+                        <h2>
+                            Lista de estudiantes
+                        </h2>
+
+                        <div id="studentsMessage"></div>
+
+                        <div id="studentsList">
+
+                            <p>
+                                Cargando estudiantes...
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="/js/estudiantes.js"></script>
+
+</body>
+
+</html>

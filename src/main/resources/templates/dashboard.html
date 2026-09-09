@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Dashboard</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+
+    <div class="app-layout">
+
+        <aside class="sidebar">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav">
+
+                <a href="/dashboard" class="sidebar__link sidebar__link--active">
+                    Dashboard
+                </a>
+
+                <a href="#" class="sidebar__link">
+                    Estudiantes
+                </a>
+
+                <a href="#" class="sidebar__link">
+                    Grupos
+                </a>
+
+                <a href="#" class="sidebar__link">
+                    Asistencias
+                </a>
+
+                <a href="#" class="sidebar__link">
+                    Reportes
+                </a>
+
+            </nav>
+
+        </aside>
+
+        <main class="main-content">
+
+            <div class="container">
+
+                <header class="dashboard-header">
+
+                    <div>
+                        <h1>Dashboard</h1>
+
+                        <p>
+                            Sistema de Gestión del Dojo
+                        </p>
+                    </div>
+
+                    <div class="dashboard-user">
+                        <span id="usernameDisplay">
+                            Usuario
+                        </span>
+                    </div>
+
+                </header>
+
+                <section class="dashboard-welcome">
+
+                    <h2>
+                        Bienvenido a Kihon
+                    </h2>
+
+                    <p>
+                        Administra estudiantes, grupos y asistencias
+                        desde un solo lugar.
+                    </p>
+
+                </section>
+
+                <section class="grid grid--4 dashboard-stats">
+
+                    <article class="card dashboard-stat">
+
+                        <span class="dashboard-stat__label">
+                            Estudiantes
+                        </span>
+
+                        <strong class="dashboard-stat__value">
+                            --
+                        </strong>
+
+                    </article>
+
+                    <article class="card dashboard-stat">
+
+                        <span class="dashboard-stat__label">
+                            Grupos activos
+                        </span>
+
+                        <strong class="dashboard-stat__value">
+                            --
+                        </strong>
+
+                    </article>
+
+                    <article class="card dashboard-stat">
+
+                        <span class="dashboard-stat__label">
+                            Asistencias de hoy
+                        </span>
+
+                        <strong class="dashboard-stat__value">
+                            --
+                        </strong>
+
+                    </article>
+
+                    <article class="card dashboard-stat dashboard-stat--accent">
+
+                        <span class="dashboard-stat__label">
+                            Estado
+                        </span>
+
+                        <strong class="dashboard-stat__value">
+                            ACTIVO
+                        </strong>
+
+                    </article>
+
+                </section>
+
+                <section class="dashboard-section">
+
+                    <div class="card">
+
+                        <h2>
+                            Acciones rápidas
+                        </h2>
+
+                        <div class="dashboard-actions">
+
+                            <button class="btn btn--primary">
+                                Nuevo estudiante
+                            </button>
+
+                            <button class="btn btn--secondary">
+                                Nuevo grupo
+                            </button>
+
+                            <button class="btn btn--accent">
+                                Registrar asistencia
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+    <script src="/js/dashboard.js"></script>
+</body>
+
+</html>

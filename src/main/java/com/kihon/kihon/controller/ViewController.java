@@ -10,4 +10,14 @@ public class ViewController {
     public String login() {
         return "login";
     }
+
+    @GetMapping("/dashboard")
+    public String dashboard() {
+        return "dashboard";
+    }
+
+    @GetMapping("/estudiantes")
+    public String estudiantes() {
+        return "estudiantes";
+    }
 }

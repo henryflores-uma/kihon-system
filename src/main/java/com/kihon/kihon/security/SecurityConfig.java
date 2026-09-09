@@ -34,6 +34,7 @@ public class SecurityConfig {
                                                 // Frontend público
                                                 .requestMatchers(
                                                                 "/login",
+                                                                "/dashboard",
                                                                 "/css/**",
                                                                 "/js/**",
                                                                 "/img/**")
