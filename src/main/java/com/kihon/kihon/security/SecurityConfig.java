@@ -36,6 +36,9 @@ public class SecurityConfig {
                                                                 "/login",
                                                                 "/dashboard",
                                                                 "/estudiantes",
+                                                                "/grupos",
+                                                                "/asistencias",
+                                                                "/reportes",
                                                                 "/css/**",
                                                                 "/js/**",
                                                                 "/img/**")

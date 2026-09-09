@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Grupos</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+
+    <div class="app-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav">
+
+                <a href="/dashboard" class="sidebar__link">
+                    Dashboard
+                </a>
+
+                <a href="/estudiantes" class="sidebar__link">
+                    Estudiantes
+                </a>
+
+                <a href="/grupos" class="sidebar__link sidebar__link--active">
+                    Grupos
+                </a>
+
+                <a href="#" class="sidebar__link">
+                    Asistencias
+                </a>
+
+                <a href="#" class="sidebar__link">
+                    Reportes
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- CONTENIDO PRINCIPAL -->
+
+        <main class="main-content">
+
+            <div class="container grupos-page">
+
+
+                <!-- ENCABEZADO -->
+
+                <header class="grupos-header">
+
+                    <div>
+
+                        <h1>
+                            Grupos
+                        </h1>
+
+                        <p>
+                            Gestión de grupos y horarios del dojo
+                        </p>
+
+                    </div>
+
+
+                    <div class="dashboard-user">
+
+                        <span id="usernameDisplay">
+                            Usuario
+                        </span>
+
+                    </div>
+
+                </header>
+
+
+                <!-- FORMULARIO NUEVO GRUPO -->
+
+                <section class="card grupos-form-card">
+
+                    <div class="grupos-form-header">
+
+                        <h2>
+                            Registrar nuevo grupo
+                        </h2>
+
+                        <p>
+                            Ingresa los datos del nuevo grupo.
+                        </p>
+
+                    </div>
+
+
+                    <form id="groupForm" class="grupos-form">
+
+
+                        <div class="grid grid--2">
+
+
+                            <!-- NOMBRE -->
+
+                            <div class="form-group">
+
+                                <label for="nombre" class="form-label">
+
+                                    Nombre
+
+                                </label>
+
+                                <input type="text" id="nombre" class="form-input"
+                                    placeholder="Ej. Adultos Principiantes" required>
+
+                            </div>
+
+
+                            <!-- CAPACIDAD -->
+
+                            <div class="form-group">
+
+                                <label for="capacidad" class="form-label">
+
+                                    Capacidad
+
+                                </label>
+
+                                <input type="number" id="capacidad" class="form-input" placeholder="Ej. 20" min="1"
+                                    required>
+
+                            </div>
+
+
+                            <!-- HORA INICIO -->
+
+                            <div class="form-group">
+
+                                <label for="horaInicio" class="form-label">
+
+                                    Hora de inicio
+
+                                </label>
+
+                                <input type="time" id="horaInicio" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- HORA FIN -->
+
+                            <div class="form-group">
+
+                                <label for="horaFin" class="form-label">
+
+                                    Hora de fin
+
+                                </label>
+
+                                <input type="time" id="horaFin" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- DESCRIPCIÓN -->
+
+                            <div class="form-group grupos-form-full">
+
+                                <label for="descripcion" class="form-label">
+
+                                    Descripción
+
+                                </label>
+
+                                <textarea id="descripcion" class="form-textarea"
+                                    placeholder="Describe brevemente el grupo..."></textarea>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- MENSAJE -->
+
+                        <div id="groupMessage" class="grupos-message" hidden>
+                        </div>
+
+
+                        <!-- BOTÓN -->
+
+                        <div class="grupos-form-actions">
+
+                            <button type="submit" class="btn btn--primary">
+
+                                Registrar grupo
+
+                            </button>
+
+                        </div>
+
+
+                    </form>
+
+                </section>
+
+
+                <!-- FORMULARIO EDITAR -->
+
+                <section id="editGroupSection" class="card grupos-form-card" hidden>
+
+
+                    <div class="grupos-form-header">
+
+                        <h2>
+                            Editar grupo
+                        </h2>
+
+                        <p>
+                            Modifica los datos del grupo seleccionado.
+                        </p>
+
+                    </div>
+
+
+                    <form id="editGroupForm" class="grupos-form">
+
+
+                        <input type="hidden" id="editId">
+
+
+                        <div class="grid grid--2">
+
+
+                            <!-- NOMBRE -->
+
+                            <div class="form-group">
+
+                                <label for="editNombre" class="form-label">
+
+                                    Nombre
+
+                                </label>
+
+                                <input type="text" id="editNombre" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- CAPACIDAD -->
+
+                            <div class="form-group">
+
+                                <label for="editCapacidad" class="form-label">
+
+                                    Capacidad
+
+                                </label>
+
+                                <input type="number" id="editCapacidad" class="form-input" min="1" required>
+
+                            </div>
+
+
+                            <!-- HORA INICIO -->
+
+                            <div class="form-group">
+
+                                <label for="editHoraInicio" class="form-label">
+
+                                    Hora de inicio
+
+                                </label>
+
+                                <input type="time" id="editHoraInicio" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- HORA FIN -->
+
+                            <div class="form-group">
+
+                                <label for="editHoraFin" class="form-label">
+
+                                    Hora de fin
+
+                                </label>
+
+                                <input type="time" id="editHoraFin" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- DESCRIPCIÓN -->
+
+                            <div class="form-group grupos-form-full">
+
+                                <label for="editDescripcion" class="form-label">
+
+                                    Descripción
+
+                                </label>
+
+                                <textarea id="editDescripcion" class="form-textarea"></textarea>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- MENSAJE -->
+
+                        <div id="editGroupMessage" class="grupos-message" hidden>
+                        </div>
+
+
+                        <!-- BOTONES -->
+
+                        <div class="grupos-form-actions">
+
+                            <button type="button" id="cancelEditButton" class="btn btn--secondary">
+
+                                Cancelar
+
+                            </button>
+
+
+                            <button type="submit" class="btn btn--primary">
+
+                                Guardar cambios
+
+                            </button>
+
+                        </div>
+
+
+                    </form>
+
+                </section>
+
+
+                <!-- LISTA DE GRUPOS -->
+
+                <section class="card grupos-list-card">
+
+
+                    <div class="grupos-list-header">
+
+                        <h2>
+                            Lista de grupos
+                        </h2>
+
+                        <span id="groupsCount">
+                            0 grupos
+                        </span>
+
+                    </div>
+
+
+                    <div id="groupsMessage" class="grupos-message">
+                    </div>
+
+
+                    <div id="groupsList" class="grupos-table-wrapper">
+
+                        <div class="grupos-loading">
+
+                            Cargando grupos...
+
+                        </div>
+
+                    </div>
+
+
+                </section>
+
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="/js/grupos.js"></script>
+
+</body>
+
+</html>
