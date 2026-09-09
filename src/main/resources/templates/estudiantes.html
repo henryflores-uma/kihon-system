@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Estudiantes</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+
+    <div class="app-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav">
+
+                <a href="/dashboard" class="sidebar__link">
+                    Dashboard
+                </a>
+
+                <a href="/estudiantes" class="sidebar__link sidebar__link--active">
+                    Estudiantes
+                </a>
+
+                <a href="#" class="sidebar__link">
+                    Grupos
+                </a>
+
+                <a href="#" class="sidebar__link">
+                    Asistencias
+                </a>
+
+                <a href="#" class="sidebar__link">
+                    Reportes
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- CONTENIDO PRINCIPAL -->
+
+        <main class="main-content">
+
+            <div class="container estudiantes-page">
+
+
+                <!-- ENCABEZADO -->
+
+                <header class="estudiantes-header">
+
+                    <div>
+
+                        <h1>
+                            Estudiantes
+                        </h1>
+
+                        <p>
+                            Gestión de estudiantes del dojo
+                        </p>
+
+                    </div>
+
+
+                    <div class="dashboard-user">
+
+                        <span id="usernameDisplay">
+                            Usuario
+                        </span>
+
+                    </div>
+
+                </header>
+
+
+                <!-- FORMULARIO NUEVO ESTUDIANTE -->
+
+                <section class="card estudiantes-form-card">
+
+                    <div class="estudiantes-form-header">
+
+                        <h2>
+                            Registrar nuevo estudiante
+                        </h2>
+
+                        <p>
+                            Ingresa los datos del nuevo estudiante.
+                        </p>
+
+                    </div>
+
+
+                    <form id="studentForm" class="estudiantes-form">
+
+
+                        <div class="grid grid--2">
+
+
+                            <!-- NOMBRE -->
+
+                            <div class="form-group">
+
+                                <label for="nombre" class="form-label">
+
+                                    Nombre
+
+                                </label>
+
+                                <input type="text" id="nombre" class="form-input" placeholder="Ej. Carlos" required>
+
+                            </div>
+
+
+                            <!-- APELLIDO -->
+
+                            <div class="form-group">
+
+                                <label for="apellido" class="form-label">
+
+                                    Apellido
+
+                                </label>
+
+                                <input type="text" id="apellido" class="form-input" placeholder="Ej. Ramirez" required>
+
+                            </div>
+
+
+                            <!-- DOCUMENTO -->
+
+                            <div class="form-group">
+
+                                <label for="documento" class="form-label">
+
+                                    Documento
+
+                                </label>
+
+                                <input type="text" id="documento" class="form-input" placeholder="Ej. 45678912"
+                                    required>
+
+                            </div>
+
+
+                            <!-- TELEFONO -->
+
+                            <div class="form-group">
+
+                                <label for="telefono" class="form-label">
+
+                                    Teléfono
+
+                                </label>
+
+                                <input type="text" id="telefono" class="form-input" placeholder="Ej. 999888777">
+
+                            </div>
+
+
+                            <!-- CORREO -->
+
+                            <div class="form-group">
+
+                                <label for="correo" class="form-label">
+
+                                    Correo
+
+                                </label>
+
+                                <input type="email" id="correo" class="form-input" placeholder="correo@ejemplo.com"
+                                    required>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- MENSAJE -->
+
+                        <div id="studentMessage" class="estudiantes-message" hidden>
+                        </div>
+
+
+                        <!-- BOTON -->
+
+                        <div class="estudiantes-form-actions">
+
+                            <button type="submit" class="btn btn--primary">
+
+                                Registrar estudiante
+
+                            </button>
+
+                        </div>
+
+
+                    </form>
+
+                </section>
+
+
+                <!-- FORMULARIO EDITAR -->
+
+                <section id="editStudentSection" class="card estudiantes-form-card" hidden>
+
+
+                    <div class="estudiantes-form-header">
+
+                        <h2>
+                            Editar estudiante
+                        </h2>
+
+                        <p>
+                            Modifica los datos del estudiante seleccionado.
+                        </p>
+
+                    </div>
+
+
+                    <form id="editStudentForm" class="estudiantes-form">
+
+
+                        <input type="hidden" id="editId">
+
+
+                        <div class="grid grid--2">
+
+
+                            <!-- NOMBRE -->
+
+                            <div class="form-group">
+
+                                <label for="editNombre" class="form-label">
+
+                                    Nombre
+
+                                </label>
+
+                                <input type="text" id="editNombre" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- APELLIDO -->
+
+                            <div class="form-group">
+
+                                <label for="editApellido" class="form-label">
+
+                                    Apellido
+
+                                </label>
+
+                                <input type="text" id="editApellido" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- DOCUMENTO -->
+
+                            <div class="form-group">
+
+                                <label for="editDocumento" class="form-label">
+
+                                    Documento
+
+                                </label>
+
+                                <input type="text" id="editDocumento" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- TELEFONO -->
+
+                            <div class="form-group">
+
+                                <label for="editTelefono" class="form-label">
+
+                                    Teléfono
+
+                                </label>
+
+                                <input type="text" id="editTelefono" class="form-input">
+
+                            </div>
+
+
+                            <!-- CORREO -->
+
+                            <div class="form-group">
+
+                                <label for="editCorreo" class="form-label">
+
+                                    Correo
+
+                                </label>
+
+                                <input type="email" id="editCorreo" class="form-input" required>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- MENSAJE -->
+
+                        <div id="editStudentMessage" class="estudiantes-message" hidden>
+                        </div>
+
+
+                        <!-- BOTONES -->
+
+                        <div class="estudiantes-form-actions">
+
+                            <button type="button" id="cancelEditButton" class="btn btn--secondary">
+
+                                Cancelar
+
+                            </button>
+
+
+                            <button type="submit" class="btn btn--primary">
+
+                                Guardar cambios
+
+                            </button>
+
+                        </div>
+
+
+                    </form>
+
+                </section>
+
+
+                <!-- LISTA DE ESTUDIANTES -->
+
+                <section class="card estudiantes-list-card">
+
+
+                    <div class="estudiantes-list-header">
+
+                        <h2>
+                            Lista de estudiantes
+                        </h2>
+
+                        <span id="studentsCount">
+                            0 estudiantes
+                        </span>
+
+                    </div>
+
+
+                    <div id="studentsMessage">
+                    </div>
+
+
+                    <div id="studentsList" class="estudiantes-table-wrapper">
+
+                        <div class="estudiantes-loading">
+
+                            Cargando estudiantes...
+
+                        </div>
+
+                    </div>
+
+
+                </section>
+
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="/js/estudiantes.js"></script>
+
+</body>
+
+</html>
