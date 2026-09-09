@@ -1,0 +1,243 @@
+.estudiantes-page {
+    width: 100%;
+}
+
+.estudiantes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    margin-bottom: 2rem;
+
+    h1 {
+        margin-bottom: 0.35rem;
+        font-size: 2rem;
+    }
+
+    p {
+        color: $color-gray-600;
+    }
+}
+
+.estudiantes-form-card {
+    margin-bottom: 2rem;
+}
+
+.estudiantes-form-header {
+    margin-bottom: 1.5rem;
+
+    h2 {
+        margin-bottom: 0.35rem;
+    }
+
+    p {
+        color: $color-gray-600;
+        font-size: 0.9rem;
+    }
+}
+
+.estudiantes-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.estudiantes-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+
+    margin-top: 0.5rem;
+}
+
+.estudiantes-message {
+    margin-bottom: 1rem;
+
+    padding: 0.75rem 1rem;
+
+    border-radius: 6px;
+
+    font-size: 0.9rem;
+
+    &:empty {
+        display: none;
+    }
+}
+
+.estudiantes-message--success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.estudiantes-message--error {
+    background-color: #ffebee;
+    color: $color-red;
+}
+
+.estudiantes-list-card {
+    overflow: hidden;
+}
+
+.estudiantes-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 1.5rem;
+
+    h2 {
+        margin: 0;
+    }
+
+    span {
+        color: $color-gray-600;
+        font-size: 0.9rem;
+    }
+}
+
+.estudiantes-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.estudiantes-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+        padding: 1rem;
+
+        text-align: left;
+
+        border-bottom: 1px solid $color-gray-200;
+    }
+
+    th {
+        background-color: $color-black;
+        color: $color-white;
+
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    td {
+        background-color: $color-white;
+        color: $color-gray-900;
+
+        font-size: 0.9rem;
+    }
+
+    tbody tr {
+        transition: background-color 0.2s ease;
+
+        &:hover td {
+            background-color: $color-gray-100;
+        }
+
+        &:last-child td {
+            border-bottom: none;
+        }
+    }
+}
+
+.estudiante-nombre {
+    font-weight: 600;
+}
+
+.estudiante-documento {
+    color: $color-gray-600;
+    font-weight: 600;
+}
+
+.estudiante-contacto {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    span {
+        color: $color-gray-600;
+        font-size: 0.85rem;
+    }
+}
+
+.estudiante-estado {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 0.35rem 0.7rem;
+
+    border-radius: 20px;
+
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.estudiante-estado--activo {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.estudiante-estado--inactivo {
+    background-color: #eeeeee;
+    color: $color-gray-600;
+}
+
+.estudiantes-empty {
+    padding: 3rem 1rem;
+
+    text-align: center;
+
+    color: $color-gray-600;
+}
+
+.estudiantes-loading {
+    padding: 2rem;
+
+    text-align: center;
+
+    color: $color-gray-600;
+}
+
+@media (max-width: 800px) {
+
+    .estudiantes-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .estudiantes-form-actions {
+        justify-content: stretch;
+
+        .btn {
+            flex: 1;
+        }
+    }
+
+    .estudiantes-table {
+        min-width: 700px;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .estudiantes-form-actions {
+        flex-direction: column;
+
+        .btn {
+            width: 100%;
+        }
+    }
+}
+
+.estudiante-acciones {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+
+    .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}
