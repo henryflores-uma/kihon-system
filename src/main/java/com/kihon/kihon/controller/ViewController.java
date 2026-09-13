@@ -31,7 +31,7 @@ public class ViewController {
         return "grupos";
     }
 
-    @GetMapping("/asistencia")
+    @GetMapping("/asistencias")
     public String asistencia() {
         return "asistencias";
     }
