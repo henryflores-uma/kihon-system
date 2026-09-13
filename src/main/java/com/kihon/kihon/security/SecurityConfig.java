@@ -33,6 +33,7 @@ public class SecurityConfig {
 
                                                 // Frontend público
                                                 .requestMatchers(
+                                                                "/",
                                                                 "/login",
                                                                 "/dashboard",
                                                                 "/estudiantes",
