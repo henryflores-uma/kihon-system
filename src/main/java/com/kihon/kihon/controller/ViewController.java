@@ -6,6 +6,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class ViewController {
 
+    @GetMapping("/")
+    public String index() {
+        return "index";
+    }
+
     @GetMapping("/login")
     public String login() {
         return "login";
@@ -21,13 +26,13 @@ public class ViewController {
         return "estudiantes";
     }
 
-    @GetMapping ("/grupos")
+    @GetMapping("/grupos")
     public String grupos() {
         return "grupos";
     }
 
-    @GetMapping("/asistencias")
-    public String asistencias() {
+    @GetMapping("/asistencia")
+    public String asistencia() {
         return "asistencias";
     }
 

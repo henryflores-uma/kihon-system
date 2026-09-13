@@ -14,78 +14,161 @@ import java.util.List;
 @RequestMapping("/api/estudiantes-grupos")
 public class EstudianteGrupoController {
 
-    private final EstudianteGrupoService estudianteGrupoService;
+        private final EstudianteGrupoService estudianteGrupoService;
 
-    public EstudianteGrupoController(
-            EstudianteGrupoService estudianteGrupoService) {
+        public EstudianteGrupoController(
+                        EstudianteGrupoService estudianteGrupoService) {
 
-        this.estudianteGrupoService = estudianteGrupoService;
-    }
+                this.estudianteGrupoService = estudianteGrupoService;
+        }
 
-    @PostMapping
-    public ResponseEntity<EstudianteGrupoResponse> asignarEstudianteAGrupo(
-            @RequestBody EstudianteGrupoRequest request) {
+        /*
+         * ================================
+         * ASIGNAR ESTUDIANTE A GRUPO
+         * =================================
+         */
 
-        EstudianteGrupo estudianteGrupo = estudianteGrupoService.asignarEstudianteAGrupo(
-                request.getEstudianteId(),
-                request.getGrupoId());
+        @PostMapping
+        public ResponseEntity<EstudianteGrupoResponse> asignarEstudianteAGrupo(
+                        @RequestBody EstudianteGrupoRequest request) {
 
-        EstudianteGrupoResponse response = convertirAResponse(estudianteGrupo);
+                EstudianteGrupo estudianteGrupo = estudianteGrupoService
+                                .asignarEstudianteAGrupo(
+                                                request.getEstudianteId(),
+                                                request.getGrupoId());
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
-    }
+                EstudianteGrupoResponse response = convertirAResponse(estudianteGrupo);
 
-    @PatchMapping("/estudiante/{estudianteId}/grupo/{nuevoGrupoId}")
-    public ResponseEntity<EstudianteGrupoResponse> cambiarGrupo(
-            @PathVariable Long estudianteId,
-            @PathVariable Long nuevoGrupoId) {
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(response);
+        }
 
-        EstudianteGrupo estudianteGrupo = estudianteGrupoService.cambiarGrupo(
-                estudianteId,
-                nuevoGrupoId);
+        /*
+         * ================================
+         * LISTAR TODAS LAS ASIGNACIONES
+         * =================================
+         */
 
-        EstudianteGrupoResponse response = convertirAResponse(estudianteGrupo);
+        @GetMapping
+        public ResponseEntity<List<EstudianteGrupoResponse>> listarTodas() {
 
-        return ResponseEntity.ok(response);
-    }
+                List<EstudianteGrupoResponse> response = estudianteGrupoService
+                                .listarTodas()
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
 
-    @GetMapping("/estudiante/{estudianteId}")
-    public ResponseEntity<List<EstudianteGrupoResponse>> listarPorEstudiante(
-            @PathVariable Long estudianteId) {
+                return ResponseEntity.ok(response);
+        }
 
-        List<EstudianteGrupoResponse> response = estudianteGrupoService
-                .listarPorEstudiante(estudianteId)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
+        /*
+         * ================================
+         * CAMBIAR GRUPO
+         * =================================
+         */
 
-        return ResponseEntity.ok(response);
-    }
+        @PatchMapping("/estudiante/{estudianteId}/grupo/{nuevoGrupoId}")
+        public ResponseEntity<EstudianteGrupoResponse> cambiarGrupo(
+                        @PathVariable Long estudianteId,
+                        @PathVariable Long nuevoGrupoId) {
 
-    @GetMapping("/grupo/{grupoId}")
-    public ResponseEntity<List<EstudianteGrupoResponse>> listarPorGrupo(
-            @PathVariable Long grupoId) {
+                EstudianteGrupo estudianteGrupo = estudianteGrupoService.cambiarGrupo(
+                                estudianteId,
+                                nuevoGrupoId);
 
-        List<EstudianteGrupoResponse> response = estudianteGrupoService
-                .listarPorGrupo(grupoId)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
+                EstudianteGrupoResponse response = convertirAResponse(estudianteGrupo);
 
-        return ResponseEntity.ok(response);
-    }
+                return ResponseEntity.ok(response);
+        }
 
-    private EstudianteGrupoResponse convertirAResponse(
-            EstudianteGrupo estudianteGrupo) {
+        /*
+         * ================================
+         * LISTAR POR ESTUDIANTE
+         * =================================
+         */
 
-        return new EstudianteGrupoResponse(
-                estudianteGrupo.getId(),
-                estudianteGrupo.getEstudiante().getId(),
-                estudianteGrupo.getEstudiante().getNombre(),
-                estudianteGrupo.getGrupo().getId(),
-                estudianteGrupo.getGrupo().getNombre(),
-                estudianteGrupo.getEstado());
-    }
+        @GetMapping("/estudiante/{estudianteId}")
+        public ResponseEntity<List<EstudianteGrupoResponse>> listarPorEstudiante(
+                        @PathVariable Long estudianteId) {
+
+                List<EstudianteGrupoResponse> response = estudianteGrupoService
+                                .listarPorEstudiante(
+                                                estudianteId)
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
+
+                return ResponseEntity.ok(response);
+        }
+
+        /*
+         * ================================
+         * LISTAR POR GRUPO
+         * =================================
+         */
+
+        @GetMapping("/grupo/{grupoId}")
+        public ResponseEntity<List<EstudianteGrupoResponse>> listarPorGrupo(
+                        @PathVariable Long grupoId) {
+
+                List<EstudianteGrupoResponse> response = estudianteGrupoService
+                                .listarPorGrupo(grupoId)
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
+
+                return ResponseEntity.ok(response);
+        }
+
+        /*
+         * ================================
+         * CAMBIAR ESTADO
+         * =================================
+         */
+
+        @PatchMapping("/{id}/estado")
+        public ResponseEntity<EstudianteGrupoResponse> cambiarEstado(
+                        @PathVariable Long id,
+                        @RequestParam String estado) {
+
+                EstudianteGrupo estudianteGrupo = estudianteGrupoService.cambiarEstado(
+                                id,
+                                estado);
+
+                EstudianteGrupoResponse response = convertirAResponse(estudianteGrupo);
+
+                return ResponseEntity.ok(response);
+        }
+
+        /*
+         * ================================
+         * CONVERTIR A RESPONSE
+         * =================================
+         */
+
+        private EstudianteGrupoResponse convertirAResponse(
+                        EstudianteGrupo estudianteGrupo) {
+
+                return new EstudianteGrupoResponse(
+                                estudianteGrupo.getId(),
+
+                                estudianteGrupo
+                                                .getEstudiante()
+                                                .getId(),
+
+                                estudianteGrupo
+                                                .getEstudiante()
+                                                .getNombre(),
+
+                                estudianteGrupo
+                                                .getGrupo()
+                                                .getId(),
+
+                                estudianteGrupo
+                                                .getGrupo()
+                                                .getNombre(),
+
+                                estudianteGrupo.getEstado());
+        }
 }

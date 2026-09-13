@@ -541,6 +541,14 @@ async function cargarFiltros() {
             );
 
 
+        /* Mostrar todos al entrar al campo */
+        buscar.addEventListener(
+            "focus",
+            filtrarEstudiantes
+        );
+
+
+        /* Filtrar al escribir */
         buscar.addEventListener(
             "input",
             filtrarEstudiantes
@@ -603,6 +611,14 @@ async function cargarFiltros() {
             );
 
 
+        /* Mostrar todos al entrar al campo */
+        buscar.addEventListener(
+            "focus",
+            filtrarGrupos
+        );
+
+
+        /* Filtrar al escribir */
         buscar.addEventListener(
             "input",
             filtrarGrupos
@@ -645,25 +661,27 @@ function filtrarEstudiantes() {
         "Ningún estudiante seleccionado.";
 
 
-    if (!texto) {
-
-        resultados.innerHTML = "";
-
-        return;
-    }
-
+    /*
+     * Si el campo está vacío,
+     * mostrar todos los estudiantes activos.
+     *
+     * Si hay texto,
+     * filtrar por nombre.
+     */
 
     const encontrados =
-        estudiantes.filter(estudiante => {
+        texto
+            ? estudiantes.filter(estudiante => {
 
-            const nombre =
-                obtenerNombreEstudiante(
-                    estudiante
-                ).toLowerCase();
+                const nombre =
+                    obtenerNombreEstudiante(
+                        estudiante
+                    ).toLowerCase();
 
-            return nombre.includes(texto);
+                return nombre.includes(texto);
 
-        });
+            })
+            : estudiantes;
 
 
     if (encontrados.length === 0) {
@@ -795,25 +813,27 @@ function filtrarGrupos() {
         "Ningún grupo seleccionado.";
 
 
-    if (!texto) {
-
-        resultados.innerHTML = "";
-
-        return;
-    }
-
+    /*
+     * Si el campo está vacío,
+     * mostrar todos los grupos activos.
+     *
+     * Si hay texto,
+     * filtrar por nombre.
+     */
 
     const encontrados =
-        grupos.filter(grupo => {
+        texto
+            ? grupos.filter(grupo => {
 
-            const nombre =
-                obtenerNombreGrupo(
-                    grupo
-                ).toLowerCase();
+                const nombre =
+                    obtenerNombreGrupo(
+                        grupo
+                    ).toLowerCase();
 
-            return nombre.includes(texto);
+                return nombre.includes(texto);
 
-        });
+            })
+            : grupos;
 
 
     if (encontrados.length === 0) {
