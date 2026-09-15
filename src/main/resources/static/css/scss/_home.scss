@@ -28,9 +28,22 @@
 
         align-items: center;
 
-        justify-content: space-between;
-
         gap: 2rem;
+    }
+
+
+    &__title {
+        margin: 0;
+
+        color: $color-white;
+
+        font-size: 1.25rem;
+
+        font-weight: 700;
+
+        line-height: 1.2;
+
+        white-space: nowrap;
     }
 }
 
@@ -74,6 +87,8 @@
     justify-content: flex-end;
 
     gap: 1.25rem;
+
+    margin-left: auto;
 
     flex-wrap: nowrap;
 
@@ -119,7 +134,8 @@
 
             transform-origin: center;
 
-            transition: transform 0.2s ease;
+            transition:
+                transform 0.2s ease;
         }
 
 
@@ -143,7 +159,7 @@
 
 
 // ==========================================
-// HERO
+// HERO / CARRUSEL
 // ==========================================
 
 .home-hero {
@@ -199,15 +215,13 @@
         top: 50%;
         left: 50%;
 
-        bottom: auto;
-        right: auto;
-
-        transform: translate(-50%, -50%);
-
         width: min(1200px, 90%);
 
         margin: 0;
         padding: 0;
+
+        transform:
+            translate(-50%, -50%);
 
         text-align: left;
 
@@ -333,6 +347,17 @@
         margin: 0 auto 3.5rem;
 
         text-align: center;
+
+
+        p {
+            margin: 0 auto;
+
+            color: $color-gray-600;
+
+            font-size: 1.05rem;
+
+            line-height: 1.7;
+        }
     }
 
 
@@ -344,17 +369,6 @@
         font-weight: 700;
 
         line-height: 1.05;
-    }
-
-
-    &__header p {
-        margin: 0 auto;
-
-        color: $color-gray-600;
-
-        font-size: 1.05rem;
-
-        line-height: 1.7;
     }
 }
 
@@ -381,7 +395,7 @@
 
 
 // ==========================================
-// ABOUT
+// NOSOTROS
 // ==========================================
 
 .home-about {
@@ -390,24 +404,92 @@
     grid-template-columns:
         minmax(0, 1.7fr) minmax(280px, 0.8fr);
 
-    gap: 4rem;
+    gap: 3rem;
 
     align-items: start;
 
 
+    // --------------------------------------
+    // HISTORIA
+    // --------------------------------------
+
     &__content {
+        padding: 2.5rem;
+
+        background-color: $color-white;
+
+        border: 1px solid $color-gray-200;
+
+        border-left: 5px solid $color-red;
+
+        border-radius: 8px;
+
+        box-shadow:
+            0 4px 15px rgba(0, 0, 0, 0.08);
+
         color: $color-gray-600;
 
         font-size: 1rem;
 
         line-height: 1.8;
+
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+
+
+        &:hover {
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 8px 22px rgba(0, 0, 0, 0.12);
+        }
+
+
+        &-label {
+            display: block;
+
+            margin-bottom: 0.75rem;
+
+            color: $color-red;
+
+            font-size: 0.75rem;
+
+            font-weight: 700;
+
+            letter-spacing: 0.12em;
+
+            text-transform: uppercase;
+        }
+
+
+        h3 {
+            margin: 0 0 1.5rem;
+
+            color: $color-black;
+
+            font-size: 1.8rem;
+
+            font-weight: 700;
+
+            line-height: 1.2;
+        }
+
+
+        p {
+            margin: 0 0 1.25rem;
+
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
     }
 
 
-    &__content p {
-        margin-bottom: 1.25rem;
-    }
-
+    // --------------------------------------
+    // INFORMACIÓN
+    // --------------------------------------
 
     &__info {
         display: flex;
@@ -415,6 +497,34 @@
         flex-direction: column;
 
         gap: 1rem;
+    }
+
+
+    // --------------------------------------
+    // MAPA
+    // --------------------------------------
+
+    &__map {
+        width: 100%;
+
+        overflow: hidden;
+
+        border: 1px solid $color-gray-200;
+
+        border-radius: 8px;
+
+        box-shadow:
+            0 3px 12px rgba(0, 0, 0, 0.08);
+
+
+        iframe {
+            display: block;
+
+            width: 100%;
+            height: 490px;
+
+            border: 0;
+        }
     }
 }
 
@@ -430,8 +540,22 @@
 
     border-left: 4px solid $color-red;
 
+    border-radius: 6px;
+
     box-shadow:
         0 2px 8px rgba(0, 0, 0, 0.08);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+
+    &:hover {
+        transform: translateY(-3px);
+
+        box-shadow:
+            0 6px 16px rgba(0, 0, 0, 0.12);
+    }
 
 
     &__label {
@@ -455,6 +579,8 @@
         color: $color-black;
 
         font-size: 1.1rem;
+
+        line-height: 1.4;
     }
 }
 
@@ -549,35 +675,57 @@
 
     min-height: 260px;
 
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: flex-end;
+
     padding: 2rem;
 
+    overflow: hidden;
+
     background-color: $color-white;
+
+    background-position: center;
+
+    background-size: cover;
 
     border: 1px solid $color-gray-200;
 
     border-radius: 8px;
 
-    overflow: hidden;
+    color: $color-white;
 
     transition:
         transform 0.2s ease,
         box-shadow 0.2s ease;
 
 
-    &:hover {
-        transform: translateY(-4px);
+    &::before {
+        content: "";
 
-        box-shadow:
-            0 8px 20px rgba(0, 0, 0, 0.10);
+        position: absolute;
+
+        inset: 0;
+
+        z-index: 0;
+
+        background-color:
+            rgba(0, 0, 0, 0.55);
     }
 
 
     &__number {
+        position: relative;
+
+        z-index: 1;
+
         display: block;
 
-        margin-bottom: 2.5rem;
+        margin-bottom: auto;
 
-        color: $color-red;
+        color: $color-yellow;
 
         font-size: 0.8rem;
 
@@ -588,7 +736,13 @@
 
 
     h3 {
+        position: relative;
+
+        z-index: 1;
+
         margin: 0 0 1rem;
+
+        color: $color-white;
 
         font-size: 1.3rem;
 
@@ -597,17 +751,69 @@
 
 
     p {
+        position: relative;
+
+        z-index: 1;
+
         margin: 0;
 
-        color: $color-gray-600;
+        color: $color-white;
 
         line-height: 1.7;
+    }
+
+
+    &:hover {
+        transform: translateY(-4px);
+
+        box-shadow:
+            0 8px 20px rgba(0, 0, 0, 0.20);
+    }
+
+
+    // --------------------------------------
+    // IMÁGENES
+    // --------------------------------------
+
+    &--infantil {
+        background-image:
+            url("/img/karate-infantil.jpg");
+    }
+
+
+    &--juvenil {
+        background-image:
+            url("/img/karate-juvenil.jpg");
+    }
+
+
+    &--basico {
+        background-image:
+            url("/img/karate-basico.jpg");
+    }
+
+
+    &--intermedio {
+        background-image:
+            url("/img/karate-intermedio.jpg");
+    }
+
+
+    &--grado {
+        background-image:
+            url("/img/examen-grado.jpg");
+    }
+
+
+    &--recuperacion {
+        background-image:
+            url("/img/karate-recuperacion.jpg");
     }
 }
 
 
 // ==========================================
-// VIDEO
+// VIDEO / GALERÍA
 // ==========================================
 
 .home-video {
@@ -639,42 +845,42 @@
         aspect-ratio: 16 / 9;
 
         overflow: hidden;
-    }
 
 
-    &__iframe iframe {
-        position: absolute;
+        iframe {
+            position: absolute;
 
-        top: 0;
-        left: 0;
+            top: 0;
+            left: 0;
 
-        width: 100%;
-        height: 100%;
+            width: 100%;
+            height: 100%;
 
-        border: 0;
+            border: 0;
+        }
     }
 
 
     &__content {
         padding: 1rem 0;
-    }
 
 
-    &__content h3 {
-        margin: 0 0 1rem;
+        h3 {
+            margin: 0 0 1rem;
 
-        font-size: 2rem;
+            font-size: 2rem;
 
-        line-height: 1.1;
-    }
+            line-height: 1.1;
+        }
 
 
-    &__content p {
-        margin: 0 0 1.5rem;
+        p {
+            margin: 0 0 1.5rem;
 
-        color: $color-gray-600;
+            color: $color-gray-600;
 
-        line-height: 1.7;
+            line-height: 1.7;
+        }
     }
 }
 
@@ -688,44 +894,44 @@
 
     margin: 0 auto;
 
+    overflow: hidden;
+
     background-color: $color-white;
 
     border: 1px solid $color-gray-200;
 
     border-radius: 8px;
 
-    overflow: hidden;
-}
+
+    &__row {
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 2rem;
+
+        padding: 1.25rem 1.5rem;
+
+        border-bottom: 1px solid $color-gray-200;
 
 
-.home-schedule__row {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    gap: 2rem;
-
-    padding: 1.25rem 1.5rem;
-
-    border-bottom: 1px solid $color-gray-200;
+        &:last-child {
+            border-bottom: none;
+        }
 
 
-    &:last-child {
-        border-bottom: none;
-    }
+        span {
+            font-weight: 600;
+        }
 
 
-    span {
-        font-weight: 600;
-    }
+        strong {
+            color: $color-red;
 
-
-    strong {
-        color: $color-red;
-
-        text-align: right;
+            text-align: right;
+        }
     }
 }
 
@@ -790,20 +996,14 @@
 
         border-radius: 50%;
 
-        color: $color-gray-600;
-
-        font-size: 0.8rem;
-
-        font-weight: 700;
-
 
         img {
+            display: block;
+
             width: 100%;
             height: 100%;
 
             object-fit: contain;
-
-            display: block;
         }
     }
 }
@@ -825,11 +1025,11 @@
 .home-announcement {
     padding: 2rem;
 
+    background-color: $color-white;
+
     border: 1px solid $color-gray-200;
 
     border-radius: 8px;
-
-    background-color: $color-white;
 
 
     &__category {
@@ -865,304 +1065,22 @@
 
 
 // ==========================================
-// REDES SOCIALES
-// ==========================================
-
-.home-social {
-    background-color: $color-black;
-
-    color: $color-white;
-
-
-    .home-section__header h2 {
-        color: $color-white;
-    }
-
-
-    .home-section__header p {
-        color: $color-gray-200;
-    }
-
-
-    .home-eyebrow {
-        color: $color-yellow;
-    }
-
-
-    &__links {
-        display: flex;
-
-        justify-content: center;
-
-        gap: 1rem;
-    }
-
-
-    &__link {
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        min-width: 180px;
-
-        padding: 1rem 1.5rem;
-
-        color: $color-white;
-
-        border: 1px solid rgba(255, 255, 255, 0.25);
-
-        border-radius: 6px;
-
-        text-decoration: none;
-
-        font-weight: 700;
-
-        transition: 0.2s ease;
-
-
-        &:hover {
-            color: $color-black;
-
-            background-color: $color-yellow;
-
-            border-color: $color-yellow;
-        }
-    }
-}
-
-
-// ==========================================
-// UTP
-// ==========================================
-
-.home-utp {
-    display: grid;
-
-    grid-template-columns: 180px minmax(0, 1fr);
-
-    gap: 3rem;
-
-    align-items: center;
-
-    max-width: 900px;
-
-    margin: 0 auto;
-}
-
-
-.home-utp__logo {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-}
-
-
-.home-utp__logo-placeholder {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    width: 150px;
-    height: 150px;
-
-    background-color: $color-white;
-
-    border: 2px solid $color-gray-200;
-
-    border-radius: 8px;
-
-    color: $color-black;
-
-    font-size: 2rem;
-
-    font-weight: 700;
-}
-
-
-.home-utp__text {
-
-    h2 {
-        margin: 0 0 1rem;
-
-        font-size: 2.2rem;
-    }
-
-
-    p {
-        margin: 0;
-
-        color: $color-gray-600;
-
-        line-height: 1.7;
-    }
-}
-
-
-// ==========================================
-// CONTACTO
-// ==========================================
-
-.home-contact {
-    display: grid;
-
-    grid-template-columns: 0.8fr 1.2fr;
-
-    gap: 3rem;
-
-    padding: 3rem;
-
-    background-color: $color-black;
-
-    color: $color-white;
-
-    border-radius: 8px;
-}
-
-
-.home-contact__main {
-
-    .home-contact__label {
-        display: block;
-
-        margin-bottom: 1rem;
-
-        color: $color-yellow;
-
-        font-size: 0.7rem;
-
-        font-weight: 700;
-
-        letter-spacing: 0.12em;
-    }
-
-
-    h3 {
-        margin: 0 0 1rem;
-
-        font-size: 2rem;
-    }
-
-
-    p {
-        margin: 0;
-
-        color: $color-gray-200;
-
-        line-height: 1.7;
-    }
-}
-
-
-.home-contact__details {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 1.25rem;
-}
-
-
-.home-contact__item {
-
-    span {
-        display: block;
-
-        margin-bottom: 0.35rem;
-
-        color: $color-gray-200;
-
-        font-size: 0.7rem;
-
-        font-weight: 700;
-
-        letter-spacing: 0.1em;
-    }
-
-
-    strong {
-        display: block;
-
-        color: $color-white;
-
-        line-height: 1.5;
-    }
-}
-
-
-// ==========================================
-// ACCESO AL SISTEMA
-// ==========================================
-
-.home-access {
-    background-color: $color-red;
-
-    color: $color-white;
-}
-
-
-.home-access__content {
-    max-width: 800px;
-
-    margin: 0 auto;
-
-    text-align: center;
-
-
-    .home-eyebrow {
-        color: $color-yellow;
-    }
-
-
-    h2 {
-        color: $color-white;
-    }
-
-
-    p {
-        max-width: 650px;
-
-        margin: 0 auto 2rem;
-
-        color: $color-white;
-
-        line-height: 1.7;
-    }
-}
-
-
-.home-access__actions {
-    display: flex;
-
-    justify-content: center;
-
-    flex-wrap: wrap;
-
-    gap: 0.75rem;
-}
-
-
-// ==========================================
 // FOOTER
 // ==========================================
 
 .home-footer {
+    padding: 2.5rem 0 1rem;
+
     background-color: $color-black;
 
     color: $color-white;
-
-    padding: 2.5rem 0 1rem;
 
 
     &__inner {
         display: grid;
 
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns:
+            1fr 1fr 1fr;
 
         align-items: center;
 
@@ -1170,9 +1088,9 @@
     }
 
 
-    // ==========================================
+    // --------------------------------------
     // REDES SOCIALES
-    // ==========================================
+    // --------------------------------------
 
     &__social {
         display: flex;
@@ -1197,28 +1115,29 @@
 
         border-radius: 50%;
 
-        transition: 0.2s ease;
+        transition:
+            transform 0.2s ease;
+
+
+        &:hover {
+            transform: translateY(-2px);
+        }
+
+
+        img {
+            display: block;
+
+            width: 50px;
+            height: 50px;
+
+            object-fit: contain;
+        }
     }
 
 
-    &__social-link:hover {
-        transform: translateY(-2px);
-    }
-
-
-    &__social-link img {
-        width: 32px;
-        height: 32px;
-
-        object-fit: contain;
-
-        display: block;
-    }
-
-
-    // ==========================================
+    // --------------------------------------
     // UTP
-    // ==========================================
+    // --------------------------------------
 
     &__utp {
         display: flex;
@@ -1226,22 +1145,35 @@
         align-items: center;
 
         justify-content: center;
+
+
+        a {
+            display: block;
+
+            transition:
+                transform 0.3s ease;
+
+
+            &:hover {
+                transform: scale(1.08);
+            }
+        }
+
+
+        img {
+            display: block;
+
+            width: 280px;
+            height: 100px;
+
+            object-fit: contain;
+        }
     }
 
 
-    &__utp img {
-        width: 380px;
-        height: 100px;
-
-        object-fit: contain;
-
-        display: block;
-    }
-
-
-    // ==========================================
+    // --------------------------------------
     // CONTACTO
-    // ==========================================
+    // --------------------------------------
 
     &__contact {
         display: flex;
@@ -1250,40 +1182,40 @@
 
         align-items: flex-end;
 
+        gap: 0.25rem;
+
         text-align: right;
 
-        gap: 0.25rem;
+
+        &-label {
+            margin-bottom: 0.25rem;
+
+            color: $color-yellow;
+
+            font-size: 0.75rem;
+
+            font-weight: 700;
+
+            letter-spacing: 0.1em;
+        }
+
+
+        strong {
+            font-size: 1rem;
+        }
+
+
+        span:not(.home-footer__contact-label) {
+            color: $color-gray-200;
+
+            font-size: 0.85rem;
+        }
     }
 
 
-    &__contact-label {
-        margin-bottom: 0.25rem;
-
-        color: $color-yellow;
-
-        font-size: 0.75rem;
-
-        font-weight: 700;
-
-        letter-spacing: 0.1em;
-    }
-
-
-    &__contact strong {
-        font-size: 1rem;
-    }
-
-
-    &__contact span:not(.home-footer__contact-label) {
-        color: $color-gray-200;
-
-        font-size: 0.85rem;
-    }
-
-
-    // ==========================================
+    // --------------------------------------
     // COPYRIGHT
-    // ==========================================
+    // --------------------------------------
 
     &__copyright {
         margin-top: 2rem;
@@ -1292,11 +1224,11 @@
 
         border-top: 1px solid $color-gray-900;
 
-        text-align: center;
-
         color: $color-gray-600;
 
         font-size: 0.8rem;
+
+        text-align: center;
     }
 }
 
@@ -1311,33 +1243,36 @@
     // HEADER
     // --------------------------------------
 
-    .home-header__inner {
-        min-height: 76px;
+    .home-header {
 
-        gap: 1rem;
-    }
+        &__inner {
+            min-height: 76px;
 
-
-    .home-logo__image {
-        width: 60px;
-        height: 60px;
-    }
+            gap: 1rem;
+        }
 
 
-    .home-nav {
-        gap: 0.75rem;
-    }
+        .home-logo__image {
+            width: 60px;
+            height: 60px;
+        }
 
 
-    .home-nav__link {
-        font-size: 0.7rem;
-    }
+        .home-nav {
+            gap: 0.75rem;
 
 
-    .home-nav__button {
-        padding: 0.65rem 0.9rem;
+            &__link {
+                font-size: 0.7rem;
+            }
 
-        font-size: 0.7rem;
+
+            &__button {
+                padding: 0.65rem 0.9rem;
+
+                font-size: 0.7rem;
+            }
+        }
     }
 
 
@@ -1346,7 +1281,8 @@
     // --------------------------------------
 
     .home-services {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 
 
@@ -1355,7 +1291,8 @@
     // --------------------------------------
 
     .home-partners {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 
 
@@ -1364,7 +1301,8 @@
     // --------------------------------------
 
     .home-announcements {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 }
 
@@ -1381,53 +1319,72 @@
 
     .home-header {
         position: relative;
-    }
 
 
-    .home-header__inner {
-        gap: 1rem;
+        &__inner {
+            min-height: auto;
 
-        padding-top: 1rem;
+            flex-wrap: wrap;
 
-        padding-bottom: 1rem;
-    }
+            justify-content: center;
+
+            gap: 0.75rem;
+
+            padding-top: 1rem;
+
+            padding-bottom: 1rem;
+        }
 
 
-    .home-logo__image {
-        width: 65px;
-        height: 65px;
+        &__title {
+            flex: 1;
+
+            min-width: 0;
+
+            font-size: 0.95rem;
+
+            white-space: normal;
+
+            text-align: center;
+        }
+
+
+        .home-logo__image {
+            width: 65px;
+            height: 65px;
+        }
     }
 
 
     .home-nav {
         width: 100%;
 
-        display: flex;
-
         justify-content: center;
 
         flex-wrap: wrap;
 
         gap: 0.65rem 1rem;
-    }
 
-
-    .home-nav__link {
-        font-size: 0.68rem;
-    }
-
-
-    .home-nav__link::after {
-        bottom: -0.25rem;
-    }
-
-
-    .home-nav__button {
         margin-left: 0;
 
-        padding: 0.65rem 1rem;
 
-        font-size: 0.7rem;
+        &__link {
+            font-size: 0.68rem;
+
+
+            &::after {
+                bottom: -0.25rem;
+            }
+        }
+
+
+        &__button {
+            margin-left: 0;
+
+            padding: 0.65rem 1rem;
+
+            font-size: 0.7rem;
+        }
     }
 
 
@@ -1456,9 +1413,8 @@
 
 
         p {
-            margin-left: auto;
-
             margin-right: auto;
+            margin-left: auto;
 
             font-size: 1rem;
         }
@@ -1486,13 +1442,30 @@
 
 
     // --------------------------------------
-    // ABOUT
+    // NOSOTROS
     // --------------------------------------
 
     .home-about {
         grid-template-columns: 1fr;
 
         gap: 2rem;
+
+
+        &__content {
+            padding: 1.5rem;
+
+            font-size: 0.95rem;
+
+
+            h3 {
+                font-size: 1.5rem;
+            }
+        }
+
+
+        &__map iframe {
+            height: 300px;
+        }
     }
 
 
@@ -1500,9 +1473,12 @@
     // GRIDS
     // --------------------------------------
 
-    .home-grid--2,
-    .home-grid--3 {
-        grid-template-columns: 1fr;
+    .home-grid {
+
+        &--2,
+        &--3 {
+            grid-template-columns: 1fr;
+        }
     }
 
 
@@ -1527,7 +1503,7 @@
 
 
     // --------------------------------------
-    // SCHEDULE
+    // HORARIOS
     // --------------------------------------
 
     .home-schedule__row {
@@ -1536,11 +1512,11 @@
         flex-direction: column;
 
         gap: 0.5rem;
-    }
 
 
-    .home-schedule__row strong {
-        text-align: left;
+        strong {
+            text-align: left;
+        }
     }
 
 
@@ -1554,7 +1530,7 @@
 
 
     // --------------------------------------
-    // ANNOUNCEMENTS
+    // ANUNCIOS
     // --------------------------------------
 
     .home-announcements {
@@ -1563,101 +1539,40 @@
 
 
     // --------------------------------------
-    // SOCIAL
-    // --------------------------------------
-
-    .home-social__links {
-        flex-direction: column;
-
-        align-items: stretch;
-    }
-
-
-    .home-social__link {
-        width: 100%;
-    }
-
-
-    // --------------------------------------
-    // UTP
-    // --------------------------------------
-
-    .home-utp {
-        grid-template-columns: 1fr;
-
-        gap: 2rem;
-
-        text-align: center;
-    }
-
-
-    .home-utp__logo {
-        justify-content: center;
-    }
-
-
-    .home-utp__text h2 {
-        font-size: 1.8rem;
-    }
-
-
-    // --------------------------------------
-    // CONTACT
-    // --------------------------------------
-
-    .home-contact {
-        grid-template-columns: 1fr;
-
-        padding: 2rem;
-
-        gap: 2rem;
-    }
-
-
-    // --------------------------------------
-    // ACCESS
-    // --------------------------------------
-
-    .home-access__actions {
-        flex-direction: column;
-
-        align-items: stretch;
-    }
-
-
-    // --------------------------------------
     // FOOTER
     // --------------------------------------
 
-    .home-footer__inner {
-        grid-template-columns: 1fr;
+    .home-footer {
 
-        gap: 2rem;
+        &__inner {
+            grid-template-columns: 1fr;
 
-        text-align: center;
-    }
+            gap: 2rem;
 
-
-    .home-footer__social {
-        justify-content: center;
-    }
+            text-align: center;
+        }
 
 
-    .home-footer__utp img {
-        width: 160px;
-
-        height: 90px;
-    }
+        &__social {
+            justify-content: center;
+        }
 
 
-    .home-footer__contact {
-        align-items: center;
+        &__utp img {
+            width: 160px;
+            height: 90px;
+        }
 
-        text-align: center;
-    }
+
+        &__contact {
+            align-items: center;
+
+            text-align: center;
+        }
 
 
-    .home-footer__copyright {
-        text-align: center;
+        &__copyright {
+            text-align: center;
+        }
     }
 }
