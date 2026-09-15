@@ -13,6 +13,7 @@ body {
   min-height: 100vh;
   background-color: #F5F5F5;
   color: #1A1A1A;
+  font-family: "Segoe UI", Arial, sans-serif;
 }
 
 button,
@@ -234,6 +235,8 @@ img {
   align-items: center;
   justify-content: center;
   background-color: #000000;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #1A1A1A;
 }
 
 .login-container {
@@ -252,22 +255,26 @@ img {
 }
 
 .login-header {
-  text-align: center;
   margin-bottom: 2rem;
+  text-align: center;
 }
 
 .login-logo {
   display: inline-block;
-  margin-bottom: 0.5rem;
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: 0.15rem;
+  margin-bottom: 0.6rem;
   color: #FF2400;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.12rem;
 }
 
 .login-subtitle {
+  margin: 0;
   color: #666666;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.5;
 }
 
 .login-form {
@@ -275,17 +282,77 @@ img {
   flex-direction: column;
 }
 
+.login-form .form-group {
+  margin-bottom: 1.25rem;
+}
+
+.login-form .form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #1A1A1A;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.login-form .form-input {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: #1A1A1A;
+  background-color: #FFFFFF;
+  border: 1px solid #E5E5E5;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-form .form-input::placeholder {
+  color: #666666;
+  opacity: 0.7;
+}
+
+.login-form .form-input:focus {
+  border-color: #FF2400;
+  box-shadow: 0 0 0 3px rgba(255, 36, 0, 0.12);
+}
+
+.login-form .form-error {
+  margin: -0.25rem 0 1rem;
+  color: #FF2400;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 .login-button {
   width: 100%;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 @media (max-width: 480px) {
+  .login-container {
+    padding: 1rem;
+  }
   .login-card {
     padding: 2rem 1.5rem;
   }
   .login-logo {
     font-size: 1.75rem;
+  }
+  .login-subtitle {
+    font-size: 0.85rem;
+  }
+  .login-form .form-label {
+    font-size: 0.85rem;
+  }
+  .login-form .form-input {
+    font-size: 0.9rem;
   }
 }
 .dashboard-header {
