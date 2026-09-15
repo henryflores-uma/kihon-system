@@ -335,6 +335,34 @@ img {
   font-weight: 600;
 }
 
+.login-logo-image {
+  display: block;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1rem;
+  object-fit: contain;
+}
+
+.login-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.login-action {
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.login-action:hover {
+  text-decoration: none;
+}
+
 @media (max-width: 480px) {
   .login-container {
     padding: 1rem;
@@ -353,6 +381,10 @@ img {
   }
   .login-form .form-input {
     font-size: 0.9rem;
+  }
+  .login-logo-image {
+    width: 85px;
+    height: 85px;
   }
 }
 .dashboard-header {
