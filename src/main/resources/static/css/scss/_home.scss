@@ -1160,9 +1160,11 @@
         }
 
 
-    &__utp img {
-        width: 180px;
-        height: 100px;
+        img {
+            display: block;
+
+            width: 280px;
+            height: 100px;
 
             object-fit: contain;
         }
