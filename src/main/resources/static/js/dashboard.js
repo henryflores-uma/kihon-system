@@ -6,8 +6,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     const usernameDisplay =
         document.getElementById("usernameDisplay");
 
+    /*
+     * ==========================================
+     * VERIFICAR SESIÓN
+     * ==========================================
+     */
+
     if (!auth || !username) {
+
         window.location.href = "/login";
+
         return;
     }
 
@@ -16,8 +24,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     try {
 
         /*
-         * 1. Obtener estudiantes
+         * ==========================================
+         * 1. OBTENER ESTUDIANTES
+         * ==========================================
          */
+
         const estudiantesResponse = await fetch(
             "/api/estudiantes",
             {
@@ -29,12 +40,16 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
 
         if (estudiantesResponse.status === 401) {
+
             sessionStorage.clear();
+
             window.location.href = "/login";
+
             return;
         }
 
         if (!estudiantesResponse.ok) {
+
             throw new Error(
                 "No se pudieron obtener los estudiantes."
             );
@@ -55,8 +70,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
         /*
-         * 2. Obtener grupos activos
+         * ==========================================
+         * 2. OBTENER GRUPOS ACTIVOS
+         * ==========================================
          */
+
         const gruposResponse = await fetch(
             "/api/grupos?estado=ACTIVO",
             {
@@ -68,6 +86,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
 
         if (!gruposResponse.ok) {
+
             throw new Error(
                 "No se pudieron obtener los grupos."
             );
@@ -82,8 +101,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
         /*
-         * 3. Obtener asistencias del día
+         * ==========================================
+         * 3. OBTENER ASISTENCIAS DEL DÍA
+         * ==========================================
          */
+
         const fecha = new Date()
             .toISOString()
             .split("T")[0];
@@ -99,6 +121,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
 
         if (!asistenciaResponse.ok) {
+
             throw new Error(
                 "No se pudo obtener el reporte de asistencias."
             );
@@ -113,11 +136,25 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
         /*
-         * Información para depuración
+         * ==========================================
+         * INFORMACIÓN PARA DEPURACIÓN
+         * ==========================================
          */
-        console.log("Estudiantes:", estudiantes);
-        console.log("Grupos activos:", grupos);
-        console.log("Reporte de hoy:", reporte);
+
+        console.log(
+            "Estudiantes:",
+            estudiantes
+        );
+
+        console.log(
+            "Grupos activos:",
+            grupos
+        );
+
+        console.log(
+            "Reporte de hoy:",
+            reporte
+        );
 
     } catch (error) {
 

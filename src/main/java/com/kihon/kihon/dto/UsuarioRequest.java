@@ -1,13 +1,20 @@
 package com.kihon.kihon.dto;
 
+import java.time.LocalDate;
+
 public class UsuarioRequest {
 
     private String username;
     private String password;
     private String nombre;
     private String apellido;
+    private String tipoDocumento;
+    private String numeroDocumento;
+    private String telefono;
+    private LocalDate fechaNacimiento;
+    private String genero;
     private String correo;
-    private String rol;
+    private String foto;
     private Long estudianteId;
 
     public UsuarioRequest() {
@@ -45,6 +52,46 @@ public class UsuarioRequest {
         this.apellido = apellido;
     }
 
+    public String getTipoDocumento() {
+        return tipoDocumento;
+    }
+
+    public void setTipoDocumento(String tipoDocumento) {
+        this.tipoDocumento = tipoDocumento;
+    }
+
+    public String getNumeroDocumento() {
+        return numeroDocumento;
+    }
+
+    public void setNumeroDocumento(String numeroDocumento) {
+        this.numeroDocumento = numeroDocumento;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
+    }
+
+    public String getGenero() {
+        return genero;
+    }
+
+    public void setGenero(String genero) {
+        this.genero = genero;
+    }
+
     public String getCorreo() {
         return correo;
     }
@@ -53,12 +100,12 @@ public class UsuarioRequest {
         this.correo = correo;
     }
 
-    public String getRol() {
-        return rol;
+    public String getFoto() {
+        return foto;
     }
 
-    public void setRol(String rol) {
-        this.rol = rol;
+    public void setFoto(String foto) {
+        this.foto = foto;
     }
 
     public Long getEstudianteId() {

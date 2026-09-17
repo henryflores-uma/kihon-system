@@ -1,12 +1,18 @@
 package com.kihon.kihon.dto;
 
+import java.time.LocalDate;
+
 public class EstudianteRequest {
 
     private String nombre;
     private String apellido;
+    private String tipoDocumento;
     private String documento;
     private String telefono;
     private String correo;
+    private LocalDate fechaNacimiento;
+    private String direccion;
+    private String foto;
 
     public EstudianteRequest() {
     }
@@ -25,6 +31,14 @@ public class EstudianteRequest {
 
     public void setApellido(String apellido) {
         this.apellido = apellido;
+    }
+
+    public String getTipoDocumento() {
+        return tipoDocumento;
+    }
+
+    public void setTipoDocumento(String tipoDocumento) {
+        this.tipoDocumento = tipoDocumento;
     }
 
     public String getDocumento() {
@@ -49,5 +63,29 @@ public class EstudianteRequest {
 
     public void setCorreo(String correo) {
         this.correo = correo;
+    }
+
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
+    }
+
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
+    }
+
+    public String getFoto() {
+        return foto;
+    }
+
+    public void setFoto(String foto) {
+        this.foto = foto;
     }
 }

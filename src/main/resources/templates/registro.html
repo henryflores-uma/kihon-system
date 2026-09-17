@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Crear usuario</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body class="registro-page">
+
+    <main class="registro-container">
+
+        <section class="registro-card">
+
+            <header class="registro-header">
+
+                <img src="/img/logo_dojo.png" alt="Logo Academia de Karate Sunkku Sinchi" class="registro-logo-image">
+
+                <div class="registro-logo">
+                    KIHON
+                </div>
+
+                <p class="registro-subtitle">
+                    Crear cuenta de usuario
+                </p>
+
+            </header>
+
+
+            <form id="registroForm" class="registro-form">
+
+                <!-- ==========================================
+                     DATOS DE ACCESO
+                     ========================================== -->
+
+                <div class="registro-section">
+
+                    <h2 class="registro-section-title">
+                        Datos de acceso
+                    </h2>
+
+                    <div class="form-group">
+
+                        <label for="username" class="form-label">
+                            Usuario
+                        </label>
+
+                        <input type="text" id="username" name="username" class="form-input"
+                            placeholder="Ingresa tu usuario" minlength="4" maxlength="30" autocomplete="username"
+                            required>
+
+                    </div>
+
+
+                    <!-- CONTRASEÑA -->
+
+                    <div class="form-group">
+
+                        <label for="password" class="form-label">
+                            Contraseña
+                        </label>
+
+                        <div class="password-group">
+
+                            <input type="password" id="password" name="password" class="form-input"
+                                placeholder="Mínimo 8 caracteres" minlength="8" maxlength="72"
+                                autocomplete="new-password" required>
+
+                            <button type="button" id="togglePassword" class="password-toggle"
+                                aria-label="Mostrar contraseña">
+
+                                👁️
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==========================================
+                     DATOS PERSONALES
+                     ========================================== -->
+
+                <div class="registro-section">
+
+                    <h2 class="registro-section-title">
+                        Datos personales
+                    </h2>
+
+
+                    <div class="registro-grid">
+
+                        <!-- NOMBRE -->
+
+                        <div class="form-group">
+
+                            <label for="nombre" class="form-label">
+                                Nombre
+                            </label>
+
+                            <input type="text" id="nombre" name="nombre" class="form-input"
+                                placeholder="Ingresa tu nombre" maxlength="50" autocomplete="given-name" required>
+
+                        </div>
+
+
+                        <!-- APELLIDO -->
+
+                        <div class="form-group">
+
+                            <label for="apellido" class="form-label">
+                                Apellido
+                            </label>
+
+                            <input type="text" id="apellido" name="apellido" class="form-input"
+                                placeholder="Ingresa tu apellido" maxlength="50" autocomplete="family-name" required>
+
+                        </div>
+
+
+                        <!-- TIPO DE DOCUMENTO -->
+
+                        <div class="form-group">
+
+                            <label for="tipoDocumento" class="form-label">
+
+                                Tipo de documento
+
+                            </label>
+
+                            <select id="tipoDocumento" name="tipoDocumento" class="form-input" required>
+
+                                <option value="">
+                                    Selecciona una opción
+                                </option>
+
+                                <option value="DNI">
+                                    DNI
+                                </option>
+
+                                <option value="CE">
+                                    Carné de extranjería
+                                </option>
+
+                                <option value="PASAPORTE">
+                                    Pasaporte
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- NUMERO DE DOCUMENTO -->
+
+                        <div class="form-group">
+
+                            <label for="numeroDocumento" class="form-label">
+
+                                Número de documento
+
+                            </label>
+
+                            <input type="text" id="numeroDocumento" name="numeroDocumento" class="form-input"
+                                placeholder="Selecciona el tipo de documento" autocomplete="off" disabled required>
+
+                        </div>
+
+
+                        <!-- TELEFONO -->
+
+                        <div class="form-group">
+
+                            <label for="telefono" class="form-label">
+
+                                Teléfono
+
+                            </label>
+
+                            <div class="telefono-group">
+
+                                <select id="codigoPais" name="codigoPais" class="form-input telefono-pais">
+
+                                    <option value="+51" selected>
+
+                                        🇵🇪 +51
+
+                                    </option>
+
+                                    <option value="+57">
+                                        🇨🇴 +57
+                                    </option>
+
+                                    <option value="+56">
+                                        🇨🇱 +56
+                                    </option>
+
+                                    <option value="+54">
+                                        🇦🇷 +54
+                                    </option>
+
+                                    <option value="+55">
+                                        🇧🇷 +55
+                                    </option>
+
+                                    <option value="+52">
+                                        🇲🇽 +52
+                                    </option>
+
+                                    <option value="+1">
+                                        🇺🇸 +1
+                                    </option>
+
+                                    <option value="+34">
+                                        🇪🇸 +34
+                                    </option>
+
+                                </select>
+
+
+                                <input type="tel" id="telefono" name="telefono" class="form-input telefono-numero"
+                                    placeholder="987654321" inputmode="numeric" autocomplete="tel">
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- FECHA DE NACIMIENTO -->
+
+                        <div class="form-group">
+
+                            <label for="fechaNacimiento" class="form-label">
+
+                                Fecha de nacimiento
+
+                            </label>
+
+                            <input type="date" id="fechaNacimiento" name="fechaNacimiento" class="form-input"
+                                autocomplete="bday" required>
+
+                        </div>
+
+
+                        <!-- GENERO -->
+
+                        <div class="form-group">
+
+                            <label for="genero" class="form-label">
+
+                                Género
+
+                            </label>
+
+                            <select id="genero" name="genero" class="form-input" required>
+
+                                <option value="">
+                                    Selecciona una opción
+                                </option>
+
+                                <option value="MASCULINO">
+                                    Masculino
+                                </option>
+
+                                <option value="FEMENINO">
+                                    Femenino
+                                </option>
+
+                                <option value="OTRO">
+                                    Otro
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- CORREO -->
+
+                        <div class="form-group">
+
+                            <label for="correo" class="form-label">
+
+                                Correo electrónico
+
+                            </label>
+
+                            <input type="email" id="correo" name="correo" class="form-input"
+                                placeholder="correo@ejemplo.com" maxlength="100" autocomplete="email" required>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==========================================
+                     MENSAJE
+                     ========================================== -->
+
+                <p id="registroMessage" class="form-message" hidden>
+                </p>
+
+
+                <!-- ==========================================
+                     BOTON
+                     ========================================== -->
+
+                <button type="submit" class="btn btn--primary registro-button">
+
+                    Crear usuario
+
+                </button>
+
+            </form>
+
+
+            <!-- ==========================================
+                 ACCIONES
+                 ========================================== -->
+
+            <div class="registro-actions">
+
+                <a href="/login" class="btn btn--secondary registro-action">
+
+                    Volver al inicio de sesión
+
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="/js/registro.js"></script>
+
+</body>
+
+</html>
