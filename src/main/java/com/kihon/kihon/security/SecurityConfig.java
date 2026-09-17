@@ -50,6 +50,12 @@ public class SecurityConfig {
                                                 .permitAll()
 
                                                 // =========================
+                                                // PÁGINA DE ADMINISTRADOR
+                                                // =========================
+                                                .requestMatchers("/admin")
+                                                .hasRole("ADMIN")
+
+                                                // =========================
                                                 // REGISTRO PÚBLICO
                                                 // =========================
                                                 .requestMatchers(

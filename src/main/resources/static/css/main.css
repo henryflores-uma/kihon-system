@@ -1474,7 +1474,7 @@ img {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 1.25rem;
+  gap: 1rem;
   margin-left: auto;
   flex-wrap: nowrap;
 }
@@ -1509,8 +1509,26 @@ img {
   transform: scaleX(1);
 }
 .home-nav__button {
-  margin-left: 0.5rem;
+  margin-left: 0.25rem;
   white-space: nowrap;
+  padding: 0.65rem 1rem;
+  font-size: 0.75rem;
+}
+
+.home-nav__button:first-of-type {
+  margin-left: 0.75rem;
+}
+
+.home-nav__button {
+  min-width: 120px;
+  padding: 0.65rem 1rem;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 0.75rem;
+}
+
+.home-nav__button:last-child {
+  min-width: 125px;
 }
 
 .home-hero {

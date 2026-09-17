@@ -26,6 +26,11 @@ public class ViewController {
         return "dashboard";
     }
 
+    @GetMapping("/admin")
+    public String admin() {
+        return "admin";
+    }
+
     @GetMapping("/estudiantes")
     public String estudiantes() {
         return "estudiantes";
