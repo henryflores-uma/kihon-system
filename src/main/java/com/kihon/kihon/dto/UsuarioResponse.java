@@ -8,6 +8,7 @@ public class UsuarioResponse {
     private String apellido;
     private String correo;
     private String rol;
+    private String estado;
 
     public UsuarioResponse() {
     }
@@ -18,7 +19,8 @@ public class UsuarioResponse {
             String nombre,
             String apellido,
             String correo,
-            String rol) {
+            String rol,
+            String estado) {
 
         this.id = id;
         this.username = username;
@@ -26,6 +28,7 @@ public class UsuarioResponse {
         this.apellido = apellido;
         this.correo = correo;
         this.rol = rol;
+        this.estado = estado;
     }
 
     public Long getId() {
@@ -50,5 +53,9 @@ public class UsuarioResponse {
 
     public String getRol() {
         return rol;
+    }
+
+    public String getEstado() {
+        return estado;
     }
 }

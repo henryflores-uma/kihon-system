@@ -1,0 +1,238 @@
+// ==========================================
+// REGISTRO
+// ==========================================
+
+.registro-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: $color-black;
+    font-family: $font-family-base;
+    color: $color-gray-900;
+}
+
+.registro-container {
+    width: 100%;
+    padding: 1.5rem;
+}
+
+.registro-card {
+    width: 100%;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 2.5rem;
+
+    background-color: $color-white;
+    border-radius: 10px;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.registro-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.registro-logo-image {
+    display: block;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 1rem;
+    object-fit: contain;
+}
+
+.registro-logo {
+    margin-bottom: 0.5rem;
+
+    color: $color-red;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.12rem;
+}
+
+.registro-subtitle {
+    margin: 0;
+
+    color: $color-gray-600;
+    font-size: 0.9rem;
+}
+
+.registro-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.registro-section {
+    margin-bottom: 2rem;
+}
+
+.registro-section-title {
+    margin-bottom: 1.25rem;
+
+    color: $color-black;
+    font-size: 1.1rem;
+    font-weight: 700;
+
+    border-bottom: 2px solid $color-red;
+    padding-bottom: 0.5rem;
+}
+
+.registro-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+.registro-form .form-group {
+    margin-bottom: 0;
+}
+
+.registro-form .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+
+    color: $color-gray-900;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.registro-form .form-input {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+
+    font-family: inherit;
+    font-size: 0.95rem;
+
+    color: $color-gray-900;
+    background-color: $color-white;
+
+    border: 1px solid $color-gray-200;
+    border-radius: 6px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.registro-form .form-input:focus {
+    border-color: $color-red;
+
+    box-shadow:
+        0 0 0 3px rgba(255, 36, 0, 0.12);
+}
+
+.registro-button {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.registro-actions {
+    margin-top: 1rem;
+}
+
+.registro-action {
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+}
+
+.registro-action:hover {
+    text-decoration: none;
+}
+
+.registro-form .form-message {
+    margin: 0 0 1rem;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+// ==========================================
+// CONTRASEÑA
+// ==========================================
+
+.password-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-group .form-input {
+    width: 100%;
+    padding-right: 3rem;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.75rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 2rem;
+    height: 2rem;
+
+    padding: 0;
+    border: none;
+    background: transparent;
+
+    cursor: pointer;
+
+    font-size: 1.1rem;
+}
+
+.password-toggle:hover {
+    opacity: 0.7;
+}
+
+// ==========================================
+// TELEFONO
+// ==========================================
+
+.telefono-group {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 0.75rem;
+}
+
+.telefono-pais {
+    width: 100%;
+}
+
+.telefono-numero {
+    width: 100%;
+}
+
+
+// ==========================================
+// RESPONSIVE
+// ==========================================
+
+@media (max-width: 600px) {
+
+    .telefono-group {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .registro-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .registro-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .registro-logo {
+        font-size: 1.75rem;
+    }
+}

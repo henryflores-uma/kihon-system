@@ -14,124 +14,108 @@ import java.util.List;
 @RequestMapping("/api/estudiantes")
 public class EstudianteController {
 
-    private final EstudianteService estudianteService;
+        private final EstudianteService estudianteService;
 
-    public EstudianteController(EstudianteService estudianteService) {
-        this.estudianteService = estudianteService;
-    }
+        public EstudianteController(
+                        EstudianteService estudianteService) {
 
-    @PostMapping
-    public ResponseEntity<EstudianteResponse> crearEstudiante(
-            @RequestBody EstudianteRequest request) {
-
-        Estudiante estudiante = estudianteService.crearEstudiante(
-                request.getNombre(),
-                request.getApellido(),
-                request.getDocumento(),
-                request.getTelefono(),
-                request.getCorreo());
-
-        EstudianteResponse response = new EstudianteResponse(
-                estudiante.getId(),
-                estudiante.getNombre(),
-                estudiante.getApellido(),
-                estudiante.getDocumento(),
-                estudiante.getTelefono(),
-                estudiante.getCorreo(),
-                estudiante.getEstado());
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<EstudianteResponse>> listarEstudiantes(
-            @RequestParam(required = false) String estado) {
-
-        List<Estudiante> estudiantes;
-
-        if (estado == null || estado.isBlank()) {
-            estudiantes = estudianteService.listarEstudiantes();
-        } else {
-            estudiantes = estudianteService.listarPorEstado(
-                    estado.toUpperCase());
+                this.estudianteService = estudianteService;
         }
 
-        List<EstudianteResponse> response = estudiantes
-                .stream()
-                .map(estudiante -> new EstudianteResponse(
-                        estudiante.getId(),
-                        estudiante.getNombre(),
-                        estudiante.getApellido(),
-                        estudiante.getDocumento(),
-                        estudiante.getTelefono(),
-                        estudiante.getCorreo(),
-                        estudiante.getEstado()))
-                .toList();
+        @PostMapping
+        public ResponseEntity<EstudianteResponse> crearEstudiante(
+                        @RequestBody EstudianteRequest request) {
 
-        return ResponseEntity.ok(response);
-    }
+                Estudiante estudiante = estudianteService.crearEstudiante(
+                                request.getNombre(),
+                                request.getApellido(),
+                                request.getTipoDocumento(),
+                                request.getDocumento(),
+                                request.getTelefono(),
+                                request.getCorreo(),
+                                request.getFechaNacimiento(),
+                                request.getDireccion(),
+                                request.getFoto());
 
-    @GetMapping("/{id}")
-    public ResponseEntity<EstudianteResponse> buscarPorId(
-            @PathVariable Long id) {
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(convertirResponse(estudiante));
+        }
 
-        Estudiante estudiante = estudianteService.buscarPorId(id);
+        @GetMapping
+        public ResponseEntity<List<EstudianteResponse>> listarEstudiantes(
+                        @RequestParam(required = false) String estado) {
 
-        EstudianteResponse response = new EstudianteResponse(
-                estudiante.getId(),
-                estudiante.getNombre(),
-                estudiante.getApellido(),
-                estudiante.getDocumento(),
-                estudiante.getTelefono(),
-                estudiante.getCorreo(),
-                estudiante.getEstado());
+                List<Estudiante> estudiantes;
 
-        return ResponseEntity.ok(response);
-    }
+                if (estado == null || estado.isBlank()) {
+                        estudiantes = estudianteService.listarEstudiantes();
+                } else {
+                        estudiantes = estudianteService.listarPorEstado(
+                                        estado.toUpperCase());
+                }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<EstudianteResponse> actualizarEstudiante(
-            @PathVariable Long id,
-            @RequestBody EstudianteRequest request) {
+                List<EstudianteResponse> response = estudiantes.stream()
+                                .map(this::convertirResponse)
+                                .toList();
 
-        Estudiante estudiante = estudianteService.actualizarEstudiante(
-                id,
-                request.getNombre(),
-                request.getApellido(),
-                request.getDocumento(),
-                request.getTelefono(),
-                request.getCorreo());
+                return ResponseEntity.ok(response);
+        }
 
-        EstudianteResponse response = new EstudianteResponse(
-                estudiante.getId(),
-                estudiante.getNombre(),
-                estudiante.getApellido(),
-                estudiante.getDocumento(),
-                estudiante.getTelefono(),
-                estudiante.getCorreo(),
-                estudiante.getEstado());
+        @GetMapping("/{id}")
+        public ResponseEntity<EstudianteResponse> buscarPorId(
+                        @PathVariable Long id) {
 
-        return ResponseEntity.ok(response);
-    }
+                Estudiante estudiante = estudianteService.buscarPorId(id);
 
-    @PatchMapping("/{id}/estado")
-    public ResponseEntity<EstudianteResponse> cambiarEstado(
-            @PathVariable Long id,
-            @RequestParam String estado) {
+                return ResponseEntity.ok(
+                                convertirResponse(estudiante));
+        }
 
-        Estudiante estudiante = estudianteService.cambiarEstado(id, estado);
+        @PutMapping("/{id}")
+        public ResponseEntity<EstudianteResponse> actualizarEstudiante(
+                        @PathVariable Long id,
+                        @RequestBody EstudianteRequest request) {
 
-        EstudianteResponse response = new EstudianteResponse(
-                estudiante.getId(),
-                estudiante.getNombre(),
-                estudiante.getApellido(),
-                estudiante.getDocumento(),
-                estudiante.getTelefono(),
-                estudiante.getCorreo(),
-                estudiante.getEstado());
+                Estudiante estudiante = estudianteService.actualizarEstudiante(
+                                id,
+                                request.getNombre(),
+                                request.getApellido(),
+                                request.getDocumento(),
+                                request.getTelefono(),
+                                request.getCorreo());
 
-        return ResponseEntity.ok(response);
-    }
+                return ResponseEntity.ok(
+                                convertirResponse(estudiante));
+        }
+
+        @PatchMapping("/{id}/estado")
+        public ResponseEntity<EstudianteResponse> cambiarEstado(
+                        @PathVariable Long id,
+                        @RequestParam String estado) {
+
+                Estudiante estudiante = estudianteService.cambiarEstado(
+                                id,
+                                estado.toUpperCase());
+
+                return ResponseEntity.ok(
+                                convertirResponse(estudiante));
+        }
+
+        private EstudianteResponse convertirResponse(
+                        Estudiante estudiante) {
+
+                return new EstudianteResponse(
+                                estudiante.getId(),
+                                estudiante.getNombre(),
+                                estudiante.getApellido(),
+                                estudiante.getTipoDocumento(),
+                                estudiante.getDocumento(),
+                                estudiante.getTelefono(),
+                                estudiante.getCorreo(),
+                                estudiante.getFechaNacimiento(),
+                                estudiante.getDireccion(),
+                                estudiante.getFoto(),
+                                estudiante.getEstado());
+        }
 }

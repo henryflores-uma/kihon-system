@@ -16,6 +16,11 @@ public class ViewController {
         return "login";
     }
 
+    @GetMapping("/registro")
+    public String registro() {
+        return "registro";
+    }
+
     @GetMapping("/dashboard")
     public String dashboard() {
         return "dashboard";

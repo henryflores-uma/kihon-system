@@ -37,6 +37,16 @@
         }
     }
 
+    &--logout {
+        background-color: $color-red;
+        color: $color-white;
+
+        &:hover {
+            background-color: $color-black;
+            color: $color-white;
+        }
+    }
+
     &--accent {
         background-color: $color-yellow;
         color: $color-black;
