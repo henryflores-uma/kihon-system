@@ -1,20 +1,41 @@
-package com.kihon.kihon.dto;
+package com.kihon.kihon.model;
 
-import java.time.LocalDate;
+import jakarta.persistence.*;
 
-public class EstudianteRequest {
+@Entity
+@Table(name = "apoderados")
+public class Apoderado {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String nombre;
-    private String apellido;
-    private String tipoDocumento;
-    private String documento;
-    private String telefono;
-    private String correo;
-    private LocalDate fechaNacimiento;
-    private String direccion;
-    private String foto;
 
-    public EstudianteRequest() {
+    @Column(nullable = false)
+    private String apellido;
+
+    @Column(name = "tipo_documento", nullable = false)
+    private String tipoDocumento;
+
+    @Column(nullable = false, unique = true)
+    private String documento;
+
+    @Column(nullable = false)
+    private String telefono;
+
+    @Column
+    private String correo;
+
+    @Column(nullable = false)
+    private String direccion;
+
+    public Apoderado() {
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getNombre() {
@@ -65,27 +86,11 @@ public class EstudianteRequest {
         this.correo = correo;
     }
 
-    public LocalDate getFechaNacimiento() {
-        return fechaNacimiento;
-    }
-
-    public void setFechaNacimiento(LocalDate fechaNacimiento) {
-        this.fechaNacimiento = fechaNacimiento;
-    }
-
     public String getDireccion() {
         return direccion;
     }
 
     public void setDireccion(String direccion) {
         this.direccion = direccion;
-    }
-
-    public String getFoto() {
-        return foto;
-    }
-
-    public void setFoto(String foto) {
-        this.foto = foto;
     }
 }

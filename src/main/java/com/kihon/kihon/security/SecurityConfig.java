@@ -2,6 +2,7 @@ package com.kihon.kihon.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -31,7 +32,9 @@ public class SecurityConfig {
 
                                 .authorizeHttpRequests(auth -> auth
 
-                                                // Frontend público
+                                                // =========================
+                                                // PÁGINAS PÚBLICAS
+                                                // =========================
                                                 .requestMatchers(
                                                                 "/",
                                                                 "/login",
@@ -40,16 +43,58 @@ public class SecurityConfig {
                                                                 "/grupos",
                                                                 "/asistencias",
                                                                 "/reportes",
+                                                                "/registro",
                                                                 "/css/**",
                                                                 "/js/**",
                                                                 "/img/**")
                                                 .permitAll()
 
-                                                // Registro público de usuarios
-                                                .requestMatchers("/api/usuarios")
+                                                // =========================
+                                                // PÁGINA DE ADMINISTRADOR
+                                                // =========================
+                                                .requestMatchers("/admin")
+                                                .hasRole("ADMIN")
+
+                                                // =========================
+                                                // REGISTRO PÚBLICO
+                                                // =========================
+                                                .requestMatchers(
+                                                                HttpMethod.POST,
+                                                                "/api/usuarios")
                                                 .permitAll()
 
-                                                // Acceso específico por rol
+                                                // =========================
+                                                // CREAR CUENTA PARA ESTUDIANTE
+                                                // ADMIN / SECRETARIA
+                                                // =========================
+                                                .requestMatchers(
+                                                                HttpMethod.POST,
+                                                                "/api/usuarios/estudiante")
+                                                .hasAnyRole("ADMIN", "SECRETARIA")
+
+                                                // =========================
+                                                // LISTADO DE USUARIOS
+                                                // SOLO ADMIN
+                                                // =========================
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/usuarios")
+                                                .hasRole("ADMIN")
+
+                                                // =========================
+                                                // GESTIÓN DE USUARIOS
+                                                // SOLO ADMIN
+                                                // =========================
+                                                .requestMatchers(
+                                                                "/api/usuarios/*",
+                                                                "/api/usuarios/*/estado",
+                                                                "/api/usuarios/*/estudiante/*",
+                                                                "/api/usuarios/*/rol")
+                                                .hasRole("ADMIN")
+
+                                                // =========================
+                                                // ACCESO ESPECÍFICO POR ROL
+                                                // =========================
                                                 .requestMatchers("/api/admin")
                                                 .hasRole("ADMIN")
 
@@ -62,32 +107,44 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/estudiante")
                                                 .hasRole("ESTUDIANTE")
 
-                                                // Gestión de estudiantes
+                                                // =========================
+                                                // GESTIÓN DE ESTUDIANTES
+                                                // =========================
                                                 .requestMatchers("/api/estudiantes/**")
                                                 .hasAnyRole(
                                                                 "ADMIN",
                                                                 "SECRETARIA")
 
-                                                // Gestión de grupos
+                                                // =========================
+                                                // GESTIÓN DE GRUPOS
+                                                // =========================
                                                 .requestMatchers("/api/grupos/**")
                                                 .hasAnyRole(
                                                                 "ADMIN",
                                                                 "SECRETARIA")
 
-                                                // Asignación de estudiantes a grupos
-                                                .requestMatchers("/api/estudiantes-grupos/**")
+                                                // =========================
+                                                // ASIGNACIÓN DE ESTUDIANTES
+                                                // =========================
+                                                .requestMatchers(
+                                                                "/api/estudiantes-grupos/**")
                                                 .hasAnyRole(
                                                                 "ADMIN",
                                                                 "SECRETARIA")
 
-                                                // Registro y consulta de asistencias
-                                                .requestMatchers("/api/asistencias/**")
+                                                // =========================
+                                                // ASISTENCIAS
+                                                // =========================
+                                                .requestMatchers(
+                                                                "/api/asistencias/**")
                                                 .hasAnyRole(
                                                                 "ADMIN",
                                                                 "SECRETARIA",
                                                                 "SENSEI")
 
-                                                // Reportes de asistencia
+                                                // =========================
+                                                // REPORTES
+                                                // =========================
                                                 .requestMatchers(
                                                                 "/api/reportes/asistencias/**")
                                                 .hasAnyRole(
@@ -95,11 +152,16 @@ public class SecurityConfig {
                                                                 "SECRETARIA",
                                                                 "SENSEI")
 
-                                                // Portal del estudiante
-                                                .requestMatchers("/api/estudiante/**")
+                                                // =========================
+                                                // PORTAL DEL ESTUDIANTE
+                                                // =========================
+                                                .requestMatchers(
+                                                                "/api/estudiante/**")
                                                 .hasRole("ESTUDIANTE")
 
-                                                // Resto de endpoints
+                                                // =========================
+                                                // RESTO DE ENDPOINTS
+                                                // =========================
                                                 .anyRequest().authenticated())
 
                                 .exceptionHandling(exception -> exception
