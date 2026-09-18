@@ -4,13 +4,10 @@
 
  .login-page {
      min-height: 100vh;
-
      display: flex;
      align-items: center;
      justify-content: center;
-
      background-color: $color-black;
-
      font-family: $font-family-base;
      color: $color-gray-900;
  }
