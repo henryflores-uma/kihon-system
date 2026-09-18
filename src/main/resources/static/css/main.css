@@ -66,7 +66,7 @@ img {
   opacity: 0.9;
 }
 .btn--secondary {
-  background-color: #000000;
+  background-color: #FF2400;
   color: #FFFFFF;
 }
 .btn--secondary:hover {
@@ -1843,22 +1843,22 @@ img {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 .home-service--infantil {
-  background-image: url("/img/karate-infantil.jpg");
+  background-image: url("/img/karate-infantil.jpeg");
 }
 .home-service--juvenil {
-  background-image: url("/img/karate-juvenil.jpg");
+  background-image: url("/img/karate-juvenil.jpeg");
 }
 .home-service--basico {
-  background-image: url("/img/karate-basico.jpg");
+  background-image: url("/img/karate-basico.jpeg");
 }
 .home-service--intermedio {
-  background-image: url("/img/karate-intermedio.jpg");
+  background-image: url("/img/karate-intermedio.jpeg");
 }
 .home-service--grado {
-  background-image: url("/img/examen-grado.jpg");
+  background-image: url("/img/examen-grado.jpeg");
 }
 .home-service--recuperacion {
-  background-image: url("/img/karate-recuperacion.jpg");
+  background-image: url("/img/karate-recuperacion.jpeg");
 }
 
 .home-video {
