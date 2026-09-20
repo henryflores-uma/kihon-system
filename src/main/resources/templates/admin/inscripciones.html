@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Inscripciones</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+
+</head>
+
+<body>
+
+    <div class="app-layout">
+
+
+        <!-- ==========================================
+             SIDEBAR
+             ========================================== -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav">
+
+                <a href="/admin/admin" class="sidebar__link">
+                    Dashboard
+                </a>
+
+                <a href="/admin/estudiantes" class="sidebar__link">
+                    Estudiantes
+                </a>
+
+                <a href="/admin/grupos" class="sidebar__link">
+                    Grupos
+                </a>
+
+                <a href="/admin/asistencia" class="sidebar__link">
+                    Asistencia
+                </a>
+
+                <a href="/admin/horario" class="sidebar__link">
+                    Horario
+                </a>
+
+                <a href="/admin/inscripciones" class="sidebar__link sidebar__link--active">
+                    Inscripciones
+                </a>
+
+                <a href="/admin/reportes" class="sidebar__link">
+                    Reportes
+                </a>
+
+                <a href="/admin/usuarios" class="sidebar__link">
+                    Usuarios
+                </a>
+
+                <a href="/admin/perfil" class="sidebar__link">
+                    Mi perfil
+                </a>
+
+                <a href="#" id="logoutButton" class="btn btn--logout">
+                    Cerrar sesión
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- ==========================================
+             CONTENIDO PRINCIPAL
+             ========================================== -->
+
+        <main class="main-content">
+
+            <div class="container inscripciones-page">
+
+
+                <!-- ======================================
+                     ENCABEZADO
+                     ====================================== -->
+
+                <header class="inscripciones-header">
+
+                    <div>
+
+                        <h1>
+                            Inscripciones
+                        </h1>
+
+                        <p>
+                            Asigna estudiantes a grupos y administra sus inscripciones.
+                        </p>
+
+                    </div>
+
+                    <div class="dashboard-user">
+
+                        <span id="usernameDisplay">
+                            Usuario
+                        </span>
+
+                    </div>
+
+                </header>
+
+
+                <!-- ======================================
+                     FORMULARIO DE INSCRIPCIÓN
+                     ====================================== -->
+
+                <section class="card inscripciones-form-section">
+
+                    <div class="inscripciones-section-header">
+
+                        <div>
+
+                            <h2>
+                                Nueva inscripción
+                            </h2>
+
+                            <p>
+                                Selecciona un estudiante y un grupo disponible.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <form id="inscripcionForm">
+
+                        <div class="inscripciones-form-grid">
+
+
+                            <!-- ESTUDIANTE -->
+
+                            <div class="form-group">
+
+                                <label for="studentSelect">
+                                    Estudiante
+                                </label>
+
+                                <select id="studentSelect" name="estudianteId" required>
+
+                                    <option value="">
+                                        Seleccionar estudiante
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- GRUPO -->
+
+                            <div class="form-group">
+
+                                <label for="groupSelect">
+                                    Grupo
+                                </label>
+
+                                <select id="groupSelect" name="grupoId" required>
+
+                                    <option value="">
+                                        Seleccionar grupo
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ==================================
+                             INFORMACIÓN DEL GRUPO
+                             ================================== -->
+
+                        <div id="groupInfo" class="inscripciones-group-info" hidden>
+
+                            <div class="inscripciones-group-info__item">
+
+                                <strong>
+                                    Grupo
+                                </strong>
+
+                                <span id="groupInfoName">
+                                    -
+                                </span>
+
+                            </div>
+
+
+                            <div class="inscripciones-group-info__item">
+
+                                <strong>
+                                    Sensei
+                                </strong>
+
+                                <span id="groupInfoSensei">
+                                    -
+                                </span>
+
+                            </div>
+
+
+                            <div class="inscripciones-group-info__item">
+
+                                <strong>
+                                    Horario
+                                </strong>
+
+                                <span id="groupInfoSchedule">
+                                    -
+                                </span>
+
+                            </div>
+
+
+                            <div class="inscripciones-group-info__item">
+
+                                <strong>
+                                    Capacidad
+                                </strong>
+
+                                <span id="groupInfoCapacity">
+                                    -
+                                </span>
+
+                            </div>
+
+
+                            <div class="inscripciones-group-info__item">
+
+                                <strong>
+                                    Disponibles
+                                </strong>
+
+                                <span id="groupInfoAvailable">
+                                    -
+                                </span>
+
+                            </div>
+
+
+                            <div class="inscripciones-group-info__item inscripciones-group-info__item--full">
+
+                                <strong>
+                                    Descripción
+                                </strong>
+
+                                <span id="groupInfoDescription">
+                                    -
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ==================================
+                             MENSAJE
+                             ================================== -->
+
+                        <div id="inscripcionFormMessage" class="inscripciones-message" hidden>
+                        </div>
+
+
+                        <!-- ==================================
+                             ACCIONES
+                             ================================== -->
+
+                        <div class="inscripciones-form-actions">
+
+                            <button type="submit" class="btn btn--primary">
+
+                                Inscribir estudiante
+
+                            </button>
+
+                            <button type="button" id="clearFormButton" class="btn btn--outline">
+
+                                Limpiar
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </section>
+
+
+                <!-- ======================================
+                     LISTADO DE INSCRIPCIONES
+                     ====================================== -->
+
+                <section class="card inscripciones-list-section">
+
+                    <div class="inscripciones-section-header">
+
+                        <div>
+
+                            <h2>
+                                Inscripciones registradas
+                            </h2>
+
+                            <p>
+                                Consulta y administra las asignaciones de estudiantes a grupos.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div id="inscripcionesMessage" class="inscripciones-message" hidden>
+                    </div>
+
+
+                    <div class="inscripciones-table-container">
+
+                        <table class="inscripciones-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Estudiante
+                                    </th>
+
+                                    <th>
+                                        Grupo
+                                    </th>
+
+                                    <th>
+                                        Estado
+                                    </th>
+
+                                    <th>
+                                        Acciones
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="inscripcionesTableBody">
+
+                                <tr>
+
+                                    <td colspan="4">
+                                        Cargando inscripciones...
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ======================================
+                     CAMBIAR GRUPO
+                     ====================================== -->
+
+                <section id="changeGroupSection" class="card inscripciones-change-group" hidden>
+
+                    <div class="inscripciones-section-header">
+
+                        <div>
+
+                            <h2>
+                                Cambiar grupo
+                            </h2>
+
+                            <p id="changeGroupStudent">
+                                Selecciona un nuevo grupo para el estudiante.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <form id="changeGroupForm">
+
+                        <input type="hidden" id="changeStudentId">
+
+
+                        <div class="form-group">
+
+                            <label for="newGroupSelect">
+                                Nuevo grupo
+                            </label>
+
+                            <select id="newGroupSelect" required>
+
+                                <option value="">
+                                    Seleccionar grupo
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div id="changeGroupMessage" class="inscripciones-message" hidden>
+                        </div>
+
+
+                        <div class="inscripciones-form-actions">
+
+                            <button type="submit" class="btn btn--primary">
+
+                                Cambiar grupo
+
+                            </button>
+
+                            <button type="button" id="cancelChangeGroupButton" class="btn btn--outline">
+
+                                Cancelar
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </section>
+
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- ==========================================
+         JAVASCRIPT
+         ========================================== -->
+
+    <script src="/js/inscripciones.js"></script>
+
+    <script src="/js/logout.js"></script>
+
+</body>
+
+</html>

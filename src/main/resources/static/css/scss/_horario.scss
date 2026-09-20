@@ -1,0 +1,450 @@
+// ==========================================
+// PÁGINA HORARIO
+// ==========================================
+
+.horario-page {
+    padding-top: 1rem;
+}
+
+
+// ==========================================
+// ENCABEZADO
+// ==========================================
+
+.horario-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 2rem;
+
+    h1 {
+        margin-bottom: 0.35rem;
+        font-size: 2rem;
+    }
+
+    p {
+        color: $color-gray-600;
+    }
+}
+
+
+// ==========================================
+// CONTROLES DEL CALENDARIO
+// ==========================================
+
+.horario-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 1rem;
+
+    margin-bottom: 1.5rem;
+}
+
+.horario-navigation {
+    display: flex;
+    align-items: center;
+
+    gap: 1rem;
+}
+
+.horario-week {
+    min-width: 220px;
+
+    text-align: center;
+
+    strong {
+        font-size: 1rem;
+        text-transform: capitalize;
+    }
+}
+
+.horario-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 0.75rem;
+}
+
+
+// ==========================================
+// MENSAJES
+// ==========================================
+
+.horario-message {
+    margin-bottom: 1.5rem;
+
+    padding: 0.85rem 1rem;
+
+    border-radius: 6px;
+
+    font-size: 0.95rem;
+
+    &--success {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #c8e6c9;
+    }
+
+    &--error {
+        background-color: #ffebee;
+        color: #c62828;
+        border: 1px solid #ffcdd2;
+    }
+}
+
+
+// ==========================================
+// FORMULARIO DE EVENTOS
+// ==========================================
+
+.horario-event-form {
+    margin-bottom: 1.5rem;
+}
+
+.horario-event-form__header {
+    margin-bottom: 1.5rem;
+
+    h2 {
+        margin-bottom: 0.35rem;
+    }
+
+    p {
+        color: $color-gray-600;
+    }
+}
+
+.horario-event-form__grid {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 1.25rem;
+}
+
+.horario-event-form__description {
+    grid-column: 1 / -1;
+}
+
+.horario-event-form__actions {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 0.75rem;
+
+    margin-top: 1.5rem;
+}
+
+
+// ==========================================
+// DETALLE DEL EVENTO
+// ==========================================
+
+.horario-event-detail {
+    margin-bottom: 1.5rem;
+}
+
+.horario-event-detail__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 1rem;
+
+    margin-bottom: 1.5rem;
+
+    h2 {
+        margin-bottom: 0.35rem;
+    }
+
+    p {
+        color: $color-gray-600;
+        font-weight: 600;
+    }
+}
+
+.horario-event-detail__content {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 1rem;
+
+    margin-bottom: 1.5rem;
+}
+
+.horario-event-detail__item {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.35rem;
+
+    padding: 1rem;
+
+    background-color: $color-gray-100;
+
+    border-radius: 6px;
+
+    strong {
+        font-size: 0.85rem;
+        color: $color-gray-600;
+    }
+
+    span {
+        color: $color-gray-900;
+        font-weight: 600;
+    }
+
+    &--full {
+        grid-column: 1 / -1;
+    }
+}
+
+.horario-event-detail__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+
+    gap: 0.75rem;
+}
+
+
+// ==========================================
+// CALENDARIO
+// ==========================================
+
+.horario-calendar-card {
+    overflow-x: auto;
+}
+
+.horario-calendar {
+    min-width: 900px;
+}
+
+.horario-loading,
+.horario-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 300px;
+
+    color: $color-gray-600;
+
+    text-align: center;
+}
+
+
+// ==========================================
+// GRID DEL CALENDARIO
+// ==========================================
+
+.horario-grid {
+    display: grid;
+
+    grid-template-columns: 70px repeat(7, minmax(110px, 1fr));
+
+    border-top: 1px solid $color-gray-200;
+    border-left: 1px solid $color-gray-200;
+}
+
+.horario-grid__header {
+    min-height: 60px;
+
+    padding: 0.75rem;
+
+    background-color: $color-gray-100;
+
+    border-right: 1px solid $color-gray-200;
+    border-bottom: 1px solid $color-gray-200;
+}
+
+.horario-grid__time {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+
+    padding-top: 0.75rem;
+
+    color: $color-gray-600;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.horario-grid__day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.2rem;
+
+    text-align: center;
+
+    &--today {
+        background-color: #fff8e1;
+    }
+}
+
+.horario-day-name {
+    font-size: 0.8rem;
+    color: $color-gray-600;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.horario-day-number {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: $color-black;
+}
+
+.horario-grid__row {
+    min-height: 70px;
+
+    border-right: 1px solid $color-gray-200;
+    border-bottom: 1px solid $color-gray-200;
+}
+
+.horario-grid__cell {
+    position: relative;
+
+    min-height: 70px;
+
+    padding: 0.35rem;
+
+    background-color: $color-white;
+
+    border-right: 1px solid $color-gray-200;
+    border-bottom: 1px solid $color-gray-200;
+
+    &--today {
+        background-color: #fffdf5;
+    }
+}
+
+
+// ==========================================
+// BLOQUES DE CLASES Y EVENTOS
+// ==========================================
+
+.horario-evento {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.2rem;
+
+    min-height: 62px;
+
+    padding: 0.55rem;
+
+    background-color: $color-black;
+    color: $color-white;
+
+    border-left: 4px solid $color-red;
+    border-radius: 5px;
+
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+
+    overflow: hidden;
+
+    &__nombre {
+        font-size: 0.8rem;
+        line-height: 1.2;
+    }
+
+    &__hora {
+        font-size: 0.7rem;
+        opacity: 0.85;
+    }
+
+    &__sensei {
+        font-size: 0.7rem;
+        opacity: 0.8;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.horario-evento--especial {
+    cursor: pointer;
+
+    border-left-color: $color-yellow;
+
+    background-color: $color-gray-900;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+}
+
+
+// ==========================================
+// RESPONSIVE
+// ==========================================
+
+@media (max-width: 900px) {
+
+    .horario-event-form__grid,
+    .horario-event-detail__content {
+        grid-template-columns: 1fr;
+    }
+
+    .horario-event-form__description,
+    .horario-event-detail__item--full {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 700px) {
+
+    .horario-header {
+        flex-direction: column;
+        align-items: flex-start;
+
+        gap: 1rem;
+    }
+
+    .horario-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .horario-navigation {
+        justify-content: center;
+    }
+
+    .horario-actions {
+        flex-direction: column;
+
+        .btn {
+            width: 100%;
+        }
+    }
+
+    .horario-event-detail__header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .horario-event-detail__actions,
+    .horario-event-form__actions {
+        flex-direction: column;
+
+        .btn {
+            width: 100%;
+        }
+    }
+}

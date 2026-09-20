@@ -1657,6 +1657,7 @@ img {
   text-transform: uppercase;
   letter-spacing: 0.15em;
 }
+
 .home-about {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.8fr);
@@ -1666,7 +1667,7 @@ img {
 .home-about__content {
   padding: 2.5rem;
   background-color: #FFFFFF;
-  border: 1px solid black;
+  border: 1px solid #E5E5E5;
   border-left: 5px solid #FF2400;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
@@ -1867,21 +1868,18 @@ img {
   gap: 3rem;
   align-items: center;
 }
-
 .home-video__media {
   width: 100%;
   overflow: hidden;
   border-radius: 8px;
   background-color: #000000;
 }
-
 .home-video__iframe {
   position: relative;
   width: 100%;
   aspect-ratio: 16/9;
   overflow: hidden;
 }
-
 .home-video__iframe iframe {
   position: absolute;
   top: 0;
@@ -1890,7 +1888,6 @@ img {
   height: 100%;
   border: 0;
 }
-
 .home-video__content {
   padding: 1rem 0;
 }
@@ -2429,6 +2426,322 @@ img {
   }
   .registro-logo {
     font-size: 1.75rem;
+  }
+}
+.horario-page {
+  padding-top: 1rem;
+}
+
+.horario-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+.horario-header h1 {
+  margin-bottom: 0.35rem;
+  font-size: 2rem;
+}
+.horario-header p {
+  color: #666666;
+}
+
+.horario-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.horario-navigation {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.horario-week {
+  min-width: 220px;
+  text-align: center;
+}
+.horario-week strong {
+  font-size: 1rem;
+  text-transform: capitalize;
+}
+
+.horario-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.horario-message {
+  margin-bottom: 1.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+.horario-message--success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+.horario-message--error {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.horario-event-form {
+  margin-bottom: 1.5rem;
+}
+
+.horario-event-form__header {
+  margin-bottom: 1.5rem;
+}
+.horario-event-form__header h2 {
+  margin-bottom: 0.35rem;
+}
+.horario-event-form__header p {
+  color: #666666;
+}
+
+.horario-event-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.horario-event-form__description {
+  grid-column: 1/-1;
+}
+
+.horario-event-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.horario-event-detail {
+  margin-bottom: 1.5rem;
+}
+
+.horario-event-detail__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.horario-event-detail__header h2 {
+  margin-bottom: 0.35rem;
+}
+.horario-event-detail__header p {
+  color: #666666;
+  font-weight: 600;
+}
+
+.horario-event-detail__content {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.horario-event-detail__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem;
+  background-color: #F5F5F5;
+  border-radius: 6px;
+}
+.horario-event-detail__item strong {
+  font-size: 0.85rem;
+  color: #666666;
+}
+.horario-event-detail__item span {
+  color: #1A1A1A;
+  font-weight: 600;
+}
+.horario-event-detail__item--full {
+  grid-column: 1/-1;
+}
+
+.horario-event-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.horario-calendar-card {
+  overflow-x: auto;
+}
+
+.horario-calendar {
+  min-width: 900px;
+}
+
+.horario-loading,
+.horario-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: #666666;
+  text-align: center;
+}
+
+.horario-grid {
+  display: grid;
+  grid-template-columns: 70px repeat(7, minmax(110px, 1fr));
+  border-top: 1px solid #E5E5E5;
+  border-left: 1px solid #E5E5E5;
+}
+
+.horario-grid__header {
+  min-height: 60px;
+  padding: 0.75rem;
+  background-color: #F5F5F5;
+  border-right: 1px solid #E5E5E5;
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.horario-grid__time {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 0.75rem;
+  color: #666666;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.horario-grid__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  text-align: center;
+}
+.horario-grid__day--today {
+  background-color: #fff8e1;
+}
+
+.horario-day-name {
+  font-size: 0.8rem;
+  color: #666666;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.horario-day-number {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #000000;
+}
+
+.horario-grid__row {
+  min-height: 70px;
+  border-right: 1px solid #E5E5E5;
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.horario-grid__cell {
+  position: relative;
+  min-height: 70px;
+  padding: 0.35rem;
+  background-color: #FFFFFF;
+  border-right: 1px solid #E5E5E5;
+  border-bottom: 1px solid #E5E5E5;
+}
+.horario-grid__cell--today {
+  background-color: #fffdf5;
+}
+
+.horario-evento {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-height: 62px;
+  padding: 0.55rem;
+  background-color: #000000;
+  color: #FFFFFF;
+  border-left: 4px solid #FF2400;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+.horario-evento__nombre {
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+.horario-evento__hora {
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+.horario-evento__sensei {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.horario-evento--especial {
+  cursor: pointer;
+  border-left-color: #FFD700;
+  background-color: #1A1A1A;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.horario-evento--especial:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 900px) {
+  .horario-event-form__grid,
+  .horario-event-detail__content {
+    grid-template-columns: 1fr;
+  }
+  .horario-event-form__description,
+  .horario-event-detail__item--full {
+    grid-column: auto;
+  }
+}
+@media (max-width: 700px) {
+  .horario-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .horario-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .horario-navigation {
+    justify-content: center;
+  }
+  .horario-actions {
+    flex-direction: column;
+  }
+  .horario-actions .btn {
+    width: 100%;
+  }
+  .horario-event-detail__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .horario-event-detail__actions,
+  .horario-event-form__actions {
+    flex-direction: column;
+  }
+  .horario-event-detail__actions .btn,
+  .horario-event-form__actions .btn {
+    width: 100%;
   }
 }
 

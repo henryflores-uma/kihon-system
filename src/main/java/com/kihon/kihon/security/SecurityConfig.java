@@ -179,6 +179,63 @@ public class SecurityConfig {
                                                                 "SENSEI")
 
                                                 // =========================
+                                                // EVENTOS - CONSULTA
+                                                // ADMIN / SECRETARIA / SENSEI
+                                                // =========================
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/eventos",
+                                                                "/api/eventos/**")
+                                                .hasAnyRole(
+                                                                "ADMIN",
+                                                                "SECRETARIA",
+                                                                "SENSEI")
+
+                                                // =========================
+                                                // EVENTOS - CREAR
+                                                // ADMIN / SECRETARIA
+                                                // =========================
+                                                .requestMatchers(
+                                                                HttpMethod.POST,
+                                                                "/api/eventos")
+                                                .hasAnyRole(
+                                                                "ADMIN",
+                                                                "SECRETARIA")
+
+                                                // =========================
+                                                // EVENTOS - ACTUALIZAR
+                                                // ADMIN / SECRETARIA
+                                                // =========================
+                                                .requestMatchers(
+                                                                HttpMethod.PUT,
+                                                                "/api/eventos/**")
+                                                .hasAnyRole(
+                                                                "ADMIN",
+                                                                "SECRETARIA")
+
+                                                // =========================
+                                                // EVENTOS - CAMBIAR ESTADO
+                                                // ADMIN / SECRETARIA
+                                                // =========================
+                                                .requestMatchers(
+                                                                HttpMethod.PATCH,
+                                                                "/api/eventos/**")
+                                                .hasAnyRole(
+                                                                "ADMIN",
+                                                                "SECRETARIA")
+
+                                                // =========================
+                                                // EVENTOS - ELIMINAR
+                                                // ADMIN / SECRETARIA
+                                                // =========================
+                                                .requestMatchers(
+                                                                HttpMethod.DELETE,
+                                                                "/api/eventos/**")
+                                                .hasAnyRole(
+                                                                "ADMIN",
+                                                                "SECRETARIA")
+
+                                                // =========================
                                                 // PORTAL DEL ESTUDIANTE
                                                 // =========================
                                                 .requestMatchers(

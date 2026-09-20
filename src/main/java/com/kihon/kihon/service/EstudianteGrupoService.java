@@ -59,15 +59,25 @@ public class EstudianteGrupoService {
                                         "No se puede asignar un estudiante a un grupo inactivo");
                 }
 
-                if (estudianteGrupoRepository
-                                .existsByEstudianteIdAndGrupoIdAndEstado(
+                // ==========================================
+                // UN SOLO GRUPO ACTIVO POR ESTUDIANTE
+                // ==========================================
+
+                List<EstudianteGrupo> asignacionesActivas = estudianteGrupoRepository
+                                .findByEstudianteIdAndEstado(
                                                 estudianteId,
-                                                grupoId,
-                                                "ACTIVO")) {
+                                                "ACTIVO");
+
+                if (!asignacionesActivas.isEmpty()) {
 
                         throw new RuntimeException(
-                                        "El estudiante ya está activo en este grupo");
+                                        "El estudiante ya tiene un grupo activo. " +
+                                                        "Debe cambiar de grupo desde la opción 'Cambiar grupo'.");
                 }
+
+                // ==========================================
+                // VALIDAR CAPACIDAD
+                // ==========================================
 
                 long estudiantesActivos = estudianteGrupoRepository
                                 .countByGrupoIdAndEstado(
@@ -79,6 +89,10 @@ public class EstudianteGrupoService {
                         throw new RuntimeException(
                                         "El grupo ha alcanzado su capacidad máxima");
                 }
+
+                // ==========================================
+                // CREAR ASIGNACIÓN
+                // ==========================================
 
                 EstudianteGrupo estudianteGrupo = new EstudianteGrupo();
 

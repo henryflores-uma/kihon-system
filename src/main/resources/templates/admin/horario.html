@@ -96,7 +96,7 @@
                         </h1>
 
                         <p>
-                            Calendario semanal de clases
+                            Calendario semanal de clases y eventos
                         </p>
 
                     </div>
@@ -146,22 +146,369 @@
                     </div>
 
 
-                    <button type="button" id="todayButton" class="btn btn--outline">
+                    <div class="horario-actions">
 
-                        Hoy
+                        <button type="button" id="todayButton" class="btn btn--outline">
 
-                    </button>
+                            Hoy
+
+                        </button>
+
+
+                        <button type="button" id="showEventFormButton" class="btn btn--primary">
+
+                            + Agregar evento
+
+                        </button>
+
+                    </div>
 
                 </section>
 
 
                 <!-- ======================================
-                     MENSAJE
+                     FORMULARIO DE EVENTO
+                     ====================================== -->
+
+                <section id="eventFormSection" class="card horario-event-form" hidden>
+
+                    <div class="horario-event-form__header">
+
+                        <div>
+
+                            <h2>
+                                Nuevo evento
+                            </h2>
+
+                            <p>
+                                Registra una actividad especial en el calendario.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <form id="eventForm">
+
+                        <div class="horario-event-form__grid">
+
+
+                            <!-- TÍTULO -->
+
+                            <div class="form-group">
+
+                                <label for="eventTitle">
+                                    Título
+                                </label>
+
+                                <input type="text" id="eventTitle" name="titulo" maxlength="150" required>
+
+                            </div>
+
+
+                            <!-- TIPO -->
+
+                            <div class="form-group">
+
+                                <label for="eventType">
+                                    Tipo
+                                </label>
+
+                                <select id="eventType" name="tipo" required>
+
+                                    <option value="">
+                                        Seleccionar tipo
+                                    </option>
+
+                                    <option value="EXAMEN">
+                                        Examen
+                                    </option>
+
+                                    <option value="SEMINARIO">
+                                        Seminario
+                                    </option>
+
+                                    <option value="RECUPERACION">
+                                        Recuperación
+                                    </option>
+
+                                    <option value="REFUERZO">
+                                        Refuerzo
+                                    </option>
+
+                                    <option value="OTRO">
+                                        Otro
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- FECHA -->
+
+                            <div class="form-group">
+
+                                <label for="eventDate">
+                                    Fecha
+                                </label>
+
+                                <input type="date" id="eventDate" name="fecha" required>
+
+                            </div>
+
+
+                            <!-- HORA INICIO -->
+
+                            <div class="form-group">
+
+                                <label for="eventStart">
+                                    Hora de inicio
+                                </label>
+
+                                <input type="time" id="eventStart" name="horaInicio" required>
+
+                            </div>
+
+
+                            <!-- HORA FIN -->
+
+                            <div class="form-group">
+
+                                <label for="eventEnd">
+                                    Hora de fin
+                                </label>
+
+                                <input type="time" id="eventEnd" name="horaFin" required>
+
+                            </div>
+
+
+                            <!-- LUGAR -->
+
+                            <div class="form-group">
+
+                                <label for="eventPlace">
+                                    Lugar
+                                </label>
+
+                                <input type="text" id="eventPlace" name="lugar" maxlength="150">
+
+                            </div>
+
+
+                            <!-- RESPONSABLE -->
+
+                            <div class="form-group">
+
+                                <label for="eventResponsible">
+                                    Responsable
+                                </label>
+
+                                <select id="eventResponsible" name="responsableId">
+
+                                    <option value="">
+                                        Sin responsable
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- DESCRIPCIÓN -->
+
+                            <div class="form-group horario-event-form__description">
+
+                                <label for="eventDescription">
+                                    Descripción
+                                </label>
+
+                                <textarea id="eventDescription" name="descripcion" rows="4"></textarea>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- MENSAJE -->
+
+                        <div id="eventFormMessage" class="horario-message" hidden>
+                        </div>
+
+
+                        <!-- ACCIONES -->
+
+                        <div class="horario-event-form__actions">
+
+                            <button type="submit" class="btn btn--primary">
+
+                                Guardar evento
+
+                            </button>
+
+
+                            <button type="button" id="cancelEventButton" class="btn btn--outline">
+
+                                Cancelar
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </section>
+
+
+                <!-- ======================================
+                     MENSAJE DEL CALENDARIO
                      ====================================== -->
 
                 <div id="scheduleMessage" class="horario-message" hidden>
                 </div>
 
+                <!-- ======================================
+     DETALLE DEL EVENTO
+     ====================================== -->
+
+                <section id="eventDetailSection" class="card horario-event-detail" hidden>
+
+                    <div class="horario-event-detail__header">
+
+                        <div>
+
+                            <h2 id="eventDetailTitle">
+                                Evento
+                            </h2>
+
+                            <p id="eventDetailType">
+                                Tipo
+                            </p>
+
+                        </div>
+
+                        <button type="button" id="closeEventDetailButton" class="btn btn--outline">
+
+                            Cerrar
+
+                        </button>
+
+                    </div>
+
+
+                    <div class="horario-event-detail__content">
+
+                        <div class="horario-event-detail__item">
+
+                            <strong>
+                                Fecha
+                            </strong>
+
+                            <span id="eventDetailDate">
+                                -
+                            </span>
+
+                        </div>
+
+
+                        <div class="horario-event-detail__item">
+
+                            <strong>
+                                Horario
+                            </strong>
+
+                            <span id="eventDetailTime">
+                                -
+                            </span>
+
+                        </div>
+
+
+                        <div class="horario-event-detail__item">
+
+                            <strong>
+                                Lugar
+                            </strong>
+
+                            <span id="eventDetailPlace">
+                                -
+                            </span>
+
+                        </div>
+
+
+                        <div class="horario-event-detail__item">
+
+                            <strong>
+                                Responsable
+                            </strong>
+
+                            <span id="eventDetailResponsible">
+                                -
+                            </span>
+
+                        </div>
+
+
+                        <div class="horario-event-detail__item horario-event-detail__item--full">
+
+                            <strong>
+                                Descripción
+                            </strong>
+
+                            <span id="eventDetailDescription">
+                                -
+                            </span>
+
+                        </div>
+
+
+                        <div class="horario-event-detail__item">
+
+                            <strong>
+                                Estado
+                            </strong>
+
+                            <span id="eventDetailStatus">
+                                -
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="horario-event-detail__actions">
+
+                        <button type="button" id="editEventButton" class="btn btn--primary">
+
+                            Editar
+
+                        </button>
+
+
+                        <button type="button" id="toggleEventStatusButton" class="btn btn--outline">
+
+                            Cancelar evento
+
+                        </button>
+
+
+                        <button type="button" id="deleteEventButton" class="btn btn--logout">
+
+                            Eliminar
+
+                        </button>
+
+                    </div>
+
+
+                    <div id="eventDetailMessage" class="horario-message" hidden>
+                    </div>
+
+                </section>
 
                 <!-- ======================================
                      CALENDARIO
