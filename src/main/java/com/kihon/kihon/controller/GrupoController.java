@@ -29,7 +29,8 @@ public class GrupoController {
                                 request.getDescripcion(),
                                 request.getHoraInicio(),
                                 request.getHoraFin(),
-                                request.getCapacidad());
+                                request.getCapacidad(),
+                                request.getSenseiId());
 
                 GrupoResponse response = convertirAResponse(grupo);
 
@@ -80,7 +81,8 @@ public class GrupoController {
                                 request.getDescripcion(),
                                 request.getHoraInicio(),
                                 request.getHoraFin(),
-                                request.getCapacidad());
+                                request.getCapacidad(),
+                                request.getSenseiId());
 
                 return ResponseEntity.ok(
                                 convertirAResponse(grupo));
@@ -99,6 +101,15 @@ public class GrupoController {
                                 convertirAResponse(grupo));
         }
 
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> eliminarGrupo(
+                        @PathVariable Long id) {
+
+                grupoService.eliminarGrupo(id);
+
+                return ResponseEntity.noContent().build();
+        }
+
         private GrupoResponse convertirAResponse(Grupo grupo) {
 
                 long estudiantesActivos = grupoService
@@ -115,6 +126,14 @@ public class GrupoController {
                                 grupo.getCapacidad(),
                                 estudiantesActivos,
                                 cuposDisponibles,
-                                grupo.getEstado());
+                                grupo.getEstado(),
+                                grupo.getSensei() != null
+                                                ? grupo.getSensei().getId()
+                                                : null,
+                                grupo.getSensei() != null
+                                                ? grupo.getSensei().getNombre()
+                                                                + " "
+                                                                + grupo.getSensei().getApellido()
+                                                : null);
         }
 }

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Administración</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+
+</head>
+
+<body>
+
+    <main class="page-container">
+
+        <!-- ==========================================
+             HEADER
+             ========================================== -->
+
+        <header class="dashboard-header">
+
+            <div>
+                <h1>Panel de Administración</h1>
+
+                <p>
+                    Gestión general del sistema Kihon
+                </p>
+            </div>
+
+            <div class="dashboard-user">
+
+                <span id="usernameDisplay">
+                    Administrador
+                </span>
+
+            </div>
+
+        </header>
+
+
+        <!-- ==========================================
+             GESTIÓN DEL SISTEMA
+             ========================================== -->
+
+        <section class="dashboard-section">
+
+            <h2>Gestión del sistema</h2>
+
+            <div class="dashboard-actions">
+
+                <a href="/admin/estudiantes" class="btn btn--primary">
+                    Estudiantes
+                </a>
+
+                <a href="/admin/grupos" class="btn btn--secondary">
+                    Grupos
+                </a>
+
+                <a href="/admin/asistencia" class="btn btn--secondary">
+                    Asistencia
+                </a>
+
+                <a href="/admin/horario" class="btn btn--secondary">
+                    Horario
+                </a>
+
+                <a href="/admin/inscripciones" class="btn btn--secondary">
+                    Inscripciones
+                </a>
+
+                <a href="/admin/reportes" class="btn btn--secondary">
+                    Reportes
+                </a>
+
+                <a href="/admin/usuarios" class="btn btn--accent">
+                    Usuarios
+                </a>
+
+                <a href="/admin/perfil" class="btn btn--secondary">
+                    Mi perfil
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==========================================
+             SESIÓN
+             ========================================== -->
+
+        <section class="dashboard-section">
+
+            <h2>Sesión</h2>
+
+            <a href="#" id="logoutButton" class="btn btn--logout">
+                Cerrar sesión
+            </a>
+
+        </section>
+
+    </main>
+
+
+    <script src="/js/admin.js"></script>
+    <script src="/js/logout.js"></script>
+
+</body>
+
+</html>

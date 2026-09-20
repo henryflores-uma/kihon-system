@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Gestión de Usuarios</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+
+</head>
+
+<body>
+
+    <main class="page-container">
+
+        <!-- ==========================================
+             HEADER
+             ========================================== -->
+
+        <header class="dashboard-header">
+
+            <div>
+
+                <h1>Gestión de Usuarios</h1>
+
+                <p>
+                    Administración de cuentas y permisos
+                </p>
+
+            </div>
+
+            <div class="dashboard-user">
+
+                <span id="usernameDisplay">
+                    Administrador
+                </span>
+
+            </div>
+
+        </header>
+
+
+        <!-- ==========================================
+             NAVEGACIÓN
+             ========================================== -->
+
+        <section class="dashboard-section">
+
+            <div class="dashboard-actions">
+
+                <a href="/admin/admin" class="btn btn--secondary">
+                    Volver al panel
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==========================================
+             GESTIÓN DE USUARIOS
+             ========================================== -->
+
+        <section class="dashboard-section" id="usuarios">
+
+            <h2>Usuarios registrados</h2>
+
+            <div class="usuarios-filtros">
+
+                <label for="estadoFiltro">
+                    Filtrar por estado:
+                </label>
+
+                <select id="estadoFiltro">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option value="ACTIVO">
+                        Activos
+                    </option>
+
+                    <option value="PENDIENTE">
+                        Pendientes
+                    </option>
+
+                    <option value="INACTIVO">
+                        Inactivos
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <p id="usuariosMessage">
+                Cargando usuarios...
+            </p>
+
+
+            <div class="table-container">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Usuario</th>
+
+                            <th>Nombre</th>
+
+                            <th>Correo</th>
+
+                            <th>Rol</th>
+
+                            <th>Estado</th>
+
+                            <th>Vinculación</th>
+
+                            <th>Acciones</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="usuariosTableBody">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==========================================
+             SESIÓN
+             ========================================== -->
+
+        <section class="dashboard-section">
+
+            <h2>Sesión</h2>
+
+            <a href="#" id="logoutButton" class="btn btn--logout">
+                Cerrar sesión
+            </a>
+
+        </section>
+
+    </main>
+
+
+    <script src="/js/usuarios.js"></script>
+    <script src="/js/logout.js"></script>
+
+</body>
+
+</html>

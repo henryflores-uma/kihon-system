@@ -6,6 +6,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class ViewController {
 
+    // ==========================================
+    // PÁGINAS PÚBLICAS
+    // ==========================================
+
     @GetMapping("/")
     public String index() {
         return "index";
@@ -21,33 +25,99 @@ public class ViewController {
         return "registro";
     }
 
-    @GetMapping("/dashboard")
-    public String dashboard() {
-        return "dashboard";
-    }
+    // ==========================================
+    // ADMIN
+    // ==========================================
 
-    @GetMapping("/admin")
+    @GetMapping("/admin/admin")
     public String admin() {
-        return "admin";
+        return "admin/admin";
     }
 
-    @GetMapping("/estudiantes")
+    @GetMapping("/admin/estudiantes")
     public String estudiantes() {
-        return "estudiantes";
+        return "admin/estudiantes";
     }
 
-    @GetMapping("/grupos")
+    @GetMapping("/admin/grupos")
     public String grupos() {
-        return "grupos";
+        return "admin/grupos";
     }
 
-    @GetMapping("/asistencias")
+    @GetMapping("/admin/asistencia")
     public String asistencia() {
-        return "asistencias";
+        return "admin/asistencia";
     }
 
-    @GetMapping("/reportes")
+    @GetMapping("/admin/horario")
+    public String horario() {
+        return "admin/horario";
+    }
+
+    @GetMapping("/admin/inscripciones")
+    public String inscripciones() {
+        return "admin/inscripciones";
+    }
+
+    @GetMapping("/admin/reportes")
     public String reportes() {
-        return "reportes";
+        return "admin/reportes";
+    }
+
+    @GetMapping("/admin/usuarios")
+    public String usuarios() {
+        return "admin/usuarios";
+    }
+
+    @GetMapping("/admin/perfil")
+    public String perfilAdmin() {
+        return "admin/perfil";
+    }
+
+    // ==========================================
+    // SECRETARIA
+    // ==========================================
+
+    @GetMapping("/secretaria/secretaria")
+    public String secretaria() {
+        return "secretaria/secretaria";
+    }
+
+    @GetMapping("/secretaria/perfil")
+    public String perfilSecretaria() {
+        return "secretaria/perfil";
+    }
+
+    // ==========================================
+    // SENSEI
+    // ==========================================
+
+    @GetMapping("/sensei/sensei")
+    public String sensei() {
+        return "sensei/sensei";
+    }
+
+    @GetMapping("/sensei/perfil")
+    public String perfilSensei() {
+        return "sensei/perfil";
+    }
+
+    // ==========================================
+    // ESTUDIANTE
+    // ==========================================
+
+    @GetMapping("/estudiante/perfil")
+    public String perfilEstudiante() {
+        return "estudiante/perfil";
+    }
+
+    @GetMapping("/estudiante/grupos")
+    public String gruposEstudiante() {
+        return "estudiante/grupos";
+    }
+
+    @GetMapping("/estudiante/asistencias")
+    public String asistenciasEstudiante() {
+        return "estudiante/asistencias";
     }
 }

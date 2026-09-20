@@ -9,6 +9,7 @@ public class GrupoRequest {
     private LocalTime horaInicio;
     private LocalTime horaFin;
     private Integer capacidad;
+    private Long senseiId;
 
     public GrupoRequest() {
     }
@@ -51,5 +52,13 @@ public class GrupoRequest {
 
     public void setCapacidad(Integer capacidad) {
         this.capacidad = capacidad;
+    }
+
+    public Long getSenseiId() {
+        return senseiId;
+    }
+
+    public void setSenseiId(Long senseiId) {
+        this.senseiId = senseiId;
     }
 }

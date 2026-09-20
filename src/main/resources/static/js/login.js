@@ -7,11 +7,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
         event.preventDefault();
 
-        const usernameInput = document.getElementById("username");
-        const passwordInput = document.getElementById("password");
+        const usernameInput =
+            document.getElementById("username");
 
-        const username = usernameInput.value.trim();
-        const password = passwordInput.value;
+        const passwordInput =
+            document.getElementById("password");
+
+        const username =
+            usernameInput.value.trim();
+
+        const password =
+            passwordInput.value;
 
         loginError.hidden = true;
         loginError.textContent = "";
@@ -43,12 +49,16 @@ document.addEventListener("DOMContentLoaded", function () {
             // VALIDAR AUTENTICACIÓN
             // ==========================================
 
-            const response = await fetch("/api/auth/me", {
-                method: "GET",
-                headers: {
-                    "Authorization": "Basic " + credentials
+            const response = await fetch(
+                "/api/auth/me",
+                {
+                    method: "GET",
+                    headers: {
+                        "Authorization":
+                            "Basic " + credentials
+                    }
                 }
-            });
+            );
 
             console.log(
                 "Login status:",
@@ -61,7 +71,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (response.status === 200) {
 
-                const data = await response.json();
+                const data =
+                    await response.json();
 
                 console.log(
                     "Usuario autenticado:",
@@ -93,10 +104,53 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
 
                 // ==========================================
-                // REDIRECCIÓN
+                // REDIRECCIÓN SEGÚN ROL
                 // ==========================================
 
-                window.location.href = "/dashboard";
+                switch (data.rol) {
+
+                    case "ADMIN":
+
+                        window.location.href =
+                            "/admin/admin";
+
+                        break;
+
+                    case "SECRETARIA":
+
+                        window.location.href =
+                            "/secretaria/secretaria";
+
+                        break;
+
+                    case "SENSEI":
+
+                        window.location.href =
+                            "/sensei/sensei";
+
+                        break;
+
+                    case "ESTUDIANTE":
+
+                        window.location.href =
+                            "/estudiante/perfil";
+
+                        break;
+
+                    default:
+
+                        console.error(
+                            "Rol no reconocido:",
+                            data.rol
+                        );
+
+                        loginError.textContent =
+                            "El usuario no tiene un rol válido.";
+
+                        loginError.hidden = false;
+
+                        break;
+                }
 
                 return;
             }

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Horario</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+
+</head>
+
+<body>
+
+    <div class="app-layout">
+
+        <!-- ==========================================
+             SIDEBAR
+             ========================================== -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav">
+
+                <a href="/admin/admin" class="sidebar__link">
+                    Dashboard
+                </a>
+
+                <a href="/admin/estudiantes" class="sidebar__link">
+                    Estudiantes
+                </a>
+
+                <a href="/admin/grupos" class="sidebar__link">
+                    Grupos
+                </a>
+
+                <a href="/admin/asistencia" class="sidebar__link">
+                    Asistencia
+                </a>
+
+                <a href="/admin/horario" class="sidebar__link sidebar__link--active">
+                    Horario
+                </a>
+
+                <a href="/admin/inscripciones" class="sidebar__link">
+                    Inscripciones
+                </a>
+
+                <a href="/admin/reportes" class="sidebar__link">
+                    Reportes
+                </a>
+
+                <a href="/admin/usuarios" class="sidebar__link">
+                    Usuarios
+                </a>
+
+                <a href="/admin/perfil" class="sidebar__link">
+                    Mi perfil
+                </a>
+
+                <a href="#" id="logoutButton" class="btn btn--logout">
+                    Cerrar sesión
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- ==========================================
+             CONTENIDO PRINCIPAL
+             ========================================== -->
+
+        <main class="main-content">
+
+            <div class="container horario-page">
+
+
+                <!-- ======================================
+                     ENCABEZADO
+                     ====================================== -->
+
+                <header class="horario-header">
+
+                    <div>
+
+                        <h1>
+                            Horario
+                        </h1>
+
+                        <p>
+                            Calendario semanal de clases
+                        </p>
+
+                    </div>
+
+
+                    <div class="dashboard-user">
+
+                        <span id="usernameDisplay">
+                            Usuario
+                        </span>
+
+                    </div>
+
+                </header>
+
+
+                <!-- ======================================
+                     CONTROLES DEL CALENDARIO
+                     ====================================== -->
+
+                <section class="card horario-controls">
+
+                    <div class="horario-navigation">
+
+                        <button type="button" id="previousWeekButton" class="btn btn--secondary">
+
+                            ‹
+
+                        </button>
+
+
+                        <div class="horario-week">
+
+                            <strong id="weekLabel">
+                                Semana actual
+                            </strong>
+
+                        </div>
+
+
+                        <button type="button" id="nextWeekButton" class="btn btn--secondary">
+
+                            ›
+
+                        </button>
+
+                    </div>
+
+
+                    <button type="button" id="todayButton" class="btn btn--outline">
+
+                        Hoy
+
+                    </button>
+
+                </section>
+
+
+                <!-- ======================================
+                     MENSAJE
+                     ====================================== -->
+
+                <div id="scheduleMessage" class="horario-message" hidden>
+                </div>
+
+
+                <!-- ======================================
+                     CALENDARIO
+                     ====================================== -->
+
+                <section class="card horario-calendar-card">
+
+                    <div id="scheduleCalendar" class="horario-calendar">
+
+                        <div class="horario-loading">
+
+                            Cargando horario...
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- ==========================================
+         JAVASCRIPT
+         ========================================== -->
+
+    <script src="/js/horario.js"></script>
+
+    <script src="/js/logout.js"></script>
+
+</body>
+
+</html>

@@ -38,22 +38,37 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 "/",
                                                                 "/login",
-                                                                "/dashboard",
-                                                                "/estudiantes",
-                                                                "/grupos",
-                                                                "/asistencias",
-                                                                "/reportes",
                                                                 "/registro",
+
+                                                                // ADMIN
+                                                                "/admin/admin",
+                                                                "/admin/estudiantes",
+                                                                "/admin/grupos",
+                                                                "/admin/asistencia",
+                                                                "/admin/horario",
+                                                                "/admin/inscripciones",
+                                                                "/admin/reportes",
+                                                                "/admin/usuarios",
+                                                                "/admin/perfil",
+
+                                                                // SECRETARIA
+                                                                "/secretaria/secretaria",
+                                                                "/secretaria/perfil",
+
+                                                                // SENSEI
+                                                                "/sensei/sensei",
+                                                                "/sensei/perfil",
+
+                                                                // ESTUDIANTE
+                                                                "/estudiante/perfil",
+                                                                "/estudiante/grupos",
+                                                                "/estudiante/asistencias",
+
+                                                                // RECURSOS
                                                                 "/css/**",
                                                                 "/js/**",
                                                                 "/img/**")
                                                 .permitAll()
-
-                                                // =========================
-                                                // PÁGINA DE ADMINISTRADOR
-                                                // =========================
-                                                .requestMatchers("/admin")
-                                                .hasRole("ADMIN")
 
                                                 // =========================
                                                 // REGISTRO PÚBLICO
@@ -64,13 +79,24 @@ public class SecurityConfig {
                                                 .permitAll()
 
                                                 // =========================
-                                                // CREAR CUENTA PARA ESTUDIANTE
+                                                // CREAR CUENTA ESTUDIANTE
                                                 // ADMIN / SECRETARIA
                                                 // =========================
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/usuarios/estudiante")
-                                                .hasAnyRole("ADMIN", "SECRETARIA")
+                                                .hasAnyRole(
+                                                                "ADMIN",
+                                                                "SECRETARIA")
+
+                                                // =========================
+                                                // LISTADO DE SENSEIS
+                                                // SOLO ADMIN
+                                                // =========================
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/usuarios/senseis")
+                                                .hasRole("ADMIN")
 
                                                 // =========================
                                                 // LISTADO DE USUARIOS

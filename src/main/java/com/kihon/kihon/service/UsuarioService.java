@@ -402,4 +402,11 @@ public class UsuarioService {
 
         return usuarioRepository.save(usuario);
     }
+
+    public List<Usuario> listarSenseisActivos() {
+
+        return usuarioRepository.findByRolNombreAndEstado(
+                "SENSEI",
+                "ACTIVO");
+    }
 }

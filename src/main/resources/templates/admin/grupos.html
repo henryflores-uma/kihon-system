@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kihon | Grupos</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+
+    <div class="app-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav">
+
+                <a href="/admin/admin" class="sidebar__link">
+                    Dashboard
+                </a>
+
+                <a href="/admin/estudiantes" class="sidebar__link">
+                    Estudiantes
+                </a>
+
+                <a href="/admin/grupos" class="sidebar__link sidebar__link--active">
+                    Grupos
+                </a>
+
+                <a href="/admin/asistencia" class="sidebar__link">
+                    Asistencia
+                </a>
+
+                <a href="/admin/horario" class="sidebar__link">
+                    Horario
+                </a>
+
+                <a href="/admin/inscripciones" class="sidebar__link">
+                    Inscripciones
+                </a>
+
+                <a href="/admin/reportes" class="sidebar__link">
+                    Reportes
+                </a>
+
+                <a href="/admin/usuarios" class="sidebar__link">
+                    Usuarios
+                </a>
+
+                <a href="/admin/perfil" class="sidebar__link">
+                    Mi perfil
+                </a>
+
+                <a href="#" id="logoutButton" class="btn btn--logout">
+                    Cerrar sesión
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- CONTENIDO PRINCIPAL -->
+
+        <main class="main-content">
+
+            <div class="container grupos-page">
+
+
+                <!-- HEADER -->
+
+                <header class="grupos-header">
+
+                    <div>
+
+                        <h1>
+                            Grupos
+                        </h1>
+
+                        <p>
+                            Gestión de grupos y horarios del dojo
+                        </p>
+
+                    </div>
+
+                    <div class="dashboard-user">
+
+                        <span id="usernameDisplay">
+                            Usuario
+                        </span>
+
+                    </div>
+
+                </header>
+
+
+                <!-- ==========================================
+                     REGISTRAR NUEVO GRUPO
+                     ========================================== -->
+
+                <section class="card grupos-form-card">
+
+                    <div class="grupos-form-header">
+
+                        <h2>
+                            Registrar nuevo grupo
+                        </h2>
+
+                        <p>
+                            Ingresa los datos del nuevo grupo.
+                        </p>
+
+                    </div>
+
+
+                    <form id="groupForm" class="grupos-form">
+
+
+                        <div class="grid grid--2">
+
+
+                            <!-- NOMBRE -->
+
+                            <div class="form-group">
+
+                                <label for="nombre" class="form-label">
+
+                                    Nombre
+
+                                </label>
+
+                                <input type="text" id="nombre" class="form-input"
+                                    placeholder="Ej. Adultos Principiantes" required>
+
+                            </div>
+
+
+                            <!-- CAPACIDAD -->
+
+                            <div class="form-group">
+
+                                <label for="capacidad" class="form-label">
+
+                                    Capacidad
+
+                                </label>
+
+                                <input type="number" id="capacidad" class="form-input" placeholder="Ej. 20" min="1"
+                                    required>
+
+                            </div>
+
+
+                            <!-- HORA INICIO -->
+
+                            <div class="form-group">
+
+                                <label for="horaInicio" class="form-label">
+
+                                    Hora de inicio
+
+                                </label>
+
+                                <input type="time" id="horaInicio" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- HORA FIN -->
+
+                            <div class="form-group">
+
+                                <label for="horaFin" class="form-label">
+
+                                    Hora de fin
+
+                                </label>
+
+                                <input type="time" id="horaFin" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- SENSEI -->
+
+                            <div class="form-group">
+
+                                <label for="senseiId" class="form-label">
+
+                                    Sensei
+
+                                </label>
+
+                                <select id="senseiId" class="form-input">
+
+                                    <option value="">
+                                        Sin asignar
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- DÍAS -->
+
+                            <div class="form-group grupos-form-full">
+
+                                <label class="form-label">
+
+                                    Días de entrenamiento
+
+                                </label>
+
+
+                                <div class="grupos-dias">
+
+
+                                    <label class="grupo-dia-option">
+
+                                        <input type="checkbox" name="diasSemana" value="LUNES">
+
+                                        <span>
+                                            Lunes
+                                        </span>
+
+                                    </label>
+
+
+                                    <label class="grupo-dia-option">
+
+                                        <input type="checkbox" name="diasSemana" value="MARTES">
+
+                                        <span>
+                                            Martes
+                                        </span>
+
+                                    </label>
+
+
+                                    <label class="grupo-dia-option">
+
+                                        <input type="checkbox" name="diasSemana" value="MIERCOLES">
+
+                                        <span>
+                                            Miércoles
+                                        </span>
+
+                                    </label>
+
+
+                                    <label class="grupo-dia-option">
+
+                                        <input type="checkbox" name="diasSemana" value="JUEVES">
+
+                                        <span>
+                                            Jueves
+                                        </span>
+
+                                    </label>
+
+
+                                    <label class="grupo-dia-option">
+
+                                        <input type="checkbox" name="diasSemana" value="VIERNES">
+
+                                        <span>
+                                            Viernes
+                                        </span>
+
+                                    </label>
+
+
+                                    <label class="grupo-dia-option">
+
+                                        <input type="checkbox" name="diasSemana" value="SABADO">
+
+                                        <span>
+                                            Sábado
+                                        </span>
+
+                                    </label>
+
+
+                                    <label class="grupo-dia-option">
+
+                                        <input type="checkbox" name="diasSemana" value="DOMINGO">
+
+                                        <span>
+                                            Domingo
+                                        </span>
+
+                                    </label>
+
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- DESCRIPCIÓN -->
+
+                            <div class="form-group grupos-form-full">
+
+                                <label for="descripcion" class="form-label">
+
+                                    Descripción
+
+                                </label>
+
+                                <textarea id="descripcion" class="form-textarea"
+                                    placeholder="Describe brevemente el grupo..."></textarea>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- INFORMACIÓN -->
+
+                        <div class="grupos-horario-info">
+
+                            <p>
+                                El horario indicado se aplicará a todos los días seleccionados.
+                            </p>
+
+                        </div>
+
+
+                        <!-- MENSAJE -->
+
+                        <div id="groupMessage" class="grupos-message" hidden>
+                        </div>
+
+
+                        <!-- ACCIONES -->
+
+                        <div class="grupos-form-actions">
+
+                            <button type="submit" class="btn btn--primary">
+
+                                Registrar grupo
+
+                            </button>
+
+                        </div>
+
+
+                    </form>
+
+                </section>
+
+
+                <!-- ==========================================
+                     EDITAR GRUPO
+                     ========================================== -->
+
+                <section id="editGroupSection" class="card grupos-form-card" hidden>
+
+
+                    <div class="grupos-form-header">
+
+                        <h2>
+                            Editar grupo
+                        </h2>
+
+                        <p>
+                            Modifica los datos del grupo seleccionado.
+                        </p>
+
+                    </div>
+
+
+                    <form id="editGroupForm" class="grupos-form">
+
+
+                        <input type="hidden" id="editId">
+
+
+                        <div class="grid grid--2">
+
+
+                            <!-- NOMBRE -->
+
+                            <div class="form-group">
+
+                                <label for="editNombre" class="form-label">
+
+                                    Nombre
+
+                                </label>
+
+                                <input type="text" id="editNombre" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- CAPACIDAD -->
+
+                            <div class="form-group">
+
+                                <label for="editCapacidad" class="form-label">
+
+                                    Capacidad
+
+                                </label>
+
+                                <input type="number" id="editCapacidad" class="form-input" min="1" required>
+
+                            </div>
+
+
+                            <!-- HORA INICIO -->
+
+                            <div class="form-group">
+
+                                <label for="editHoraInicio" class="form-label">
+
+                                    Hora de inicio
+
+                                </label>
+
+                                <input type="time" id="editHoraInicio" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- HORA FIN -->
+
+                            <div class="form-group">
+
+                                <label for="editHoraFin" class="form-label">
+
+                                    Hora de fin
+
+                                </label>
+
+                                <input type="time" id="editHoraFin" class="form-input" required>
+
+                            </div>
+
+
+                            <!-- SENSEI -->
+
+                            <div class="form-group">
+
+                                <label for="editSenseiId" class="form-label">
+
+                                    Sensei
+
+                                </label>
+
+                                <select id="editSenseiId" class="form-input">
+
+                                    <option value="">
+                                        Sin asignar
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- DESCRIPCIÓN -->
+
+                            <div class="form-group grupos-form-full">
+
+                                <label for="editDescripcion" class="form-label">
+
+                                    Descripción
+
+                                </label>
+
+                                <textarea id="editDescripcion" class="form-textarea"></textarea>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- ==========================================
+                             HORARIOS HABITUALES
+                             ========================================== -->
+
+                        <div class="grupos-horarios-section">
+
+
+                            <div class="grupos-form-header">
+
+                                <h2>
+                                    Horarios habituales
+                                </h2>
+
+                                <p>
+                                    Administra los días y horarios habituales de este grupo.
+                                </p>
+
+                            </div>
+
+
+                            <!-- LISTA DE HORARIOS -->
+
+                            <div id="groupSchedulesList" class="grupos-horarios-list">
+
+                                <div class="grupos-empty">
+
+                                    Selecciona un grupo para gestionar sus horarios.
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- AGREGAR HORARIO -->
+
+                            <div class="grupos-horario-form">
+
+
+                                <!-- DÍA -->
+
+                                <div class="form-group">
+
+                                    <label for="scheduleDay" class="form-label">
+
+                                        Día
+
+                                    </label>
+
+                                    <select id="scheduleDay" class="form-input">
+
+                                        <option value="">
+                                            Seleccionar día
+                                        </option>
+
+                                        <option value="LUNES">
+                                            Lunes
+                                        </option>
+
+                                        <option value="MARTES">
+                                            Martes
+                                        </option>
+
+                                        <option value="MIERCOLES">
+                                            Miércoles
+                                        </option>
+
+                                        <option value="JUEVES">
+                                            Jueves
+                                        </option>
+
+                                        <option value="VIERNES">
+                                            Viernes
+                                        </option>
+
+                                        <option value="SABADO">
+                                            Sábado
+                                        </option>
+
+                                        <option value="DOMINGO">
+                                            Domingo
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <!-- HORA INICIO -->
+
+                                <div class="form-group">
+
+                                    <label for="scheduleStart" class="form-label">
+
+                                        Hora inicio
+
+                                    </label>
+
+                                    <input type="time" id="scheduleStart" class="form-input">
+
+                                </div>
+
+
+                                <!-- HORA FIN -->
+
+                                <div class="form-group">
+
+                                    <label for="scheduleEnd" class="form-label">
+
+                                        Hora fin
+
+                                    </label>
+
+                                    <input type="time" id="scheduleEnd" class="form-input">
+
+                                </div>
+
+
+                                <!-- BOTÓN -->
+
+                                <div class="grupos-horario-action">
+
+                                    <button type="button" id="addScheduleButton" class="btn btn--secondary">
+
+                                        + Agregar horario
+
+                                    </button>
+
+                                </div>
+
+
+                            </div>
+
+
+                            <!-- MENSAJE HORARIO -->
+
+                            <div id="scheduleMessage" class="grupos-message" hidden>
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- MENSAJE EDICIÓN -->
+
+                        <div id="editGroupMessage" class="grupos-message" hidden>
+                        </div>
+
+
+                        <!-- ACCIONES EDICIÓN -->
+
+                        <div class="grupos-form-actions">
+
+
+                            <button type="button" id="cancelEditButton" class="btn btn--secondary">
+
+                                Cancelar
+
+                            </button>
+
+
+                            <button type="submit" class="btn btn--primary">
+
+                                Guardar cambios
+
+                            </button>
+
+
+                        </div>
+
+
+                    </form>
+
+                </section>
+
+
+                <!-- ==========================================
+                     LISTA DE GRUPOS
+                     ========================================== -->
+
+                <section class="card grupos-list-card">
+
+
+                    <div class="grupos-list-header">
+
+                        <h2>
+                            Lista de grupos
+                        </h2>
+
+                        <span id="groupsCount">
+                            0 grupos
+                        </span>
+
+                    </div>
+
+
+                    <div id="groupsMessage" class="grupos-message">
+                    </div>
+
+
+                    <div id="groupsList" class="grupos-table-wrapper">
+
+                        <div class="grupos-loading">
+
+                            Cargando grupos...
+
+                        </div>
+
+                    </div>
+
+
+                </section>
+
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="/js/grupos.js"></script>
+    <script src="/js/logout.js"></script>
+
+</body>
+
+</html>

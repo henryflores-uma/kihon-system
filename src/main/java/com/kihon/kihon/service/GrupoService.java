@@ -1,8 +1,10 @@
 package com.kihon.kihon.service;
 
 import com.kihon.kihon.model.Grupo;
+import com.kihon.kihon.model.Usuario;
 import com.kihon.kihon.repository.EstudianteGrupoRepository;
 import com.kihon.kihon.repository.GrupoRepository;
+import com.kihon.kihon.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
@@ -13,13 +15,16 @@ public class GrupoService {
 
     private final GrupoRepository grupoRepository;
     private final EstudianteGrupoRepository estudianteGrupoRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public GrupoService(
             GrupoRepository grupoRepository,
-            EstudianteGrupoRepository estudianteGrupoRepository) {
+            EstudianteGrupoRepository estudianteGrupoRepository,
+            UsuarioRepository usuarioRepository) {
 
         this.grupoRepository = grupoRepository;
         this.estudianteGrupoRepository = estudianteGrupoRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     public List<Grupo> listarGrupos() {
@@ -42,12 +47,24 @@ public class GrupoService {
                         "Grupo no encontrado"));
     }
 
+    public void eliminarGrupo(Long id) {
+
+        if (!grupoRepository.existsById(id)) {
+
+            throw new RuntimeException(
+                    "Grupo no encontrado");
+        }
+
+        grupoRepository.deleteById(id);
+    }
+
     public Grupo crearGrupo(
             String nombre,
             String descripcion,
             LocalTime horaInicio,
             LocalTime horaFin,
-            Integer capacidad) {
+            Integer capacidad,
+            Long senseiId) {
 
         if (grupoRepository.findByNombre(nombre).isPresent()) {
             throw new RuntimeException(
@@ -78,6 +95,11 @@ public class GrupoService {
         grupo.setCapacidad(capacidad);
         grupo.setEstado("ACTIVO");
 
+        if (senseiId != null) {
+            Usuario sensei = obtenerSensei(senseiId);
+            grupo.setSensei(sensei);
+        }
+
         return grupoRepository.save(grupo);
     }
 
@@ -87,7 +109,8 @@ public class GrupoService {
             String descripcion,
             LocalTime horaInicio,
             LocalTime horaFin,
-            Integer capacidad) {
+            Integer capacidad,
+            Long senseiId) {
 
         Grupo grupo = grupoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException(
@@ -129,6 +152,13 @@ public class GrupoService {
         grupo.setHoraFin(horaFin);
         grupo.setCapacidad(capacidad);
 
+        if (senseiId != null) {
+            Usuario sensei = obtenerSensei(senseiId);
+            grupo.setSensei(sensei);
+        } else {
+            grupo.setSensei(null);
+        }
+
         return grupoRepository.save(grupo);
     }
 
@@ -157,5 +187,28 @@ public class GrupoService {
         return estudianteGrupoRepository.countByGrupoIdAndEstado(
                 grupoId,
                 "ACTIVO");
+    }
+
+    private Usuario obtenerSensei(Long senseiId) {
+
+        Usuario usuario = usuarioRepository.findById(senseiId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Sensei no encontrado"));
+
+        if (usuario.getRol() == null
+                || !"SENSEI".equalsIgnoreCase(
+                        usuario.getRol().getNombre())) {
+
+            throw new RuntimeException(
+                    "El usuario seleccionado no tiene el rol SENSEI");
+        }
+
+        if (!"ACTIVO".equalsIgnoreCase(usuario.getEstado())) {
+
+            throw new RuntimeException(
+                    "El sensei seleccionado no está activo");
+        }
+
+        return usuario;
     }
 }

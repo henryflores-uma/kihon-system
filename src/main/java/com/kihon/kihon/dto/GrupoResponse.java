@@ -13,6 +13,8 @@ public class GrupoResponse {
     private long estudiantesActivos;
     private long cuposDisponibles;
     private String estado;
+    private Long senseiId;
+    private String senseiNombre;
 
     public GrupoResponse() {
     }
@@ -26,7 +28,9 @@ public class GrupoResponse {
             Integer capacidad,
             long estudiantesActivos,
             long cuposDisponibles,
-            String estado) {
+            String estado,
+            Long senseiId,
+            String senseiNombre) {
 
         this.id = id;
         this.nombre = nombre;
@@ -37,6 +41,8 @@ public class GrupoResponse {
         this.estudiantesActivos = estudiantesActivos;
         this.cuposDisponibles = cuposDisponibles;
         this.estado = estado;
+        this.senseiId = senseiId;
+        this.senseiNombre = senseiNombre;
     }
 
     public Long getId() {
@@ -73,5 +79,13 @@ public class GrupoResponse {
 
     public String getEstado() {
         return estado;
+    }
+
+    public Long getSenseiId() {
+        return senseiId;
+    }
+
+    public String getSenseiNombre() {
+        return senseiNombre;
     }
 }

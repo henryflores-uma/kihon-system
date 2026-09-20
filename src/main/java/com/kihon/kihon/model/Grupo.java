@@ -27,6 +27,10 @@ public class Grupo {
     @Column(nullable = false)
     private Integer capacidad;
 
+    @ManyToOne
+    @JoinColumn(name = "sensei_id")
+    private Usuario sensei;
+
     @Column(nullable = false)
     private String estado = "ACTIVO";
 
@@ -75,6 +79,14 @@ public class Grupo {
 
     public void setCapacidad(Integer capacidad) {
         this.capacidad = capacidad;
+    }
+
+    public Usuario getSensei() {
+        return sensei;
+    }
+
+    public void setSensei(Usuario sensei) {
+        this.sensei = sensei;
     }
 
     public String getEstado() {

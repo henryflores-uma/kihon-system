@@ -138,6 +138,18 @@ public class UsuarioController {
                 return ResponseEntity.ok(convertirResponse(usuario));
         }
 
+        @GetMapping("/senseis")
+        public ResponseEntity<List<UsuarioResponse>> listarSenseisActivos() {
+
+                List<Usuario> senseis = usuarioService.listarSenseisActivos();
+
+                List<UsuarioResponse> response = senseis.stream()
+                                .map(this::convertirResponse)
+                                .toList();
+
+                return ResponseEntity.ok(response);
+        }
+
         private UsuarioResponse convertirResponse(Usuario usuario) {
 
                 return new UsuarioResponse(
