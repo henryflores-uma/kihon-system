@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const username =
         sessionStorage.getItem("kihonUsername");
 
+    const rol =
+        sessionStorage.getItem("kihonRol");
+
 
     /*
      * =========================================================
@@ -22,17 +25,41 @@ document.addEventListener("DOMContentLoaded", function () {
     const usernameDisplay =
         document.getElementById("usernameDisplay");
 
+    const roleDisplay =
+        document.getElementById("roleDisplay");
+
+    const profileRoleDisplay =
+        document.getElementById("profileRoleDisplay");
+
+    const userAvatarInitial =
+        document.getElementById("userAvatarInitial");
+
+
+    /*
+     * FORMULARIO DE GRUPO
+     */
+
     const groupForm =
         document.getElementById("groupForm");
 
     const groupMessage =
         document.getElementById("groupMessage");
 
+
+    /*
+     * LISTA DE GRUPOS
+     */
+
     const groupsList =
         document.getElementById("groupsList");
 
     const groupsCount =
         document.getElementById("groupsCount");
+
+
+    /*
+     * EDICIÓN
+     */
 
     const editGroupSection =
         document.getElementById("editGroupSection");
@@ -46,15 +73,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const cancelEditButton =
         document.getElementById("cancelEditButton");
 
+
+    /*
+     * SENSEIS
+     */
+
     const senseiSelect =
-        document.getElementById("senseiId");
+        document.getElementById("groupSenseiId");
 
     const editSenseiSelect =
         document.getElementById("editSenseiId");
 
 
     /*
-     * ELEMENTOS DE HORARIOS
+     * HORARIOS
      */
 
     const groupSchedulesList =
@@ -78,20 +110,298 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /*
      * =========================================================
+     * MODAL REGISTRAR GRUPO
+     * =========================================================
+     */
+
+    const groupModal =
+        document.getElementById("groupModal");
+
+    const openGroupModalButton =
+        document.getElementById("openGroupModalButton");
+
+    const closeGroupModalButton =
+        document.getElementById("closeGroupModalButton");
+
+    const cancelGroupModalButton =
+        document.getElementById("cancelGroupModalButton");
+
+    const groupModalOverlay =
+        document.getElementById("groupModalOverlay");
+
+
+    /*
+     * =========================================================
      * VERIFICAR SESIÓN
      * =========================================================
      */
 
     if (!auth || !username) {
 
-        window.location.href = "/login";
+        window.location.href =
+            "/login";
 
         return;
     }
 
 
-    usernameDisplay.textContent =
-        username;
+    /*
+     * =========================================================
+     * INFORMACIÓN DEL USUARIO
+     * =========================================================
+     */
+
+    if (usernameDisplay) {
+
+        usernameDisplay.textContent =
+            username;
+    }
+
+
+    if (roleDisplay) {
+
+        roleDisplay.textContent =
+            rol === "ADMIN"
+                ? "Administrador"
+                : rol || "Usuario";
+    }
+
+
+    if (profileRoleDisplay) {
+
+        profileRoleDisplay.textContent =
+            rol === "ADMIN"
+                ? "Administrador"
+                : rol || "Usuario";
+    }
+
+
+    if (userAvatarInitial) {
+
+        userAvatarInitial.textContent =
+            username.charAt(0).toUpperCase();
+    }
+
+
+    /*
+     * =========================================================
+     * MENÚ DE PERFIL
+     * =========================================================
+     */
+
+    const profileMenuButton =
+        document.getElementById(
+            "profileMenuButton"
+        );
+
+    const profileMenu =
+        document.getElementById(
+            "profileMenu"
+        );
+
+    const profileMenuContainer =
+        document.getElementById(
+            "profileMenuContainer"
+        );
+
+
+    if (
+        profileMenuButton &&
+        profileMenu
+    ) {
+
+        profileMenuButton.addEventListener(
+            "click",
+            function (event) {
+
+                event.stopPropagation();
+
+                profileMenu.hidden =
+                    !profileMenu.hidden;
+            }
+        );
+
+
+        document.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    profileMenuContainer &&
+                    !profileMenuContainer.contains(
+                        event.target
+                    )
+                ) {
+
+                    profileMenu.hidden =
+                        true;
+                }
+
+            }
+        );
+    }
+
+
+    /*
+     * =========================================================
+     * MODAL - ABRIR
+     * =========================================================
+     */
+
+    function abrirModalGrupo() {
+
+        if (!groupModal) {
+            return;
+        }
+
+
+        groupModal.hidden =
+            false;
+
+
+        document.body.classList.add(
+            "modal-open"
+        );
+
+
+        /*
+         * Ocultar mensajes anteriores
+         */
+
+        if (groupMessage) {
+
+            ocultarMensaje(
+                groupMessage
+            );
+        }
+
+
+        /*
+         * Enfocar primer campo
+         */
+
+        const nombreInput =
+            document.getElementById(
+                "groupNombre"
+            );
+
+
+        if (nombreInput) {
+
+            setTimeout(
+                function () {
+
+                    nombreInput.focus();
+
+                },
+                100
+            );
+        }
+    }
+
+
+    /*
+     * =========================================================
+     * MODAL - CERRAR
+     * =========================================================
+     */
+
+    function cerrarModalGrupo() {
+
+        if (!groupModal) {
+            return;
+        }
+
+
+        groupModal.hidden =
+            true;
+
+
+        document.body.classList.remove(
+            "modal-open"
+        );
+    }
+
+
+    /*
+     * =========================================================
+     * MODAL - BOTONES
+     * =========================================================
+     */
+
+    if (openGroupModalButton) {
+
+        openGroupModalButton.addEventListener(
+            "click",
+            function () {
+
+                abrirModalGrupo();
+
+            }
+        );
+    }
+
+
+    if (closeGroupModalButton) {
+
+        closeGroupModalButton.addEventListener(
+            "click",
+            function () {
+
+                cerrarModalGrupo();
+
+            }
+        );
+    }
+
+
+    if (cancelGroupModalButton) {
+
+        cancelGroupModalButton.addEventListener(
+            "click",
+            function () {
+
+                cerrarModalGrupo();
+
+            }
+        );
+    }
+
+
+    if (groupModalOverlay) {
+
+        groupModalOverlay.addEventListener(
+            "click",
+            function () {
+
+                cerrarModalGrupo();
+
+            }
+        );
+    }
+
+
+    /*
+     * =========================================================
+     * CERRAR MODAL CON ESC
+     * =========================================================
+     */
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Escape" &&
+                groupModal &&
+                !groupModal.hidden
+            ) {
+
+                cerrarModalGrupo();
+            }
+
+        }
+    );
 
 
     /*
@@ -105,6 +415,11 @@ document.addEventListener("DOMContentLoaded", function () {
         mensaje,
         tipo
     ) {
+
+        if (!elemento) {
+            return;
+        }
+
 
         elemento.textContent =
             mensaje;
@@ -122,12 +437,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
             elemento.className =
                 "grupos-message grupos-message--error";
-
         }
     }
 
 
     function ocultarMensaje(elemento) {
+
+        if (!elemento) {
+            return;
+        }
+
 
         elemento.hidden =
             true;
@@ -151,7 +470,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return "-";
         }
 
-        return hora.substring(0, 5);
+
+        return hora.substring(
+            0,
+            5
+        );
     }
 
 
@@ -165,21 +488,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const dias = {
 
-            LUNES: "Lunes",
+            LUNES:
+                "Lunes",
 
-            MARTES: "Martes",
+            MARTES:
+                "Martes",
 
-            MIERCOLES: "Miércoles",
+            MIERCOLES:
+                "Miércoles",
 
-            JUEVES: "Jueves",
+            JUEVES:
+                "Jueves",
 
-            VIERNES: "Viernes",
+            VIERNES:
+                "Viernes",
 
-            SABADO: "Sábado",
+            SABADO:
+                "Sábado",
 
-            DOMINGO: "Domingo"
+            DOMINGO:
+                "Domingo"
 
         };
+
 
         return dias[dia] || dia;
     }
@@ -195,21 +526,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const orden = {
 
-            LUNES: 1,
+            LUNES:
+                1,
 
-            MARTES: 2,
+            MARTES:
+                2,
 
-            MIERCOLES: 3,
+            MIERCOLES:
+                3,
 
-            JUEVES: 4,
+            JUEVES:
+                4,
 
-            VIERNES: 5,
+            VIERNES:
+                5,
 
-            SABADO: 6,
+            SABADO:
+                6,
 
-            DOMINGO: 7
+            DOMINGO:
+                7
 
         };
+
 
         return orden[dia] || 99;
     }
@@ -221,9 +560,13 @@ document.addEventListener("DOMContentLoaded", function () {
      * =========================================================
      */
 
-    function manejarNoAutorizado(response) {
+    function manejarNoAutorizado(
+        response
+    ) {
 
-        if (response.status === 401) {
+        if (
+            response.status === 401
+        ) {
 
             sessionStorage.clear();
 
@@ -232,6 +575,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             return true;
         }
+
 
         return false;
     }
@@ -253,6 +597,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const errorData =
                 await response.json();
 
+
             return (
                 errorData.mensaje ||
                 errorData.message ||
@@ -262,7 +607,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
 
             return mensajeDefecto;
-
         }
     }
 
@@ -277,15 +621,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const checkboxes =
             document.querySelectorAll(
-                'input[name="diasSemana"]:checked'
+                'input[name="dias"]:checked'
             );
 
 
-        return Array.from(checkboxes)
-            .map(
-                checkbox =>
-                    checkbox.value
-            );
+        return Array.from(
+            checkboxes
+        ).map(
+            checkbox =>
+                checkbox.value
+        );
     }
 
 
@@ -299,7 +644,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const checkboxes =
             document.querySelectorAll(
-                'input[name="diasSemana"]'
+                'input[name="dias"]'
             );
 
 
@@ -331,8 +676,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         method: "GET",
 
                         headers: {
+
                             "Authorization":
                                 "Basic " + auth
+
                         }
                     }
                 );
@@ -348,7 +695,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            if (response.status === 403) {
+            if (
+                response.status === 403
+            ) {
 
                 throw new Error(
                     "No tienes permisos para consultar los senseis."
@@ -451,13 +800,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
         groupsList.innerHTML = `
 
-        <div class="grupos-loading">
+            <div class="grupos-loading">
 
-            Cargando grupos...
+                <div class="grupos-loading__spinner"></div>
 
-        </div>
+                <span>
+                    Cargando grupos...
+                </span>
 
-    `;
+            </div>
+
+        `;
 
 
         try {
@@ -469,8 +822,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         method: "GET",
 
                         headers: {
+
                             "Authorization":
                                 "Basic " + auth
+
                         }
                     }
                 );
@@ -486,7 +841,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            if (response.status === 403) {
+            if (
+                response.status === 403
+            ) {
 
                 throw new Error(
                     "No tienes permisos para consultar grupos."
@@ -510,17 +867,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 `${grupos.length} grupo${grupos.length !== 1 ? "s" : ""}`;
 
 
-            if (grupos.length === 0) {
+            if (
+                grupos.length === 0
+            ) {
 
                 groupsList.innerHTML = `
 
-                <div class="grupos-empty">
+                    <div class="grupos-empty">
 
-                    No hay grupos registrados.
+                        No hay grupos registrados.
 
-                </div>
+                    </div>
 
-            `;
+                `;
 
                 return;
             }
@@ -528,7 +887,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             /*
              * =====================================================
-             * OBTENER HORARIOS DE TODOS LOS GRUPOS
+             * OBTENER HORARIOS
              * =====================================================
              */
 
@@ -547,8 +906,10 @@ document.addEventListener("DOMContentLoaded", function () {
                                             method: "GET",
 
                                             headers: {
+
                                                 "Authorization":
                                                     "Basic " + auth
+
                                             }
                                         }
                                     );
@@ -562,9 +923,13 @@ document.addEventListener("DOMContentLoaded", function () {
                                         horariosResponse
                                     );
 
+
                                     return {
+
                                         ...grupo,
+
                                         horarios: []
+
                                     };
                                 }
 
@@ -574,8 +939,11 @@ document.addEventListener("DOMContentLoaded", function () {
                                 ) {
 
                                     return {
+
                                         ...grupo,
+
                                         horarios: []
+
                                     };
                                 }
 
@@ -585,9 +953,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                                 return {
+
                                     ...grupo,
+
                                     horarios:
                                         horarios
+
                                 };
 
 
@@ -600,15 +971,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                                 return {
+
                                     ...grupo,
+
                                     horarios: []
+
                                 };
 
                             }
 
                         }
                     )
-
                 );
 
 
@@ -620,62 +993,57 @@ document.addEventListener("DOMContentLoaded", function () {
 
             groupsList.innerHTML = `
 
-            <table class="grupos-table">
+                <table class="grupos-table">
 
-                <thead>
+                    <thead>
 
-                    <tr>
+                        <tr>
 
-                        <th>
-                            Grupo
-                        </th>
+                            <th>
+                                Grupo
+                            </th>
 
-                        <th>
-                            Sensei
-                        </th>
+                            <th>
+                                Sensei
+                            </th>
 
-                        <th>
-                            Días
-                        </th>
+                            <th>
+                                Días
+                            </th>
 
-                        <th>
-                            Horario
-                        </th>
+                            <th>
+                                Horario
+                            </th>
 
-                        <th>
-                            Capacidad
-                        </th>
+                            <th>
+                                Capacidad
+                            </th>
 
-                        <th>
-                            Inscritos
-                        </th>
+                            <th>
+                                Inscritos
+                            </th>
 
-                        <th>
-                            Cupos disponibles
-                        </th>
+                            <th>
+                                Cupos disponibles
+                            </th>
 
-                        <th>
-                            Estado
-                        </th>
+                            <th>
+                                Estado
+                            </th>
 
-                        <th>
-                            Acciones
-                        </th>
+                            <th>
+                                Acciones
+                            </th>
 
-                    </tr>
+                        </tr>
 
-                </thead>
+                    </thead>
 
 
-                <tbody>
+                    <tbody>
 
-                    ${gruposConHorarios.map(
+                        ${gruposConHorarios.map(
                 grupo => {
-
-
-                    /*
-                     * ORDEN DE DÍAS
-                     */
 
                     const ordenDias = {
 
@@ -690,10 +1058,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     };
 
 
-                    /*
-                     * INICIALES
-                     */
-
                     const inicialesDias = {
 
                         LUNES: "L",
@@ -706,10 +1070,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     };
 
-
-                    /*
-                     * OBTENER DÍAS
-                     */
 
                     const dias =
                         [...grupo.horarios]
@@ -729,10 +1089,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             );
 
 
-                    /*
-                     * INICIALES SIN REPETIR
-                     */
-
                     const diasIniciales =
                         dias
                             .map(
@@ -742,12 +1098,12 @@ document.addEventListener("DOMContentLoaded", function () {
                                     ] ||
                                     horario.diaSemana
                             )
+                            .filter(
+                                (dia, index, array) =>
+                                    array.indexOf(dia) === index
+                            )
                             .join(" - ");
 
-
-                    /*
-                     * HORARIOS
-                     */
 
                     const horariosTexto =
                         dias
@@ -760,10 +1116,6 @@ document.addEventListener("DOMContentLoaded", function () {
                                     )}`
                             );
 
-
-                    /*
-                     * SI NO HAY HORARIOS
-                     */
 
                     const diasMostrar =
                         diasIniciales ||
@@ -782,178 +1134,173 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     return `
 
-                                <tr>
+                                    <tr>
 
-                                    <td>
+                                        <td>
 
-                                        <div class="grupo-info">
+                                            <div class="grupo-info">
 
-                                            <span class="grupo-nombre">
+                                                <span class="grupo-nombre">
+                                                    ${grupo.nombre}
+                                                </span>
 
-                                                ${grupo.nombre}
-
-                                            </span>
-
-                                            <span class="grupo-descripcion">
-
-                                                ${grupo.descripcion ||
+                                                <span class="grupo-descripcion">
+                                                    ${grupo.descripcion ||
                         "Sin descripción"
                         }
+                                                </span>
 
-                                            </span>
+                                            </div>
 
-                                        </div>
-
-                                    </td>
+                                        </td>
 
 
-                                    <td>
+                                        <td>
 
-                                        <span class="grupo-sensei">
+                                            <span class="grupo-sensei">
 
-                                            ${grupo.senseiNombre ||
+                                                ${grupo.senseiNombre ||
                         "Sin asignar"
                         }
 
-                                        </span>
+                                            </span>
 
-                                    </td>
-
-
-                                    <td>
-
-                                        <span class="grupo-dias">
-
-                                            ${diasMostrar}
-
-                                        </span>
-
-                                    </td>
+                                        </td>
 
 
-                                    <td>
+                                        <td>
 
-                                        <span class="grupo-horario">
+                                            <span class="grupo-dias">
 
-                                            ${horarioMostrar}
+                                                ${diasMostrar}
 
-                                        </span>
+                                            </span>
 
-                                    </td>
-
-
-                                    <td>
-
-                                        <span class="grupo-capacidad">
-
-                                            ${grupo.capacidad}
-
-                                        </span>
-
-                                    </td>
+                                        </td>
 
 
-                                    <td>
+                                        <td>
 
-                                        <span class="grupo-inscritos">
+                                            <span class="grupo-horario">
 
-                                            ${grupo.estudiantesActivos}
+                                                ${horarioMostrar}
 
-                                        </span>
+                                            </span>
 
-                                    </td>
+                                        </td>
 
 
-                                    <td>
+                                        <td>
 
-                                        <span class="
-                                            grupo-cupos
-                                            ${grupo.cuposDisponibles === 0
+                                            <span class="grupo-capacidad">
+
+                                                ${grupo.capacidad}
+
+                                            </span>
+
+                                        </td>
+
+
+                                        <td>
+
+                                            <span class="grupo-inscritos">
+
+                                                ${grupo.estudiantesActivos}
+
+                                            </span>
+
+                                        </td>
+
+
+                                        <td>
+
+                                            <span class="
+                                                grupo-cupos
+                                                ${grupo.cuposDisponibles === 0
                             ? "grupo-cupos--lleno"
                             : ""
                         }
-                                        ">
+                                            ">
 
-                                            ${grupo.cuposDisponibles}
+                                                ${grupo.cuposDisponibles}
 
-                                        </span>
+                                            </span>
 
-                                    </td>
+                                        </td>
 
 
-                                    <td>
+                                        <td>
 
-                                        <span class="
-                                            grupo-estado
-                                            ${grupo.estado === "ACTIVO"
+                                            <span class="
+                                                grupo-estado
+                                                ${grupo.estado === "ACTIVO"
                             ? "grupo-estado--activo"
                             : "grupo-estado--inactivo"
                         }
-                                        ">
+                                            ">
 
-                                            ${grupo.estado}
+                                                ${grupo.estado}
 
-                                        </span>
+                                            </span>
 
-                                    </td>
-
-
-                                    <td>
-
-                                        <div class="grupo-acciones">
+                                        </td>
 
 
-                                            <button
-                                                type="button"
-                                                class="btn btn--outline btn-editar-grupo"
-                                                data-id="${grupo.id}">
+                                        <td>
 
-                                                Editar
-
-                                            </button>
+                                            <div class="grupo-acciones">
 
 
-                                            <button
-                                                type="button"
-                                                class="btn btn--secondary btn-estado-grupo"
-                                                data-id="${grupo.id}"
-                                                data-estado="${grupo.estado}">
+                                                <button
+                                                    type="button"
+                                                    class="btn btn--outline btn-editar-grupo"
+                                                    data-id="${grupo.id}">
 
-                                                ${grupo.estado === "ACTIVO"
+                                                    Editar
+
+                                                </button>
+
+
+                                                <button
+                                                    type="button"
+                                                    class="btn btn--secondary btn-estado-grupo"
+                                                    data-id="${grupo.id}"
+                                                    data-estado="${grupo.estado}">
+
+                                                    ${grupo.estado === "ACTIVO"
                             ? "Desactivar"
                             : "Activar"
                         }
 
-                                            </button>
+                                                </button>
 
 
-                                            <button
-                                                type="button"
-                                                class="btn btn--secondary btn-eliminar-grupo"
-                                                data-id="${grupo.id}"
-                                                data-nombre="${grupo.nombre}">
+                                                <button
+                                                    type="button"
+                                                    class="btn btn--secondary btn-eliminar-grupo"
+                                                    data-id="${grupo.id}"
+                                                    data-nombre="${grupo.nombre}">
 
-                                                Eliminar
+                                                    Eliminar
 
-                                            </button>
+                                                </button>
 
 
-                                        </div>
+                                            </div>
 
-                                    </td>
+                                        </td>
 
-                                </tr>
+                                    </tr>
 
-                            `;
-
+                                `;
                 }
             ).join("")}
 
-                </tbody>
+                    </tbody>
 
-            </table>
+                </table>
 
-        `;
+            `;
 
 
         } catch (error) {
@@ -966,13 +1313,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
             groupsList.innerHTML = `
 
-            <div class="grupos-empty">
+                <div class="grupos-empty">
 
-                ${error.message}
+                    ${error.message}
 
-            </div>
+                </div>
 
-        `;
+            `;
         }
     }
 
@@ -991,8 +1338,7 @@ document.addEventListener("DOMContentLoaded", function () {
     ) {
 
         for (
-            const dia
-            of dias
+            const dia of dias
         ) {
 
             const response =
@@ -1008,6 +1354,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                             "Content-Type":
                                 "application/json"
+
                         },
 
                         body: JSON.stringify({
@@ -1041,7 +1388,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            if (response.status === 403) {
+            if (
+                response.status === 403
+            ) {
 
                 throw new Error(
                     "No tienes permisos para registrar horarios."
@@ -1058,9 +1407,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     )
                 );
             }
-
         }
-
     }
 
 
@@ -1078,7 +1425,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             <div class="grupos-loading">
 
-                Cargando horarios...
+                <div class="grupos-loading__spinner"></div>
+
+                <span>
+                    Cargando horarios...
+                </span>
 
             </div>
 
@@ -1094,8 +1445,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         method: "GET",
 
                         headers: {
+
                             "Authorization":
                                 "Basic " + auth
+
                         }
                     }
                 );
@@ -1111,7 +1464,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            if (response.status === 403) {
+            if (
+                response.status === 403
+            ) {
 
                 throw new Error(
                     "No tienes permisos para consultar los horarios."
@@ -1134,11 +1489,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 await response.json();
 
 
-            /*
-             * SIN HORARIOS
-             */
-
-            if (horarios.length === 0) {
+            if (
+                horarios.length === 0
+            ) {
 
                 groupSchedulesList.innerHTML = `
 
@@ -1153,10 +1506,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-
-            /*
-             * ORDENAR
-             */
 
             horarios.sort(
                 (a, b) => {
@@ -1187,59 +1536,52 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
 
-            /*
-             * MOSTRAR
-             */
-
             groupSchedulesList.innerHTML =
                 horarios
                     .map(
                         horario => `
 
-                        <div class="grupo-horario-item">
+                            <div class="grupo-horario-item">
 
+                                <div class="grupo-horario-info">
 
-                            <div class="grupo-horario-info">
+                                    <strong>
 
-                                <strong>
-
-                                    ${obtenerNombreDia(
+                                        ${obtenerNombreDia(
                             horario.diaSemana
                         )}
 
-                                </strong>
+                                    </strong>
 
+                                    <span>
 
-                                <span>
-
-                                    ${formatearHora(
+                                        ${formatearHora(
                             horario.horaInicio
                         )}
 
-                                    -
+                                        -
 
-                                    ${formatearHora(
+                                        ${formatearHora(
                             horario.horaFin
                         )}
 
-                                </span>
+                                    </span>
+
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    class="btn btn--secondary btn-eliminar-horario"
+                                    data-id="${horario.id}">
+
+                                    Eliminar
+
+                                </button>
 
                             </div>
 
-
-                            <button
-                                type="button"
-                                class="btn btn--secondary btn-eliminar-horario"
-                                data-id="${horario.id}">
-
-                                Eliminar
-
-                            </button>
-
-
-                        </div>
-
-                    `
+                        `
                     )
                     .join("");
 
@@ -1283,36 +1625,40 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
 
+            /*
+             * CAMPOS
+             */
+
             const nombre =
                 document
-                    .getElementById("nombre")
+                    .getElementById("groupNombre")
                     .value
                     .trim();
 
 
             const descripcion =
                 document
-                    .getElementById("descripcion")
+                    .getElementById("groupDescripcion")
                     .value
                     .trim();
 
 
             const horaInicio =
                 document
-                    .getElementById("horaInicio")
+                    .getElementById("groupHoraInicio")
                     .value;
 
 
             const horaFin =
                 document
-                    .getElementById("horaFin")
+                    .getElementById("groupHoraFin")
                     .value;
 
 
             const capacidad =
                 Number(
                     document
-                        .getElementById("capacidad")
+                        .getElementById("groupCapacidad")
                         .value
                 );
 
@@ -1396,7 +1742,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             /*
-             * OBJETO GRUPO
+             * OBJETO
              */
 
             const grupo = {
@@ -1460,6 +1806,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                                 "Content-Type":
                                     "application/json"
+
                             },
 
                             body:
@@ -1518,7 +1865,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                 /*
-                 * LIMPIAR
+                 * LIMPIAR FORMULARIO
                  */
 
                 groupForm.reset();
@@ -1542,6 +1889,25 @@ document.addEventListener("DOMContentLoaded", function () {
                  */
 
                 await cargarGrupos();
+
+
+                /*
+                 * CERRAR MODAL DESPUÉS
+                 * DE UN MOMENTO
+                 */
+
+                setTimeout(
+                    function () {
+
+                        cerrarModalGrupo();
+
+                        ocultarMensaje(
+                            groupMessage
+                        );
+
+                    },
+                    800
+                );
 
 
             } catch (error) {
@@ -1584,10 +1950,9 @@ document.addEventListener("DOMContentLoaded", function () {
         async function (event) {
 
             if (
-                !event.target.classList
-                    .contains(
-                        "btn-editar-grupo"
-                    )
+                !event.target.classList.contains(
+                    "btn-editar-grupo"
+                )
             ) {
 
                 return;
@@ -1607,8 +1972,10 @@ document.addEventListener("DOMContentLoaded", function () {
                             method: "GET",
 
                             headers: {
+
                                 "Authorization":
                                     "Basic " + auth
+
                             }
                         }
                     );
@@ -1706,7 +2073,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                 /*
-                 * LIMPIAR NUEVO HORARIO
+                 * LIMPIAR HORARIO
                  */
 
                 scheduleDay.value =
@@ -1751,7 +2118,8 @@ document.addEventListener("DOMContentLoaded", function () {
                  */
 
                 editGroupSection.scrollIntoView({
-                    behavior: "smooth"
+                    behavior:
+                        "smooth"
                 });
 
 
@@ -1774,7 +2142,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /*
      * =========================================================
-     * GUARDAR CAMBIOS DEL GRUPO
+     * GUARDAR CAMBIOS
      * =========================================================
      */
 
@@ -1943,6 +2311,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                                 "Content-Type":
                                     "application/json"
+
                             },
 
                             body:
@@ -1987,10 +2356,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 await response.json();
 
 
-                /*
-                 * MENSAJE
-                 */
-
                 mostrarMensaje(
                     editGroupMessage,
                     "Grupo actualizado correctamente.",
@@ -1998,16 +2363,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
 
 
-                /*
-                 * ACTUALIZAR TABLA
-                 */
-
                 await cargarGrupos();
 
-
-                /*
-                 * ACTUALIZAR HORARIOS
-                 */
 
                 await cargarHorariosGrupo(
                     Number(id)
@@ -2076,10 +2433,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 scheduleEnd.value;
 
 
-            /*
-             * VALIDAR GRUPO
-             */
-
             if (!grupoId) {
 
                 mostrarMensaje(
@@ -2092,10 +2445,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            /*
-             * VALIDAR DÍA
-             */
-
             if (!dia) {
 
                 mostrarMensaje(
@@ -2107,10 +2456,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-
-            /*
-             * VALIDAR HORAS
-             */
 
             if (
                 !horaInicio ||
@@ -2141,10 +2486,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            /*
-             * BOTÓN
-             */
-
             addScheduleButton.disabled =
                 true;
 
@@ -2167,14 +2508,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
                                 "Content-Type":
                                     "application/json"
+
                             },
 
                             body: JSON.stringify({
 
                                 grupoId:
-                                    Number(
-                                        grupoId
-                                    ),
+                                    Number(grupoId),
 
                                 diaSemana:
                                     dia,
@@ -2221,10 +2561,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
 
-                /*
-                 * LIMPIAR
-                 */
-
                 scheduleDay.value =
                     "";
 
@@ -2235,20 +2571,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     "";
 
 
-                /*
-                 * MENSAJE
-                 */
-
                 mostrarMensaje(
                     scheduleMessage,
                     "Horario agregado correctamente.",
                     "success"
                 );
 
-
-                /*
-                 * ACTUALIZAR
-                 */
 
                 await cargarHorariosGrupo(
                     Number(grupoId)
@@ -2295,10 +2623,9 @@ document.addEventListener("DOMContentLoaded", function () {
         async function (event) {
 
             if (
-                !event.target.classList
-                    .contains(
-                        "btn-eliminar-horario"
-                    )
+                !event.target.classList.contains(
+                    "btn-eliminar-horario"
+                )
             ) {
 
                 return;
@@ -2319,10 +2646,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 ).value;
 
 
-            /*
-             * CONFIRMACIÓN
-             */
-
             const confirmar =
                 confirm(
                     "¿Deseas eliminar este horario?"
@@ -2334,10 +2657,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-
-            /*
-             * BOTÓN
-             */
 
             button.disabled =
                 true;
@@ -2355,8 +2674,10 @@ document.addEventListener("DOMContentLoaded", function () {
                             method: "DELETE",
 
                             headers: {
+
                                 "Authorization":
                                     "Basic " + auth
+
                             }
                         }
                     );
@@ -2393,20 +2714,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
 
-                /*
-                 * MENSAJE
-                 */
-
                 mostrarMensaje(
                     scheduleMessage,
                     "Horario eliminado correctamente.",
                     "success"
                 );
 
-
-                /*
-                 * ACTUALIZAR
-                 */
 
                 await cargarHorariosGrupo(
                     Number(grupoId)
@@ -2442,7 +2755,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /*
      * =========================================================
-     * ELIMINAR GRUPO COMPLETO
+     * ELIMINAR GRUPO
      * =========================================================
      */
 
@@ -2451,10 +2764,9 @@ document.addEventListener("DOMContentLoaded", function () {
         async function (event) {
 
             if (
-                !event.target.classList
-                    .contains(
-                        "btn-eliminar-grupo"
-                    )
+                !event.target.classList.contains(
+                    "btn-eliminar-grupo"
+                )
             ) {
 
                 return;
@@ -2473,10 +2785,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 button.dataset.nombre;
 
 
-            /*
-             * CONFIRMACIÓN
-             */
-
             const confirmar =
                 confirm(
                     `¿Deseas eliminar el grupo "${nombre}"?\n\nTambién se eliminarán sus horarios habituales.\n\nEsta acción no se puede deshacer.`
@@ -2488,10 +2796,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-
-            /*
-             * BOTÓN
-             */
 
             button.disabled =
                 true;
@@ -2509,16 +2813,14 @@ document.addEventListener("DOMContentLoaded", function () {
                             method: "DELETE",
 
                             headers: {
+
                                 "Authorization":
                                     "Basic " + auth
+
                             }
                         }
                     );
 
-
-                /*
-                 * SESIÓN
-                 */
 
                 if (
                     manejarNoAutorizado(
@@ -2530,10 +2832,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
 
-                /*
-                 * PERMISOS
-                 */
-
                 if (
                     response.status === 403
                 ) {
@@ -2543,10 +2841,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     );
                 }
 
-
-                /*
-                 * ERROR
-                 */
 
                 if (!response.ok) {
 
@@ -2558,11 +2852,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     );
                 }
 
-
-                /*
-                 * SI EL GRUPO ELIMINADO
-                 * ESTABA SIENDO EDITADO
-                 */
 
                 const grupoEditado =
                     document.getElementById(
@@ -2580,9 +2869,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     editGroupForm.reset();
 
+
                     ocultarMensaje(
                         editGroupMessage
                     );
+
 
                     ocultarMensaje(
                         scheduleMessage
@@ -2601,16 +2892,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
 
-                /*
-                 * ACTUALIZAR LISTA
-                 */
-
                 await cargarGrupos();
 
-
-                /*
-                 * MENSAJE
-                 */
 
                 mostrarMensaje(
                     groupMessage,
@@ -2698,10 +2981,9 @@ document.addEventListener("DOMContentLoaded", function () {
         async function (event) {
 
             if (
-                !event.target.classList
-                    .contains(
-                        "btn-estado-grupo"
-                    )
+                !event.target.classList.contains(
+                    "btn-estado-grupo"
+                )
             ) {
 
                 return;
@@ -2735,8 +3017,10 @@ document.addEventListener("DOMContentLoaded", function () {
                             method: "PATCH",
 
                             headers: {
+
                                 "Authorization":
                                     "Basic " + auth
+
                             }
                         }
                     );
@@ -2772,10 +3056,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     );
                 }
 
-
-                /*
-                 * ACTUALIZAR
-                 */
 
                 await cargarGrupos();
 

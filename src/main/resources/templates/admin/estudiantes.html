@@ -1,20 +1,29 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Kihon | Estudiantes</title>
 
     <link rel="stylesheet" href="/css/main.css">
+
 </head>
+
 
 <body>
 
+
     <div class="app-layout">
 
-        <!-- SIDEBAR -->
+
+        <!-- =====================================================
+             SIDEBAR
+             ===================================================== -->
 
         <aside class="sidebar">
 
@@ -22,374 +31,404 @@
                 KIHON
             </div>
 
+
             <nav class="sidebar__nav">
+
 
                 <a href="/admin/admin" class="sidebar__link">
                     Dashboard
                 </a>
 
+
                 <a href="/admin/estudiantes" class="sidebar__link sidebar__link--active">
                     Estudiantes
                 </a>
+
 
                 <a href="/admin/grupos" class="sidebar__link">
                     Grupos
                 </a>
 
+
                 <a href="/admin/asistencia" class="sidebar__link">
                     Asistencia
                 </a>
+
 
                 <a href="/admin/horario" class="sidebar__link">
                     Horario
                 </a>
 
+
                 <a href="/admin/inscripciones" class="sidebar__link">
                     Inscripciones
                 </a>
+
 
                 <a href="/admin/reportes" class="sidebar__link">
                     Reportes
                 </a>
 
+
                 <a href="/admin/usuarios" class="sidebar__link">
                     Usuarios
                 </a>
+
 
                 <a href="/admin/perfil" class="sidebar__link">
                     Mi perfil
                 </a>
 
+
                 <a href="#" id="logoutButton" class="btn btn--logout">
                     Cerrar sesión
                 </a>
+
 
             </nav>
 
         </aside>
 
 
-        <!-- CONTENIDO PRINCIPAL -->
+
+        <!-- =====================================================
+             CONTENIDO PRINCIPAL
+             ===================================================== -->
 
         <main class="main-content">
+
 
             <div class="container estudiantes-page">
 
 
-                <!-- ENCABEZADO -->
 
-                <header class="estudiantes-header">
+                <!-- =================================================
+                     BARRA SUPERIOR
+                     ================================================= -->
+
+                <div class="topbar">
+
+
+                    <!-- ROL -->
+
+                    <div class="topbar__role">
+
+                        <span class="topbar__role-label">
+                            Rol
+                        </span>
+
+                        <strong id="roleDisplay">
+                            Administrador
+                        </strong>
+
+                    </div>
+
+
+
+                    <!-- ACCIONES DEL USUARIO -->
+
+                    <div class="topbar__actions">
+
+
+                        <!-- NOTIFICACIONES -->
+
+                        <button type="button" class="topbar__notification" id="notificationButton"
+                            aria-label="Notificaciones">
+
+                            <span class="topbar__notification-icon">
+                                🔔
+                            </span>
+
+                            <span id="notificationCount" class="topbar__notification-count" hidden>
+                                0
+                            </span>
+
+                        </button>
+
+
+
+                        <!-- PERFIL -->
+
+                        <div class="topbar__profile" id="profileMenuContainer">
+
+
+                            <button type="button" class="topbar__profile-button" id="profileMenuButton">
+
+
+                                <!-- FOTO / AVATAR -->
+
+                                <div class="topbar__avatar" id="userProfileAvatar">
+
+                                    <span id="userAvatarInitial">
+                                        U
+                                    </span>
+
+                                </div>
+
+
+
+                                <!-- DATOS -->
+
+                                <div class="topbar__profile-info">
+
+                                    <strong id="usernameDisplay">
+                                        Usuario
+                                    </strong>
+
+                                    <span id="profileRoleDisplay">
+                                        Administrador
+                                    </span>
+
+                                </div>
+
+
+
+                                <!-- FLECHA -->
+
+                                <span class="topbar__profile-arrow">
+                                    ▼
+                                </span>
+
+
+                            </button>
+
+
+
+                            <!-- MENÚ DESPLEGABLE -->
+
+                            <div class="topbar__profile-menu" id="profileMenu" hidden>
+
+
+                                <a href="/admin/perfil" class="topbar__profile-menu-item">
+
+                                    Editar perfil
+
+                                </a>
+
+
+                                <button type="button" id="topbarLogoutButton"
+                                    class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+
+                                    Cerrar sesión
+
+                                </button>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =================================================
+                     ENCABEZADO
+                     ================================================= -->
+
+                <div class="estudiantes-header">
+
 
                     <div>
 
                         <h1>
-                            Estudiantes
+                            Gestión de estudiantes
                         </h1>
 
                         <p>
-                            Gestión de estudiantes del dojo
+                            Administra los estudiantes registrados en la academia.
                         </p>
 
                     </div>
 
 
-                    <div class="dashboard-user">
 
-                        <span id="usernameDisplay">
-                            Usuario
-                        </span>
+                    <!-- BOTÓN REGISTRAR -->
+
+                    <button type="button" class="btn btn--primary" id="openRegisterStudentButton">
+
+                        + Registrar estudiante
+
+                    </button>
+
+
+                </div>
+
+
+
+                <!-- =================================================
+                     BÚSQUEDA Y FILTROS
+                     ================================================= -->
+
+                <section class="card estudiantes-filters-card">
+
+
+                    <!-- BÚSQUEDA -->
+
+                    <div class="estudiantes-search">
+
+
+                        <label for="studentSearch" class="form-label">
+
+                            Buscar estudiante
+
+                        </label>
+
+
+                        <input type="search" id="studentSearch" class="form-input"
+                            placeholder="Buscar por nombre, apellido o documento...">
+
 
                     </div>
 
-                </header>
 
 
-                <!-- FORMULARIO NUEVO ESTUDIANTE -->
+                    <!-- FILTROS -->
 
-                <section class="card estudiantes-form-card">
+                    <div class="estudiantes-filters">
 
-                    <div class="estudiantes-form-header">
 
-                        <h2>
-                            Registrar nuevo estudiante
-                        </h2>
+                        <!-- EDAD -->
 
-                        <p>
-                            Ingresa los datos del nuevo estudiante.
-                        </p>
+                        <div class="form-group">
+
+
+                            <label for="ageFilter" class="form-label">
+
+                                Edad
+
+                            </label>
+
+
+                            <select id="ageFilter" class="form-input">
+
+
+                                <option value="TODOS">
+                                    Todas las edades
+                                </option>
+
+
+                                <option value="MENORES">
+                                    Menores de 18 años
+                                </option>
+
+
+                                <option value="MAYORES">
+                                    Mayores de 18 años
+                                </option>
+
+
+                            </select>
+
+
+                        </div>
+
+
+
+                        <!-- CINTURÓN -->
+
+                        <div class="form-group">
+
+
+                            <label for="beltFilter" class="form-label">
+
+                                Cinturón
+
+                            </label>
+
+
+                            <select id="beltFilter" class="form-input">
+
+
+                                <option value="TODOS">
+                                    Todos los cinturones
+                                </option>
+
+
+                                <option value="BLANCO">
+                                    Blanco
+                                </option>
+
+
+                                <option value="AMARILLO">
+                                    Amarillo
+                                </option>
+
+
+                                <option value="NARANJA">
+                                    Naranja
+                                </option>
+
+
+                                <option value="VERDE">
+                                    Verde
+                                </option>
+
+
+                                <option value="AZUL">
+                                    Azul
+                                </option>
+
+
+                                <option value="MARRON">
+                                    Marrón
+                                </option>
+
+
+                                <option value="NEGRO">
+                                    Negro
+                                </option>
+
+
+                            </select>
+
+
+                        </div>
+
 
                     </div>
 
-
-                    <form id="studentForm" class="estudiantes-form">
-
-
-                        <div class="grid grid--2">
-
-
-                            <!-- NOMBRE -->
-
-                            <div class="form-group">
-
-                                <label for="nombre" class="form-label">
-
-                                    Nombre
-
-                                </label>
-
-                                <input type="text" id="nombre" class="form-input" placeholder="Ej. Carlos" required>
-
-                            </div>
-
-
-                            <!-- APELLIDO -->
-
-                            <div class="form-group">
-
-                                <label for="apellido" class="form-label">
-
-                                    Apellido
-
-                                </label>
-
-                                <input type="text" id="apellido" class="form-input" placeholder="Ej. Ramirez" required>
-
-                            </div>
-
-
-                            <!-- DOCUMENTO -->
-
-                            <div class="form-group">
-
-                                <label for="documento" class="form-label">
-
-                                    Documento
-
-                                </label>
-
-                                <input type="text" id="documento" class="form-input" placeholder="Ej. 45678912"
-                                    required>
-
-                            </div>
-
-
-                            <!-- TELEFONO -->
-
-                            <div class="form-group">
-
-                                <label for="telefono" class="form-label">
-
-                                    Teléfono
-
-                                </label>
-
-                                <input type="text" id="telefono" class="form-input" placeholder="Ej. 999888777">
-
-                            </div>
-
-
-                            <!-- CORREO -->
-
-                            <div class="form-group">
-
-                                <label for="correo" class="form-label">
-
-                                    Correo
-
-                                </label>
-
-                                <input type="email" id="correo" class="form-input" placeholder="correo@ejemplo.com"
-                                    required>
-
-                            </div>
-
-
-                        </div>
-
-
-                        <!-- MENSAJE -->
-
-                        <div id="studentMessage" class="estudiantes-message" hidden>
-                        </div>
-
-
-                        <!-- BOTON -->
-
-                        <div class="estudiantes-form-actions">
-
-                            <button type="submit" class="btn btn--primary">
-
-                                Registrar estudiante
-
-                            </button>
-
-                        </div>
-
-
-                    </form>
 
                 </section>
 
 
-                <!-- FORMULARIO EDITAR -->
 
-                <section id="editStudentSection" class="card estudiantes-form-card" hidden>
-
-
-                    <div class="estudiantes-form-header">
-
-                        <h2>
-                            Editar estudiante
-                        </h2>
-
-                        <p>
-                            Modifica los datos del estudiante seleccionado.
-                        </p>
-
-                    </div>
-
-
-                    <form id="editStudentForm" class="estudiantes-form">
-
-
-                        <input type="hidden" id="editId">
-
-
-                        <div class="grid grid--2">
-
-
-                            <!-- NOMBRE -->
-
-                            <div class="form-group">
-
-                                <label for="editNombre" class="form-label">
-
-                                    Nombre
-
-                                </label>
-
-                                <input type="text" id="editNombre" class="form-input" required>
-
-                            </div>
-
-
-                            <!-- APELLIDO -->
-
-                            <div class="form-group">
-
-                                <label for="editApellido" class="form-label">
-
-                                    Apellido
-
-                                </label>
-
-                                <input type="text" id="editApellido" class="form-input" required>
-
-                            </div>
-
-
-                            <!-- DOCUMENTO -->
-
-                            <div class="form-group">
-
-                                <label for="editDocumento" class="form-label">
-
-                                    Documento
-
-                                </label>
-
-                                <input type="text" id="editDocumento" class="form-input" required>
-
-                            </div>
-
-
-                            <!-- TELEFONO -->
-
-                            <div class="form-group">
-
-                                <label for="editTelefono" class="form-label">
-
-                                    Teléfono
-
-                                </label>
-
-                                <input type="text" id="editTelefono" class="form-input">
-
-                            </div>
-
-
-                            <!-- CORREO -->
-
-                            <div class="form-group">
-
-                                <label for="editCorreo" class="form-label">
-
-                                    Correo
-
-                                </label>
-
-                                <input type="email" id="editCorreo" class="form-input" required>
-
-                            </div>
-
-
-                        </div>
-
-
-                        <!-- MENSAJE -->
-
-                        <div id="editStudentMessage" class="estudiantes-message" hidden>
-                        </div>
-
-
-                        <!-- BOTONES -->
-
-                        <div class="estudiantes-form-actions">
-
-                            <button type="button" id="cancelEditButton" class="btn btn--secondary">
-
-                                Cancelar
-
-                            </button>
-
-
-                            <button type="submit" class="btn btn--primary">
-
-                                Guardar cambios
-
-                            </button>
-
-                        </div>
-
-
-                    </form>
-
-                </section>
-
-
-                <!-- LISTA DE ESTUDIANTES -->
+                <!-- =================================================
+                     LISTA DE ESTUDIANTES
+                     ================================================= -->
 
                 <section class="card estudiantes-list-card">
 
 
                     <div class="estudiantes-list-header">
 
+
                         <h2>
                             Lista de estudiantes
                         </h2>
+
 
                         <span id="studentsCount">
                             0 estudiantes
                         </span>
 
+
                     </div>
+
 
 
                     <div id="studentsMessage">
                     </div>
 
 
+
                     <div id="studentsList" class="estudiantes-table-wrapper">
+
 
                         <div class="estudiantes-loading">
 
@@ -397,23 +436,1269 @@
 
                         </div>
 
+
                     </div>
 
 
                 </section>
 
 
+
             </div>
 
+
         </main>
+
 
     </div>
 
 
-    <!-- JAVASCRIPT -->
+
+    <!-- =========================================================
+         MODAL REGISTRAR ESTUDIANTE
+         ========================================================= -->
+
+    <div id="registerStudentModal" class="modal" hidden>
+
+
+        <div class="modal__overlay" id="registerStudentModalOverlay">
+        </div>
+
+
+
+        <div class="modal__content modal__content--student" role="dialog" aria-modal="true"
+            aria-labelledby="registerStudentModalTitle">
+
+
+            <!-- HEADER -->
+
+            <div class="modal__header">
+
+
+                <div>
+
+                    <h2 id="registerStudentModalTitle">
+                        Registrar nuevo estudiante
+                    </h2>
+
+                    <p>
+                        Ingresa los datos del nuevo estudiante.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="modal__close" id="closeRegisterStudentButton" aria-label="Cerrar">
+
+                    ×
+
+                </button>
+
+
+            </div>
+
+
+
+            <!-- FORMULARIO -->
+
+            <form id="studentForm" class="estudiantes-form">
+
+
+                <!-- =================================================
+                     FOTO
+                     ================================================= -->
+
+                <div class="student-modal-photo">
+
+
+                    <div class="student-modal-photo__circle" id="fotoUpload">
+
+
+                        <img id="fotoPreview" src="" alt="Vista previa de la fotografía" hidden>
+
+
+                        <span id="fotoUploadText" class="student-modal-photo__placeholder">
+
+                            👤
+
+                        </span>
+
+
+                    </div>
+
+
+
+                    <label for="foto" class="student-modal-photo__button">
+
+                        Seleccionar fotografía
+
+                    </label>
+
+
+                    <input type="file" id="foto" accept="image/jpeg,image/png,image/webp" hidden>
+
+
+                    <small>
+                        JPG, PNG o WEBP. Máximo 5 MB.
+                    </small>
+
+
+                    <button type="button" id="removeFotoButton" class="btn btn--secondary" hidden>
+
+                        Quitar foto
+
+                    </button>
+
+
+                </div>
+
+
+
+                <!-- =================================================
+                     DATOS DEL ESTUDIANTE
+                     ================================================= -->
+
+                <div class="grid grid--2">
+
+
+                    <!-- NOMBRE -->
+
+                    <div class="form-group">
+
+                        <label for="nombre" class="form-label">
+
+                            Nombre
+
+                        </label>
+
+                        <input type="text" id="nombre" class="form-input" placeholder="Ej. Carlos" required>
+
+                    </div>
+
+
+
+                    <!-- APELLIDO -->
+
+                    <div class="form-group">
+
+                        <label for="apellido" class="form-label">
+
+                            Apellido
+
+                        </label>
+
+                        <input type="text" id="apellido" class="form-input" placeholder="Ej. Ramirez" required>
+
+                    </div>
+
+
+
+                    <!-- TIPO DOCUMENTO -->
+
+                    <div class="form-group">
+
+                        <label for="tipoDocumento" class="form-label">
+
+                            Tipo de documento
+
+                        </label>
+
+
+                        <select id="tipoDocumento" class="form-input" required>
+
+
+                            <option value="">
+                                Selecciona una opción
+                            </option>
+
+
+                            <option value="DNI">
+                                DNI
+                            </option>
+
+
+                            <option value="CE">
+                                Carné de Extranjería
+                            </option>
+
+
+                            <option value="PASAPORTE">
+                                Pasaporte
+                            </option>
+
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- DOCUMENTO -->
+
+                    <div class="form-group">
+
+                        <label for="documento" class="form-label">
+
+                            Número de documento
+
+                        </label>
+
+
+                        <input type="text" id="documento" class="form-input" placeholder="Ej. 45678912" required>
+
+                    </div>
+
+
+
+                    <!-- FECHA NACIMIENTO -->
+
+                    <div class="form-group">
+
+                        <label for="fechaNacimiento" class="form-label">
+
+                            Fecha de nacimiento
+
+                        </label>
+
+
+                        <input type="date" id="fechaNacimiento" class="form-input" required>
+
+                    </div>
+
+
+
+                    <!-- TELEFONO -->
+
+                    <div class="form-group">
+
+                        <label for="telefono" class="form-label">
+
+                            Teléfono
+
+                        </label>
+
+
+                        <input type="text" id="telefono" class="form-input" placeholder="Ej. 999888777" required>
+
+                    </div>
+
+
+
+                    <!-- CORREO -->
+
+                    <div class="form-group">
+
+                        <label for="correo" class="form-label">
+
+                            Correo
+
+                        </label>
+
+
+                        <input type="email" id="correo" class="form-input" placeholder="correo@ejemplo.com" required>
+
+                    </div>
+
+
+
+                    <!-- DIRECCIÓN -->
+
+                    <div class="form-group">
+
+                        <label for="direccion" class="form-label">
+
+                            Dirección
+
+                        </label>
+
+
+                        <input type="text" id="direccion" class="form-input" placeholder="Ej. Av. Los Pinos 123"
+                            required>
+
+                    </div>
+
+
+
+                    <!-- CINTURÓN -->
+
+                    <div class="form-group">
+
+                        <label for="cinturon" class="form-label">
+
+                            Cinturón
+
+                        </label>
+
+
+                        <select id="cinturon" class="form-input" required>
+
+
+                            <option value="BLANCO">
+                                Blanco
+                            </option>
+
+
+                            <option value="AMARILLO">
+                                Amarillo
+                            </option>
+
+
+                            <option value="NARANJA">
+                                Naranja
+                            </option>
+
+
+                            <option value="VERDE">
+                                Verde
+                            </option>
+
+
+                            <option value="AZUL">
+                                Azul
+                            </option>
+
+
+                            <option value="MARRON">
+                                Marrón
+                            </option>
+
+
+                            <option value="NEGRO">
+                                Negro
+                            </option>
+
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =================================================
+                     DATOS DEL APODERADO
+                     ================================================= -->
+
+                <div id="guardianSection" class="guardian-section" hidden>
+
+
+                    <div class="estudiantes-form-header">
+
+                        <h3>
+                            Datos del apoderado
+                        </h3>
+
+                        <p>
+                            El estudiante es menor de edad. Ingresa los datos de su responsable.
+                        </p>
+
+                    </div>
+
+
+
+                    <div class="grid grid--2">
+
+
+                        <!-- NOMBRE -->
+
+                        <div class="form-group">
+
+                            <label for="guardianNombre" class="form-label">
+
+                                Nombre
+
+                            </label>
+
+
+                            <input type="text" id="guardianNombre" class="form-input" placeholder="Ej. Pedro" disabled>
+
+                        </div>
+
+
+
+                        <!-- APELLIDO -->
+
+                        <div class="form-group">
+
+                            <label for="guardianApellido" class="form-label">
+
+                                Apellido
+
+                            </label>
+
+
+                            <input type="text" id="guardianApellido" class="form-input" placeholder="Ej. Flores"
+                                disabled>
+
+                        </div>
+
+
+
+                        <!-- TIPO DOCUMENTO -->
+
+                        <div class="form-group">
+
+                            <label for="guardianTipoDocumento" class="form-label">
+
+                                Tipo de documento
+
+                            </label>
+
+
+                            <select id="guardianTipoDocumento" class="form-input" disabled>
+
+
+                                <option value="">
+                                    Selecciona una opción
+                                </option>
+
+
+                                <option value="DNI">
+                                    DNI
+                                </option>
+
+
+                                <option value="CE">
+                                    Carné de Extranjería
+                                </option>
+
+
+                                <option value="PASAPORTE">
+                                    Pasaporte
+                                </option>
+
+
+                            </select>
+
+                        </div>
+
+
+
+                        <!-- DOCUMENTO -->
+
+                        <div class="form-group">
+
+                            <label for="guardianDocumento" class="form-label">
+
+                                Número de documento
+
+                            </label>
+
+
+                            <input type="text" id="guardianDocumento" class="form-input" placeholder="Ej. 45678912"
+                                disabled>
+
+                        </div>
+
+
+
+                        <!-- TELEFONO -->
+
+                        <div class="form-group">
+
+                            <label for="guardianTelefono" class="form-label">
+
+                                Teléfono
+
+                            </label>
+
+
+                            <input type="text" id="guardianTelefono" class="form-input" placeholder="Ej. 999888777"
+                                disabled>
+
+                        </div>
+
+
+
+                        <!-- CORREO -->
+
+                        <div class="form-group">
+
+                            <label for="guardianCorreo" class="form-label">
+
+                                Correo
+
+                            </label>
+
+
+                            <input type="email" id="guardianCorreo" class="form-input" placeholder="correo@ejemplo.com"
+                                disabled>
+
+                        </div>
+
+
+
+                        <!-- DIRECCIÓN -->
+
+                        <div class="form-group">
+
+                            <label for="guardianDireccion" class="form-label">
+
+                                Dirección
+
+                            </label>
+
+
+                            <input type="text" id="guardianDireccion" class="form-input"
+                                placeholder="Ej. Av. Los Pinos 123" disabled>
+
+                        </div>
+
+
+
+                        <!-- PARENTESCO -->
+
+                        <div class="form-group">
+
+                            <label for="guardianParentesco" class="form-label">
+
+                                Parentesco
+
+                            </label>
+
+
+                            <select id="guardianParentesco" class="form-input" disabled>
+
+
+                                <option value="">
+                                    Selecciona una opción
+                                </option>
+
+
+                                <option value="PADRE">
+                                    Padre
+                                </option>
+
+
+                                <option value="MADRE">
+                                    Madre
+                                </option>
+
+
+                                <option value="TUTOR">
+                                    Tutor
+                                </option>
+
+
+                                <option value="APODERADO">
+                                    Apoderado
+                                </option>
+
+
+                                <option value="OTRO">
+                                    Otro
+                                </option>
+
+
+                            </select>
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- MENSAJE -->
+
+                <div id="studentMessage" class="estudiantes-message" hidden>
+                </div>
+
+
+
+                <!-- BOTONES -->
+
+                <div class="estudiantes-form-actions">
+
+
+                    <button type="button" id="cancelRegisterStudentButton" class="btn btn--secondary">
+
+                        Cancelar
+
+                    </button>
+
+
+                    <button type="submit" class="btn btn--primary">
+
+                        Registrar estudiante
+
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =========================================================
+         MODAL EDITAR ESTUDIANTE
+         ========================================================= -->
+
+    <div id="editStudentModal" class="modal" hidden>
+
+
+        <div class="modal__overlay" id="editStudentModalOverlay">
+        </div>
+
+
+
+        <div class="modal__content modal__content--student" role="dialog" aria-modal="true"
+            aria-labelledby="editStudentModalTitle">
+
+
+            <!-- HEADER -->
+
+            <div class="modal__header">
+
+
+                <div>
+
+                    <h2 id="editStudentModalTitle">
+                        Editar estudiante
+                    </h2>
+
+                    <p>
+                        Modifica los datos del estudiante seleccionado.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="modal__close" id="closeEditStudentButton" aria-label="Cerrar">
+
+                    ×
+
+                </button>
+
+
+            </div>
+
+
+
+            <!-- FORMULARIO -->
+
+            <form id="editStudentForm" class="estudiantes-form">
+
+
+                <input type="hidden" id="editId">
+
+
+
+                <!-- =================================================
+                     FOTO
+                     ================================================= -->
+
+                <div class="student-modal-photo">
+
+
+                    <div class="student-modal-photo__circle" id="editFotoUpload">
+
+
+                        <img id="editFotoPreview" src="" alt="Vista previa de la fotografía" hidden>
+
+
+                        <span id="editFotoUploadText" class="student-modal-photo__placeholder">
+
+                            👤
+
+                        </span>
+
+
+                    </div>
+
+
+
+                    <label for="editFoto" class="student-modal-photo__button">
+
+                        Cambiar fotografía
+
+                    </label>
+
+
+                    <input type="file" id="editFoto" accept="image/jpeg,image/png,image/webp" hidden>
+
+
+                    <small>
+                        JPG, PNG o WEBP. Máximo 5 MB.
+                    </small>
+
+
+                    <button type="button" id="removeEditFotoButton" class="btn btn--secondary" hidden>
+
+                        Quitar foto
+
+                    </button>
+
+
+                </div>
+
+
+
+                <!-- =================================================
+                     DATOS DEL ESTUDIANTE
+                     ================================================= -->
+
+                <div class="grid grid--2">
+
+
+                    <!-- NOMBRE -->
+
+                    <div class="form-group">
+
+                        <label for="editNombre" class="form-label">
+
+                            Nombre
+
+                        </label>
+
+
+                        <input type="text" id="editNombre" class="form-input" required>
+
+                    </div>
+
+
+
+                    <!-- APELLIDO -->
+
+                    <div class="form-group">
+
+                        <label for="editApellido" class="form-label">
+
+                            Apellido
+
+                        </label>
+
+
+                        <input type="text" id="editApellido" class="form-input" required>
+
+                    </div>
+
+
+
+                    <!-- DOCUMENTO -->
+
+                    <div class="form-group">
+
+                        <label for="editDocumento" class="form-label">
+
+                            Documento
+
+                        </label>
+
+
+                        <input type="text" id="editDocumento" class="form-input" required>
+
+                    </div>
+
+
+
+                    <!-- TELEFONO -->
+
+                    <div class="form-group">
+
+                        <label for="editTelefono" class="form-label">
+
+                            Teléfono
+
+                        </label>
+
+
+                        <input type="text" id="editTelefono" class="form-input">
+
+                    </div>
+
+
+
+                    <!-- CORREO -->
+
+                    <div class="form-group">
+
+                        <label for="editCorreo" class="form-label">
+
+                            Correo
+
+                        </label>
+
+
+                        <input type="email" id="editCorreo" class="form-input" required>
+
+                    </div>
+
+
+
+                    <!-- CINTURÓN -->
+
+                    <div class="form-group">
+
+                        <label for="editCinturon" class="form-label">
+
+                            Cinturón
+
+                        </label>
+
+
+                        <select id="editCinturon" class="form-input" required>
+
+
+                            <option value="BLANCO">
+                                Blanco
+                            </option>
+
+
+                            <option value="AMARILLO">
+                                Amarillo
+                            </option>
+
+
+                            <option value="NARANJA">
+                                Naranja
+                            </option>
+
+
+                            <option value="VERDE">
+                                Verde
+                            </option>
+
+
+                            <option value="AZUL">
+                                Azul
+                            </option>
+
+
+                            <option value="MARRON">
+                                Marrón
+                            </option>
+
+
+                            <option value="NEGRO">
+                                Negro
+                            </option>
+
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =================================================
+                     APODERADO
+                     ================================================= -->
+
+                <div id="editGuardianSection" class="guardian-section">
+
+
+                    <div class="estudiantes-form-header">
+
+
+                        <h3>
+                            Apoderado
+                        </h3>
+
+
+                        <p id="editGuardianDescription">
+                            Gestiona el apoderado del estudiante.
+                        </p>
+
+
+                    </div>
+
+
+
+                    <!-- INFORMACIÓN DEL APODERADO -->
+
+                    <div id="guardianInfo" class="guardian-info" hidden>
+
+
+                        <div class="guardian-info__header">
+
+                            <strong id="guardianFullName">
+                                Apoderado
+                            </strong>
+
+                            <span id="guardianRelationship">
+                                Parentesco
+                            </span>
+
+                        </div>
+
+
+                        <div class="guardian-info__details">
+
+                            <span id="guardianDocumentDisplay">
+                                Documento
+                            </span>
+
+                            <span id="guardianPhoneDisplay">
+                                Teléfono
+                            </span>
+
+                            <span id="guardianEmailDisplay">
+                                Correo
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- SIN APODERADO -->
+
+                    <div id="guardianEmptyState" class="guardian-empty">
+
+
+                        <p>
+                            Este estudiante no tiene un apoderado registrado.
+                        </p>
+
+
+                    </div>
+
+
+
+                    <!-- ACCIONES APODERADO -->
+
+                    <div class="guardian-actions">
+
+
+                        <button type="button" id="editGuardianButton" class="btn btn--secondary" hidden>
+
+                            Editar apoderado
+
+                        </button>
+
+
+                        <button type="button" id="addGuardianButton" class="btn btn--primary">
+
+                            + Agregar apoderado
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =================================================
+                     FORMULARIO EDITAR APODERADO
+                     ================================================= -->
+
+                <div id="editGuardianFormSection" class="guardian-section" hidden>
+
+
+                    <div class="estudiantes-form-header">
+
+
+                        <h3>
+                            Datos del apoderado
+                        </h3>
+
+
+                        <p>
+                            Ingresa o modifica los datos del apoderado.
+                        </p>
+
+
+                    </div>
+
+
+
+                    <input type="hidden" id="editGuardianId">
+
+
+
+                    <div class="grid grid--2">
+
+
+                        <!-- NOMBRE -->
+
+                        <div class="form-group">
+
+                            <label for="editGuardianNombre" class="form-label">
+
+                                Nombre
+
+                            </label>
+
+
+                            <input type="text" id="editGuardianNombre" class="form-input">
+
+                        </div>
+
+
+
+                        <!-- APELLIDO -->
+
+                        <div class="form-group">
+
+                            <label for="editGuardianApellido" class="form-label">
+
+                                Apellido
+
+                            </label>
+
+
+                            <input type="text" id="editGuardianApellido" class="form-input">
+
+                        </div>
+
+
+
+                        <!-- TIPO DOCUMENTO -->
+
+                        <div class="form-group">
+
+                            <label for="editGuardianTipoDocumento" class="form-label">
+
+                                Tipo de documento
+
+                            </label>
+
+
+                            <select id="editGuardianTipoDocumento" class="form-input">
+
+
+                                <option value="">
+                                    Selecciona una opción
+                                </option>
+
+
+                                <option value="DNI">
+                                    DNI
+                                </option>
+
+
+                                <option value="CE">
+                                    Carné de Extranjería
+                                </option>
+
+
+                                <option value="PASAPORTE">
+                                    Pasaporte
+                                </option>
+
+
+                            </select>
+
+                        </div>
+
+
+
+                        <!-- DOCUMENTO -->
+
+                        <div class="form-group">
+
+                            <label for="editGuardianDocumento" class="form-label">
+
+                                Número de documento
+
+                            </label>
+
+
+                            <input type="text" id="editGuardianDocumento" class="form-input">
+
+                        </div>
+
+
+
+                        <!-- TELEFONO -->
+
+                        <div class="form-group">
+
+                            <label for="editGuardianTelefono" class="form-label">
+
+                                Teléfono
+
+                            </label>
+
+
+                            <input type="text" id="editGuardianTelefono" class="form-input">
+
+                        </div>
+
+
+
+                        <!-- CORREO -->
+
+                        <div class="form-group">
+
+                            <label for="editGuardianCorreo" class="form-label">
+
+                                Correo
+
+                            </label>
+
+
+                            <input type="email" id="editGuardianCorreo" class="form-input">
+
+                        </div>
+
+
+
+                        <!-- DIRECCIÓN -->
+
+                        <div class="form-group">
+
+                            <label for="editGuardianDireccion" class="form-label">
+
+                                Dirección
+
+                            </label>
+
+
+                            <input type="text" id="editGuardianDireccion" class="form-input">
+
+                        </div>
+
+
+
+                        <!-- PARENTESCO -->
+
+                        <div class="form-group">
+
+                            <label for="editGuardianParentesco" class="form-label">
+
+                                Parentesco
+
+                            </label>
+
+
+                            <select id="editGuardianParentesco" class="form-input">
+
+
+                                <option value="">
+                                    Selecciona una opción
+                                </option>
+
+
+                                <option value="PADRE">
+                                    Padre
+                                </option>
+
+
+                                <option value="MADRE">
+                                    Madre
+                                </option>
+
+
+                                <option value="TUTOR">
+                                    Tutor
+                                </option>
+
+
+                                <option value="APODERADO">
+                                    Apoderado
+                                </option>
+
+
+                                <option value="OTRO">
+                                    Otro
+                                </option>
+
+
+                            </select>
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- ACCIONES APODERADO -->
+
+                    <div class="estudiantes-form-actions">
+
+
+                        <button type="button" id="cancelGuardianEditButton" class="btn btn--secondary">
+
+                            Cancelar
+
+                        </button>
+
+
+                        <button type="button" id="saveGuardianButton" class="btn btn--primary">
+
+                            Guardar apoderado
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- MENSAJE -->
+
+                <div id="editStudentMessage" class="estudiantes-message" hidden>
+                </div>
+
+
+
+                <!-- BOTONES PRINCIPALES -->
+
+                <div class="estudiantes-form-actions">
+
+
+                    <button type="button" id="cancelEditButton" class="btn btn--secondary">
+
+                        Cancelar
+
+                    </button>
+
+
+                    <button type="submit" class="btn btn--primary">
+
+                        Guardar cambios
+
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+         ========================================================= -->
 
     <script src="/js/estudiantes.js"></script>
+
     <script src="/js/logout.js"></script>
+
 
 </body>
 

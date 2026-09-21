@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Kihon | Administración</title>
@@ -12,101 +13,729 @@
 
 </head>
 
+
 <body>
 
-    <main class="page-container">
 
-        <!-- ==========================================
-             HEADER
-             ========================================== -->
-
-        <header class="dashboard-header">
-
-            <div>
-                <h1>Panel de Administración</h1>
-
-                <p>
-                    Gestión general del sistema Kihon
-                </p>
-            </div>
-
-            <div class="dashboard-user">
-
-                <span id="usernameDisplay">
-                    Administrador
-                </span>
-
-            </div>
-
-        </header>
+    <main class="app-layout">
 
 
         <!-- ==========================================
-             GESTIÓN DEL SISTEMA
-             ========================================== -->
+         SIDEBAR
+         ========================================== -->
 
-        <section class="dashboard-section">
+        <aside class="sidebar">
 
-            <h2>Gestión del sistema</h2>
+            <div class="sidebar__logo">
+                KIHON
+            </div>
 
-            <div class="dashboard-actions">
 
-                <a href="/admin/estudiantes" class="btn btn--primary">
+            <nav class="sidebar__nav">
+
+                <a href="/admin/admin" class="sidebar__link sidebar__link--active">
+
+                    Dashboard
+
+                </a>
+
+
+                <a href="/admin/estudiantes" class="sidebar__link">
+
                     Estudiantes
+
                 </a>
 
-                <a href="/admin/grupos" class="btn btn--secondary">
+
+                <a href="/admin/grupos" class="sidebar__link">
+
                     Grupos
+
                 </a>
 
-                <a href="/admin/asistencia" class="btn btn--secondary">
+
+                <a href="/admin/asistencia" class="sidebar__link">
+
                     Asistencia
+
                 </a>
 
-                <a href="/admin/horario" class="btn btn--secondary">
+
+                <a href="/admin/horario" class="sidebar__link">
+
                     Horario
+
                 </a>
 
-                <a href="/admin/inscripciones" class="btn btn--secondary">
+
+                <a href="/admin/inscripciones" class="sidebar__link">
+
                     Inscripciones
+
                 </a>
 
-                <a href="/admin/reportes" class="btn btn--secondary">
+
+                <a href="/admin/reportes" class="sidebar__link">
+
                     Reportes
+
                 </a>
 
-                <a href="/admin/usuarios" class="btn btn--accent">
+
+                <a href="/admin/usuarios" class="sidebar__link">
+
                     Usuarios
+
                 </a>
 
-                <a href="/admin/perfil" class="btn btn--secondary">
+
+                <a href="/admin/perfil" class="sidebar__link">
+
                     Mi perfil
+
                 </a>
 
-            </div>
+            </nav>
 
-        </section>
+        </aside>
+
 
 
         <!-- ==========================================
-             SESIÓN
+         CONTENIDO PRINCIPAL
+         ========================================== -->
+
+        <section class="main-content">
+
+
+            <!-- ==========================================
+             TOPBAR
              ========================================== -->
 
-        <section class="dashboard-section">
+            <header class="topbar">
 
-            <h2>Sesión</h2>
 
-            <a href="#" id="logoutButton" class="btn btn--logout">
-                Cerrar sesión
-            </a>
+                <!-- ==========================================
+         ROL
+         ========================================== -->
+
+                <div class="topbar__role">
+
+                    <span class="topbar__role-label">
+                        Rol
+                    </span>
+
+                    <strong id="roleDisplay">
+                        Administrador
+                    </strong>
+
+                </div>
+
+
+                <!-- ==========================================
+         ACCIONES DEL USUARIO
+         ========================================== -->
+
+                <div class="topbar__actions">
+
+
+                    <!-- ======================================
+             NOTIFICACIONES
+             ====================================== -->
+
+                    <button type="button" class="topbar__notification" id="notificationButton"
+                        aria-label="Notificaciones">
+
+                        <span class="topbar__notification-icon">
+                            🔔
+                        </span>
+
+                        <span id="notificationCount" class="topbar__notification-count" hidden>
+                            0
+                        </span>
+
+                    </button>
+
+
+                    <!-- ======================================
+             PERFIL
+             ====================================== -->
+
+                    <div class="topbar__profile" id="profileMenuContainer">
+
+
+                        <!-- BOTÓN PERFIL -->
+
+                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
+                            aria-expanded="false">
+
+
+                            <!-- AVATAR -->
+
+                            <div class="topbar__avatar" id="userProfileAvatar">
+
+                                <span id="userAvatarInitial">
+                                    U
+                                </span>
+
+                            </div>
+
+
+                            <!-- INFORMACIÓN -->
+
+                            <div class="topbar__profile-info">
+
+                                <strong id="usernameDisplay">
+                                    Usuario
+                                </strong>
+
+                                <span id="profileRoleDisplay">
+                                    Administrador
+                                </span>
+
+                            </div>
+
+
+                            <!-- FLECHA -->
+
+                            <span class="topbar__profile-arrow">
+                                ▼
+                            </span>
+
+
+                        </button>
+
+
+                        <!-- ==================================
+                 MENÚ DESPLEGABLE
+                 ================================== -->
+
+                        <div class="topbar__profile-menu" id="profileMenu" hidden>
+
+
+                            <a href="/admin/perfil" class="topbar__profile-menu-item">
+
+                                Editar perfil
+
+                            </a>
+
+
+                            <button type="button" id="topbarLogoutButton"
+                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+
+                                Cerrar sesión
+
+                            </button>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </header>
+
+
+
+            <!-- ==========================================
+             HEADER DEL DASHBOARD
+             ========================================== -->
+
+            <section class="dashboard-header">
+
+
+                <div>
+
+                    <span class="section-kicker">
+                        Administración
+                    </span>
+
+
+                    <h1>
+                        Panel de Administración
+                    </h1>
+
+
+                    <p>
+                        Gestiona y consulta el estado general del dojo Kihon.
+                    </p>
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- ==========================================
+             INDICADORES PRINCIPALES
+             ========================================== -->
+
+            <section class="dashboard-section">
+
+
+                <div class="section-header">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            Resumen
+                        </span>
+
+
+                        <h2>
+                            Estado del dojo
+                        </h2>
+
+
+                        <p>
+                            Información general de los estudiantes y grupos.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="dashboard-kpis">
+
+
+                    <!-- TOTAL ALUMNOS -->
+
+                    <article class="dashboard-kpi">
+
+
+                        <div class="dashboard-kpi__icon">
+                            👥
+                        </div>
+
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Alumnos
+                            </span>
+
+
+                            <strong id="totalStudents">
+                                0
+                            </strong>
+
+
+                            <small>
+                                Total registrados
+                            </small>
+
+                        </div>
+
+
+                    </article>
+
+
+
+                    <!-- ALUMNOS ACTIVOS -->
+
+                    <article class="dashboard-kpi dashboard-kpi--primary">
+
+
+                        <div class="dashboard-kpi__icon">
+                            ✓
+                        </div>
+
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Alumnos activos
+                            </span>
+
+
+                            <strong id="activeStudents">
+                                0
+                            </strong>
+
+
+                            <small>
+                                Actualmente activos
+                            </small>
+
+                        </div>
+
+
+                    </article>
+
+
+
+                    <!-- GRUPOS ACTIVOS -->
+
+                    <article class="dashboard-kpi dashboard-kpi--accent">
+
+
+                        <div class="dashboard-kpi__icon">
+                            🥋
+                        </div>
+
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Grupos activos
+                            </span>
+
+
+                            <strong id="activeGroups">
+                                0
+                            </strong>
+
+
+                            <small>
+                                Grupos disponibles
+                            </small>
+
+                        </div>
+
+
+                    </article>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- ==========================================
+             ASISTENCIA + CINTURONES
+             ========================================== -->
+
+            <section class="dashboard-grid">
+
+
+                <!-- ======================================
+                 ASISTENCIA SEMANAL
+                 ====================================== -->
+
+                <article class="dashboard-section dashboard-chart-card">
+
+
+                    <div class="section-header dashboard-chart-card__header">
+
+
+                        <div>
+
+                            <span class="section-kicker">
+                                Asistencia
+                            </span>
+
+
+                            <h2>
+                                Asistencia semanal
+                            </h2>
+
+
+                            <p>
+                                Asistencia registrada por grupo.
+                            </p>
+
+                        </div>
+
+
+
+                        <!-- FILTRO DE GRUPO -->
+
+                        <div class="dashboard-filter">
+
+                            <label for="attendanceGroupFilter" class="form-label">
+
+                                Grupo
+
+                            </label>
+
+
+                            <select id="attendanceGroupFilter" class="form-input">
+
+
+                                <option value="TODOS">
+                                    Todos los grupos
+                                </option>
+
+
+                            </select>
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- GRÁFICO -->
+
+                    <div class="dashboard-chart">
+
+                        <canvas id="weeklyAttendanceChart">
+                        </canvas>
+
+                    </div>
+
+
+                </article>
+
+
+
+                <!-- ======================================
+                 DISTRIBUCIÓN DE CINTURONES
+                 ====================================== -->
+
+                <article class="dashboard-section dashboard-chart-card">
+
+
+                    <div class="section-header">
+
+
+                        <span class="section-kicker">
+                            Estudiantes
+                        </span>
+
+
+                        <h2>
+                            Distribución por cinturón
+                        </h2>
+
+
+                        <p>
+                            Cantidad de estudiantes según su grado.
+                        </p>
+
+
+                    </div>
+
+
+
+                    <!-- GRÁFICO CIRCULAR -->
+
+                    <div class="dashboard-chart dashboard-chart--donut">
+
+                        <canvas id="beltDistributionChart">
+                        </canvas>
+
+                    </div>
+
+
+                </article>
+
+
+            </section>
+
+
+
+            <!-- ==========================================
+             ESTADO DE LAS CLASES
+             ========================================== -->
+
+            <section class="dashboard-section">
+
+
+                <div class="section-header">
+
+
+                    <span class="section-kicker">
+                        Clases
+                    </span>
+
+
+                    <h2>
+                        Estado de las clases
+                    </h2>
+
+
+                    <p>
+                        Consulta la clase actual y la siguiente actividad programada.
+                    </p>
+
+
+                </div>
+
+
+
+                <div class="class-status-grid">
+
+
+                    <!-- ==================================
+                     CLASE ACTUAL
+                     ================================== -->
+
+                    <article class="class-status-card">
+
+
+                        <div class="class-status-card__header">
+
+
+                            <span class="class-status-card__label">
+                                Ahora
+                            </span>
+
+
+                            <span id="currentClassStatus" class="class-status-badge class-status-badge--idle">
+
+                                Sin clase
+
+                            </span>
+
+
+                        </div>
+
+
+
+                        <div class="class-status-card__content">
+
+
+                            <h3 id="currentClassName">
+                                No hay clase en curso
+                            </h3>
+
+
+                            <p id="currentClassTime">
+                                —
+                            </p>
+
+
+                            <span id="currentClassGroup">
+                                —
+                            </span>
+
+
+                        </div>
+
+
+                    </article>
+
+
+
+                    <!-- ==================================
+                     PRÓXIMA CLASE
+                     ================================== -->
+
+                    <article class="class-status-card">
+
+
+                        <div class="class-status-card__header">
+
+
+                            <span class="class-status-card__label">
+                                Próxima clase
+                            </span>
+
+
+                        </div>
+
+
+
+                        <div class="class-status-card__content">
+
+
+                            <h3 id="nextClassName">
+                                Sin clases próximas
+                            </h3>
+
+
+                            <p id="nextClassTime">
+                                —
+                            </p>
+
+
+                            <span id="nextClassGroup">
+                                —
+                            </span>
+
+
+                        </div>
+
+
+                    </article>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- ==========================================
+             HORARIO DEL DÍA
+             ========================================== -->
+
+            <section class="dashboard-section">
+
+
+                <div class="section-header dashboard-schedule-header">
+
+
+                    <div>
+
+                        <span class="section-kicker">
+                            Horario
+                        </span>
+
+
+                        <h2>
+                            Horario de hoy
+                        </h2>
+
+
+                        <p id="scheduleDate">
+                            Clases programadas para hoy.
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- LISTA DE CLASES -->
+
+                <div id="todaySchedule" class="dashboard-schedule">
+
+
+                    <div class="dashboard-schedule__empty">
+
+                        No hay clases programadas para hoy.
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
 
         </section>
+
 
     </main>
 
 
+
+    <!-- ==========================================
+     SCRIPTS
+     ========================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script src="/js/admin.js"></script>
+
     <script src="/js/logout.js"></script>
+
 
 </body>
 

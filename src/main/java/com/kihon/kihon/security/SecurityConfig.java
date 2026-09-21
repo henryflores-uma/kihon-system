@@ -142,6 +142,17 @@ public class SecurityConfig {
                                                                 "SECRETARIA")
 
                                                 // =========================
+                                                // GESTIÓN DE APODERADOS
+                                                // ADMIN / SECRETARIA
+                                                // =========================
+                                                .requestMatchers(
+                                                                HttpMethod.POST,
+                                                                "/api/apoderados/estudiante/*")
+                                                .hasAnyRole(
+                                                                "ADMIN",
+                                                                "SECRETARIA")
+
+                                                // =========================
                                                 // GESTIÓN DE GRUPOS
                                                 // =========================
                                                 .requestMatchers("/api/grupos/**")

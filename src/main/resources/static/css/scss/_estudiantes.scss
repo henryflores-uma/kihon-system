@@ -2,13 +2,17 @@
     width: 100%;
 }
 
+// ==========================================
+// HEADER
+// ==========================================
+
 .estudiantes-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
 
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 
     h1 {
         margin-bottom: 0.35rem;
@@ -20,35 +24,90 @@
     }
 }
 
-.estudiantes-form-card {
-    margin-bottom: 2rem;
-}
 
-.estudiantes-form-header {
-    margin-bottom: 1.5rem;
+// ==========================================
+// BARRA DE BÚSQUEDA Y FILTROS
+// ==========================================
 
-    h2 {
-        margin-bottom: 0.35rem;
-    }
-
-    p {
-        color: $color-gray-600;
-        font-size: 0.9rem;
-    }
-}
-
-.estudiantes-form {
+.estudiantes-filtros {
     display: flex;
-    flex-direction: column;
-}
-
-.estudiantes-form-actions {
-    display: flex;
-    justify-content: flex-end;
+    align-items: center;
     gap: 1rem;
 
-    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+
+    padding: 1rem;
+
+    background-color: $color-white;
+    border: 1px solid $color-gray-200;
+    border-radius: 8px;
+
+    .estudiantes-busqueda {
+        position: relative;
+        flex: 1;
+
+        input {
+            width: 100%;
+
+            padding: 0.75rem 1rem;
+
+            border: 1px solid $color-gray-200;
+            border-radius: 6px;
+
+            font-size: 0.9rem;
+
+            outline: none;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+
+            &:focus {
+                border-color: $color-black;
+
+                box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+            }
+        }
+    }
+
+    .estudiantes-filtro {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        label {
+            color: $color-gray-600;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        select {
+            min-width: 130px;
+
+            padding: 0.7rem 0.75rem;
+
+            background-color: $color-white;
+
+            border: 1px solid $color-gray-200;
+            border-radius: 6px;
+
+            font-size: 0.85rem;
+
+            cursor: pointer;
+
+            outline: none;
+
+            &:focus {
+                border-color: $color-black;
+            }
+        }
+    }
 }
+
+
+// ==========================================
+// MENSAJES
+// ==========================================
 
 .estudiantes-message {
     margin-bottom: 1rem;
@@ -73,6 +132,11 @@
     background-color: #ffebee;
     color: $color-red;
 }
+
+
+// ==========================================
+// LISTA DE ESTUDIANTES
+// ==========================================
 
 .estudiantes-list-card {
     overflow: hidden;
@@ -102,11 +166,12 @@
 
 .estudiantes-table {
     width: 100%;
+
     border-collapse: collapse;
 
     th,
     td {
-        padding: 1rem;
+        padding: 0.9rem 1rem;
 
         text-align: left;
 
@@ -117,8 +182,9 @@
         background-color: $color-black;
         color: $color-white;
 
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 600;
+
         text-transform: uppercase;
     }
 
@@ -142,6 +208,22 @@
     }
 }
 
+
+// ==========================================
+// DATOS DEL ESTUDIANTE
+// ==========================================
+
+.estudiante-foto {
+    width: 42px;
+    height: 42px;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+
+    border: 2px solid $color-gray-200;
+}
+
 .estudiante-nombre {
     font-weight: 600;
 }
@@ -161,6 +243,11 @@
         font-size: 0.85rem;
     }
 }
+
+
+// ==========================================
+// ESTADO
+// ==========================================
 
 .estudiante-estado {
     display: inline-flex;
@@ -184,6 +271,29 @@
     color: $color-gray-600;
 }
 
+
+// ==========================================
+// ACCIONES
+// ==========================================
+
+.estudiante-acciones {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+
+    .btn {
+        padding: 0.5rem 0.75rem;
+
+        font-size: 0.8rem;
+    }
+}
+
+
+// ==========================================
+// ESTADOS VACÍO / CARGANDO
+// ==========================================
+
 .estudiantes-empty {
     padding: 3rem 1rem;
 
@@ -200,44 +310,1385 @@
     color: $color-gray-600;
 }
 
+
+// ==========================================
+// MODALES
+// ==========================================
+
+.estudiante-modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1000;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 2rem;
+
+    background-color: rgba(0, 0, 0, 0.55);
+
+    backdrop-filter: blur(2px);
+
+    overflow-y: auto;
+}
+
+
+// ==========================================
+// CONTENIDO DEL MODAL
+// ==========================================
+
+.estudiante-modal__content {
+    position: relative;
+
+    width: 100%;
+    max-width: 720px;
+
+    max-height: calc(100vh - 4rem);
+
+    display: flex;
+    flex-direction: column;
+
+    background-color: $color-white;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.25);
+
+    overflow: hidden;
+}
+
+
+// ==========================================
+// HEADER DEL MODAL
+// ==========================================
+
+.estudiante-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 1.25rem 1.5rem;
+
+    border-bottom: 1px solid $color-gray-200;
+
+    h2 {
+        margin: 0;
+
+        font-size: 1.25rem;
+    }
+
+    p {
+        margin-top: 0.25rem;
+
+        color: $color-gray-600;
+
+        font-size: 0.85rem;
+    }
+}
+
+
+// ==========================================
+// BOTÓN CERRAR MODAL
+// ==========================================
+
+.estudiante-modal__close {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    background: transparent;
+
+    border: none;
+
+    border-radius: 50%;
+
+    color: $color-gray-600;
+
+    font-size: 1.5rem;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+
+    &:hover {
+        background-color: $color-gray-100;
+        color: $color-black;
+    }
+}
+
+
+// ==========================================
+// CUERPO DEL MODAL
+// ==========================================
+
+.estudiante-modal__body {
+    padding: 1.5rem;
+
+    overflow-y: auto;
+}
+
+
+// ==========================================
+// FOTO DEL ESTUDIANTE EN MODAL
+// ==========================================
+
+.estudiante-modal__foto {
+    display: flex;
+
+    flex-direction: column;
+    align-items: center;
+
+    margin-bottom: 1.5rem;
+}
+
+.estudiante-modal__foto-preview {
+    width: 110px;
+    height: 110px;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+
+    border: 3px solid $color-gray-200;
+
+    background-color: $color-gray-100;
+}
+
+.estudiante-modal__foto-label {
+    margin-top: 0.75rem;
+
+    color: $color-gray-600;
+
+    font-size: 0.85rem;
+
+    cursor: pointer;
+
+    &:hover {
+        color: $color-black;
+    }
+}
+
+
+// ==========================================
+// FORMULARIO DEL MODAL
+// ==========================================
+
+.estudiante-modal__form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 1.25rem;
+}
+
+.estudiante-modal__form-row {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 1rem;
+}
+
+.estudiante-modal__form-group {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.4rem;
+
+    label {
+        font-size: 0.85rem;
+
+        font-weight: 600;
+
+        color: $color-gray-900;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+
+        padding: 0.7rem 0.8rem;
+
+        background-color: $color-white;
+
+        border: 1px solid $color-gray-200;
+
+        border-radius: 6px;
+
+        font-size: 0.9rem;
+
+        outline: none;
+
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+
+        &:focus {
+            border-color: $color-black;
+
+            box-shadow:
+                0 0 0 2px rgba(0, 0, 0, 0.05);
+        }
+
+        &:disabled {
+            background-color: $color-gray-100;
+
+            cursor: not-allowed;
+        }
+    }
+
+    textarea {
+        min-height: 90px;
+
+        resize: vertical;
+    }
+}
+
+
+// ==========================================
+// APODERADO
+// ==========================================
+
+.estudiante-apoderado {
+    margin-top: 0.5rem;
+
+    padding: 1.25rem;
+
+    background-color: $color-gray-100;
+
+    border: 1px solid $color-gray-200;
+
+    border-radius: 8px;
+}
+
+.estudiante-apoderado__header {
+    margin-bottom: 1rem;
+
+    h3 {
+        margin-bottom: 0.25rem;
+
+        font-size: 1rem;
+    }
+
+    p {
+        color: $color-gray-600;
+
+        font-size: 0.8rem;
+    }
+}
+
+
+// ==========================================
+// FOOTER DEL MODAL
+// ==========================================
+
+.estudiante-modal__footer {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 0.75rem;
+
+    padding: 1rem 1.5rem;
+
+    border-top: 1px solid $color-gray-200;
+
+    background-color: $color-white;
+}
+
+
+// ==========================================
+// MENSAJES DENTRO DEL MODAL
+// ==========================================
+
+.estudiante-modal .estudiantes-message {
+    margin-bottom: 1rem;
+}
+
+
+// ==========================================
+// MENU DE USUARIO
+// ==========================================
+
+.user-menu {
+    position: relative;
+}
+
+.user-menu__button {
+    display: flex;
+
+    align-items: center;
+
+    gap: 0.6rem;
+
+    background: transparent;
+
+    border: none;
+
+    cursor: pointer;
+}
+
+.user-menu__avatar {
+    width: 38px;
+    height: 38px;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+
+    border: 2px solid $color-gray-200;
+}
+
+.user-menu__info {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    line-height: 1.2;
+}
+
+.user-menu__username {
+    font-weight: 600;
+
+    color: $color-gray-900;
+}
+
+.user-menu__role {
+    color: $color-gray-600;
+
+    font-size: 0.75rem;
+}
+
+.user-menu__dropdown {
+    position: absolute;
+
+    top: calc(100% + 0.5rem);
+
+    right: 0;
+
+    z-index: 1100;
+
+    min-width: 180px;
+
+    padding: 0.5rem;
+
+    background-color: $color-white;
+
+    border: 1px solid $color-gray-200;
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.user-menu__dropdown a,
+.user-menu__dropdown button {
+    width: 100%;
+
+    display: block;
+
+    padding: 0.7rem 0.8rem;
+
+    background: transparent;
+
+    border: none;
+
+    border-radius: 5px;
+
+    color: $color-gray-900;
+
+    text-align: left;
+
+    font-size: 0.85rem;
+
+    cursor: pointer;
+
+    &:hover {
+        background-color: $color-gray-100;
+    }
+}
+
+
+// ==========================================
+// RESPONSIVE
+// ==========================================
+
 @media (max-width: 800px) {
 
     .estudiantes-header {
         flex-direction: column;
-        align-items: flex-start;
-    }
 
-    .estudiantes-form-actions {
-        justify-content: stretch;
+        align-items: flex-start;
 
         .btn {
-            flex: 1;
+            width: 100%;
+        }
+    }
+
+    .estudiantes-filtros {
+        flex-direction: column;
+
+        align-items: stretch;
+
+        .estudiantes-busqueda {
+            width: 100%;
+        }
+
+        .estudiantes-filtro {
+            justify-content: space-between;
+
+            select {
+                flex: 1;
+            }
         }
     }
 
     .estudiantes-table {
         min-width: 700px;
     }
+
+    .estudiante-modal {
+        padding: 1rem;
+    }
+
+    .estudiante-modal__content {
+        max-height: calc(100vh - 2rem);
+    }
+
+    .estudiante-modal__form-row {
+        grid-template-columns: 1fr;
+    }
 }
+
 
 @media (max-width: 500px) {
 
-    .estudiantes-form-actions {
+    .estudiantes-header {
+        h1 {
+            font-size: 1.5rem;
+        }
+    }
+
+    .estudiante-modal {
+        align-items: flex-start;
+
+        padding: 0.5rem;
+    }
+
+    .estudiante-modal__content {
+        max-height: calc(100vh - 1rem);
+
+        border-radius: 8px;
+    }
+
+    .estudiante-modal__header {
+        padding: 1rem;
+    }
+
+    .estudiante-modal__body {
+        padding: 1rem;
+    }
+
+    .estudiante-modal__footer {
+        flex-direction: column;
+
+        padding: 1rem;
+
+        .btn {
+            width: 100%;
+        }
+    }
+
+    .estudiante-modal__foto-preview {
+        width: 90px;
+        height: 90px;
+    }
+}
+
+// ==========================================
+// BARRA SUPERIOR - ESTUDIANTES
+// ==========================================
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+
+    margin-bottom: 2rem;
+
+    padding: 0.75rem 0;
+
+    border-bottom: 1px solid $color-gray-200;
+}
+
+
+// ==========================================
+// ROL
+// ==========================================
+
+.topbar__role {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    color: $color-gray-900;
+
+    font-size: 0.9rem;
+}
+
+.topbar__role-label {
+    color: $color-gray-600;
+
+    font-size: 0.8rem;
+}
+
+
+// ==========================================
+// ACCIONES
+// ==========================================
+
+.topbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+
+// ==========================================
+// NOTIFICACIONES
+// ==========================================
+
+.topbar__notification {
+    position: relative;
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    background: transparent;
+
+    border: none;
+    border-radius: 50%;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: $color-gray-100;
+    }
+}
+
+.topbar__notification-icon {
+    font-size: 1.15rem;
+}
+
+.topbar__notification-count {
+    position: absolute;
+
+    top: 2px;
+    right: 1px;
+
+    min-width: 17px;
+    height: 17px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 4px;
+
+    background-color: $color-red;
+    color: $color-white;
+
+    border-radius: 50%;
+
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+
+// ==========================================
+// PERFIL
+// ==========================================
+
+.topbar__profile {
+    position: relative;
+}
+
+.topbar__profile-button {
+    display: flex;
+    align-items: center;
+
+    gap: 0.65rem;
+
+    padding: 0.35rem;
+
+    background: transparent;
+
+    border: none;
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: $color-gray-100;
+    }
+}
+
+
+// ==========================================
+// AVATAR
+// ==========================================
+
+.topbar__avatar {
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    background-color: $color-black;
+    color: $color-white;
+
+    border-radius: 50%;
+
+    font-size: 0.9rem;
+    font-weight: 700;
+
+    overflow: hidden;
+}
+
+.topbar__avatar img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+
+// ==========================================
+// INFORMACIÓN DEL PERFIL
+// ==========================================
+
+.topbar__profile-info {
+    display: flex;
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 0.15rem;
+
+    min-width: 100px;
+
+    line-height: 1.2;
+}
+
+.topbar__profile-info strong {
+    color: $color-gray-900;
+
+    font-size: 0.85rem;
+
+    font-weight: 600;
+}
+
+.topbar__profile-info span {
+    color: $color-gray-600;
+
+    font-size: 0.72rem;
+}
+
+
+// ==========================================
+// FLECHA
+// ==========================================
+
+.topbar__profile-arrow {
+    color: $color-gray-600;
+
+    font-size: 0.65rem;
+
+    transition: transform 0.2s ease;
+}
+
+
+// ==========================================
+// MENU DESPLEGABLE
+// ==========================================
+
+.topbar__profile-menu {
+    position: absolute;
+
+    top: calc(100% + 0.5rem);
+    right: 0;
+
+    z-index: 1000;
+
+    width: 190px;
+
+    padding: 0.5rem;
+
+    background-color: $color-white;
+
+    border: 1px solid $color-gray-200;
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.topbar__profile-menu-item {
+    width: 100%;
+
+    display: block;
+
+    padding: 0.7rem 0.8rem;
+
+    background: transparent;
+
+    border: none;
+    border-radius: 6px;
+
+    color: $color-gray-900;
+
+    text-align: left;
+
+    text-decoration: none;
+
+    font-size: 0.85rem;
+
+    cursor: pointer;
+
+    box-sizing: border-box;
+
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: $color-gray-100;
+    }
+}
+
+.topbar__profile-menu-item--danger {
+    color: $color-red;
+}
+
+
+// ==========================================
+// FILTROS
+// ==========================================
+
+.estudiantes-filters-card {
+    margin-bottom: 1.5rem;
+
+    padding: 1.25rem;
+}
+
+.estudiantes-search {
+    margin-bottom: 1.25rem;
+}
+
+.estudiantes-filters {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 1rem;
+}
+
+
+// ==========================================
+// MODAL BASE
+// ==========================================
+
+.modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 2000;
+
+    width: 100%;
+    height: 100%;
+
+    overflow-y: auto;
+}
+
+.modal[hidden] {
+    display: none;
+}
+
+
+// ==========================================
+// OVERLAY
+// ==========================================
+
+.modal__overlay {
+    position: fixed;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.6);
+
+    backdrop-filter: blur(2px);
+}
+
+
+// ==========================================
+// CONTENIDO DEL MODAL
+// ==========================================
+
+.modal__content {
+    position: relative;
+
+    z-index: 2001;
+
+    width: calc(100% - 2rem);
+
+    max-width: 720px;
+
+    max-height: calc(100vh - 4rem);
+
+    margin: 2rem auto;
+
+    display: flex;
+    flex-direction: column;
+
+    background-color: $color-white;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.25);
+
+    overflow: hidden;
+}
+
+.modal__content--student {
+    max-width: 760px;
+}
+
+
+// ==========================================
+// HEADER DEL MODAL
+// ==========================================
+
+.modal__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 1rem;
+
+    padding: 1.25rem 1.5rem;
+
+    border-bottom: 1px solid $color-gray-200;
+
+    background-color: $color-white;
+}
+
+.modal__header h2 {
+    margin: 0;
+
+    color: $color-gray-900;
+
+    font-size: 1.25rem;
+}
+
+.modal__header p {
+    margin-top: 0.3rem;
+
+    color: $color-gray-600;
+
+    font-size: 0.85rem;
+}
+
+
+// ==========================================
+// BOTÓN CERRAR
+// ==========================================
+
+.modal__close {
+    width: 36px;
+    height: 36px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    background: transparent;
+
+    border: none;
+    border-radius: 50%;
+
+    color: $color-gray-600;
+
+    font-size: 1.6rem;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+
+    &:hover {
+        background-color: $color-gray-100;
+
+        color: $color-black;
+    }
+}
+
+
+// ==========================================
+// FORMULARIO DENTRO DEL MODAL
+// ==========================================
+
+.modal .estudiantes-form {
+    max-height: calc(100vh - 8rem);
+
+    padding: 1.5rem;
+
+    overflow-y: auto;
+}
+
+
+// ==========================================
+// FOTO DEL ESTUDIANTE
+// ==========================================
+
+.student-modal-photo {
+    display: flex;
+
+    flex-direction: column;
+    align-items: center;
+
+    margin-bottom: 1.75rem;
+
+    text-align: center;
+}
+
+.student-modal-photo__circle {
+    width: 120px;
+    height: 120px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 0.75rem;
+
+    background-color: $color-gray-100;
+
+    border: 3px solid $color-gray-200;
+
+    border-radius: 50%;
+
+    overflow: hidden;
+}
+
+.student-modal-photo__circle img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.student-modal-photo__placeholder {
+    color: $color-gray-600;
+
+    font-size: 2.5rem;
+}
+
+.student-modal-photo__button {
+    display: inline-block;
+
+    margin-bottom: 0.4rem;
+
+    color: $color-gray-900;
+
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.student-modal-photo small {
+    margin-bottom: 0.75rem;
+
+    color: $color-gray-600;
+
+    font-size: 0.75rem;
+}
+
+
+// ==========================================
+// SECCIÓN APODERADO
+// ==========================================
+
+.guardian-section {
+    margin-top: 1.5rem;
+
+    padding: 1.25rem;
+
+    background-color: $color-gray-100;
+
+    border: 1px solid $color-gray-200;
+
+    border-radius: 8px;
+}
+
+.guardian-section .estudiantes-form-header {
+    margin-bottom: 1.25rem;
+}
+
+.guardian-section .estudiantes-form-header h3 {
+    margin-bottom: 0.3rem;
+
+    font-size: 1rem;
+}
+
+.guardian-section .estudiantes-form-header p {
+    color: $color-gray-600;
+
+    font-size: 0.8rem;
+}
+
+
+// ==========================================
+// INFORMACIÓN APODERADO
+// ==========================================
+
+.guardian-info {
+    margin-bottom: 1rem;
+
+    padding: 1rem;
+
+    background-color: $color-white;
+
+    border: 1px solid $color-gray-200;
+
+    border-radius: 6px;
+}
+
+.guardian-info__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 1rem;
+
+    margin-bottom: 0.75rem;
+}
+
+.guardian-info__header strong {
+    color: $color-gray-900;
+
+    font-size: 0.9rem;
+}
+
+.guardian-info__header span {
+    padding: 0.3rem 0.6rem;
+
+    background-color: $color-gray-100;
+
+    border-radius: 20px;
+
+    color: $color-gray-600;
+
+    font-size: 0.7rem;
+}
+
+.guardian-info__details {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 0.5rem 1rem;
+}
+
+.guardian-info__details span {
+    color: $color-gray-600;
+
+    font-size: 0.8rem;
+}
+
+
+// ==========================================
+// APODERADO VACÍO
+// ==========================================
+
+.guardian-empty {
+    margin-bottom: 1rem;
+
+    padding: 1rem;
+
+    background-color: $color-white;
+
+    border: 1px dashed $color-gray-200;
+
+    border-radius: 6px;
+
+    text-align: center;
+}
+
+.guardian-empty p {
+    margin: 0;
+
+    color: $color-gray-600;
+
+    font-size: 0.85rem;
+}
+
+
+// ==========================================
+// ACCIONES APODERADO
+// ==========================================
+
+.guardian-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 0.75rem;
+
+    margin-top: 1rem;
+}
+
+
+// ==========================================
+// ACCIONES FORMULARIO
+// ==========================================
+
+.modal .estudiantes-form-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 0.75rem;
+
+    margin-top: 1.5rem;
+
+    padding-top: 1rem;
+
+    border-top: 1px solid $color-gray-200;
+}
+
+
+// ==========================================
+// RESPONSIVE
+// ==========================================
+
+@media (max-width: 800px) {
+
+    .topbar {
+        align-items: flex-start;
+    }
+
+    .topbar__profile-info {
+        display: none;
+    }
+
+    .estudiantes-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .modal__content {
+        width: calc(100% - 1.5rem);
+
+        max-height: calc(100vh - 1.5rem);
+
+        margin: 0.75rem auto;
+    }
+
+    .modal .estudiantes-form {
+        max-height: calc(100vh - 7rem);
+
+        padding: 1rem;
+    }
+
+    .modal .grid--2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .topbar {
+        margin-bottom: 1.25rem;
+    }
+
+    .topbar__role {
+        font-size: 0.8rem;
+    }
+
+    .topbar__actions {
+        gap: 0.35rem;
+    }
+
+    .modal__header {
+        padding: 1rem;
+    }
+
+    .modal__header h2 {
+        font-size: 1.05rem;
+    }
+
+    .modal .estudiantes-form-actions {
         flex-direction: column;
 
         .btn {
             width: 100%;
         }
     }
+
+    .guardian-actions {
+        flex-direction: column;
+
+        .btn {
+            width: 100%;
+        }
+    }
+
+    .student-modal-photo__circle {
+        width: 100px;
+        height: 100px;
+    }
 }
 
-.estudiante-acciones {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+// ==========================================
+// CORRECCIÓN FOTO DEL MODAL
+// ==========================================
 
-    .btn {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.8rem;
-    }
+.student-modal-photo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+
+    margin-bottom: 1.75rem;
+
+    text-align: center;
+}
+
+.student-modal-photo__circle {
+    position: relative;
+
+    width: 120px;
+    height: 120px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 auto 0.75rem;
+
+    background-color: $color-gray-100;
+
+    border: 3px solid $color-gray-200;
+
+    border-radius: 50%;
+
+    overflow: hidden;
+}
+
+.student-modal-photo__circle img {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    margin: 0;
+    padding: 0;
+
+    object-fit: cover;
+
+    border: none;
+    border-radius: 50%;
+}
+
+.student-modal-photo__placeholder {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    font-size: 2.5rem;
+
+    line-height: 1;
+}
+
+.student-modal-photo__button {
+    display: block;
+
+    margin: 0 auto 0.4rem;
+
+    text-align: center;
+
+    cursor: pointer;
+}
+
+.student-modal-photo small {
+    display: block;
+
+    margin: 0 auto 0.75rem;
+
+    text-align: center;
+
+    color: $color-gray-600;
+
+    font-size: 0.75rem;
 }

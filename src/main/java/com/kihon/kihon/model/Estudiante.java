@@ -40,6 +40,9 @@ public class Estudiante {
     @Column
     private String foto;
 
+    @Column(nullable = false)
+    private String cinturon = "BLANCO";
+
     @Column(name = "fecha_inscripcion", nullable = false)
     private LocalDateTime fechaInscripcion;
 
@@ -143,6 +146,14 @@ public class Estudiante {
 
     public void setFoto(String foto) {
         this.foto = foto;
+    }
+
+    public String getCinturon() {
+        return cinturon;
+    }
+
+    public void setCinturon(String cinturon) {
+        this.cinturon = cinturon;
     }
 
     public LocalDateTime getFechaInscripcion() {
