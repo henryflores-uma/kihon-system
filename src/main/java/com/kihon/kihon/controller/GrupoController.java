@@ -27,10 +27,9 @@ public class GrupoController {
                 Grupo grupo = grupoService.crearGrupo(
                                 request.getNombre(),
                                 request.getDescripcion(),
-                                request.getHoraInicio(),
-                                request.getHoraFin(),
                                 request.getCapacidad(),
-                                request.getSenseiId());
+                                request.getSenseiId(),
+                                request.getFrecuenciaId());
 
                 GrupoResponse response = convertirAResponse(grupo);
 
@@ -79,10 +78,9 @@ public class GrupoController {
                                 id,
                                 request.getNombre(),
                                 request.getDescripcion(),
-                                request.getHoraInicio(),
-                                request.getHoraFin(),
                                 request.getCapacidad(),
-                                request.getSenseiId());
+                                request.getSenseiId(),
+                                request.getFrecuenciaId());
 
                 return ResponseEntity.ok(
                                 convertirAResponse(grupo));
@@ -121,8 +119,6 @@ public class GrupoController {
                                 grupo.getId(),
                                 grupo.getNombre(),
                                 grupo.getDescripcion(),
-                                grupo.getHoraInicio(),
-                                grupo.getHoraFin(),
                                 grupo.getCapacidad(),
                                 estudiantesActivos,
                                 cuposDisponibles,
@@ -134,6 +130,16 @@ public class GrupoController {
                                                 ? grupo.getSensei().getNombre()
                                                                 + " "
                                                                 + grupo.getSensei().getApellido()
+                                                : null,
+                                grupo.getFrecuencia() != null
+                                                ? grupo.getFrecuencia().getId()
+                                                : null,
+                                grupo.getFrecuencia() != null
+                                                ? grupo.getFrecuencia().getNombre()
+                                                : null,
+                                grupo.getFrecuencia() != null
+                                                ? grupo.getFrecuencia()
+                                                                .getFrecuenciaSemanal()
                                                 : null);
         }
 }

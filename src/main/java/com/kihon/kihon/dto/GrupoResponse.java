@@ -1,20 +1,19 @@
 package com.kihon.kihon.dto;
 
-import java.time.LocalTime;
-
 public class GrupoResponse {
 
     private Long id;
     private String nombre;
     private String descripcion;
-    private LocalTime horaInicio;
-    private LocalTime horaFin;
     private Integer capacidad;
     private long estudiantesActivos;
     private long cuposDisponibles;
     private String estado;
     private Long senseiId;
     private String senseiNombre;
+    private Long frecuenciaId;
+    private String frecuenciaNombre;
+    private Integer frecuenciaSemanal;
 
     public GrupoResponse() {
     }
@@ -23,26 +22,28 @@ public class GrupoResponse {
             Long id,
             String nombre,
             String descripcion,
-            LocalTime horaInicio,
-            LocalTime horaFin,
             Integer capacidad,
             long estudiantesActivos,
             long cuposDisponibles,
             String estado,
             Long senseiId,
-            String senseiNombre) {
+            String senseiNombre,
+            Long frecuenciaId,
+            String frecuenciaNombre,
+            Integer frecuenciaSemanal) {
 
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
-        this.horaInicio = horaInicio;
-        this.horaFin = horaFin;
         this.capacidad = capacidad;
         this.estudiantesActivos = estudiantesActivos;
         this.cuposDisponibles = cuposDisponibles;
         this.estado = estado;
         this.senseiId = senseiId;
         this.senseiNombre = senseiNombre;
+        this.frecuenciaId = frecuenciaId;
+        this.frecuenciaNombre = frecuenciaNombre;
+        this.frecuenciaSemanal = frecuenciaSemanal;
     }
 
     public Long getId() {
@@ -55,14 +56,6 @@ public class GrupoResponse {
 
     public String getDescripcion() {
         return descripcion;
-    }
-
-    public LocalTime getHoraInicio() {
-        return horaInicio;
-    }
-
-    public LocalTime getHoraFin() {
-        return horaFin;
     }
 
     public Integer getCapacidad() {
@@ -87,5 +80,17 @@ public class GrupoResponse {
 
     public String getSenseiNombre() {
         return senseiNombre;
+    }
+
+    public Long getFrecuenciaId() {
+        return frecuenciaId;
+    }
+
+    public String getFrecuenciaNombre() {
+        return frecuenciaNombre;
+    }
+
+    public Integer getFrecuenciaSemanal() {
+        return frecuenciaSemanal;
     }
 }

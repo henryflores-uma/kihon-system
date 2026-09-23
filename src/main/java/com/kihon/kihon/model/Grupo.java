@@ -2,8 +2,6 @@ package com.kihon.kihon.model;
 
 import jakarta.persistence.*;
 
-import java.time.LocalTime;
-
 @Entity
 @Table(name = "grupos")
 public class Grupo {
@@ -19,17 +17,15 @@ public class Grupo {
     private String descripcion;
 
     @Column(nullable = false)
-    private LocalTime horaInicio;
-
-    @Column(nullable = false)
-    private LocalTime horaFin;
-
-    @Column(nullable = false)
     private Integer capacidad;
 
     @ManyToOne
     @JoinColumn(name = "sensei_id")
     private Usuario sensei;
+
+    @ManyToOne
+    @JoinColumn(name = "frecuencia_id")
+    private FrecuenciaGrupo frecuencia;
 
     @Column(nullable = false)
     private String estado = "ACTIVO";
@@ -57,22 +53,6 @@ public class Grupo {
         this.descripcion = descripcion;
     }
 
-    public LocalTime getHoraInicio() {
-        return horaInicio;
-    }
-
-    public void setHoraInicio(LocalTime horaInicio) {
-        this.horaInicio = horaInicio;
-    }
-
-    public LocalTime getHoraFin() {
-        return horaFin;
-    }
-
-    public void setHoraFin(LocalTime horaFin) {
-        this.horaFin = horaFin;
-    }
-
     public Integer getCapacidad() {
         return capacidad;
     }
@@ -87,6 +67,14 @@ public class Grupo {
 
     public void setSensei(Usuario sensei) {
         this.sensei = sensei;
+    }
+
+    public FrecuenciaGrupo getFrecuencia() {
+        return frecuencia;
+    }
+
+    public void setFrecuencia(FrecuenciaGrupo frecuencia) {
+        this.frecuencia = frecuencia;
     }
 
     public String getEstado() {

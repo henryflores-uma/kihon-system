@@ -86,6 +86,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /*
+     * FRECUENCIAS
+     */
+
+    const frecuenciaSelect =
+        document.getElementById("groupFrecuenciaId");
+
+    const editFrecuenciaSelect =
+        document.getElementById("editFrecuenciaId");
+
+    let frecuenciasDisponibles = [];
+
+
+    /*
      * HORARIOS
      */
 
@@ -264,10 +277,6 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
 
-        /*
-         * Ocultar mensajes anteriores
-         */
-
         if (groupMessage) {
 
             ocultarMensaje(
@@ -275,10 +284,6 @@ document.addEventListener("DOMContentLoaded", function () {
             );
         }
 
-
-        /*
-         * Enfocar primer campo
-         */
 
         const nombreInput =
             document.getElementById(
@@ -661,6 +666,251 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /*
      * =========================================================
+     * CARGAR FRECUENCIAS
+     * =========================================================
+     */
+
+    async function cargarFrecuencias() {
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/frecuencias-grupo",
+                    {
+                        method: "GET",
+
+                        headers: {
+
+                            "Authorization":
+                                "Basic " + auth
+
+                        }
+                    }
+                );
+
+
+            if (
+                manejarNoAutorizado(
+                    response
+                )
+            ) {
+
+                return;
+            }
+
+
+            if (
+                response.status === 403
+            ) {
+
+                throw new Error(
+                    "No tienes permisos para consultar las frecuencias."
+                );
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "No se pudieron obtener las frecuencias."
+                );
+            }
+
+
+            const frecuencias =
+                await response.json();
+
+
+            frecuenciasDisponibles =
+                frecuencias;
+
+
+            if (frecuenciaSelect) {
+
+                frecuenciaSelect.innerHTML = `
+                    <option value="">
+                        Selecciona una frecuencia
+                    </option>
+                `;
+
+
+                frecuencias.forEach(
+                    frecuencia => {
+
+                        const option =
+                            document.createElement(
+                                "option"
+                            );
+
+
+                        option.value =
+                            frecuencia.id;
+
+
+                        option.textContent =
+                            frecuencia.nombre;
+
+
+                        option.dataset.frecuenciaSemanal =
+                            frecuencia.frecuenciaSemanal;
+
+
+                        frecuenciaSelect.appendChild(
+                            option
+                        );
+
+                    }
+                );
+            }
+
+
+            if (editFrecuenciaSelect) {
+
+                editFrecuenciaSelect.innerHTML = `
+                    <option value="">
+                        Selecciona una frecuencia
+                    </option>
+                `;
+
+
+                frecuencias.forEach(
+                    frecuencia => {
+
+                        const option =
+                            document.createElement(
+                                "option"
+                            );
+
+
+                        option.value =
+                            frecuencia.id;
+
+
+                        option.textContent =
+                            frecuencia.nombre;
+
+
+                        option.dataset.frecuenciaSemanal =
+                            frecuencia.frecuenciaSemanal;
+
+
+                        editFrecuenciaSelect.appendChild(
+                            option
+                        );
+
+                    }
+                );
+            }
+
+
+        } catch (error) {
+
+            console.error(
+                "Error cargando frecuencias:",
+                error
+            );
+
+
+            mostrarMensaje(
+                groupMessage,
+                error.message,
+                "error"
+            );
+        }
+    }
+
+
+    /*
+     * =========================================================
+     * OBTENER FRECUENCIA SELECCIONADA
+     * =========================================================
+     */
+
+    function obtenerFrecuenciaSeleccionada() {
+
+        if (
+            !frecuenciaSelect ||
+            !frecuenciaSelect.value
+        ) {
+
+            return null;
+        }
+
+
+        const option =
+            frecuenciaSelect.options[
+            frecuenciaSelect.selectedIndex
+            ];
+
+
+        if (!option) {
+            return null;
+        }
+
+
+        return {
+
+            id:
+                Number(
+                    frecuenciaSelect.value
+                ),
+
+            frecuenciaSemanal:
+                Number(
+                    option.dataset.frecuenciaSemanal
+                )
+
+        };
+    }
+
+
+    /*
+     * =========================================================
+     * OBTENER FRECUENCIA DE EDICIÓN
+     * =========================================================
+     */
+
+    function obtenerFrecuenciaEdicion() {
+
+        if (
+            !editFrecuenciaSelect ||
+            !editFrecuenciaSelect.value
+        ) {
+
+            return null;
+        }
+
+
+        const option =
+            editFrecuenciaSelect.options[
+            editFrecuenciaSelect.selectedIndex
+            ];
+
+
+        if (!option) {
+            return null;
+        }
+
+
+        return {
+
+            id:
+                Number(
+                    editFrecuenciaSelect.value
+                ),
+
+            frecuenciaSemanal:
+                Number(
+                    option.dataset.frecuenciaSemanal
+                )
+
+        };
+    }
+
+
+    /*
+     * =========================================================
      * CARGAR SENSEIS
      * =========================================================
      */
@@ -717,60 +967,82 @@ document.addEventListener("DOMContentLoaded", function () {
                 await response.json();
 
 
-            /*
-             * LIMPIAR SELECTORES
-             */
+            if (senseiSelect) {
 
-            senseiSelect.innerHTML = `
-                <option value="">
-                    Sin asignar
-                </option>
-            `;
+                senseiSelect.innerHTML = `
+                    <option value="">
+                        Sin asignar
+                    </option>
+                `;
 
 
-            editSenseiSelect.innerHTML = `
-                <option value="">
-                    Sin asignar
-                </option>
-            `;
+                senseis.forEach(
+                    sensei => {
+
+                        const nombreCompleto =
+                            `${sensei.nombre} ${sensei.apellido}`;
 
 
-            /*
-             * AGREGAR SENSEIS
-             */
-
-            senseis.forEach(
-                sensei => {
-
-                    const nombreCompleto =
-                        `${sensei.nombre} ${sensei.apellido}`;
+                        const option =
+                            document.createElement(
+                                "option"
+                            );
 
 
-                    const option =
-                        document.createElement(
-                            "option"
+                        option.value =
+                            sensei.id;
+
+
+                        option.textContent =
+                            nombreCompleto;
+
+
+                        senseiSelect.appendChild(
+                            option
                         );
 
-
-                    option.value =
-                        sensei.id;
-
-
-                    option.textContent =
-                        nombreCompleto;
+                    }
+                );
+            }
 
 
-                    senseiSelect.appendChild(
-                        option.cloneNode(true)
-                    );
+            if (editSenseiSelect) {
+
+                editSenseiSelect.innerHTML = `
+                    <option value="">
+                        Sin asignar
+                    </option>
+                `;
 
 
-                    editSenseiSelect.appendChild(
-                        option
-                    );
+                senseis.forEach(
+                    sensei => {
 
-                }
-            );
+                        const nombreCompleto =
+                            `${sensei.nombre} ${sensei.apellido}`;
+
+
+                        const option =
+                            document.createElement(
+                                "option"
+                            );
+
+
+                        option.value =
+                            sensei.id;
+
+
+                        option.textContent =
+                            nombreCompleto;
+
+
+                        editSenseiSelect.appendChild(
+                            option
+                        );
+
+                    }
+                );
+            }
 
 
         } catch (error) {
@@ -793,6 +1065,16 @@ document.addEventListener("DOMContentLoaded", function () {
     /*
      * =========================================================
      * CARGAR GRUPOS
+     *
+     * CAMBIO:
+     *
+     * Los grupos ahora se muestran agrupados por frecuencia.
+     *
+     * La frecuencia NO está hardcodeada.
+     * Se obtiene de grupo.frecuenciaId,
+     * grupo.frecuenciaNombre y grupo.frecuenciaSemanal.
+     *
+     * Cada categoría puede expandirse/contraerse.
      * =========================================================
      */
 
@@ -800,17 +1082,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
         groupsList.innerHTML = `
 
-            <div class="grupos-loading">
+        <div class="grupos-loading">
 
-                <div class="grupos-loading__spinner"></div>
+            <div class="grupos-loading__spinner"></div>
 
-                <span>
-                    Cargando grupos...
-                </span>
+            <span>
+                Cargando grupos...
+            </span>
 
-            </div>
+        </div>
 
-        `;
+    `;
 
 
         try {
@@ -873,13 +1155,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 groupsList.innerHTML = `
 
-                    <div class="grupos-empty">
+                <div class="grupos-empty">
 
-                        No hay grupos registrados.
+                    No hay grupos registrados.
 
-                    </div>
+                </div>
 
-                `;
+            `;
 
                 return;
             }
@@ -987,320 +1269,644 @@ document.addEventListener("DOMContentLoaded", function () {
 
             /*
              * =====================================================
+             * AGRUPAR POR FRECUENCIA
+             * =====================================================
+             */
+
+            const gruposPorFrecuencia =
+                new Map();
+
+
+            gruposConHorarios.forEach(
+                grupo => {
+
+                    const frecuenciaId =
+                        grupo.frecuenciaId != null
+                            ? String(grupo.frecuenciaId)
+                            : "sin-frecuencia";
+
+
+                    if (
+                        !gruposPorFrecuencia.has(
+                            frecuenciaId
+                        )
+                    ) {
+
+                        gruposPorFrecuencia.set(
+                            frecuenciaId,
+                            {
+
+                                id:
+                                    grupo.frecuenciaId,
+
+                                nombre:
+                                    grupo.frecuenciaNombre ||
+                                    "Sin frecuencia",
+
+                                frecuenciaSemanal:
+                                    grupo.frecuenciaSemanal ??
+                                    null,
+
+                                grupos:
+                                    []
+
+                            }
+                        );
+                    }
+
+
+                    gruposPorFrecuencia
+                        .get(frecuenciaId)
+                        .grupos
+                        .push(grupo);
+
+                }
+            );
+
+
+            /*
+             * =====================================================
+             * ORDENAR CATEGORÍAS
+             * =====================================================
+             */
+
+            const categorias =
+                Array.from(
+                    gruposPorFrecuencia.values()
+                ).sort(
+                    (a, b) => {
+
+                        if (
+                            a.frecuenciaSemanal == null
+                        ) {
+
+                            return 1;
+                        }
+
+
+                        if (
+                            b.frecuenciaSemanal == null
+                        ) {
+
+                            return -1;
+                        }
+
+
+                        return (
+                            a.frecuenciaSemanal -
+                            b.frecuenciaSemanal
+                        );
+                    }
+                );
+
+
+            /*
+             * =====================================================
              * TABLA
              * =====================================================
              */
 
             groupsList.innerHTML = `
 
-                <table class="grupos-table">
+            <table class="grupos-table">
 
-                    <thead>
+                <tbody>
 
-                        <tr>
+                    ${categorias.map(
+                (categoria, categoriaIndex) => {
 
-                            <th>
-                                Grupo
-                            </th>
-
-                            <th>
-                                Sensei
-                            </th>
-
-                            <th>
-                                Días
-                            </th>
-
-                            <th>
-                                Horario
-                            </th>
-
-                            <th>
-                                Capacidad
-                            </th>
-
-                            <th>
-                                Inscritos
-                            </th>
-
-                            <th>
-                                Cupos disponibles
-                            </th>
-
-                            <th>
-                                Estado
-                            </th>
-
-                            <th>
-                                Acciones
-                            </th>
-
-                        </tr>
-
-                    </thead>
+                    const categoriaId =
+                        `frecuencia-${categoria.id ?? "sin"}-${categoriaIndex}`;
 
 
-                    <tbody>
+                    /*
+                     * =================================================
+                     * RESUMEN DE LA CATEGORÍA
+                     * =================================================
+                     */
 
-                        ${gruposConHorarios.map(
-                grupo => {
-
-                    const ordenDias = {
-
-                        LUNES: 1,
-                        MARTES: 2,
-                        MIERCOLES: 3,
-                        JUEVES: 4,
-                        VIERNES: 5,
-                        SABADO: 6,
-                        DOMINGO: 7
-
-                    };
+                    const capacidadTotal =
+                        categoria.grupos.reduce(
+                            (total, grupo) =>
+                                total +
+                                (Number(grupo.capacidad) || 0),
+                            0
+                        );
 
 
-                    const inicialesDias = {
-
-                        LUNES: "L",
-                        MARTES: "M",
-                        MIERCOLES: "X",
-                        JUEVES: "J",
-                        VIERNES: "V",
-                        SABADO: "S",
-                        DOMINGO: "D"
-
-                    };
+                    const inscritosTotal =
+                        categoria.grupos.reduce(
+                            (total, grupo) =>
+                                total +
+                                (Number(grupo.estudiantesActivos) || 0),
+                            0
+                        );
 
 
-                    const dias =
-                        [...grupo.horarios]
-                            .sort(
-                                (a, b) =>
-                                    (
-                                        ordenDias[
-                                        a.diaSemana
-                                        ] || 99
-                                    )
-                                    -
-                                    (
-                                        ordenDias[
-                                        b.diaSemana
-                                        ] || 99
-                                    )
-                            );
-
-
-                    const diasIniciales =
-                        dias
-                            .map(
-                                horario =>
-                                    inicialesDias[
-                                    horario.diaSemana
-                                    ] ||
-                                    horario.diaSemana
-                            )
-                            .filter(
-                                (dia, index, array) =>
-                                    array.indexOf(dia) === index
-                            )
-                            .join(" - ");
-
-
-                    const horariosTexto =
-                        dias
-                            .map(
-                                horario =>
-                                    `${formatearHora(
-                                        horario.horaInicio
-                                    )} - ${formatearHora(
-                                        horario.horaFin
-                                    )}`
-                            );
-
-
-                    const diasMostrar =
-                        diasIniciales ||
-                        "Sin días";
-
-
-                    const horarioMostrar =
-                        horariosTexto.length > 0
-                            ? horariosTexto.join(" / ")
-                            : `${formatearHora(
-                                grupo.horaInicio
-                            )} - ${formatearHora(
-                                grupo.horaFin
-                            )}`;
+                    const cuposTotal =
+                        categoria.grupos.reduce(
+                            (total, grupo) =>
+                                total +
+                                (Number(grupo.cuposDisponibles) || 0),
+                            0
+                        );
 
 
                     return `
 
-                                    <tr>
+                    <!-- ==========================================
+                         ENCABEZADO DE FRECUENCIA
+                         ========================================== -->
 
-                                        <td>
+                    <tr
+                        class="grupo-frecuencia-header"
+                        data-frecuencia-toggle="${categoriaId}"
+                    >
 
-                                            <div class="grupo-info">
+                        <td colspan="9">
 
-                                                <span class="grupo-nombre">
-                                                    ${grupo.nombre}
-                                                </span>
+                            <div class="grupo-frecuencia-titulo">
 
-                                                <span class="grupo-descripcion">
-                                                    ${grupo.descripcion ||
-                        "Sin descripción"
+                                <strong>
+                                    ${categoria.nombre}
+                                </strong>
+
+                                <span>
+                                    (${categoria.grupos.length}
+                                    grupo${categoria.grupos.length !== 1 ? "s" : ""})
+                                </span>
+
+                            </div>
+
+
+                            <div class="grupo-frecuencia-resumen">
+
+                                <span>
+                                    Capacidad:
+                                    <strong>
+                                        ${capacidadTotal}
+                                    </strong>
+                                </span>
+
+
+                                <span>
+                                    Inscritos:
+                                    <strong>
+                                        ${inscritosTotal}
+                                    </strong>
+                                </span>
+
+
+                                <span>
+                                    Cupos:
+                                    <strong>
+                                        ${cuposTotal}
+                                    </strong>
+                                </span>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+
+                    <!-- ==========================================
+                         ENCABEZADO DE COLUMNAS
+                         ========================================== -->
+
+                    <tr
+                        class="grupo-columnas-header"
+                        data-frecuencia-columnas="${categoriaId}"
+                    >
+
+                        <th>
+                            Grupo
+                        </th>
+
+                        <th>
+                            Sensei
+                        </th>
+
+                        <th>
+                            Días
+                        </th>
+
+                        <th>
+                            Horario
+                        </th>
+
+                        <th>
+                            Capacidad
+                        </th>
+
+                        <th>
+                            Inscritos
+                        </th>
+
+                        <th>
+                            Cupos disponibles
+                        </th>
+
+                        <th>
+                            Estado
+                        </th>
+
+                        <th>
+                            Acciones
+                        </th>
+
+                    </tr>
+
+
+                    <!-- ==========================================
+                         GRUPOS DE LA FRECUENCIA
+                         ========================================== -->
+
+                    ${categoria.grupos.map(
+                        grupo => {
+
+                            const ordenDias = {
+
+                                LUNES: 1,
+                                MARTES: 2,
+                                MIERCOLES: 3,
+                                JUEVES: 4,
+                                VIERNES: 5,
+                                SABADO: 6,
+                                DOMINGO: 7
+
+                            };
+
+
+                            const inicialesDias = {
+
+                                LUNES: "Lunes",
+                                MARTES: "Martes",
+                                MIERCOLES: "Miércoles",
+                                JUEVES: "Jueves",
+                                VIERNES: "Viernes",
+                                SABADO: "Sábado",
+                                DOMINGO: "Domingo"
+
+                            };
+
+
+                            const dias =
+                                [...grupo.horarios]
+                                    .sort(
+                                        (a, b) =>
+                                            (
+                                                ordenDias[
+                                                a.diaSemana
+                                                ] || 99
+                                            )
+                                            -
+                                            (
+                                                ordenDias[
+                                                b.diaSemana
+                                                ] || 99
+                                            )
+                                    );
+
+
+                            const diasIniciales =
+                                dias
+                                    .map(
+                                        horario =>
+                                            inicialesDias[
+                                            horario.diaSemana
+                                            ] ||
+                                            horario.diaSemana
+                                    )
+                                    .filter(
+                                        (dia, index, array) =>
+                                            array.indexOf(dia) === index
+                                    )
+                                    .join(" - ");
+
+
+                            const diasMostrar =
+                                diasIniciales ||
+                                "Sin días";
+
+
+                            /*
+                             * =================================================
+                             * CONSTRUIR HORARIO
+                             * =================================================
+                             */
+
+                            let horarioMostrar =
+                                "Sin horario";
+
+
+                            if (
+                                dias.length > 0
+                            ) {
+
+                                const horarios =
+                                    dias.map(
+                                        horario => ({
+
+                                            dia:
+                                                inicialesDias[
+                                                horario.diaSemana
+                                                ] ||
+                                                horario.diaSemana,
+
+                                            hora:
+                                                `${formatearHora(
+                                                    horario.horaInicio
+                                                )} - ${formatearHora(
+                                                    horario.horaFin
+                                                )}`
+
+                                        })
+                                    );
+
+
+                                const primeraHora =
+                                    horarios[0].hora;
+
+
+                                const todosMismaHora =
+                                    horarios.every(
+                                        horario =>
+                                            horario.hora ===
+                                            primeraHora
+                                    );
+
+
+                                if (
+                                    todosMismaHora
+                                ) {
+
+                                    horarioMostrar =
+                                        primeraHora;
+
+                                } else {
+
+                                    horarioMostrar =
+                                        horarios
+                                            .map(
+                                                horario =>
+                                                    `${horario.dia}: ${horario.hora}`
+                                            )
+                                            .join(" / ");
+
+                                }
+
+                            }
+
+
+                            return `
+
+                            <tr
+                                class="grupo-frecuencia-item"
+                                data-frecuencia-parent="${categoriaId}"
+                            >
+
+                                <td>
+
+                                    <div class="grupo-info">
+
+                                        <span class="grupo-nombre">
+                                            ${grupo.nombre}
+                                        </span>
+
+                                        <span class="grupo-descripcion">
+                                            ${grupo.descripcion ||
+                                "Sin descripción"
+                                }
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="grupo-sensei">
+
+                                        ${grupo.senseiNombre ||
+                                "Sin asignar"
+                                }
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="grupo-dias">
+
+                                        ${diasMostrar}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="grupo-horario">
+
+                                        ${horarioMostrar}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="grupo-capacidad">
+
+                                        ${grupo.capacidad}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="grupo-inscritos">
+
+                                        ${grupo.estudiantesActivos}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="
+                                        grupo-cupos
+                                        ${grupo.cuposDisponibles === 0
+                                    ? "grupo-cupos--lleno"
+                                    : ""
+                                }
+                                    ">
+
+                                        ${grupo.cuposDisponibles}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="
+                                        grupo-estado
+                                        ${grupo.estado === "ACTIVO"
+                                    ? "grupo-estado--activo"
+                                    : "grupo-estado--inactivo"
+                                }
+                                    ">
+
+                                        ${grupo.estado}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="grupo-acciones">
+
+
+                                        <button
+                                            type="button"
+                                            class="btn btn--outline btn-editar-grupo"
+                                            data-id="${grupo.id}">
+
+                                            Editar
+
+                                        </button>
+
+
+                                        <button
+                                            type="button"
+                                            class="btn btn--secondary btn-estado-grupo"
+                                            data-id="${grupo.id}"
+                                            data-estado="${grupo.estado}">
+
+                                            ${grupo.estado === "ACTIVO"
+                                    ? "Desactivar"
+                                    : "Activar"
+                                }
+
+                                        </button>
+
+
+                                        <button
+                                            type="button"
+                                            class="btn btn--secondary btn-eliminar-grupo"
+                                            data-id="${grupo.id}"
+                                            data-nombre="${grupo.nombre}">
+
+                                            Eliminar
+
+                                        </button>
+
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        `;
+
                         }
-                                                </span>
+                    ).join("")}
 
-                                            </div>
+                `;
 
-                                        </td>
-
-
-                                        <td>
-
-                                            <span class="grupo-sensei">
-
-                                                ${grupo.senseiNombre ||
-                        "Sin asignar"
-                        }
-
-                                            </span>
-
-                                        </td>
-
-
-                                        <td>
-
-                                            <span class="grupo-dias">
-
-                                                ${diasMostrar}
-
-                                            </span>
-
-                                        </td>
-
-
-                                        <td>
-
-                                            <span class="grupo-horario">
-
-                                                ${horarioMostrar}
-
-                                            </span>
-
-                                        </td>
-
-
-                                        <td>
-
-                                            <span class="grupo-capacidad">
-
-                                                ${grupo.capacidad}
-
-                                            </span>
-
-                                        </td>
-
-
-                                        <td>
-
-                                            <span class="grupo-inscritos">
-
-                                                ${grupo.estudiantesActivos}
-
-                                            </span>
-
-                                        </td>
-
-
-                                        <td>
-
-                                            <span class="
-                                                grupo-cupos
-                                                ${grupo.cuposDisponibles === 0
-                            ? "grupo-cupos--lleno"
-                            : ""
-                        }
-                                            ">
-
-                                                ${grupo.cuposDisponibles}
-
-                                            </span>
-
-                                        </td>
-
-
-                                        <td>
-
-                                            <span class="
-                                                grupo-estado
-                                                ${grupo.estado === "ACTIVO"
-                            ? "grupo-estado--activo"
-                            : "grupo-estado--inactivo"
-                        }
-                                            ">
-
-                                                ${grupo.estado}
-
-                                            </span>
-
-                                        </td>
-
-
-                                        <td>
-
-                                            <div class="grupo-acciones">
-
-
-                                                <button
-                                                    type="button"
-                                                    class="btn btn--outline btn-editar-grupo"
-                                                    data-id="${grupo.id}">
-
-                                                    Editar
-
-                                                </button>
-
-
-                                                <button
-                                                    type="button"
-                                                    class="btn btn--secondary btn-estado-grupo"
-                                                    data-id="${grupo.id}"
-                                                    data-estado="${grupo.estado}">
-
-                                                    ${grupo.estado === "ACTIVO"
-                            ? "Desactivar"
-                            : "Activar"
-                        }
-
-                                                </button>
-
-
-                                                <button
-                                                    type="button"
-                                                    class="btn btn--secondary btn-eliminar-grupo"
-                                                    data-id="${grupo.id}"
-                                                    data-nombre="${grupo.nombre}">
-
-                                                    Eliminar
-
-                                                </button>
-
-
-                                            </div>
-
-                                        </td>
-
-                                    </tr>
-
-                                `;
                 }
             ).join("")}
 
-                    </tbody>
+                </tbody>
 
-                </table>
+            </table>
 
-            `;
+        `;
+
+
+            /*
+             * =====================================================
+             * EXPANDIR / CONTRAER CATEGORÍAS
+             * =====================================================
+             */
+
+            document
+                .querySelectorAll(
+                    "[data-frecuencia-toggle]"
+                )
+                .forEach(
+                    categoriaHeader => {
+
+                        categoriaHeader.addEventListener(
+                            "click",
+                            function () {
+
+                                const categoriaId =
+                                    this.dataset
+                                        .frecuenciaToggle;
+
+
+                                const gruposCategoria =
+                                    document.querySelectorAll(
+                                        `[data-frecuencia-parent="${categoriaId}"]`
+                                    );
+
+
+                                const encabezadoColumnas =
+                                    document.querySelector(
+                                        `[data-frecuencia-columnas="${categoriaId}"]`
+                                    );
+
+
+                                const actualmenteVisible =
+                                    Array.from(
+                                        gruposCategoria
+                                    ).some(
+                                        fila =>
+                                            fila.hidden === false
+                                    );
+
+
+                                gruposCategoria.forEach(
+                                    fila => {
+
+                                        fila.hidden =
+                                            actualmenteVisible;
+
+                                    }
+                                );
+
+
+                                if (
+                                    encabezadoColumnas
+                                ) {
+
+                                    encabezadoColumnas.hidden =
+                                        actualmenteVisible;
+
+                                }
+
+                            }
+                        );
+
+                    }
+                );
 
 
         } catch (error) {
@@ -1313,16 +1919,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
             groupsList.innerHTML = `
 
-                <div class="grupos-empty">
+            <div class="grupos-empty">
 
-                    ${error.message}
+                ${error.message}
 
-                </div>
+            </div>
 
-            `;
+        `;
         }
     }
-
 
     /*
      * =========================================================
@@ -1412,10 +2017,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /*
-     * =========================================================
-     * CARGAR HORARIOS DE UN GRUPO
-     * =========================================================
-     */
+ * =========================================================
+ * CARGAR HORARIOS DE UN GRUPO
+ * =========================================================
+ */
 
     async function cargarHorariosGrupo(
         grupoId
@@ -1423,17 +2028,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
         groupSchedulesList.innerHTML = `
 
-            <div class="grupos-loading">
+        <div class="grupos-loading">
 
-                <div class="grupos-loading__spinner"></div>
+            <div class="grupos-loading__spinner"></div>
 
-                <span>
-                    Cargando horarios...
-                </span>
+            <span>
+                Cargando horarios...
+            </span>
 
-            </div>
+        </div>
 
-        `;
+    `;
 
 
         try {
@@ -1495,13 +2100,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 groupSchedulesList.innerHTML = `
 
-                    <div class="grupos-empty">
+                <div class="grupos-empty">
 
-                        Este grupo todavía no tiene horarios registrados.
+                    Este grupo todavía no tiene horarios registrados.
 
-                    </div>
+                </div>
 
-                `;
+            `;
 
                 return;
             }
@@ -1541,33 +2146,52 @@ document.addEventListener("DOMContentLoaded", function () {
                     .map(
                         horario => `
 
-                            <div class="grupo-horario-item">
+                        <div
+                            class="grupo-horario-item"
+                            data-id="${horario.id}"
+                        >
 
-                                <div class="grupo-horario-info">
+                            <div class="grupo-horario-info">
 
-                                    <strong>
+                                <strong>
 
-                                        ${obtenerNombreDia(
+                                    ${obtenerNombreDia(
                             horario.diaSemana
                         )}
 
-                                    </strong>
+                                </strong>
 
-                                    <span>
+                                <span>
 
-                                        ${formatearHora(
+                                    ${formatearHora(
                             horario.horaInicio
                         )}
 
-                                        -
+                                    -
 
-                                        ${formatearHora(
+                                    ${formatearHora(
                             horario.horaFin
                         )}
 
-                                    </span>
+                                </span>
 
-                                </div>
+                            </div>
+
+
+                            <div class="grupo-horario-acciones">
+
+                                <button
+                                    type="button"
+                                    class="btn btn--secondary btn-editar-horario"
+                                    data-id="${horario.id}"
+                                    data-grupo-id="${horario.grupoId}"
+                                    data-dia="${horario.diaSemana}"
+                                    data-hora-inicio="${formatearHora(horario.horaInicio)}"
+                                    data-hora-fin="${formatearHora(horario.horaFin)}">
+
+                                    Editar
+
+                                </button>
 
 
                                 <button
@@ -1581,7 +2205,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                             </div>
 
-                        `
+                        </div>
+
+                    `
                     )
                     .join("");
 
@@ -1596,13 +2222,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
             groupSchedulesList.innerHTML = `
 
-                <div class="grupos-empty">
+            <div class="grupos-empty">
 
-                    ${error.message}
+                ${error.message}
 
-                </div>
+            </div>
 
-            `;
+        `;
         }
     }
 
@@ -1624,10 +2250,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 groupMessage
             );
 
-
-            /*
-             * CAMPOS
-             */
 
             const nombre =
                 document
@@ -1671,9 +2293,50 @@ document.addEventListener("DOMContentLoaded", function () {
                 obtenerDiasSeleccionados();
 
 
-            /*
-             * VALIDAR HORAS
-             */
+            const frecuencia =
+                obtenerFrecuenciaSeleccionada();
+
+
+            if (!frecuencia) {
+
+                mostrarMensaje(
+                    groupMessage,
+                    "Debes seleccionar la frecuencia semanal del grupo.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            if (
+                frecuencia.frecuenciaSemanal > 7
+            ) {
+
+                mostrarMensaje(
+                    groupMessage,
+                    "La frecuencia semanal no puede superar los 7 días.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            if (
+                diasSeleccionados.length !==
+                frecuencia.frecuenciaSemanal
+            ) {
+
+                mostrarMensaje(
+                    groupMessage,
+                    `La frecuencia seleccionada requiere exactamente ${frecuencia.frecuenciaSemanal} día${frecuencia.frecuenciaSemanal !== 1 ? "s" : ""} de entrenamiento.`,
+                    "error"
+                );
+
+                return;
+            }
+
 
             if (
                 !horaInicio ||
@@ -1704,10 +2367,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            /*
-             * VALIDAR DÍAS
-             */
-
             if (
                 diasSeleccionados.length === 0
             ) {
@@ -1721,10 +2380,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-
-            /*
-             * VALIDAR CAPACIDAD
-             */
 
             if (
                 !capacidad ||
@@ -1741,10 +2396,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            /*
-             * OBJETO
-             */
-
             const grupo = {
 
                 nombre:
@@ -1753,26 +2404,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 descripcion:
                     descripcion,
 
-                horaInicio:
-                    horaInicio,
-
-                horaFin:
-                    horaFin,
-
                 capacidad:
                     capacidad,
 
                 senseiId:
                     senseiValue
                         ? Number(senseiValue)
-                        : null
+                        : null,
+
+                frecuenciaId:
+                    frecuencia.id
 
             };
 
-
-            /*
-             * BOTÓN
-             */
 
             const submitButton =
                 groupForm.querySelector(
@@ -1788,10 +2432,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             try {
-
-                /*
-                 * CREAR GRUPO
-                 */
 
                 const response =
                     await fetch(
@@ -1852,10 +2492,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     await response.json();
 
 
-                /*
-                 * CREAR HORARIOS
-                 */
-
                 await crearHorariosGrupo(
                     nuevoGrupo.id,
                     diasSeleccionados,
@@ -1864,18 +2500,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
 
 
-                /*
-                 * LIMPIAR FORMULARIO
-                 */
-
                 groupForm.reset();
 
                 limpiarDiasSeleccionados();
 
 
-                /*
-                 * MENSAJE
-                 */
+                if (frecuenciaSelect) {
+
+                    frecuenciaSelect.value =
+                        "";
+                }
+
 
                 mostrarMensaje(
                     groupMessage,
@@ -1884,17 +2519,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
 
 
-                /*
-                 * RECARGAR
-                 */
-
                 await cargarGrupos();
 
-
-                /*
-                 * CERRAR MODAL DESPUÉS
-                 * DE UN MOMENTO
-                 */
 
                 setTimeout(
                     function () {
@@ -2016,10 +2642,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     await response.json();
 
 
-                /*
-                 * DATOS
-                 */
-
                 document.getElementById(
                     "editId"
                 ).value =
@@ -2039,61 +2661,89 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                 document.getElementById(
-                    "editHoraInicio"
-                ).value =
-                    formatearHora(
-                        grupo.horaInicio
-                    );
-
-
-                document.getElementById(
-                    "editHoraFin"
-                ).value =
-                    formatearHora(
-                        grupo.horaFin
-                    );
-
-
-                document.getElementById(
                     "editCapacidad"
                 ).value =
                     grupo.capacidad;
 
 
-                /*
-                 * SENSEI
-                 */
+                if (editFrecuenciaSelect) {
 
-                editSenseiSelect.value =
-                    grupo.senseiId
-                        ? String(
-                            grupo.senseiId
-                        )
-                        : "";
+                    editFrecuenciaSelect.value =
+                        grupo.frecuenciaId
+                            ? String(
+                                grupo.frecuenciaId
+                            )
+                            : "";
+                }
 
 
-                /*
-                 * LIMPIAR HORARIO
-                 */
+                const editHoraInicio =
+                    document.getElementById(
+                        "editHoraInicio"
+                    );
 
-                scheduleDay.value =
-                    "";
+                const editHoraFin =
+                    document.getElementById(
+                        "editHoraFin"
+                    );
 
-                scheduleStart.value =
-                    "";
 
-                scheduleEnd.value =
-                    "";
+                if (editHoraInicio) {
+
+                    editHoraInicio.value =
+                        "";
+
+                    editHoraInicio.required =
+                        false;
+                }
+
+
+                if (editHoraFin) {
+
+                    editHoraFin.value =
+                        "";
+
+                    editHoraFin.required =
+                        false;
+                }
+
+
+                if (editSenseiSelect) {
+
+                    editSenseiSelect.value =
+                        grupo.senseiId
+                            ? String(
+                                grupo.senseiId
+                            )
+                            : "";
+                }
+
+
+                if (scheduleDay) {
+
+                    scheduleDay.value =
+                        "";
+                }
+
+
+                if (scheduleStart) {
+
+                    scheduleStart.value =
+                        "";
+                }
+
+
+                if (scheduleEnd) {
+
+                    scheduleEnd.value =
+                        "";
+                }
 
 
                 ocultarMensaje(
                     scheduleMessage
                 );
 
-
-                /*
-                 * MOSTRAR EDICIÓN
-                 */
 
                 editGroupSection.hidden =
                     false;
@@ -2104,18 +2754,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
 
 
-                /*
-                 * CARGAR HORARIOS
-                 */
-
                 await cargarHorariosGrupo(
                     grupo.id
                 );
 
-
-                /*
-                 * SCROLL
-                 */
 
                 editGroupSection.scrollIntoView({
                     behavior:
@@ -2138,6 +2780,69 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     );
+
+
+    /*
+     * =========================================================
+     * OBTENER HORARIOS ACTUALES
+     * =========================================================
+     */
+
+    async function obtenerHorariosGrupo(
+        grupoId
+    ) {
+
+        const response =
+            await fetch(
+                `/api/grupo-horarios/grupo/${grupoId}`,
+                {
+                    method: "GET",
+
+                    headers: {
+
+                        "Authorization":
+                            "Basic " + auth
+
+                    }
+                }
+            );
+
+
+        if (
+            manejarNoAutorizado(
+                response
+            )
+        ) {
+
+            throw new Error(
+                "La sesión ha expirado."
+            );
+        }
+
+
+        if (
+            response.status === 403
+        ) {
+
+            throw new Error(
+                "No tienes permisos para consultar los horarios."
+            );
+        }
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                await obtenerMensajeError(
+                    response,
+                    "No se pudieron obtener los horarios."
+                )
+            );
+        }
+
+
+        return await response.json();
+    }
 
 
     /*
@@ -2176,18 +2881,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 ).value.trim();
 
 
-            const horaInicio =
-                document.getElementById(
-                    "editHoraInicio"
-                ).value;
-
-
-            const horaFin =
-                document.getElementById(
-                    "editHoraFin"
-                ).value;
-
-
             const capacidad =
                 Number(
                     document.getElementById(
@@ -2200,32 +2893,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 editSenseiSelect.value;
 
 
-            /*
-             * VALIDACIONES
-             */
+            const frecuencia =
+                obtenerFrecuenciaEdicion();
 
-            if (
-                !horaInicio ||
-                !horaFin
-            ) {
+
+            if (!frecuencia) {
 
                 mostrarMensaje(
                     editGroupMessage,
-                    "Debes seleccionar la hora de inicio y la hora de fin.",
-                    "error"
-                );
-
-                return;
-            }
-
-
-            if (
-                horaInicio >= horaFin
-            ) {
-
-                mostrarMensaje(
-                    editGroupMessage,
-                    "La hora de inicio debe ser anterior a la hora de fin.",
+                    "Debes seleccionar la frecuencia semanal del grupo.",
                     "error"
                 );
 
@@ -2248,9 +2924,46 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            /*
-             * OBJETO
-             */
+            try {
+
+                const horarios =
+                    await obtenerHorariosGrupo(
+                        Number(id)
+                    );
+
+
+                if (
+                    horarios.length !==
+                    frecuencia.frecuenciaSemanal
+                ) {
+
+                    mostrarMensaje(
+                        editGroupMessage,
+                        `La frecuencia seleccionada requiere exactamente ${frecuencia.frecuenciaSemanal} horario${frecuencia.frecuenciaSemanal !== 1 ? "s" : ""}. Actualmente el grupo tiene ${horarios.length}. Agrega o elimina horarios antes de guardar.`,
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error validando horarios:",
+                    error
+                );
+
+
+                mostrarMensaje(
+                    editGroupMessage,
+                    error.message,
+                    "error"
+                );
+
+                return;
+            }
+
 
             const grupo = {
 
@@ -2260,12 +2973,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 descripcion:
                     descripcion,
 
-                horaInicio:
-                    horaInicio,
-
-                horaFin:
-                    horaFin,
-
                 capacidad:
                     capacidad,
 
@@ -2274,14 +2981,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         ? Number(
                             senseiValue
                         )
-                        : null
+                        : null,
+
+                frecuenciaId:
+                    frecuencia.id
 
             };
 
-
-            /*
-             * BOTÓN
-             */
 
             const submitButton =
                 editGroupForm.querySelector(
@@ -2486,6 +3192,77 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
+            const frecuencia =
+                obtenerFrecuenciaEdicion();
+
+
+            if (!frecuencia) {
+
+                mostrarMensaje(
+                    scheduleMessage,
+                    "El grupo no tiene una frecuencia semanal seleccionada.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            try {
+
+                const horarios =
+                    await obtenerHorariosGrupo(
+                        Number(grupoId)
+                    );
+
+
+                if (
+                    horarios.length >=
+                    frecuencia.frecuenciaSemanal
+                ) {
+
+                    mostrarMensaje(
+                        scheduleMessage,
+                        `Este grupo ya tiene ${horarios.length} horario${horarios.length !== 1 ? "s" : ""} registrado${horarios.length !== 1 ? "s" : ""}. La frecuencia permite un máximo de ${frecuencia.frecuenciaSemanal}.`,
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                const diaYaRegistrado =
+                    horarios.some(
+                        horario =>
+                            horario.diaSemana?.toUpperCase()
+                            === dia.toUpperCase()
+                    );
+
+
+                if (diaYaRegistrado) {
+
+                    mostrarMensaje(
+                        scheduleMessage,
+                        "El grupo ya tiene un horario registrado para ese día.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+            } catch (error) {
+
+                mostrarMensaje(
+                    scheduleMessage,
+                    error.message,
+                    "error"
+                );
+
+                return;
+            }
+
+
             addScheduleButton.disabled =
                 true;
 
@@ -2583,6 +3360,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
 
 
+                await cargarGrupos();
+
+
             } catch (error) {
 
                 console.error(
@@ -2611,6 +3391,306 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     );
 
+    /* =========================================================
+ * EDITAR HORARIO
+ * ========================================================= */
+
+    groupSchedulesList.addEventListener(
+        "click",
+        async function (event) {
+
+            const botonEditar =
+                event.target.closest(
+                    ".btn-editar-horario"
+                );
+
+
+            if (!botonEditar) {
+                return;
+            }
+
+
+            const horarioId =
+                botonEditar.dataset.id;
+
+            const grupoId =
+                botonEditar.dataset.grupoId;
+
+            const diaSemana =
+                botonEditar.dataset.dia;
+
+            const horaInicioActual =
+                botonEditar.dataset.horaInicio;
+
+            const horaFinActual =
+                botonEditar.dataset.horaFin;
+
+
+            const item =
+                botonEditar.closest(
+                    ".grupo-horario-item"
+                );
+
+
+            if (!item) {
+                return;
+            }
+
+
+            const info =
+                item.querySelector(
+                    ".grupo-horario-info"
+                );
+
+
+            const acciones =
+                item.querySelector(
+                    ".grupo-horario-acciones"
+                );
+
+
+            if (!info || !acciones) {
+                return;
+            }
+
+
+            info.innerHTML = `
+
+            <strong>
+                ${obtenerNombreDia(diaSemana)}
+            </strong>
+
+            <div class="grupo-horario-edicion">
+
+                <input
+                    type="time"
+                    class="editar-hora-inicio"
+                    value="${horaInicioActual}"
+                >
+
+                <span>-</span>
+
+                <input
+                    type="time"
+                    class="editar-hora-fin"
+                    value="${horaFinActual}"
+                >
+
+            </div>
+
+        `;
+
+
+            acciones.innerHTML = `
+
+            <button
+                type="button"
+                class="btn btn--primary btn-guardar-horario">
+
+                Guardar
+
+            </button>
+
+            <button
+                type="button"
+                class="btn btn--secondary btn-cancelar-edicion-horario">
+
+                Cancelar
+
+            </button>
+
+        `;
+
+
+            const inputInicio =
+                item.querySelector(
+                    ".editar-hora-inicio"
+                );
+
+            const inputFin =
+                item.querySelector(
+                    ".editar-hora-fin"
+                );
+
+
+            const botonGuardar =
+                item.querySelector(
+                    ".btn-guardar-horario"
+                );
+
+            const botonCancelar =
+                item.querySelector(
+                    ".btn-cancelar-edicion-horario"
+                );
+
+
+            botonCancelar.addEventListener(
+                "click",
+                function () {
+
+                    cargarHorariosGrupo(
+                        Number(grupoId)
+                    );
+
+                }
+            );
+
+
+            botonGuardar.addEventListener(
+                "click",
+                async function () {
+
+                    const horaInicio =
+                        inputInicio.value;
+
+                    const horaFin =
+                        inputFin.value;
+
+
+                    if (
+                        !horaInicio ||
+                        !horaFin
+                    ) {
+
+                        mostrarMensaje(
+                            scheduleMessage,
+                            "Debes ingresar la hora de inicio y la hora de fin.",
+                            "error"
+                        );
+
+                        return;
+                    }
+
+
+                    if (
+                        horaInicio >= horaFin
+                    ) {
+
+                        mostrarMensaje(
+                            scheduleMessage,
+                            "La hora de inicio debe ser anterior a la hora de fin.",
+                            "error"
+                        );
+
+                        return;
+                    }
+
+
+                    botonGuardar.disabled = true;
+
+                    botonCancelar.disabled = true;
+
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                `/api/grupo-horarios/${horarioId}`,
+                                {
+                                    method: "PUT",
+
+                                    headers: {
+
+                                        "Authorization":
+                                            "Basic " + auth,
+
+                                        "Content-Type":
+                                            "application/json"
+
+                                    },
+
+                                    body: JSON.stringify({
+
+                                        grupoId:
+                                            Number(grupoId),
+
+                                        diaSemana:
+                                            diaSemana,
+
+                                        horaInicio:
+                                            horaInicio,
+
+                                        horaFin:
+                                            horaFin
+
+                                    })
+
+                                }
+                            );
+
+
+                        if (
+                            manejarNoAutorizado(
+                                response
+                            )
+                        ) {
+
+                            return;
+                        }
+
+
+                        if (
+                            response.status === 403
+                        ) {
+
+                            throw new Error(
+                                "No tienes permisos para modificar este horario."
+                            );
+                        }
+
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                await obtenerMensajeError(
+                                    response,
+                                    "No se pudo actualizar el horario."
+                                )
+                            );
+                        }
+
+
+                        mostrarMensaje(
+                            scheduleMessage,
+                            "Horario actualizado correctamente.",
+                            "success"
+                        );
+
+
+                        await cargarHorariosGrupo(
+                            Number(grupoId)
+                        );
+
+
+                        await cargarGrupos();
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "Error actualizando horario:",
+                            error
+                        );
+
+
+                        mostrarMensaje(
+                            scheduleMessage,
+                            error.message,
+                            "error"
+                        );
+
+
+                        botonGuardar.disabled = false;
+
+                        botonCancelar.disabled = false;
+
+                    }
+
+                }
+            );
+
+        }
+    );
 
     /*
      * =========================================================
@@ -2724,6 +3804,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 await cargarHorariosGrupo(
                     Number(grupoId)
                 );
+
+
+                await cargarGrupos();
 
 
             } catch (error) {
@@ -2935,39 +4018,42 @@ document.addEventListener("DOMContentLoaded", function () {
      * =========================================================
      */
 
-    cancelEditButton.addEventListener(
-        "click",
-        function () {
+    if (cancelEditButton) {
 
-            editGroupSection.hidden =
-                true;
+        cancelEditButton.addEventListener(
+            "click",
+            function () {
 
-
-            editGroupForm.reset();
-
-
-            ocultarMensaje(
-                editGroupMessage
-            );
+                editGroupSection.hidden =
+                    true;
 
 
-            ocultarMensaje(
-                scheduleMessage
-            );
+                editGroupForm.reset();
 
 
-            groupSchedulesList.innerHTML = `
+                ocultarMensaje(
+                    editGroupMessage
+                );
 
-                <div class="grupos-empty">
 
-                    Selecciona un grupo para gestionar sus horarios.
+                ocultarMensaje(
+                    scheduleMessage
+                );
 
-                </div>
 
-            `;
+                groupSchedulesList.innerHTML = `
 
-        }
-    );
+                    <div class="grupos-empty">
+
+                        Selecciona un grupo para gestionar sus horarios.
+
+                    </div>
+
+                `;
+
+            }
+        );
+    }
 
 
     /*
@@ -3079,9 +4165,46 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /*
      * =========================================================
+     * EVITAR VALIDACIÓN DE HORARIOS ANTIGUOS
+     * =========================================================
+     *
+     * Los campos editHoraInicio y editHoraFin todavía existen
+     * en tu HTML, pero ya no pertenecen al modelo de grupos.
+     * =========================================================
+     */
+
+    const editHoraInicioInicial =
+        document.getElementById(
+            "editHoraInicio"
+        );
+
+    const editHoraFinInicial =
+        document.getElementById(
+            "editHoraFin"
+        );
+
+
+    if (editHoraInicioInicial) {
+
+        editHoraInicioInicial.required =
+            false;
+    }
+
+
+    if (editHoraFinInicial) {
+
+        editHoraFinInicial.required =
+            false;
+    }
+
+
+    /*
+     * =========================================================
      * CARGA INICIAL
      * =========================================================
      */
+
+    cargarFrecuencias();
 
     cargarSenseis();
 

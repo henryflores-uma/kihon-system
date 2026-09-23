@@ -7,6 +7,8 @@ import com.kihon.kihon.dto.GrupoEstudianteResponse;
 import com.kihon.kihon.model.Asistencia;
 import com.kihon.kihon.model.Estudiante;
 import com.kihon.kihon.model.EstudianteGrupo;
+import com.kihon.kihon.model.GrupoHorario;
+import com.kihon.kihon.repository.GrupoHorarioRepository;
 import com.kihon.kihon.service.EstudiantePortalService;
 
 import org.springframework.http.ResponseEntity;
@@ -22,11 +24,14 @@ import java.util.List;
 public class EstudiantePortalController {
 
         private final EstudiantePortalService estudiantePortalService;
+        private final GrupoHorarioRepository grupoHorarioRepository;
 
         public EstudiantePortalController(
-                        EstudiantePortalService estudiantePortalService) {
+                        EstudiantePortalService estudiantePortalService,
+                        GrupoHorarioRepository grupoHorarioRepository) {
 
                 this.estudiantePortalService = estudiantePortalService;
+                this.grupoHorarioRepository = grupoHorarioRepository;
         }
 
         @GetMapping("/api/estudiante")
@@ -61,13 +66,29 @@ public class EstudiantePortalController {
         private GrupoEstudianteResponse convertirGrupoAResponse(
                         EstudianteGrupo estudianteGrupo) {
 
+                Long grupoId = estudianteGrupo.getGrupo().getId();
+
+                List<GrupoEstudianteResponse.HorarioResponse> horarios = grupoHorarioRepository
+                                .findByGrupoId(grupoId)
+                                .stream()
+                                .map(this::convertirHorarioAResponse)
+                                .toList();
+
                 return new GrupoEstudianteResponse(
-                                estudianteGrupo.getGrupo().getId(),
+                                grupoId,
                                 estudianteGrupo.getGrupo().getNombre(),
                                 estudianteGrupo.getGrupo().getDescripcion(),
-                                estudianteGrupo.getGrupo().getHoraInicio(),
-                                estudianteGrupo.getGrupo().getHoraFin(),
+                                horarios,
                                 estudianteGrupo.getGrupo().getEstado());
+        }
+
+        private GrupoEstudianteResponse.HorarioResponse convertirHorarioAResponse(
+                        GrupoHorario horario) {
+
+                return new GrupoEstudianteResponse.HorarioResponse(
+                                horario.getDiaSemana(),
+                                horario.getHoraInicio(),
+                                horario.getHoraFin());
         }
 
         private AsistenciaResponse convertirAResponse(

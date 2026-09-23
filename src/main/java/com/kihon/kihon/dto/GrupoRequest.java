@@ -1,15 +1,11 @@
 package com.kihon.kihon.dto;
 
-import java.time.LocalTime;
-
 public class GrupoRequest {
-
     private String nombre;
     private String descripcion;
-    private LocalTime horaInicio;
-    private LocalTime horaFin;
     private Integer capacidad;
     private Long senseiId;
+    private Long frecuenciaId;
 
     public GrupoRequest() {
     }
@@ -30,22 +26,6 @@ public class GrupoRequest {
         this.descripcion = descripcion;
     }
 
-    public LocalTime getHoraInicio() {
-        return horaInicio;
-    }
-
-    public void setHoraInicio(LocalTime horaInicio) {
-        this.horaInicio = horaInicio;
-    }
-
-    public LocalTime getHoraFin() {
-        return horaFin;
-    }
-
-    public void setHoraFin(LocalTime horaFin) {
-        this.horaFin = horaFin;
-    }
-
     public Integer getCapacidad() {
         return capacidad;
     }
@@ -60,5 +40,13 @@ public class GrupoRequest {
 
     public void setSenseiId(Long senseiId) {
         this.senseiId = senseiId;
+    }
+
+    public Long getFrecuenciaId() {
+        return frecuenciaId;
+    }
+
+    public void setFrecuenciaId(Long frecuenciaId) {
+        this.frecuenciaId = frecuenciaId;
     }
 }
