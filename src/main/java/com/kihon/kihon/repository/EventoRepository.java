@@ -7,16 +7,18 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface EventoRepository
-        extends JpaRepository<Evento, Long> {
+                extends JpaRepository<Evento, Long> {
 
-    List<Evento> findByFechaBetween(
-            LocalDate fechaInicio,
-            LocalDate fechaFin);
+        List<Evento> findByFechaBetween(
+                        LocalDate fechaInicio,
+                        LocalDate fechaFin);
 
-    List<Evento> findByFechaAndEstado(
-            LocalDate fecha,
-            String estado);
+        List<Evento> findByFechaAndEstado(
+                        LocalDate fecha,
+                        String estado);
 
-    List<Evento> findByEstado(
-            String estado);
+        List<Evento> findByEstado(
+                        String estado);
+
+        List<Evento> findByResponsableId(Long usuarioId);
 }

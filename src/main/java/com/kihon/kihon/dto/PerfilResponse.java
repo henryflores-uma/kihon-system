@@ -1,6 +1,6 @@
 package com.kihon.kihon.dto;
 
-public class UsuarioResponse {
+public class PerfilResponse {
 
     private Long id;
     private String username;
@@ -15,12 +15,12 @@ public class UsuarioResponse {
     private String rol;
     private String estado;
     private String foto;
-    private Long estudianteId;
+    private String fechaRegistro;
 
-    public UsuarioResponse() {
+    public PerfilResponse() {
     }
 
-    public UsuarioResponse(
+    public PerfilResponse(
             Long id,
             String username,
             String nombre,
@@ -34,7 +34,7 @@ public class UsuarioResponse {
             String rol,
             String estado,
             String foto,
-            Long estudianteId) {
+            String fechaRegistro) {
 
         this.id = id;
         this.username = username;
@@ -49,7 +49,7 @@ public class UsuarioResponse {
         this.rol = rol;
         this.estado = estado;
         this.foto = foto;
-        this.estudianteId = estudianteId;
+        this.fechaRegistro = fechaRegistro;
     }
 
     public Long getId() {
@@ -104,7 +104,7 @@ public class UsuarioResponse {
         return foto;
     }
 
-    public Long getEstudianteId() {
-        return estudianteId;
+    public String getFechaRegistro() {
+        return fechaRegistro;
     }
 }

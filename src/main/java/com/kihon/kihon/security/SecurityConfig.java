@@ -119,6 +119,15 @@ public class SecurityConfig {
                                                 .hasRole("ADMIN")
 
                                                 // =========================
+                                                // PERFIL DEL USUARIO
+                                                // USUARIO AUTENTICADO
+                                                // =========================
+                                                .requestMatchers(
+                                                                "/api/auth/perfil",
+                                                                "/api/auth/perfil/password")
+                                                .authenticated()
+
+                                                // =========================
                                                 // ACCESO ESPECÍFICO POR ROL
                                                 // =========================
                                                 .requestMatchers("/api/admin")

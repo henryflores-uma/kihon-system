@@ -11,4 +11,6 @@ public interface GrupoRepository extends JpaRepository<Grupo, Long> {
     Optional<Grupo> findByNombre(String nombre);
 
     List<Grupo> findByEstado(String estado);
+
+    List<Grupo> findBySenseiId(Long usuarioId);
 }

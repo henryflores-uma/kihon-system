@@ -202,62 +202,88 @@
 
 
                 <!-- ======================================
-                     GESTIÓN DE USUARIOS
+                     USUARIOS REGISTRADOS
                      ====================================== -->
 
                 <section class="dashboard-section" id="usuarios">
 
-                    <h2>
-                        Usuarios registrados
-                    </h2>
+
+                    <div class="usuarios-section-header">
+
+                        <div>
+
+                            <h2>
+                                Usuarios registrados
+                            </h2>
+
+                            <p class="usuarios-section-description">
+                                Consulta y administra las cuentas
+                                registradas en Kihon.
+                            </p>
+
+                        </div>
 
 
-                    <!-- ==================================
-                         FILTRO
-                         ================================== -->
+                        <button type="button" id="registrarUsuarioButton" class="btn btn-primary">
 
-                    <div class="usuarios-filtros">
+                            + Registrar usuario
 
-                        <label for="estadoFiltro">
-                            Filtrar por estado:
-                        </label>
-
-
-                        <select id="estadoFiltro">
-
-                            <option value="">
-                                Todos
-                            </option>
-
-                            <option value="ACTIVO">
-                                Activos
-                            </option>
-
-                            <option value="PENDIENTE">
-                                Pendientes
-                            </option>
-
-                            <option value="INACTIVO">
-                                Inactivos
-                            </option>
-
-                        </select>
+                        </button>
 
                     </div>
 
 
-                    <!-- ==================================
-                         MENSAJE
-                         ================================== -->
+                    <!-- FILTROS -->
+
+                    <div class="usuarios-filtros">
+
+                        <div class="usuarios-filtro">
+
+                            <label for="usuariosSearch">
+                                Buscar usuario
+                            </label>
+
+                            <input type="search" id="usuariosSearch" placeholder="Buscar por nombre o usuario..."
+                                autocomplete="off">
+
+                        </div>
+
+
+                        <div class="usuarios-filtro">
+
+                            <label for="estadoFiltro">
+                                Filtrar por estado
+                            </label>
+
+                            <select id="estadoFiltro">
+
+                                <option value="">
+                                    Todos
+                                </option>
+
+                                <option value="ACTIVO">
+                                    Activos
+                                </option>
+
+                                <option value="PENDIENTE">
+                                    Pendientes
+                                </option>
+
+                                <option value="INACTIVO">
+                                    Inactivos
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
 
                     <p id="usuariosMessage">
                         Cargando usuarios...
                     </p>
 
-
-                    <!-- ==================================
-                         TABLA
-                         ================================== -->
 
                     <div class="table-container">
 
@@ -268,7 +294,7 @@
                                 <tr>
 
                                     <th>
-                                        ID
+                                        Foto
                                     </th>
 
                                     <th>
@@ -292,10 +318,6 @@
                                     </th>
 
                                     <th>
-                                        Vinculación
-                                    </th>
-
-                                    <th>
                                         Acciones
                                     </th>
 
@@ -313,6 +335,99 @@
 
                 </section>
 
+
+                <!-- ======================================
+                     ESTUDIANTES SIN CUENTA
+                     ====================================== -->
+
+                <section class="dashboard-section" id="estudiantesSinCuenta">
+
+
+                    <div class="usuarios-section-header">
+
+                        <div>
+
+                            <h2>
+                                Estudiantes sin cuenta
+                            </h2>
+
+                            <p class="usuarios-section-description">
+                                Estudiantes registrados que todavía
+                                no tienen una cuenta de usuario.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="usuarios-filtros">
+
+                        <div class="usuarios-filtro">
+
+                            <label for="estudiantesSearch">
+                                Buscar estudiante
+                            </label>
+
+                            <input type="search" id="estudiantesSearch" placeholder="Buscar por nombre o documento..."
+                                autocomplete="off">
+
+                        </div>
+
+                    </div>
+
+
+                    <p id="estudiantesMessage">
+                        Cargando estudiantes...
+                    </p>
+
+
+                    <div class="table-container">
+
+                        <table class="data-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Foto
+                                    </th>
+
+                                    <th>
+                                        Nombre
+                                    </th>
+
+                                    <th>
+                                        Documento
+                                    </th>
+
+                                    <th>
+                                        Correo
+                                    </th>
+
+                                    <th>
+                                        Teléfono
+                                    </th>
+
+                                    <th>
+                                        Acción
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="estudiantesSinCuentaTableBody">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
             </div>
 
         </section>
@@ -321,8 +436,741 @@
 
 
     <!-- ==========================================
+         MODAL CREAR CUENTA PARA ESTUDIANTE
+         ========================================== -->
+
+    <div class="modal" id="crearUsuarioModal" hidden>
+
+        <div class="modal__overlay" id="crearUsuarioModalOverlay">
+        </div>
+
+
+        <div class="modal__content" role="dialog" aria-modal="true" aria-labelledby="crearUsuarioModalTitle">
+
+            <div class="modal__header">
+
+                <div>
+
+                    <span class="section-kicker">
+                        Cuenta de acceso
+                    </span>
+
+                    <h2 id="crearUsuarioModalTitle">
+                        Crear usuario
+                    </h2>
+
+                </div>
+
+
+                <button type="button" class="modal__close" id="cerrarCrearUsuarioModal" aria-label="Cerrar">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <div class="modal__body">
+
+
+                <div class="modal__student-info">
+
+                    <h3>
+                        Estudiante
+                    </h3>
+
+                    <p id="modalEstudianteNombre">
+                        -
+                    </p>
+
+                    <p id="modalEstudianteDocumento">
+                        -
+                    </p>
+
+                    <p id="modalEstudianteCorreo">
+                        -
+                    </p>
+
+                </div>
+
+
+                <form id="crearUsuarioForm">
+
+                    <input type="hidden" id="modalEstudianteId">
+
+
+                    <div class="form-group">
+
+                        <label for="modalUsername">
+                            Nombre de usuario
+                        </label>
+
+                        <input type="text" id="modalUsername" name="username" required minlength="4"
+                            autocomplete="username" placeholder="Ej. juan.perez">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="modalPassword">
+                            Contraseña
+                        </label>
+
+                        <input type="password" id="modalPassword" name="password" required minlength="8"
+                            autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="modalGenero">
+                            Género
+                        </label>
+
+                        <select id="modalGenero" name="genero" required>
+
+                            <option value="">
+                                Seleccionar
+                            </option>
+
+                            <option value="MASCULINO">
+                                Masculino
+                            </option>
+
+                            <option value="FEMENINO">
+                                Femenino
+                            </option>
+
+                            <option value="OTRO">
+                                Otro
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <p id="crearUsuarioMessage" class="form-message" hidden>
+                    </p>
+
+
+                    <div class="modal__actions">
+
+                        <button type="button" id="cancelarCrearUsuario" class="btn btn-secondary">
+                            Cancelar
+                        </button>
+
+                        <button type="submit" id="crearUsuarioSubmit" class="btn btn-primary">
+                            Crear usuario
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         MODAL REGISTRAR USUARIO
+         ========================================== -->
+
+    <div class="modal" id="registrarUsuarioModal" hidden>
+
+        <div class="modal__overlay" id="registrarUsuarioModalOverlay">
+        </div>
+
+
+        <div class="modal__content" role="dialog" aria-modal="true" aria-labelledby="registrarUsuarioModalTitle">
+
+            <div class="modal__header">
+
+                <div>
+
+                    <span class="section-kicker">
+                        Administración
+                    </span>
+
+                    <h2 id="registrarUsuarioModalTitle">
+                        Registrar usuario
+                    </h2>
+
+                </div>
+
+
+                <button type="button" class="modal__close" id="cerrarRegistrarUsuarioModal" aria-label="Cerrar">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <div class="modal__body">
+
+                <form id="registroUsuarioForm" class="registro-form">
+
+
+                    <div class="registro-form__section">
+
+                        <h3>
+                            Datos de acceso
+                        </h3>
+
+
+                        <div class="registro-form__grid">
+
+                            <div class="form-group">
+
+                                <label for="username">
+                                    Usuario
+                                </label>
+
+                                <input type="text" id="username" name="username" minlength="4" maxlength="30"
+                                    autocomplete="username" required>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="password">
+                                    Contraseña
+                                </label>
+
+                                <div class="password-wrapper">
+
+                                    <input type="password" id="password" name="password" minlength="8" maxlength="72"
+                                        autocomplete="new-password" required>
+
+                                    <button type="button" id="togglePassword" class="password-toggle"
+                                        aria-label="Mostrar contraseña">
+                                        👁️
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="registro-form__section">
+
+                        <h3>
+                            Datos personales
+                        </h3>
+
+
+                        <div class="registro-form__grid">
+
+                            <div class="form-group">
+
+                                <label for="nombre">
+                                    Nombre
+                                </label>
+
+                                <input type="text" id="nombre" name="nombre" maxlength="50" autocomplete="given-name"
+                                    required>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="apellido">
+                                    Apellido
+                                </label>
+
+                                <input type="text" id="apellido" name="apellido" maxlength="50"
+                                    autocomplete="family-name" required>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="tipoDocumento">
+                                    Tipo de documento
+                                </label>
+
+                                <select id="tipoDocumento" name="tipoDocumento" required>
+
+                                    <option value="">
+                                        Seleccionar
+                                    </option>
+
+                                    <option value="DNI">
+                                        DNI
+                                    </option>
+
+                                    <option value="CE">
+                                        Carné de extranjería
+                                    </option>
+
+                                    <option value="PASAPORTE">
+                                        Pasaporte
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="numeroDocumento">
+                                    Número de documento
+                                </label>
+
+                                <input type="text" id="numeroDocumento" name="numeroDocumento"
+                                    placeholder="Selecciona el tipo de documento" disabled required>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="codigoPais">
+                                    Código de país
+                                </label>
+
+                                <select id="codigoPais" name="codigoPais">
+
+                                    <option value="+51">
+                                        +51 Perú
+                                    </option>
+
+                                    <option value="+57">
+                                        +57 Colombia
+                                    </option>
+
+                                    <option value="+56">
+                                        +56 Chile
+                                    </option>
+
+                                    <option value="+54">
+                                        +54 Argentina
+                                    </option>
+
+                                    <option value="+55">
+                                        +55 Brasil
+                                    </option>
+
+                                    <option value="+52">
+                                        +52 México
+                                    </option>
+
+                                    <option value="+1">
+                                        +1 Estados Unidos / Canadá
+                                    </option>
+
+                                    <option value="+34">
+                                        +34 España
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="telefono">
+                                    Teléfono
+                                </label>
+
+                                <input type="tel" id="telefono" name="telefono" inputmode="numeric" autocomplete="tel">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="fechaNacimiento">
+                                    Fecha de nacimiento
+                                </label>
+
+                                <input type="date" id="fechaNacimiento" name="fechaNacimiento" autocomplete="bday"
+                                    required>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="genero">
+                                    Género
+                                </label>
+
+                                <select id="genero" name="genero" required>
+
+                                    <option value="">
+                                        Seleccionar
+                                    </option>
+
+                                    <option value="MASCULINO">
+                                        Masculino
+                                    </option>
+
+                                    <option value="FEMENINO">
+                                        Femenino
+                                    </option>
+
+                                    <option value="OTRO">
+                                        Otro
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="correo">
+                                    Correo electrónico
+                                </label>
+
+                                <input type="email" id="correo" name="correo" autocomplete="email" required>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <p id="registroMessage" class="form-message" hidden>
+                    </p>
+
+
+                    <div class="modal__actions">
+
+                        <button type="button" id="cancelarRegistrarUsuario" class="btn btn-secondary">
+                            Cancelar
+                        </button>
+
+                        <button type="submit" class="btn btn-primary">
+                            Crear usuario
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+     MODAL EDITAR USUARIO
+     ========================================================= -->
+
+    <div class="modal" id="editarUsuarioModal" hidden>
+
+        <div class="modal__overlay" id="editarUsuarioModalOverlay"></div>
+
+        <div class="modal__content" role="dialog" aria-modal="true" aria-labelledby="editarUsuarioModalTitle">
+
+            <div class="modal__header">
+
+                <div>
+                    <span class="section-kicker">
+                        Administración
+                    </span>
+
+                    <h2 id="editarUsuarioModalTitle">
+                        Editar usuario
+                    </h2>
+                </div>
+
+                <button type="button" class="modal__close" id="cerrarEditarUsuarioModal" aria-label="Cerrar">
+                    ×
+                </button>
+
+            </div>
+
+            <div class="modal__body">
+
+                <form id="editarUsuarioForm">
+
+                    <input type="hidden" id="editarUsuarioId">
+
+                    <input type="hidden" id="editarFoto">
+
+                    <!-- FOTO -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Foto
+                        </label>
+
+                        <div id="editarUsuarioFoto" class="topbar__avatar"
+                            style="width: 90px; height: 90px; margin: 0 auto 15px;">
+                        </div>
+
+                        <input type="file" id="editarFotoInput" accept="image/jpeg,image/png,image/webp" hidden>
+
+                        <button type="button" id="cambiarEditarFotoBtn" class="btn btn-secondary">
+
+                            Cambiar foto
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- USUARIO -->
+
+                    <div class="form-group">
+
+                        <label for="editarUsername">
+                            Usuario
+                        </label>
+
+                        <input type="text" id="editarUsername" maxlength="30" required autocomplete="username">
+
+                    </div>
+
+
+                    <!-- NOMBRE -->
+
+                    <div class="form-group">
+
+                        <label for="editarNombre">
+                            Nombre
+                        </label>
+
+                        <input type="text" id="editarNombre" maxlength="50" required>
+
+                    </div>
+
+
+                    <!-- APELLIDO -->
+
+                    <div class="form-group">
+
+                        <label for="editarApellido">
+                            Apellido
+                        </label>
+
+                        <input type="text" id="editarApellido" maxlength="50" required>
+
+                    </div>
+
+
+                    <!-- TIPO DOCUMENTO -->
+
+                    <div class="form-group">
+
+                        <label for="editarTipoDocumento">
+                            Tipo de documento
+                        </label>
+
+                        <select id="editarTipoDocumento" required>
+
+                            <option value="">
+                                Seleccionar
+                            </option>
+
+                            <option value="DNI">
+                                DNI
+                            </option>
+
+                            <option value="CE">
+                                Carné de extranjería
+                            </option>
+
+                            <option value="PASAPORTE">
+                                Pasaporte
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- NUMERO DOCUMENTO -->
+
+                    <div class="form-group">
+
+                        <label for="editarNumeroDocumento">
+                            Número de documento
+                        </label>
+
+                        <input type="text" id="editarNumeroDocumento" maxlength="12" required>
+
+                    </div>
+
+
+                    <!-- TELEFONO -->
+
+                    <div class="form-group">
+
+                        <label for="editarCodigoPais">
+                            Código de país
+                        </label>
+
+                        <select id="editarCodigoPais">
+
+                            <option value="+51">
+                                +51 Perú
+                            </option>
+
+                            <option value="+57">
+                                +57 Colombia
+                            </option>
+
+                            <option value="+56">
+                                +56 Chile
+                            </option>
+
+                            <option value="+54">
+                                +54 Argentina
+                            </option>
+
+                            <option value="+55">
+                                +55 Brasil
+                            </option>
+
+                            <option value="+52">
+                                +52 México
+                            </option>
+
+                            <option value="+1">
+                                +1 Estados Unidos / Canadá
+                            </option>
+
+                            <option value="+34">
+                                +34 España
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="editarTelefono">
+                            Teléfono
+                        </label>
+
+                        <input type="tel" id="editarTelefono" inputmode="numeric" autocomplete="tel">
+
+                    </div>
+
+
+                    <!-- FECHA NACIMIENTO -->
+
+                    <div class="form-group">
+
+                        <label for="editarFechaNacimiento">
+                            Fecha de nacimiento
+                        </label>
+
+                        <input type="date" id="editarFechaNacimiento" required>
+
+                    </div>
+
+
+                    <!-- GENERO -->
+
+                    <div class="form-group">
+
+                        <label for="editarGenero">
+                            Género
+                        </label>
+
+                        <select id="editarGenero" required>
+
+                            <option value="">
+                                Seleccionar
+                            </option>
+
+                            <option value="MASCULINO">
+                                Masculino
+                            </option>
+
+                            <option value="FEMENINO">
+                                Femenino
+                            </option>
+
+                            <option value="OTRO">
+                                Otro
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- CORREO -->
+
+                    <div class="form-group">
+
+                        <label for="editarCorreo">
+                            Correo electrónico
+                        </label>
+
+                        <input type="email" id="editarCorreo" required autocomplete="email">
+
+                    </div>
+
+
+                    <!-- MENSAJE -->
+
+                    <p id="editarUsuarioMessage" class="form-message" hidden>
+                    </p>
+
+
+                    <!-- ACCIONES -->
+
+                    <div class="modal__actions">
+
+                        <button type="button" id="cancelarEditarUsuario" class="btn btn-secondary">
+
+                            Cancelar
+
+                        </button>
+
+                        <button type="submit" id="editarUsuarioSubmit" class="btn btn-primary">
+
+                            Guardar cambios
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
          JAVASCRIPT
          ========================================== -->
+
+    <script src="/js/registro.js"></script>
 
     <script src="/js/usuarios.js"></script>
 

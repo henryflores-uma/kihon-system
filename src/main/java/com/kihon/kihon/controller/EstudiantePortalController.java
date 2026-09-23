@@ -34,12 +34,25 @@ public class EstudiantePortalController {
                 this.grupoHorarioRepository = grupoHorarioRepository;
         }
 
+        /*
+         * =========================================================
+         * PERFIL DEL ESTUDIANTE
+         * =========================================================
+         */
+
         @GetMapping("/api/estudiante")
-        public Estudiante estudiante(Authentication authentication) {
+        public Estudiante estudiante(
+                        Authentication authentication) {
 
                 return estudiantePortalService.obtenerEstudianteAutenticado(
                                 authentication.getName());
         }
+
+        /*
+         * =========================================================
+         * ASISTENCIAS
+         * =========================================================
+         */
 
         @GetMapping("/api/estudiante/asistencias")
         public List<AsistenciaResponse> listarMisAsistencias(
@@ -52,6 +65,12 @@ public class EstudiantePortalController {
                                 .toList();
         }
 
+        /*
+         * =========================================================
+         * GRUPOS
+         * =========================================================
+         */
+
         @GetMapping("/api/estudiante/grupos")
         public List<GrupoEstudianteResponse> listarMisGrupos(
                         Authentication authentication) {
@@ -62,6 +81,12 @@ public class EstudiantePortalController {
                                 .map(this::convertirGrupoAResponse)
                                 .toList();
         }
+
+        /*
+         * =========================================================
+         * CONVERTIR GRUPO A RESPONSE
+         * =========================================================
+         */
 
         private GrupoEstudianteResponse convertirGrupoAResponse(
                         EstudianteGrupo estudianteGrupo) {
@@ -82,6 +107,12 @@ public class EstudiantePortalController {
                                 estudianteGrupo.getGrupo().getEstado());
         }
 
+        /*
+         * =========================================================
+         * CONVERTIR HORARIO A RESPONSE
+         * =========================================================
+         */
+
         private GrupoEstudianteResponse.HorarioResponse convertirHorarioAResponse(
                         GrupoHorario horario) {
 
@@ -90,6 +121,12 @@ public class EstudiantePortalController {
                                 horario.getHoraInicio(),
                                 horario.getHoraFin());
         }
+
+        /*
+         * =========================================================
+         * CONVERTIR ASISTENCIA A RESPONSE
+         * =========================================================
+         */
 
         private AsistenciaResponse convertirAResponse(
                         Asistencia asistencia) {
@@ -110,6 +147,12 @@ public class EstudiantePortalController {
                                 asistencia.getObservacion());
         }
 
+        /*
+         * =========================================================
+         * ACTUALIZAR PERFIL DEL ESTUDIANTE
+         * =========================================================
+         */
+
         @PutMapping("/api/estudiante/perfil")
         public Estudiante actualizarPerfil(
                         Authentication authentication,
@@ -125,6 +168,12 @@ public class EstudiantePortalController {
                                 request.getFoto());
         }
 
+        /*
+         * =========================================================
+         * CAMBIAR CONTRASEÑA DEL ESTUDIANTE
+         * =========================================================
+         */
+
         @PutMapping("/api/estudiante/password")
         public ResponseEntity<String> cambiarPassword(
                         Authentication authentication,
@@ -133,7 +182,7 @@ public class EstudiantePortalController {
                 estudiantePortalService.cambiarPassword(
                                 authentication.getName(),
                                 request.getPasswordActual(),
-                                request.getNuevaPassword());
+                                request.getPasswordNueva());
 
                 return ResponseEntity.ok(
                                 "Contraseña actualizada correctamente");
