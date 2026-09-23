@@ -16,139 +16,275 @@ import java.util.List;
 @Service
 public class AsistenciaService {
 
-    private final AsistenciaRepository asistenciaRepository;
-    private final EstudianteRepository estudianteRepository;
-    private final GrupoRepository grupoRepository;
-    private final EstudianteGrupoRepository estudianteGrupoRepository;
+        private final AsistenciaRepository asistenciaRepository;
+        private final EstudianteRepository estudianteRepository;
+        private final GrupoRepository grupoRepository;
+        private final EstudianteGrupoRepository estudianteGrupoRepository;
 
-    public AsistenciaService(
-            AsistenciaRepository asistenciaRepository,
-            EstudianteRepository estudianteRepository,
-            GrupoRepository grupoRepository,
-            EstudianteGrupoRepository estudianteGrupoRepository) {
+        public AsistenciaService(
+                        AsistenciaRepository asistenciaRepository,
+                        EstudianteRepository estudianteRepository,
+                        GrupoRepository grupoRepository,
+                        EstudianteGrupoRepository estudianteGrupoRepository) {
 
-        this.asistenciaRepository = asistenciaRepository;
-        this.estudianteRepository = estudianteRepository;
-        this.grupoRepository = grupoRepository;
-        this.estudianteGrupoRepository = estudianteGrupoRepository;
-    }
-
-    public Asistencia registrarAsistencia(
-            Long estudianteId,
-            Long grupoId,
-            LocalDate fecha,
-            LocalTime horaLlegada,
-            String estado,
-            String observacion) {
-
-        Estudiante estudiante = estudianteRepository.findById(estudianteId)
-                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
-
-        Grupo grupo = grupoRepository.findById(grupoId)
-                .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
-
-        if (!grupo.getEstado().equals("ACTIVO")) {
-            throw new RuntimeException(
-                    "No se puede registrar asistencia en un grupo inactivo");
+                this.asistenciaRepository = asistenciaRepository;
+                this.estudianteRepository = estudianteRepository;
+                this.grupoRepository = grupoRepository;
+                this.estudianteGrupoRepository = estudianteGrupoRepository;
         }
 
-        if (!estudianteGrupoRepository
-                .existsByEstudianteIdAndGrupoIdAndEstado(
-                        estudianteId,
-                        grupoId,
-                        "ACTIVO")) {
+        // ==========================================
+        // REGISTRAR ASISTENCIA
+        // ==========================================
 
-            throw new RuntimeException(
-                    "El estudiante no está asignado activamente a este grupo");
+        public Asistencia registrarAsistencia(
+                        Long estudianteId,
+                        Long grupoId,
+                        LocalDate fecha,
+                        LocalTime horaLlegada,
+                        String estado,
+                        String observacion) {
+
+                Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Estudiante no encontrado"));
+
+                Grupo grupo = grupoRepository.findById(grupoId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Grupo no encontrado"));
+
+                validarGrupoActivo(grupo);
+
+                validarEstudianteActivoEnGrupo(
+                                estudianteId,
+                                grupoId);
+
+                validarDatosAsistencia(
+                                fecha,
+                                horaLlegada,
+                                estado);
+
+                if (asistenciaRepository
+                                .existsByEstudianteIdAndGrupoIdAndFecha(
+                                                estudianteId,
+                                                grupoId,
+                                                fecha)) {
+
+                        throw new RuntimeException(
+                                        "El estudiante ya tiene asistencia registrada para este grupo en esta fecha");
+                }
+
+                Asistencia asistencia = new Asistencia();
+
+                asistencia.setEstudiante(estudiante);
+                asistencia.setGrupo(grupo);
+                asistencia.setFecha(fecha);
+                asistencia.setHoraLlegada(horaLlegada);
+                asistencia.setEstado(estado.toUpperCase());
+                asistencia.setObservacion(observacion);
+
+                return asistenciaRepository.save(asistencia);
         }
 
-        if (estado == null) {
-            throw new RuntimeException(
-                    "El estado de la asistencia es obligatorio");
+        // ==========================================
+        // ACTUALIZAR ASISTENCIA
+        // ==========================================
+
+        public Asistencia actualizarAsistencia(
+                        Long id,
+                        Long estudianteId,
+                        Long grupoId,
+                        LocalDate fecha,
+                        LocalTime horaLlegada,
+                        String estado,
+                        String observacion) {
+
+                Asistencia asistencia = asistenciaRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Asistencia no encontrada"));
+
+                Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Estudiante no encontrado"));
+
+                Grupo grupo = grupoRepository.findById(grupoId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Grupo no encontrado"));
+
+                validarGrupoActivo(grupo);
+
+                validarEstudianteActivoEnGrupo(
+                                estudianteId,
+                                grupoId);
+
+                validarDatosAsistencia(
+                                fecha,
+                                horaLlegada,
+                                estado);
+
+                /*
+                 * Si se está cambiando estudiante, grupo o fecha,
+                 * verificamos que no exista otra asistencia con
+                 * esa misma combinación.
+                 */
+                boolean cambioRegistro = !asistencia.getEstudiante().getId().equals(estudianteId)
+                                || !asistencia.getGrupo().getId().equals(grupoId)
+                                || !asistencia.getFecha().equals(fecha);
+
+                if (cambioRegistro
+                                && asistenciaRepository
+                                                .existsByEstudianteIdAndGrupoIdAndFecha(
+                                                                estudianteId,
+                                                                grupoId,
+                                                                fecha)) {
+
+                        throw new RuntimeException(
+                                        "Ya existe otra asistencia para este estudiante, grupo y fecha");
+                }
+
+                asistencia.setEstudiante(estudiante);
+                asistencia.setGrupo(grupo);
+                asistencia.setFecha(fecha);
+                asistencia.setHoraLlegada(horaLlegada);
+                asistencia.setEstado(estado.toUpperCase());
+                asistencia.setObservacion(observacion);
+
+                return asistenciaRepository.save(asistencia);
         }
 
-        estado = estado.toUpperCase();
+        // ==========================================
+        // LISTAR POR ESTUDIANTE
+        // ==========================================
 
-        if (!estado.equals("PRESENTE")
-                && !estado.equals("AUSENTE")
-                && !estado.equals("TARDANZA")) {
+        public List<Asistencia> listarPorEstudiante(Long estudianteId) {
 
-            throw new RuntimeException(
-                    "El estado debe ser PRESENTE, AUSENTE o TARDANZA");
+                return asistenciaRepository.findByEstudianteId(estudianteId);
         }
 
-        if (fecha == null) {
-            throw new RuntimeException(
-                    "La fecha es obligatoria");
+        // ==========================================
+        // LISTAR POR GRUPO
+        // ==========================================
+
+        public List<Asistencia> listarPorGrupo(Long grupoId) {
+
+                return asistenciaRepository.findByGrupoId(grupoId);
         }
 
-        if (estado.equals("PRESENTE")
-                || estado.equals("TARDANZA")) {
+        // ==========================================
+        // LISTAR POR FECHA
+        // ==========================================
 
-            if (horaLlegada == null) {
-                throw new RuntimeException(
-                        "La hora de llegada es obligatoria para PRESENTE o TARDANZA");
-            }
+        public List<Asistencia> listarPorFecha(LocalDate fecha) {
+
+                return asistenciaRepository.findByFecha(fecha);
         }
 
-        if (estado.equals("AUSENTE")
-                && horaLlegada != null) {
+        // ==========================================
+        // LISTAR POR ESTUDIANTE Y FECHA
+        // ==========================================
 
-            throw new RuntimeException(
-                    "Un estudiante AUSENTE no debe tener hora de llegada");
+        public List<Asistencia> listarPorEstudianteYFecha(
+                        Long estudianteId,
+                        LocalDate fecha) {
+
+                return asistenciaRepository
+                                .findByEstudianteIdAndFecha(
+                                                estudianteId,
+                                                fecha);
         }
 
-        if (asistenciaRepository
-                .existsByEstudianteIdAndGrupoIdAndFecha(
-                        estudianteId,
-                        grupoId,
-                        fecha)) {
+        // ==========================================
+        // LISTAR POR GRUPO Y FECHA
+        // ==========================================
 
-            throw new RuntimeException(
-                    "El estudiante ya tiene asistencia registrada para este grupo en esta fecha");
+        public List<Asistencia> listarPorGrupoYFecha(
+                        Long grupoId,
+                        LocalDate fecha) {
+
+                return asistenciaRepository
+                                .findByGrupoIdAndFecha(
+                                                grupoId,
+                                                fecha);
         }
 
-        Asistencia asistencia = new Asistencia();
+        // ==========================================
+        // VALIDAR GRUPO
+        // ==========================================
 
-        asistencia.setEstudiante(estudiante);
-        asistencia.setGrupo(grupo);
-        asistencia.setFecha(fecha);
-        asistencia.setHoraLlegada(horaLlegada);
-        asistencia.setEstado(estado);
-        asistencia.setObservacion(observacion);
+        private void validarGrupoActivo(Grupo grupo) {
 
-        return asistenciaRepository.save(asistencia);
-    }
+                if (!"ACTIVO".equalsIgnoreCase(grupo.getEstado())) {
 
-    public List<Asistencia> listarPorEstudiante(Long estudianteId) {
-        return asistenciaRepository.findByEstudianteId(estudianteId);
-    }
+                        throw new RuntimeException(
+                                        "No se puede registrar asistencia en un grupo inactivo");
+                }
+        }
 
-    public List<Asistencia> listarPorGrupo(Long grupoId) {
-        return asistenciaRepository.findByGrupoId(grupoId);
-    }
+        // ==========================================
+        // VALIDAR ESTUDIANTE EN GRUPO
+        // ==========================================
 
-    public List<Asistencia> listarPorFecha(LocalDate fecha) {
-        return asistenciaRepository.findByFecha(fecha);
-    }
+        private void validarEstudianteActivoEnGrupo(
+                        Long estudianteId,
+                        Long grupoId) {
 
-    public List<Asistencia> listarPorEstudianteYFecha(
-            Long estudianteId,
-            LocalDate fecha) {
+                if (!estudianteGrupoRepository
+                                .existsByEstudianteIdAndGrupoIdAndEstado(
+                                                estudianteId,
+                                                grupoId,
+                                                "ACTIVO")) {
 
-        return asistenciaRepository
-                .findByEstudianteIdAndFecha(
-                        estudianteId,
-                        fecha);
-    }
+                        throw new RuntimeException(
+                                        "El estudiante no está asignado activamente a este grupo");
+                }
+        }
 
-    public List<Asistencia> listarPorGrupoYFecha(
-            Long grupoId,
-            LocalDate fecha) {
+        // ==========================================
+        // VALIDAR DATOS DE ASISTENCIA
+        // ==========================================
 
-        return asistenciaRepository
-                .findByGrupoIdAndFecha(
-                        grupoId,
-                        fecha);
-    }
+        private void validarDatosAsistencia(
+                        LocalDate fecha,
+                        LocalTime horaLlegada,
+                        String estado) {
+
+                if (fecha == null) {
+
+                        throw new RuntimeException(
+                                        "La fecha es obligatoria");
+                }
+
+                if (estado == null || estado.isBlank()) {
+
+                        throw new RuntimeException(
+                                        "El estado de la asistencia es obligatorio");
+                }
+
+                String estadoNormalizado = estado.toUpperCase();
+
+                if (!estadoNormalizado.equals("PRESENTE")
+                                && !estadoNormalizado.equals("AUSENTE")
+                                && !estadoNormalizado.equals("TARDANZA")) {
+
+                        throw new RuntimeException(
+                                        "El estado debe ser PRESENTE, AUSENTE o TARDANZA");
+                }
+
+                if (estadoNormalizado.equals("PRESENTE")
+                                || estadoNormalizado.equals("TARDANZA")) {
+
+                        if (horaLlegada == null) {
+
+                                throw new RuntimeException(
+                                                "La hora de llegada es obligatoria para PRESENTE o TARDANZA");
+                        }
+                }
+
+                if (estadoNormalizado.equals("AUSENTE")
+                                && horaLlegada != null) {
+
+                        throw new RuntimeException(
+                                        "Un estudiante AUSENTE no debe tener hora de llegada");
+                }
+        }
 }

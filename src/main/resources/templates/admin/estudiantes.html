@@ -18,12 +18,12 @@
 <body>
 
 
-    <div class="app-layout">
+    <main class="app-layout">
 
 
-        <!-- =====================================================
+        <!-- =========================================================
              SIDEBAR
-             ===================================================== -->
+             ========================================================= -->
 
         <aside class="sidebar">
 
@@ -34,56 +34,37 @@
 
             <nav class="sidebar__nav">
 
-
                 <a href="/admin/admin" class="sidebar__link">
                     Dashboard
                 </a>
-
 
                 <a href="/admin/estudiantes" class="sidebar__link sidebar__link--active">
                     Estudiantes
                 </a>
 
-
                 <a href="/admin/grupos" class="sidebar__link">
                     Grupos
                 </a>
-
 
                 <a href="/admin/asistencia" class="sidebar__link">
                     Asistencia
                 </a>
 
-
                 <a href="/admin/horario" class="sidebar__link">
                     Horario
                 </a>
-
 
                 <a href="/admin/inscripciones" class="sidebar__link">
                     Inscripciones
                 </a>
 
-
                 <a href="/admin/reportes" class="sidebar__link">
                     Reportes
                 </a>
 
-
                 <a href="/admin/usuarios" class="sidebar__link">
                     Usuarios
                 </a>
-
-
-                <a href="/admin/perfil" class="sidebar__link">
-                    Mi perfil
-                </a>
-
-
-                <a href="#" id="logoutButton" class="btn btn--logout">
-                    Cerrar sesión
-                </a>
-
 
             </nav>
 
@@ -91,366 +72,302 @@
 
 
 
-        <!-- =====================================================
+        <!-- =========================================================
              CONTENIDO PRINCIPAL
-             ===================================================== -->
+             ========================================================= -->
 
-        <main class="main-content">
-
-
-            <div class="container estudiantes-page">
+        <section class="main-content">
 
 
+            <!-- =====================================================
+                 TOPBAR
+                 ===================================================== -->
 
-                <!-- =================================================
-                     BARRA SUPERIOR
-                     ================================================= -->
+            <header class="topbar">
 
-                <div class="topbar">
+                <div class="topbar__role">
+
+                    <span class="topbar__role-label">
+                        Rol
+                    </span>
+
+                    <strong id="roleDisplay">
+                        Administrador
+                    </strong>
+
+                </div>
 
 
-                    <!-- ROL -->
+                <div class="topbar__actions">
 
-                    <div class="topbar__role">
 
-                        <span class="topbar__role-label">
-                            Rol
+                    <!-- NOTIFICACIONES -->
+
+                    <button type="button" class="topbar__notification" id="notificationButton"
+                        aria-label="Notificaciones">
+
+                        <span class="topbar__notification-icon">
+                            🔔
                         </span>
 
-                        <strong id="roleDisplay">
-                            Administrador
-                        </strong>
+                        <span id="notificationCount" class="topbar__notification-count" hidden>
+                            0
+                        </span>
 
-                    </div>
-
-
-
-                    <!-- ACCIONES DEL USUARIO -->
-
-                    <div class="topbar__actions">
+                    </button>
 
 
-                        <!-- NOTIFICACIONES -->
 
-                        <button type="button" class="topbar__notification" id="notificationButton"
-                            aria-label="Notificaciones">
+                    <!-- PERFIL -->
 
-                            <span class="topbar__notification-icon">
-                                🔔
-                            </span>
+                    <div class="topbar__profile" id="profileMenuContainer">
 
-                            <span id="notificationCount" class="topbar__notification-count" hidden>
-                                0
+                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
+                            aria-expanded="false">
+
+                            <div class="topbar__avatar" id="userProfileAvatar">
+
+                                <span id="userAvatarInitial">
+                                    U
+                                </span>
+
+                            </div>
+
+
+                            <div class="topbar__profile-info">
+
+                                <strong id="usernameDisplay">
+                                    Usuario
+                                </strong>
+
+                                <span id="profileRoleDisplay">
+                                    Administrador
+                                </span>
+
+                            </div>
+
+
+                            <span class="topbar__profile-arrow">
+                                ▼
                             </span>
 
                         </button>
 
 
+                        <div class="topbar__profile-menu" id="profileMenu" hidden>
 
-                        <!-- PERFIL -->
+                            <a href="/admin/perfil" class="topbar__profile-menu-item">
 
-                        <div class="topbar__profile" id="profileMenuContainer">
+                                Editar perfil
 
-
-                            <button type="button" class="topbar__profile-button" id="profileMenuButton">
-
-
-                                <!-- FOTO / AVATAR -->
-
-                                <div class="topbar__avatar" id="userProfileAvatar">
-
-                                    <span id="userAvatarInitial">
-                                        U
-                                    </span>
-
-                                </div>
+                            </a>
 
 
+                            <button type="button" id="topbarLogoutButton"
+                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
 
-                                <!-- DATOS -->
-
-                                <div class="topbar__profile-info">
-
-                                    <strong id="usernameDisplay">
-                                        Usuario
-                                    </strong>
-
-                                    <span id="profileRoleDisplay">
-                                        Administrador
-                                    </span>
-
-                                </div>
-
-
-
-                                <!-- FLECHA -->
-
-                                <span class="topbar__profile-arrow">
-                                    ▼
-                                </span>
-
+                                Cerrar sesión
 
                             </button>
 
-
-
-                            <!-- MENÚ DESPLEGABLE -->
-
-                            <div class="topbar__profile-menu" id="profileMenu" hidden>
-
-
-                                <a href="/admin/perfil" class="topbar__profile-menu-item">
-
-                                    Editar perfil
-
-                                </a>
-
-
-                                <button type="button" id="topbarLogoutButton"
-                                    class="topbar__profile-menu-item topbar__profile-menu-item--danger">
-
-                                    Cerrar sesión
-
-                                </button>
-
-
-                            </div>
-
-
                         </div>
 
-
                     </div>
 
+                </div>
+
+            </header>
+
+
+
+            <!-- =====================================================
+                 ENCABEZADO
+                 ===================================================== -->
+
+            <section class="dashboard-header">
+
+                <div>
+
+                    <span class="section-kicker">
+                        Administración
+                    </span>
+
+                    <h1>
+                        Gestión de estudiantes
+                    </h1>
+
+                    <p>
+                        Administra los estudiantes registrados en la academia.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="btn btn--primary" id="openRegisterStudentButton">
+
+                    + Registrar estudiante
+
+                </button>
+
+            </section>
+
+
+
+            <!-- =====================================================
+                 BÚSQUEDA Y FILTROS
+                 ===================================================== -->
+
+            <section class="card estudiantes-filters-card">
+
+
+                <!-- BÚSQUEDA -->
+
+                <div class="estudiantes-search">
+
+                    <label for="studentSearch" class="form-label">
+
+                        Buscar estudiante
+
+                    </label>
+
+
+                    <input type="search" id="studentSearch" class="form-input"
+                        placeholder="Buscar por nombre, apellido o documento...">
 
                 </div>
 
 
 
-                <!-- =================================================
-                     ENCABEZADO
-                     ================================================= -->
+                <!-- FILTROS -->
 
-                <div class="estudiantes-header">
+                <div class="estudiantes-filters">
 
 
-                    <div>
+                    <!-- EDAD -->
 
-                        <h1>
-                            Gestión de estudiantes
-                        </h1>
+                    <div class="form-group">
 
-                        <p>
-                            Administra los estudiantes registrados en la academia.
-                        </p>
+                        <label for="ageFilter" class="form-label">
 
-                    </div>
-
-
-
-                    <!-- BOTÓN REGISTRAR -->
-
-                    <button type="button" class="btn btn--primary" id="openRegisterStudentButton">
-
-                        + Registrar estudiante
-
-                    </button>
-
-
-                </div>
-
-
-
-                <!-- =================================================
-                     BÚSQUEDA Y FILTROS
-                     ================================================= -->
-
-                <section class="card estudiantes-filters-card">
-
-
-                    <!-- BÚSQUEDA -->
-
-                    <div class="estudiantes-search">
-
-
-                        <label for="studentSearch" class="form-label">
-
-                            Buscar estudiante
+                            Edad
 
                         </label>
 
 
-                        <input type="search" id="studentSearch" class="form-input"
-                            placeholder="Buscar por nombre, apellido o documento...">
+                        <select id="ageFilter" class="form-input">
 
+                            <option value="TODOS">
+                                Todas las edades
+                            </option>
 
-                    </div>
+                            <option value="MENORES">
+                                Menores de 18 años
+                            </option>
 
+                            <option value="MAYORES">
+                                Mayores de 18 años
+                            </option>
 
-
-                    <!-- FILTROS -->
-
-                    <div class="estudiantes-filters">
-
-
-                        <!-- EDAD -->
-
-                        <div class="form-group">
-
-
-                            <label for="ageFilter" class="form-label">
-
-                                Edad
-
-                            </label>
-
-
-                            <select id="ageFilter" class="form-input">
-
-
-                                <option value="TODOS">
-                                    Todas las edades
-                                </option>
-
-
-                                <option value="MENORES">
-                                    Menores de 18 años
-                                </option>
-
-
-                                <option value="MAYORES">
-                                    Mayores de 18 años
-                                </option>
-
-
-                            </select>
-
-
-                        </div>
-
-
-
-                        <!-- CINTURÓN -->
-
-                        <div class="form-group">
-
-
-                            <label for="beltFilter" class="form-label">
-
-                                Cinturón
-
-                            </label>
-
-
-                            <select id="beltFilter" class="form-input">
-
-
-                                <option value="TODOS">
-                                    Todos los cinturones
-                                </option>
-
-
-                                <option value="BLANCO">
-                                    Blanco
-                                </option>
-
-
-                                <option value="AMARILLO">
-                                    Amarillo
-                                </option>
-
-
-                                <option value="NARANJA">
-                                    Naranja
-                                </option>
-
-
-                                <option value="VERDE">
-                                    Verde
-                                </option>
-
-
-                                <option value="AZUL">
-                                    Azul
-                                </option>
-
-
-                                <option value="MARRON">
-                                    Marrón
-                                </option>
-
-
-                                <option value="NEGRO">
-                                    Negro
-                                </option>
-
-
-                            </select>
-
-
-                        </div>
-
+                        </select>
 
                     </div>
 
 
-                </section>
+
+                    <!-- CINTURÓN -->
+
+                    <div class="form-group">
+
+                        <label for="beltFilter" class="form-label">
+
+                            Cinturón
+
+                        </label>
 
 
+                        <select id="beltFilter" class="form-input">
 
-                <!-- =================================================
-                     LISTA DE ESTUDIANTES
-                     ================================================= -->
+                            <option value="TODOS">
+                                Todos los cinturones
+                            </option>
 
-                <section class="card estudiantes-list-card">
+                            <option value="BLANCO">
+                                Blanco
+                            </option>
 
+                            <option value="AMARILLO">
+                                Amarillo
+                            </option>
 
-                    <div class="estudiantes-list-header">
+                            <option value="NARANJA">
+                                Naranja
+                            </option>
 
+                            <option value="VERDE">
+                                Verde
+                            </option>
 
-                        <h2>
-                            Lista de estudiantes
-                        </h2>
+                            <option value="AZUL">
+                                Azul
+                            </option>
 
+                            <option value="MARRON">
+                                Marrón
+                            </option>
 
-                        <span id="studentsCount">
-                            0 estudiantes
-                        </span>
+                            <option value="NEGRO">
+                                Negro
+                            </option>
 
+                        </select>
 
                     </div>
 
+                </div>
+
+            </section>
 
 
-                    <div id="studentsMessage">
+
+            <!-- =====================================================
+                 LISTA DE ESTUDIANTES
+                 ===================================================== -->
+
+            <section class="card estudiantes-list-card">
+
+
+                <div class="estudiantes-list-header">
+
+                    <h2>
+                        Lista de estudiantes
+                    </h2>
+
+
+                    <span id="studentsCount">
+                        0 estudiantes
+                    </span>
+
+                </div>
+
+
+                <div id="studentsMessage">
+                </div>
+
+
+                <div id="studentsList" class="estudiantes-table-wrapper">
+
+                    <div class="estudiantes-loading">
+                        Cargando estudiantes...
                     </div>
 
+                </div>
+
+            </section>
 
 
-                    <div id="studentsList" class="estudiantes-table-wrapper">
+        </section>
 
-
-                        <div class="estudiantes-loading">
-
-                            Cargando estudiantes...
-
-                        </div>
-
-
-                    </div>
-
-
-                </section>
-
-
-
-            </div>
-
-
-        </main>
-
-
-    </div>
+    </main>
 
 
 
@@ -465,7 +382,6 @@
         </div>
 
 
-
         <div class="modal__content modal__content--student" role="dialog" aria-modal="true"
             aria-labelledby="registerStudentModalTitle">
 
@@ -473,7 +389,6 @@
             <!-- HEADER -->
 
             <div class="modal__header">
-
 
                 <div>
 
@@ -494,7 +409,6 @@
 
                 </button>
 
-
             </div>
 
 
@@ -504,15 +418,11 @@
             <form id="studentForm" class="estudiantes-form">
 
 
-                <!-- =================================================
-                     FOTO
-                     ================================================= -->
+                <!-- FOTO -->
 
                 <div class="student-modal-photo">
 
-
                     <div class="student-modal-photo__circle" id="fotoUpload">
-
 
                         <img id="fotoPreview" src="" alt="Vista previa de la fotografía" hidden>
 
@@ -523,9 +433,7 @@
 
                         </span>
 
-
                     </div>
-
 
 
                     <label for="foto" class="student-modal-photo__button">
@@ -549,14 +457,11 @@
 
                     </button>
 
-
                 </div>
 
 
 
-                <!-- =================================================
-                     DATOS DEL ESTUDIANTE
-                     ================================================= -->
+                <!-- DATOS DEL ESTUDIANTE -->
 
                 <div class="grid grid--2">
 
@@ -570,6 +475,7 @@
                             Nombre
 
                         </label>
+
 
                         <input type="text" id="nombre" class="form-input" placeholder="Ej. Carlos" required>
 
@@ -586,6 +492,7 @@
                             Apellido
 
                         </label>
+
 
                         <input type="text" id="apellido" class="form-input" placeholder="Ej. Ramirez" required>
 
@@ -606,26 +513,21 @@
 
                         <select id="tipoDocumento" class="form-input" required>
 
-
                             <option value="">
                                 Selecciona una opción
                             </option>
-
 
                             <option value="DNI">
                                 DNI
                             </option>
 
-
                             <option value="CE">
                                 Carné de Extranjería
                             </option>
 
-
                             <option value="PASAPORTE">
                                 Pasaporte
                             </option>
-
 
                         </select>
 
@@ -667,18 +569,33 @@
 
 
 
-                    <!-- TELEFONO -->
+                    <!-- TELÉFONO -->
 
                     <div class="form-group">
 
                         <label for="telefono" class="form-label">
-
                             Teléfono
-
                         </label>
 
+                        <div class="telefono-group">
 
-                        <input type="text" id="telefono" class="form-input" placeholder="Ej. 999888777" required>
+                            <select id="codigoPais" class="form-input" required>
+
+                                <option value="+51">+51 Perú</option>
+                                <option value="+57">+57 Colombia</option>
+                                <option value="+56">+56 Chile</option>
+                                <option value="+54">+54 Argentina</option>
+                                <option value="+55">+55 Brasil</option>
+                                <option value="+52">+52 México</option>
+                                <option value="+1">+1 Estados Unidos / Canadá</option>
+                                <option value="+34">+34 España</option>
+
+                            </select>
+
+                            <input type="text" id="telefono" class="form-input" placeholder="Ej. 999888777"
+                                inputmode="numeric" required>
+
+                        </div>
 
                     </div>
 
@@ -732,54 +649,43 @@
 
                         <select id="cinturon" class="form-input" required>
 
-
                             <option value="BLANCO">
                                 Blanco
                             </option>
-
 
                             <option value="AMARILLO">
                                 Amarillo
                             </option>
 
-
                             <option value="NARANJA">
                                 Naranja
                             </option>
-
 
                             <option value="VERDE">
                                 Verde
                             </option>
 
-
                             <option value="AZUL">
                                 Azul
                             </option>
-
 
                             <option value="MARRON">
                                 Marrón
                             </option>
 
-
                             <option value="NEGRO">
                                 Negro
                             </option>
-
 
                         </select>
 
                     </div>
 
-
                 </div>
 
 
 
-                <!-- =================================================
-                     DATOS DEL APODERADO
-                     ================================================= -->
+                <!-- DATOS DEL APODERADO -->
 
                 <div id="guardianSection" class="guardian-section" hidden>
 
@@ -797,11 +703,8 @@
                     </div>
 
 
-
                     <div class="grid grid--2">
 
-
-                        <!-- NOMBRE -->
 
                         <div class="form-group">
 
@@ -816,9 +719,6 @@
 
                         </div>
 
-
-
-                        <!-- APELLIDO -->
 
                         <div class="form-group">
 
@@ -835,9 +735,6 @@
                         </div>
 
 
-
-                        <!-- TIPO DOCUMENTO -->
-
                         <div class="form-group">
 
                             <label for="guardianTipoDocumento" class="form-label">
@@ -849,34 +746,26 @@
 
                             <select id="guardianTipoDocumento" class="form-input" disabled>
 
-
                                 <option value="">
                                     Selecciona una opción
                                 </option>
-
 
                                 <option value="DNI">
                                     DNI
                                 </option>
 
-
                                 <option value="CE">
                                     Carné de Extranjería
                                 </option>
-
 
                                 <option value="PASAPORTE">
                                     Pasaporte
                                 </option>
 
-
                             </select>
 
                         </div>
 
-
-
-                        <!-- DOCUMENTO -->
 
                         <div class="form-group">
 
@@ -893,9 +782,6 @@
                         </div>
 
 
-
-                        <!-- TELEFONO -->
-
                         <div class="form-group">
 
                             <label for="guardianTelefono" class="form-label">
@@ -910,9 +796,6 @@
 
                         </div>
 
-
-
-                        <!-- CORREO -->
 
                         <div class="form-group">
 
@@ -929,9 +812,6 @@
                         </div>
 
 
-
-                        <!-- DIRECCIÓN -->
-
                         <div class="form-group">
 
                             <label for="guardianDireccion" class="form-label">
@@ -947,9 +827,6 @@
                         </div>
 
 
-
-                        <!-- PARENTESCO -->
-
                         <div class="form-group">
 
                             <label for="guardianParentesco" class="form-label">
@@ -961,44 +838,35 @@
 
                             <select id="guardianParentesco" class="form-input" disabled>
 
-
                                 <option value="">
                                     Selecciona una opción
                                 </option>
-
 
                                 <option value="PADRE">
                                     Padre
                                 </option>
 
-
                                 <option value="MADRE">
                                     Madre
                                 </option>
-
 
                                 <option value="TUTOR">
                                     Tutor
                                 </option>
 
-
                                 <option value="APODERADO">
                                     Apoderado
                                 </option>
-
 
                                 <option value="OTRO">
                                     Otro
                                 </option>
 
-
                             </select>
 
                         </div>
 
-
                     </div>
-
 
                 </div>
 
@@ -1015,7 +883,6 @@
 
                 <div class="estudiantes-form-actions">
 
-
                     <button type="button" id="cancelRegisterStudentButton" class="btn btn--secondary">
 
                         Cancelar
@@ -1029,15 +896,11 @@
 
                     </button>
 
-
                 </div>
-
 
             </form>
 
-
         </div>
-
 
     </div>
 
@@ -1054,7 +917,6 @@
         </div>
 
 
-
         <div class="modal__content modal__content--student" role="dialog" aria-modal="true"
             aria-labelledby="editStudentModalTitle">
 
@@ -1062,7 +924,6 @@
             <!-- HEADER -->
 
             <div class="modal__header">
-
 
                 <div>
 
@@ -1082,7 +943,6 @@
                     ×
 
                 </button>
-
 
             </div>
 
@@ -1116,9 +976,7 @@
 
                         </span>
 
-
                     </div>
-
 
 
                     <label for="editFoto" class="student-modal-photo__button">
@@ -1141,7 +999,6 @@
                         Quitar foto
 
                     </button>
-
 
                 </div>
 
@@ -1188,13 +1045,48 @@
 
 
 
+                    <!-- TIPO DOCUMENTO -->
+
+                    <div class="form-group">
+
+                        <label for="editTipoDocumento" class="form-label">
+
+                            Tipo de documento
+
+                        </label>
+
+
+                        <select id="editTipoDocumento" class="form-input" required>
+
+                            <option value="">
+                                Selecciona una opción
+                            </option>
+
+                            <option value="DNI">
+                                DNI
+                            </option>
+
+                            <option value="CE">
+                                Carné de Extranjería
+                            </option>
+
+                            <option value="PASAPORTE">
+                                Pasaporte
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
                     <!-- DOCUMENTO -->
 
                     <div class="form-group">
 
                         <label for="editDocumento" class="form-label">
 
-                            Documento
+                            Número de documento
 
                         </label>
 
@@ -1205,18 +1097,49 @@
 
 
 
-                    <!-- TELEFONO -->
+                    <!-- FECHA NACIMIENTO -->
 
                     <div class="form-group">
 
-                        <label for="editTelefono" class="form-label">
+                        <label for="editFechaNacimiento" class="form-label">
 
-                            Teléfono
+                            Fecha de nacimiento
 
                         </label>
 
 
-                        <input type="text" id="editTelefono" class="form-input">
+                        <input type="date" id="editFechaNacimiento" class="form-input" required>
+
+                    </div>
+
+
+
+                    <!-- TELÉFONO -->
+
+                    <div class="form-group">
+
+                        <label for="editTelefono" class="form-label">
+                            Teléfono
+                        </label>
+
+                        <div class="telefono-group">
+
+                            <select id="editCodigoPais" class="form-input" required>
+
+                                <option value="+51">+51 Perú</option>
+                                <option value="+57">+57 Colombia</option>
+                                <option value="+56">+56 Chile</option>
+                                <option value="+54">+54 Argentina</option>
+                                <option value="+55">+55 Brasil</option>
+                                <option value="+52">+52 México</option>
+                                <option value="+1">+1 Estados Unidos / Canadá</option>
+                                <option value="+34">+34 España</option>
+
+                            </select>
+
+                            <input type="text" id="editTelefono" class="form-input" inputmode="numeric" required>
+
+                        </div>
 
                     </div>
 
@@ -1239,6 +1162,23 @@
 
 
 
+                    <!-- DIRECCIÓN -->
+
+                    <div class="form-group">
+
+                        <label for="editDireccion" class="form-label">
+
+                            Dirección
+
+                        </label>
+
+
+                        <input type="text" id="editDireccion" class="form-input" required>
+
+                    </div>
+
+
+
                     <!-- CINTURÓN -->
 
                     <div class="form-group">
@@ -1252,41 +1192,33 @@
 
                         <select id="editCinturon" class="form-input" required>
 
-
                             <option value="BLANCO">
                                 Blanco
                             </option>
-
 
                             <option value="AMARILLO">
                                 Amarillo
                             </option>
 
-
                             <option value="NARANJA">
                                 Naranja
                             </option>
-
 
                             <option value="VERDE">
                                 Verde
                             </option>
 
-
                             <option value="AZUL">
                                 Azul
                             </option>
-
 
                             <option value="MARRON">
                                 Marrón
                             </option>
 
-
                             <option value="NEGRO">
                                 Negro
                             </option>
-
 
                         </select>
 
@@ -1306,16 +1238,13 @@
 
                     <div class="estudiantes-form-header">
 
-
                         <h3>
                             Apoderado
                         </h3>
 
-
                         <p id="editGuardianDescription">
                             Gestiona el apoderado del estudiante.
                         </p>
-
 
                     </div>
 
@@ -1355,7 +1284,6 @@
 
                         </div>
 
-
                     </div>
 
 
@@ -1364,11 +1292,9 @@
 
                     <div id="guardianEmptyState" class="guardian-empty">
 
-
                         <p>
                             Este estudiante no tiene un apoderado registrado.
                         </p>
-
 
                     </div>
 
@@ -1377,7 +1303,6 @@
                     <!-- ACCIONES APODERADO -->
 
                     <div class="guardian-actions">
-
 
                         <button type="button" id="editGuardianButton" class="btn btn--secondary" hidden>
 
@@ -1392,9 +1317,7 @@
 
                         </button>
 
-
                     </div>
-
 
                 </div>
 
@@ -1409,23 +1332,18 @@
 
                     <div class="estudiantes-form-header">
 
-
                         <h3>
                             Datos del apoderado
                         </h3>
-
 
                         <p>
                             Ingresa o modifica los datos del apoderado.
                         </p>
 
-
                     </div>
 
 
-
                     <input type="hidden" id="editGuardianId">
-
 
 
                     <div class="grid grid--2">
@@ -1478,26 +1396,21 @@
 
                             <select id="editGuardianTipoDocumento" class="form-input">
 
-
                                 <option value="">
                                     Selecciona una opción
                                 </option>
-
 
                                 <option value="DNI">
                                     DNI
                                 </option>
 
-
                                 <option value="CE">
                                     Carné de Extranjería
                                 </option>
 
-
                                 <option value="PASAPORTE">
                                     Pasaporte
                                 </option>
-
 
                             </select>
 
@@ -1522,7 +1435,7 @@
 
 
 
-                        <!-- TELEFONO -->
+                        <!-- TELÉFONO -->
 
                         <div class="form-group">
 
@@ -1586,41 +1499,33 @@
 
                             <select id="editGuardianParentesco" class="form-input">
 
-
                                 <option value="">
                                     Selecciona una opción
                                 </option>
-
 
                                 <option value="PADRE">
                                     Padre
                                 </option>
 
-
                                 <option value="MADRE">
                                     Madre
                                 </option>
-
 
                                 <option value="TUTOR">
                                     Tutor
                                 </option>
 
-
                                 <option value="APODERADO">
                                     Apoderado
                                 </option>
-
 
                                 <option value="OTRO">
                                     Otro
                                 </option>
 
-
                             </select>
 
                         </div>
-
 
                     </div>
 
@@ -1629,7 +1534,6 @@
                     <!-- ACCIONES APODERADO -->
 
                     <div class="estudiantes-form-actions">
-
 
                         <button type="button" id="cancelGuardianEditButton" class="btn btn--secondary">
 
@@ -1644,9 +1548,7 @@
 
                         </button>
 
-
                     </div>
-
 
                 </div>
 
@@ -1663,7 +1565,6 @@
 
                 <div class="estudiantes-form-actions">
 
-
                     <button type="button" id="cancelEditButton" class="btn btn--secondary">
 
                         Cancelar
@@ -1677,15 +1578,12 @@
 
                     </button>
 
-
                 </div>
 
 
             </form>
 
-
         </div>
-
 
     </div>
 

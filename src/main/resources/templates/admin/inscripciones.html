@@ -15,7 +15,7 @@
 
 <body>
 
-    <div class="app-layout">
+    <main class="app-layout">
 
 
         <!-- ==========================================
@@ -62,14 +62,6 @@
                     Usuarios
                 </a>
 
-                <a href="/admin/perfil" class="sidebar__link">
-                    Mi perfil
-                </a>
-
-                <a href="#" id="logoutButton" class="btn btn--logout">
-                    Cerrar sesión
-                </a>
-
             </nav>
 
         </aside>
@@ -79,7 +71,106 @@
              CONTENIDO PRINCIPAL
              ========================================== -->
 
-        <main class="main-content">
+        <section class="main-content">
+
+
+            <!-- ======================================
+                 TOPBAR
+                 ====================================== -->
+
+            <header class="topbar">
+
+                <div class="topbar__role">
+
+                    <span class="topbar__role-label">
+                        Rol
+                    </span>
+
+                    <strong id="roleDisplay">
+                        Administrador
+                    </strong>
+
+                </div>
+
+
+                <div class="topbar__actions">
+
+
+                    <!-- NOTIFICACIONES -->
+
+                    <button type="button" class="topbar__notification" id="notificationButton"
+                        aria-label="Notificaciones">
+
+                        <span class="topbar__notification-icon">
+                            🔔
+                        </span>
+
+                        <span id="notificationCount" class="topbar__notification-count" hidden>
+                            0
+                        </span>
+
+                    </button>
+
+
+                    <!-- PERFIL -->
+
+                    <div class="topbar__profile" id="profileMenuContainer">
+
+                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
+                            aria-expanded="false">
+
+                            <div class="topbar__avatar" id="userProfileAvatar">
+
+                                <span id="userAvatarInitial">
+                                    U
+                                </span>
+
+                            </div>
+
+
+                            <div class="topbar__profile-info">
+
+                                <strong id="usernameDisplay">
+                                    Usuario
+                                </strong>
+
+                                <span id="profileRoleDisplay">
+                                    Administrador
+                                </span>
+
+                            </div>
+
+
+                            <span class="topbar__profile-arrow">
+                                ▼
+                            </span>
+
+                        </button>
+
+
+                        <div class="topbar__profile-menu" id="profileMenu" hidden>
+
+                            <a href="/admin/perfil" class="topbar__profile-menu-item">
+                                Editar perfil
+                            </a>
+
+                            <button type="button" id="topbarLogoutButton"
+                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+                                Cerrar sesión
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- ======================================
+                 CONTENIDO DE INSCRIPCIONES
+                 ====================================== -->
 
             <div class="container inscripciones-page">
 
@@ -88,9 +179,13 @@
                      ENCABEZADO
                      ====================================== -->
 
-                <header class="inscripciones-header">
+                <section class="dashboard-header">
 
                     <div>
+
+                        <span class="section-kicker">
+                            Administración
+                        </span>
 
                         <h1>
                             Inscripciones
@@ -102,15 +197,7 @@
 
                     </div>
 
-                    <div class="dashboard-user">
-
-                        <span id="usernameDisplay">
-                            Usuario
-                        </span>
-
-                    </div>
-
-                </header>
+                </section>
 
 
                 <!-- ======================================
@@ -287,6 +374,7 @@
 
                             </button>
 
+
                             <button type="button" id="clearFormButton" class="btn btn--outline">
 
                                 Limpiar
@@ -354,6 +442,7 @@
                                 </tr>
 
                             </thead>
+
 
                             <tbody id="inscripcionesTableBody">
 
@@ -431,6 +520,7 @@
 
                             </button>
 
+
                             <button type="button" id="cancelChangeGroupButton" class="btn btn--outline">
 
                                 Cancelar
@@ -446,9 +536,9 @@
 
             </div>
 
-        </main>
+        </section>
 
-    </div>
+    </main>
 
 
     <!-- ==========================================

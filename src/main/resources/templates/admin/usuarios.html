@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Kihon | Gestión de Usuarios</title>
@@ -14,151 +15,317 @@
 
 <body>
 
-    <main class="page-container">
-
-        <!-- ==========================================
-             HEADER
-             ========================================== -->
-
-        <header class="dashboard-header">
-
-            <div>
-
-                <h1>Gestión de Usuarios</h1>
-
-                <p>
-                    Administración de cuentas y permisos
-                </p>
-
-            </div>
-
-            <div class="dashboard-user">
-
-                <span id="usernameDisplay">
-                    Administrador
-                </span>
-
-            </div>
-
-        </header>
+    <main class="app-layout">
 
 
         <!-- ==========================================
-             NAVEGACIÓN
+             SIDEBAR
              ========================================== -->
 
-        <section class="dashboard-section">
+        <aside class="sidebar">
 
-            <div class="dashboard-actions">
+            <div class="sidebar__logo">
+                KIHON
+            </div>
 
-                <a href="/admin/admin" class="btn btn--secondary">
-                    Volver al panel
+
+            <nav class="sidebar__nav">
+
+                <a href="/admin/admin" class="sidebar__link">
+                    Dashboard
                 </a>
 
-            </div>
+                <a href="/admin/estudiantes" class="sidebar__link">
+                    Estudiantes
+                </a>
 
-        </section>
+                <a href="/admin/grupos" class="sidebar__link">
+                    Grupos
+                </a>
 
+                <a href="/admin/asistencia" class="sidebar__link">
+                    Asistencia
+                </a>
 
-        <!-- ==========================================
-             GESTIÓN DE USUARIOS
-             ========================================== -->
+                <a href="/admin/horario" class="sidebar__link">
+                    Horario
+                </a>
 
-        <section class="dashboard-section" id="usuarios">
+                <a href="/admin/inscripciones" class="sidebar__link">
+                    Inscripciones
+                </a>
 
-            <h2>Usuarios registrados</h2>
+                <a href="/admin/reportes" class="sidebar__link">
+                    Reportes
+                </a>
 
-            <div class="usuarios-filtros">
+                <a href="/admin/usuarios" class="sidebar__link sidebar__link--active">
+                    Usuarios
+                </a>
 
-                <label for="estadoFiltro">
-                    Filtrar por estado:
-                </label>
+            </nav>
 
-                <select id="estadoFiltro">
-
-                    <option value="">
-                        Todos
-                    </option>
-
-                    <option value="ACTIVO">
-                        Activos
-                    </option>
-
-                    <option value="PENDIENTE">
-                        Pendientes
-                    </option>
-
-                    <option value="INACTIVO">
-                        Inactivos
-                    </option>
-
-                </select>
-
-            </div>
-
-
-            <p id="usuariosMessage">
-                Cargando usuarios...
-            </p>
-
-
-            <div class="table-container">
-
-                <table class="data-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>ID</th>
-
-                            <th>Usuario</th>
-
-                            <th>Nombre</th>
-
-                            <th>Correo</th>
-
-                            <th>Rol</th>
-
-                            <th>Estado</th>
-
-                            <th>Vinculación</th>
-
-                            <th>Acciones</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="usuariosTableBody">
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </section>
+        </aside>
 
 
         <!-- ==========================================
-             SESIÓN
+             CONTENIDO PRINCIPAL
              ========================================== -->
 
-        <section class="dashboard-section">
+        <section class="main-content">
 
-            <h2>Sesión</h2>
 
-            <a href="#" id="logoutButton" class="btn btn--logout">
-                Cerrar sesión
-            </a>
+            <!-- ======================================
+                 TOPBAR
+                 ====================================== -->
+
+            <header class="topbar">
+
+                <div class="topbar__role">
+
+                    <span class="topbar__role-label">
+                        Rol
+                    </span>
+
+                    <strong id="roleDisplay">
+                        Administrador
+                    </strong>
+
+                </div>
+
+
+                <div class="topbar__actions">
+
+
+                    <!-- NOTIFICACIONES -->
+
+                    <button type="button" class="topbar__notification" id="notificationButton"
+                        aria-label="Notificaciones">
+
+                        <span class="topbar__notification-icon">
+                            🔔
+                        </span>
+
+                        <span id="notificationCount" class="topbar__notification-count" hidden>
+                            0
+                        </span>
+
+                    </button>
+
+
+                    <!-- PERFIL -->
+
+                    <div class="topbar__profile" id="profileMenuContainer">
+
+                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
+                            aria-expanded="false">
+
+                            <div class="topbar__avatar" id="userProfileAvatar">
+
+                                <span id="userAvatarInitial">
+                                    U
+                                </span>
+
+                            </div>
+
+
+                            <div class="topbar__profile-info">
+
+                                <strong id="usernameDisplay">
+                                    Administrador
+                                </strong>
+
+                                <span id="profileRoleDisplay">
+                                    Administrador
+                                </span>
+
+                            </div>
+
+
+                            <span class="topbar__profile-arrow">
+                                ▼
+                            </span>
+
+                        </button>
+
+
+                        <div class="topbar__profile-menu" id="profileMenu" hidden>
+
+                            <a href="/admin/perfil" class="topbar__profile-menu-item">
+                                Editar perfil
+                            </a>
+
+                            <button type="button" id="topbarLogoutButton"
+                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+                                Cerrar sesión
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- ======================================
+                 CONTENIDO DE USUARIOS
+                 ====================================== -->
+
+            <div class="container usuarios-page">
+
+
+                <!-- ======================================
+                     ENCABEZADO
+                     ====================================== -->
+
+                <section class="dashboard-header">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            Administración
+                        </span>
+
+                        <h1>
+                            Gestión de Usuarios
+                        </h1>
+
+                        <p>
+                            Administración de cuentas y permisos
+                        </p>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ======================================
+                     GESTIÓN DE USUARIOS
+                     ====================================== -->
+
+                <section class="dashboard-section" id="usuarios">
+
+                    <h2>
+                        Usuarios registrados
+                    </h2>
+
+
+                    <!-- ==================================
+                         FILTRO
+                         ================================== -->
+
+                    <div class="usuarios-filtros">
+
+                        <label for="estadoFiltro">
+                            Filtrar por estado:
+                        </label>
+
+
+                        <select id="estadoFiltro">
+
+                            <option value="">
+                                Todos
+                            </option>
+
+                            <option value="ACTIVO">
+                                Activos
+                            </option>
+
+                            <option value="PENDIENTE">
+                                Pendientes
+                            </option>
+
+                            <option value="INACTIVO">
+                                Inactivos
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- ==================================
+                         MENSAJE
+                         ================================== -->
+
+                    <p id="usuariosMessage">
+                        Cargando usuarios...
+                    </p>
+
+
+                    <!-- ==================================
+                         TABLA
+                         ================================== -->
+
+                    <div class="table-container">
+
+                        <table class="data-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        ID
+                                    </th>
+
+                                    <th>
+                                        Usuario
+                                    </th>
+
+                                    <th>
+                                        Nombre
+                                    </th>
+
+                                    <th>
+                                        Correo
+                                    </th>
+
+                                    <th>
+                                        Rol
+                                    </th>
+
+                                    <th>
+                                        Estado
+                                    </th>
+
+                                    <th>
+                                        Vinculación
+                                    </th>
+
+                                    <th>
+                                        Acciones
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="usuariosTableBody">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+            </div>
 
         </section>
 
     </main>
 
 
+    <!-- ==========================================
+         JAVASCRIPT
+         ========================================== -->
+
     <script src="/js/usuarios.js"></script>
+
     <script src="/js/logout.js"></script>
 
 </body>

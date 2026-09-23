@@ -27,6 +27,63 @@ let estudianteEditandoId = null;
 
 
 // ==========================================
+// REGLAS DE TELEFONO POR PAIS
+// ==========================================
+
+const reglasTelefono = {
+
+    "+51": {
+        nombre: "Perú",
+        min: 9,
+        max: 9
+    },
+
+    "+57": {
+        nombre: "Colombia",
+        min: 10,
+        max: 10
+    },
+
+    "+56": {
+        nombre: "Chile",
+        min: 9,
+        max: 9
+    },
+
+    "+54": {
+        nombre: "Argentina",
+        min: 10,
+        max: 10
+    },
+
+    "+55": {
+        nombre: "Brasil",
+        min: 10,
+        max: 11
+    },
+
+    "+52": {
+        nombre: "México",
+        min: 10,
+        max: 10
+    },
+
+    "+1": {
+        nombre: "Estados Unidos / Canadá",
+        min: 10,
+        max: 10
+    },
+
+    "+34": {
+        nombre: "España",
+        min: 9,
+        max: 9
+    }
+
+};
+
+
+// ==========================================
 // INICIALIZACIÓN
 // ==========================================
 
@@ -46,6 +103,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     configurarFechaNacimiento();
 
+    configurarValidacionesRegistro();
+
+    configurarValidacionesEdicion();
+
+    configurarValidacionTelefono(
+        "telefono",
+        "codigoPais"
+    );
+
+    configurarValidacionTelefono(
+        "editTelefono",
+        "editCodigoPais"
+    );
+
     configurarBusquedaYFiltros();
 
     cargarEstudiantes();
@@ -59,33 +130,47 @@ document.addEventListener("DOMContentLoaded", () => {
 function configurarUsuario() {
 
     const usernameDisplay =
-        document.getElementById("usernameDisplay");
+        document.getElementById(
+            "usernameDisplay"
+        );
 
     const roleDisplay =
-        document.getElementById("roleDisplay");
+        document.getElementById(
+            "roleDisplay"
+        );
 
     const profileRoleDisplay =
-        document.getElementById("profileRoleDisplay");
+        document.getElementById(
+            "profileRoleDisplay"
+        );
 
     const userAvatarInitial =
-        document.getElementById("userAvatarInitial");
+        document.getElementById(
+            "userAvatarInitial"
+        );
 
     const rolTexto =
         obtenerNombreRol(rol);
 
 
     if (usernameDisplay && username) {
-        usernameDisplay.textContent = username;
+
+        usernameDisplay.textContent =
+            username;
     }
 
 
     if (roleDisplay) {
-        roleDisplay.textContent = rolTexto;
+
+        roleDisplay.textContent =
+            rolTexto;
     }
 
 
     if (profileRoleDisplay) {
-        profileRoleDisplay.textContent = rolTexto;
+
+        profileRoleDisplay.textContent =
+            rolTexto;
     }
 
 
@@ -176,11 +261,15 @@ function configurarMenuPerfil() {
 
             if (
                 container &&
-                !container.contains(event.target)
+                !container.contains(
+                    event.target
+                )
             ) {
 
                 if (profileMenu) {
-                    profileMenu.hidden = true;
+
+                    profileMenu.hidden =
+                        true;
                 }
             }
         }
@@ -378,6 +467,7 @@ function limpiarFormularioRegistro() {
 
 
     if (fotoInput) {
+
         fotoInput.value = "";
     }
 
@@ -398,16 +488,59 @@ function limpiarFormularioRegistro() {
 
 
     if (removeFotoButton) {
+
         removeFotoButton.hidden = true;
     }
 
 
     if (guardianSection) {
+
         guardianSection.hidden = true;
     }
 
 
     deshabilitarCamposApoderado();
+
+
+    // ==========================================
+    // RESTABLECER REGLAS DEL DOCUMENTO
+    // ==========================================
+
+    const tipoDocumento =
+        document.getElementById(
+            "tipoDocumento"
+        );
+
+    const numeroDocumento =
+        document.getElementById(
+            "documento"
+        );
+
+    if (
+        tipoDocumento &&
+        numeroDocumento
+    ) {
+
+        numeroDocumento.value = "";
+
+        numeroDocumento.disabled =
+            !tipoDocumento.value;
+
+        configurarReglasDocumento(
+            tipoDocumento,
+            numeroDocumento
+        );
+    }
+
+
+    // ==========================================
+    // RESTABLECER REGLAS DEL TELÉFONO
+    // ==========================================
+
+    configurarLimiteTelefono(
+        "telefono",
+        "codigoPais"
+    );
 
 
     ocultarMensaje(
@@ -859,6 +992,15 @@ function configurarFechaNacimiento() {
     }
 
 
+    const hoy =
+        new Date()
+            .toISOString()
+            .split("T")[0];
+
+
+    fechaNacimiento.max = hoy;
+
+
     fechaNacimiento.addEventListener(
         "change",
         verificarEdadEstudiante
@@ -1004,6 +1146,7 @@ function habilitarCamposApoderado() {
 
 
             if (campo) {
+
                 campo.disabled = false;
             }
         }
@@ -1050,7 +1193,1192 @@ function deshabilitarCamposApoderado() {
 
 
 // ==========================================
-// BÚSQUEDA Y FILTROS
+// VALIDACIONES DE REGISTRO
+// ==========================================
+
+function configurarValidacionesRegistro() {
+
+    const tipoDocumento =
+        document.getElementById(
+            "tipoDocumento"
+        );
+
+    const numeroDocumento =
+        document.getElementById(
+            "documento"
+        );
+
+    const telefono =
+        document.getElementById(
+            "telefono"
+        );
+
+    const nombre =
+        document.getElementById(
+            "nombre"
+        );
+
+    const apellido =
+        document.getElementById(
+            "apellido"
+        );
+
+    const fechaNacimiento =
+        document.getElementById(
+            "fechaNacimiento"
+        );
+
+
+    // ==========================================
+    // FECHA MÁXIMA
+    // ==========================================
+
+    if (fechaNacimiento) {
+
+        const hoy =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+        fechaNacimiento.max = hoy;
+    }
+
+
+    // ==========================================
+    // TIPO DE DOCUMENTO
+    // ==========================================
+
+    if (
+        tipoDocumento &&
+        numeroDocumento
+    ) {
+
+        numeroDocumento.disabled =
+            !tipoDocumento.value;
+
+
+        tipoDocumento.addEventListener(
+            "change",
+            function () {
+
+                numeroDocumento.value = "";
+
+                configurarReglasDocumento(
+                    tipoDocumento,
+                    numeroDocumento
+                );
+            }
+        );
+
+
+        numeroDocumento.addEventListener(
+            "input",
+            function () {
+
+                if (
+                    tipoDocumento.value ===
+                    "DNI"
+                ) {
+
+                    numeroDocumento.value =
+                        numeroDocumento.value
+                            .replace(
+                                /\D/g,
+                                ""
+                            )
+                            .slice(0, 8);
+                }
+
+
+                else if (
+                    tipoDocumento.value === "CE" ||
+                    tipoDocumento.value ===
+                    "PASAPORTE"
+                ) {
+
+                    numeroDocumento.value =
+                        numeroDocumento.value
+                            .replace(
+                                /[^a-zA-Z0-9]/g,
+                                ""
+                            )
+                            .slice(0, 12);
+                }
+            }
+        );
+
+
+        configurarReglasDocumento(
+            tipoDocumento,
+            numeroDocumento
+        );
+    }
+
+
+    // ==========================================
+    // TELÉFONO
+    // ==========================================
+
+    if (telefono) {
+
+        configurarLimiteTelefono(
+            "telefono",
+            "codigoPais"
+        );
+    }
+
+
+    // ==========================================
+    // NOMBRE
+    // ==========================================
+
+    if (nombre) {
+
+        nombre.addEventListener(
+            "input",
+            function () {
+
+                nombre.value =
+                    nombre.value
+                        .replace(
+                            /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g,
+                            ""
+                        )
+                        .slice(0, 50);
+            }
+        );
+    }
+
+
+    // ==========================================
+    // APELLIDO
+    // ==========================================
+
+    if (apellido) {
+
+        apellido.addEventListener(
+            "input",
+            function () {
+
+                apellido.value =
+                    apellido.value
+                        .replace(
+                            /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g,
+                            ""
+                        )
+                        .slice(0, 50);
+            }
+        );
+    }
+}
+
+
+// ==========================================
+// VALIDACIONES DE EDICIÓN
+// ==========================================
+
+function configurarValidacionesEdicion() {
+
+    const tipoDocumento =
+        document.getElementById(
+            "editTipoDocumento"
+        );
+
+    const numeroDocumento =
+        document.getElementById(
+            "editDocumento"
+        );
+
+    const telefono =
+        document.getElementById(
+            "editTelefono"
+        );
+
+    const nombre =
+        document.getElementById(
+            "editNombre"
+        );
+
+    const apellido =
+        document.getElementById(
+            "editApellido"
+        );
+
+    const fechaNacimiento =
+        document.getElementById(
+            "editFechaNacimiento"
+        );
+
+
+    // ==========================================
+    // FECHA MÁXIMA
+    // ==========================================
+
+    if (fechaNacimiento) {
+
+        const hoy =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+        fechaNacimiento.max = hoy;
+    }
+
+
+    // ==========================================
+    // TIPO DE DOCUMENTO
+    // ==========================================
+
+    if (
+        tipoDocumento &&
+        numeroDocumento
+    ) {
+
+        numeroDocumento.disabled =
+            !tipoDocumento.value;
+
+
+        tipoDocumento.addEventListener(
+            "change",
+            function () {
+
+                numeroDocumento.value = "";
+
+                configurarReglasDocumento(
+                    tipoDocumento,
+                    numeroDocumento
+                );
+            }
+        );
+
+
+        numeroDocumento.addEventListener(
+            "input",
+            function () {
+
+                if (
+                    tipoDocumento.value ===
+                    "DNI"
+                ) {
+
+                    numeroDocumento.value =
+                        numeroDocumento.value
+                            .replace(
+                                /\D/g,
+                                ""
+                            )
+                            .slice(0, 8);
+                }
+
+
+                else if (
+                    tipoDocumento.value === "CE" ||
+                    tipoDocumento.value ===
+                    "PASAPORTE"
+                ) {
+
+                    numeroDocumento.value =
+                        numeroDocumento.value
+                            .replace(
+                                /[^a-zA-Z0-9]/g,
+                                ""
+                            )
+                            .slice(0, 12);
+                }
+            }
+        );
+    }
+
+
+    // ==========================================
+    // TELÉFONO
+    // ==========================================
+
+    if (telefono) {
+
+        configurarLimiteTelefono(
+            "editTelefono",
+            "editCodigoPais"
+        );
+    }
+
+
+    // ==========================================
+    // NOMBRE
+    // ==========================================
+
+    if (nombre) {
+
+        nombre.addEventListener(
+            "input",
+            function () {
+
+                nombre.value =
+                    nombre.value
+                        .replace(
+                            /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g,
+                            ""
+                        )
+                        .slice(0, 50);
+            }
+        );
+    }
+
+
+    // ==========================================
+    // APELLIDO
+    // ==========================================
+
+    if (apellido) {
+
+        apellido.addEventListener(
+            "input",
+            function () {
+
+                apellido.value =
+                    apellido.value
+                        .replace(
+                            /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g,
+                            ""
+                        )
+                        .slice(0, 50);
+            }
+        );
+    }
+}
+
+
+// ==========================================
+// CONFIGURAR VALIDACIÓN DE TELÉFONO
+// ==========================================
+
+function configurarValidacionTelefono(
+    inputId,
+    codigoPaisId
+) {
+
+    const telefono =
+        document.getElementById(
+            inputId
+        );
+
+    const codigoPais =
+        document.getElementById(
+            codigoPaisId
+        );
+
+
+    if (
+        !telefono ||
+        !codigoPais
+    ) {
+        return;
+    }
+
+
+    // ==========================================
+    // CAMBIAR PAÍS
+    // ==========================================
+
+    codigoPais.addEventListener(
+        "change",
+        function () {
+
+            telefono.value = "";
+
+            configurarLimiteTelefono(
+                inputId,
+                codigoPaisId
+            );
+        }
+    );
+
+
+    // ==========================================
+    // ESCRIBIR TELÉFONO
+    // ==========================================
+
+    telefono.addEventListener(
+        "input",
+        function () {
+
+            const regla =
+                reglasTelefono[
+                codigoPais.value
+                ];
+
+
+            if (!regla) {
+                return;
+            }
+
+
+            // Solo números
+            telefono.value =
+                telefono.value.replace(
+                    /\D/g,
+                    ""
+                );
+
+
+            // Aplicar máximo según país
+            telefono.value =
+                telefono.value.slice(
+                    0,
+                    regla.max
+                );
+        }
+    );
+
+
+    // ==========================================
+    // CONFIGURACIÓN INICIAL
+    // ==========================================
+
+    configurarLimiteTelefono(
+        inputId,
+        codigoPaisId
+    );
+}
+
+
+// ==========================================
+// CONFIGURAR LÍMITE DEL TELÉFONO
+// ==========================================
+
+function configurarLimiteTelefono(
+    inputId,
+    codigoPaisId
+) {
+
+    const telefono =
+        document.getElementById(
+            inputId
+        );
+
+    const codigoPais =
+        document.getElementById(
+            codigoPaisId
+        );
+
+
+    if (
+        !telefono ||
+        !codigoPais
+    ) {
+        return;
+    }
+
+
+    const regla =
+        reglasTelefono[
+        codigoPais.value
+        ];
+
+
+    if (!regla) {
+
+        telefono.removeAttribute(
+            "maxlength"
+        );
+
+        return;
+    }
+
+
+    telefono.maxLength =
+        regla.max;
+
+
+    telefono.value =
+        telefono.value
+            .replace(
+                /\D/g,
+                ""
+            )
+            .slice(
+                0,
+                regla.max
+            );
+}
+
+
+// ==========================================
+// CONFIGURAR REGLAS DEL DOCUMENTO
+// ==========================================
+
+function configurarReglasDocumento(
+    tipoDocumento,
+    numeroDocumento
+) {
+
+    if (
+        !tipoDocumento ||
+        !numeroDocumento
+    ) {
+        return;
+    }
+
+
+    if (
+        tipoDocumento.value ===
+        "DNI"
+    ) {
+
+        numeroDocumento.disabled =
+            false;
+
+        numeroDocumento.maxLength =
+            8;
+
+        numeroDocumento.inputMode =
+            "numeric";
+
+        numeroDocumento.pattern =
+            "[0-9]{8}";
+
+        numeroDocumento.placeholder =
+            "8 dígitos";
+    }
+
+
+    else if (
+        tipoDocumento.value === "CE" ||
+        tipoDocumento.value ===
+        "PASAPORTE"
+    ) {
+
+        numeroDocumento.disabled =
+            false;
+
+        numeroDocumento.maxLength =
+            12;
+
+        numeroDocumento.inputMode =
+            "text";
+
+        numeroDocumento.pattern =
+            "[A-Za-z0-9]{1,12}";
+
+        numeroDocumento.placeholder =
+            "Hasta 12 caracteres";
+    }
+
+
+    else {
+
+        numeroDocumento.disabled =
+            true;
+
+        numeroDocumento.removeAttribute(
+            "maxlength"
+        );
+
+        numeroDocumento.removeAttribute(
+            "pattern"
+        );
+
+        numeroDocumento.inputMode =
+            "text";
+
+        numeroDocumento.placeholder =
+            "Selecciona el tipo de documento";
+    }
+}
+
+
+// ==========================================
+// VALIDAR FORMULARIO DE ESTUDIANTE
+// ==========================================
+
+function validarFormularioEstudiante(
+    prefijo
+) {
+
+    const esEdicion =
+        prefijo === "edit";
+
+
+    const nombre =
+        document.getElementById(
+            esEdicion
+                ? "editNombre"
+                : "nombre"
+        );
+
+    const apellido =
+        document.getElementById(
+            esEdicion
+                ? "editApellido"
+                : "apellido"
+        );
+
+    const tipoDocumento =
+        document.getElementById(
+            esEdicion
+                ? "editTipoDocumento"
+                : "tipoDocumento"
+        );
+
+    const documento =
+        document.getElementById(
+            esEdicion
+                ? "editDocumento"
+                : "documento"
+        );
+
+    const telefono =
+        document.getElementById(
+            esEdicion
+                ? "editTelefono"
+                : "telefono"
+        );
+
+    const codigoPais =
+        document.getElementById(
+            esEdicion
+                ? "editCodigoPais"
+                : "codigoPais"
+        );
+
+    const fechaNacimiento =
+        document.getElementById(
+            esEdicion
+                ? "editFechaNacimiento"
+                : "fechaNacimiento"
+        );
+
+    const correo =
+        document.getElementById(
+            esEdicion
+                ? "editCorreo"
+                : "correo"
+        );
+
+
+    // ==========================================
+    // NOMBRE
+    // ==========================================
+
+    if (
+        !nombre ||
+        !nombre.value.trim()
+    ) {
+
+        return {
+            campo: nombre,
+            mensaje:
+                "El nombre es obligatorio."
+        };
+    }
+
+
+    if (
+        !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{1,50}$/
+            .test(
+                nombre.value.trim()
+            )
+    ) {
+
+        return {
+            campo: nombre,
+            mensaje:
+                "El nombre solo puede contener letras y espacios, con un máximo de 50 caracteres."
+        };
+    }
+
+
+    // ==========================================
+    // APELLIDO
+    // ==========================================
+
+    if (
+        !apellido ||
+        !apellido.value.trim()
+    ) {
+
+        return {
+            campo: apellido,
+            mensaje:
+                "El apellido es obligatorio."
+        };
+    }
+
+
+    if (
+        !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{1,50}$/
+            .test(
+                apellido.value.trim()
+            )
+    ) {
+
+        return {
+            campo: apellido,
+            mensaje:
+                "El apellido solo puede contener letras y espacios, con un máximo de 50 caracteres."
+        };
+    }
+
+
+    // ==========================================
+    // TIPO DE DOCUMENTO
+    // ==========================================
+
+    if (
+        !tipoDocumento ||
+        !tipoDocumento.value
+    ) {
+
+        return {
+            campo: tipoDocumento,
+            mensaje:
+                "Debes seleccionar un tipo de documento."
+        };
+    }
+
+
+    // ==========================================
+    // DOCUMENTO
+    // ==========================================
+
+    if (
+        !documento ||
+        !documento.value.trim()
+    ) {
+
+        return {
+            campo: documento,
+            mensaje:
+                "Debes ingresar el número de documento."
+        };
+    }
+
+
+    if (
+        tipoDocumento.value ===
+        "DNI"
+    ) {
+
+        if (
+            !/^\d{8}$/.test(
+                documento.value
+            )
+        ) {
+
+            return {
+                campo: documento,
+                mensaje:
+                    "El DNI debe contener exactamente 8 dígitos."
+            };
+        }
+    }
+
+
+    else if (
+        tipoDocumento.value === "CE" ||
+        tipoDocumento.value ===
+        "PASAPORTE"
+    ) {
+
+        if (
+            !/^[a-zA-Z0-9]{1,12}$/.test(
+                documento.value
+            )
+        ) {
+
+            return {
+                campo: documento,
+                mensaje:
+                    "El número de documento no es válido."
+            };
+        }
+    }
+
+
+    // ==========================================
+    // TELÉFONO
+    // ==========================================
+
+    if (
+        telefono &&
+        telefono.value.trim()
+    ) {
+
+        const codigo =
+            codigoPais
+                ? codigoPais.value
+                : "+51";
+
+
+        const regla =
+            reglasTelefono[codigo];
+
+
+        if (!regla) {
+
+            return {
+                campo: codigoPais || telefono,
+                mensaje:
+                    "Selecciona un código de país válido."
+            };
+        }
+
+
+        const telefonoValor =
+            telefono.value.trim();
+
+
+        if (
+            !/^\d+$/.test(
+                telefonoValor
+            )
+        ) {
+
+            return {
+                campo: telefono,
+                mensaje:
+                    "El teléfono solo debe contener números."
+            };
+        }
+
+
+        if (
+            telefonoValor.length <
+            regla.min
+        ) {
+
+            if (
+                regla.min ===
+                regla.max
+            ) {
+
+                return {
+                    campo: telefono,
+                    mensaje:
+                        `El número de ${regla.nombre} debe contener exactamente ${regla.min} dígitos.`
+                };
+            }
+
+
+            return {
+                campo: telefono,
+                mensaje:
+                    `El número de ${regla.nombre} debe contener entre ${regla.min} y ${regla.max} dígitos.`
+            };
+        }
+
+
+        if (
+            telefonoValor.length >
+            regla.max
+        ) {
+
+            if (
+                regla.min ===
+                regla.max
+            ) {
+
+                return {
+                    campo: telefono,
+                    mensaje:
+                        `El número de ${regla.nombre} debe contener exactamente ${regla.max} dígitos.`
+                };
+            }
+
+
+            return {
+                campo: telefono,
+                mensaje:
+                    `El número de ${regla.nombre} debe contener entre ${regla.min} y ${regla.max} dígitos.`
+            };
+        }
+    }
+
+
+    // ==========================================
+    // FECHA DE NACIMIENTO
+    // ==========================================
+
+    if (
+        fechaNacimiento &&
+        fechaNacimiento.value
+    ) {
+
+        const fechaSeleccionada =
+            new Date(
+                fechaNacimiento.value +
+                "T00:00:00"
+            );
+
+        const fechaActual =
+            new Date();
+
+
+        const añoSeleccionado =
+            fechaSeleccionada.getFullYear();
+
+        const añoActual =
+            fechaActual.getFullYear();
+
+
+        // ------------------------------------------
+        // VALIDAR AÑO
+        // ------------------------------------------
+
+        if (
+            añoSeleccionado >
+            añoActual
+        ) {
+
+            return {
+                campo: fechaNacimiento,
+                mensaje:
+                    "El año de nacimiento no puede ser superior al año actual."
+            };
+        }
+
+
+        // ------------------------------------------
+        // VALIDAR FECHA COMPLETA
+        // ------------------------------------------
+
+        if (
+            fechaSeleccionada >
+            fechaActual
+        ) {
+
+            return {
+                campo: fechaNacimiento,
+                mensaje:
+                    "La fecha de nacimiento no puede ser futura."
+            };
+        }
+    }
+
+
+    // ==========================================
+    // CORREO
+    // ==========================================
+
+    if (
+        correo &&
+        correo.value.trim()
+    ) {
+
+        const correoValido =
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                .test(
+                    correo.value.trim()
+                );
+
+
+        if (!correoValido) {
+
+            return {
+                campo: correo,
+                mensaje:
+                    "Ingresa un correo electrónico válido."
+            };
+        }
+    }
+
+
+    return null;
+}
+
+
+// ==========================================
+// VALIDAR FORMULARIO DE APODERADO
+// ==========================================
+
+function validarFormularioApoderado() {
+
+    const nombre =
+        document.getElementById(
+            "guardianNombre"
+        );
+
+    const apellido =
+        document.getElementById(
+            "guardianApellido"
+        );
+
+    const tipoDocumento =
+        document.getElementById(
+            "guardianTipoDocumento"
+        );
+
+    const documento =
+        document.getElementById(
+            "guardianDocumento"
+        );
+
+    const telefono =
+        document.getElementById(
+            "guardianTelefono"
+        );
+
+    const correo =
+        document.getElementById(
+            "guardianCorreo"
+        );
+
+
+    if (
+        !nombre.value.trim()
+    ) {
+
+        return {
+            campo: nombre,
+            mensaje:
+                "El nombre del apoderado es obligatorio."
+        };
+    }
+
+
+    if (
+        !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{1,50}$/
+            .test(
+                nombre.value.trim()
+            )
+    ) {
+
+        return {
+            campo: nombre,
+            mensaje:
+                "El nombre del apoderado solo puede contener letras y espacios."
+        };
+    }
+
+
+    if (
+        !apellido.value.trim()
+    ) {
+
+        return {
+            campo: apellido,
+            mensaje:
+                "El apellido del apoderado es obligatorio."
+        };
+    }
+
+
+    if (
+        !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{1,50}$/
+            .test(
+                apellido.value.trim()
+            )
+    ) {
+
+        return {
+            campo: apellido,
+            mensaje:
+                "El apellido del apoderado solo puede contener letras y espacios."
+        };
+    }
+
+
+    if (
+        !tipoDocumento.value
+    ) {
+
+        return {
+            campo: tipoDocumento,
+            mensaje:
+                "Debes seleccionar un tipo de documento para el apoderado."
+        };
+    }
+
+
+    if (
+        tipoDocumento.value ===
+        "DNI"
+    ) {
+
+        if (
+            !/^\d{8}$/.test(
+                documento.value
+            )
+        ) {
+
+            return {
+                campo: documento,
+                mensaje:
+                    "El DNI del apoderado debe contener exactamente 8 dígitos."
+            };
+        }
+    }
+
+
+    else if (
+        tipoDocumento.value === "CE" ||
+        tipoDocumento.value ===
+        "PASAPORTE"
+    ) {
+
+        if (
+            !/^[a-zA-Z0-9]{1,12}$/
+                .test(
+                    documento.value
+                )
+        ) {
+
+            return {
+                campo: documento,
+                mensaje:
+                    "El número de documento del apoderado no es válido."
+            };
+        }
+    }
+
+
+    if (
+        telefono.value.trim()
+    ) {
+
+        if (
+            !/^\d{1,15}$/.test(
+                telefono.value.trim()
+            )
+        ) {
+
+            return {
+                campo: telefono,
+                mensaje:
+                    "El teléfono del apoderado solo debe contener números y tener como máximo 15 dígitos."
+            };
+        }
+    }
+
+
+    if (
+        correo.value.trim()
+    ) {
+
+        const correoValido =
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                .test(
+                    correo.value.trim()
+                );
+
+
+        if (!correoValido) {
+
+            return {
+                campo: correo,
+                mensaje:
+                    "Ingresa un correo electrónico válido para el apoderado."
+            };
+        }
+    }
+
+
+    return null;
+}
+
+
+// ==========================================
+// APLICAR FILTROS
 // ==========================================
 
 function configurarBusquedaYFiltros() {
@@ -1584,7 +2912,6 @@ function crearEstudianteFila(
 
                 <div class="estudiante-acciones">
 
-
                     <button
                         type="button"
                         class="btn btn--primary"
@@ -1612,7 +2939,6 @@ function crearEstudianteFila(
         }
 
                     </button>
-
 
                 </div>
 
@@ -1644,6 +2970,32 @@ async function registrarEstudiante(
         );
 
 
+    // ==========================================
+    // VALIDAR DATOS
+    // ==========================================
+
+    const validacion =
+        validarFormularioEstudiante(
+            ""
+        );
+
+
+    if (validacion) {
+
+        mostrarMensaje(
+            mensaje,
+            validacion.mensaje,
+            "error"
+        );
+
+        if (validacion.campo) {
+            validacion.campo.focus();
+        }
+
+        return;
+    }
+
+
     const fechaNacimiento =
         document.getElementById(
             "fechaNacimiento"
@@ -1658,6 +3010,31 @@ async function registrarEstudiante(
 
     const esMenor =
         edad < 18;
+
+
+    // ==========================================
+    // VALIDAR APODERADO SI ES MENOR
+    // ==========================================
+
+    if (esMenor) {
+
+        const validacionApoderado =
+            validarFormularioApoderado();
+
+
+        if (validacionApoderado) {
+
+            mostrarMensaje(
+                mensaje,
+                validacionApoderado.mensaje,
+                "error"
+            );
+
+            validacionApoderado.campo.focus();
+
+            return;
+        }
+    }
 
 
     const formData =
@@ -1791,8 +3168,17 @@ async function registrarEstudiante(
         }
 
 
-        const data =
-            await response.json();
+        let data = {};
+
+        try {
+
+            data =
+                await response.json();
+
+        } catch (error) {
+
+            data = {};
+        }
 
 
         if (!response.ok) {
@@ -2080,7 +3466,7 @@ async function editarEstudiante(
 
 
         // ==========================================
-        // DATOS
+        // DATOS DEL ESTUDIANTE
         // ==========================================
 
         document.getElementById(
@@ -2102,9 +3488,21 @@ async function editarEstudiante(
 
 
         document.getElementById(
+            "editTipoDocumento"
+        ).value =
+            estudiante.tipoDocumento || "";
+
+
+        document.getElementById(
             "editDocumento"
         ).value =
             estudiante.documento || "";
+
+
+        document.getElementById(
+            "editFechaNacimiento"
+        ).value =
+            estudiante.fechaNacimiento || "";
 
 
         document.getElementById(
@@ -2120,9 +3518,51 @@ async function editarEstudiante(
 
 
         document.getElementById(
+            "editDireccion"
+        ).value =
+            estudiante.direccion || "";
+
+
+        document.getElementById(
             "editCinturon"
         ).value =
             estudiante.cinturon || "BLANCO";
+
+
+        // ==========================================
+        // APLICAR REGLAS DEL DOCUMENTO
+        // ==========================================
+
+        const tipoDocumento =
+            document.getElementById(
+                "editTipoDocumento"
+            );
+
+        const numeroDocumento =
+            document.getElementById(
+                "editDocumento"
+            );
+
+        if (
+            tipoDocumento &&
+            numeroDocumento
+        ) {
+
+            configurarReglasDocumento(
+                tipoDocumento,
+                numeroDocumento
+            );
+        }
+
+
+        // ==========================================
+        // APLICAR REGLAS DEL TELÉFONO
+        // ==========================================
+
+        configurarLimiteTelefono(
+            "editTelefono",
+            "editCodigoPais"
+        );
 
 
         // ==========================================
@@ -2219,6 +3659,7 @@ function prepararFotoEdicion(
 
 
     if (editFotoInput) {
+
         editFotoInput.value = "";
     }
 
@@ -2424,22 +3865,30 @@ function mostrarApoderado(
 
 
     if (guardianInfo) {
-        guardianInfo.hidden = false;
+
+        guardianInfo.hidden =
+            false;
     }
 
 
     if (guardianEmptyState) {
-        guardianEmptyState.hidden = true;
+
+        guardianEmptyState.hidden =
+            true;
     }
 
 
     if (editGuardianButton) {
-        editGuardianButton.hidden = false;
+
+        editGuardianButton.hidden =
+            false;
     }
 
 
     if (addGuardianButton) {
-        addGuardianButton.hidden = false;
+
+        addGuardianButton.hidden =
+            false;
     }
 
 
@@ -2511,7 +3960,9 @@ function mostrarSinApoderado(
 
 
     if (guardianInfo) {
-        guardianInfo.hidden = true;
+
+        guardianInfo.hidden =
+            true;
     }
 
 
@@ -2530,6 +3981,7 @@ function mostrarSinApoderado(
 
 
             if (paragraph) {
+
                 paragraph.textContent =
                     mensaje;
             }
@@ -2538,12 +3990,16 @@ function mostrarSinApoderado(
 
 
     if (editGuardianButton) {
-        editGuardianButton.hidden = true;
+
+        editGuardianButton.hidden =
+            true;
     }
 
 
     if (addGuardianButton) {
-        addGuardianButton.hidden = false;
+
+        addGuardianButton.hidden =
+            false;
     }
 }
 
@@ -2584,27 +4040,37 @@ function limpiarInterfazApoderado() {
 
 
     if (guardianInfo) {
-        guardianInfo.hidden = true;
+
+        guardianInfo.hidden =
+            true;
     }
 
 
     if (guardianEmptyState) {
-        guardianEmptyState.hidden = false;
+
+        guardianEmptyState.hidden =
+            false;
     }
 
 
     if (editGuardianButton) {
-        editGuardianButton.hidden = true;
+
+        editGuardianButton.hidden =
+            true;
     }
 
 
     if (addGuardianButton) {
-        addGuardianButton.hidden = false;
+
+        addGuardianButton.hidden =
+            false;
     }
 
 
     if (editGuardianFormSection) {
-        editGuardianFormSection.hidden = true;
+
+        editGuardianFormSection.hidden =
+            true;
     }
 
 
@@ -2721,7 +4187,9 @@ function cargarDatosFormularioApoderado(
 
 
             if (campo) {
-                campo.value = valor;
+
+                campo.value =
+                    valor;
             }
         }
     );
@@ -2757,6 +4225,7 @@ function limpiarFormularioApoderado() {
 
 
             if (campo) {
+
                 campo.value = "";
             }
         }
@@ -2833,6 +4302,32 @@ async function actualizarEstudiante(
         );
 
 
+    // ==========================================
+    // VALIDAR DATOS
+    // ==========================================
+
+    const validacion =
+        validarFormularioEstudiante(
+            "edit"
+        );
+
+
+    if (validacion) {
+
+        mostrarMensaje(
+            mensaje,
+            validacion.mensaje,
+            "error"
+        );
+
+        if (validacion.campo) {
+            validacion.campo.focus();
+        }
+
+        return;
+    }
+
+
     const id =
         document.getElementById(
             "editId"
@@ -2864,10 +4359,26 @@ async function actualizarEstudiante(
 
 
     formData.append(
+        "tipoDocumento",
+        document.getElementById(
+            "editTipoDocumento"
+        ).value
+    );
+
+
+    formData.append(
         "documento",
         document.getElementById(
             "editDocumento"
         ).value.trim()
+    );
+
+
+    formData.append(
+        "fechaNacimiento",
+        document.getElementById(
+            "editFechaNacimiento"
+        ).value
     );
 
 
@@ -2883,6 +4394,14 @@ async function actualizarEstudiante(
         "correo",
         document.getElementById(
             "editCorreo"
+        ).value.trim()
+    );
+
+
+    formData.append(
+        "direccion",
+        document.getElementById(
+            "editDireccion"
         ).value.trim()
     );
 
@@ -2954,8 +4473,17 @@ async function actualizarEstudiante(
         }
 
 
-        const data =
-            await response.json();
+        let data = {};
+
+        try {
+
+            data =
+                await response.json();
+
+        } catch (error) {
+
+            data = {};
+        }
 
 
         if (!response.ok) {
@@ -3024,11 +4552,13 @@ function cancelarEdicion() {
 
 
     if (editForm) {
+
         editForm.reset();
     }
 
 
     if (modal) {
+
         modal.hidden = true;
     }
 
@@ -3048,6 +4578,16 @@ function cancelarEdicion() {
 
 
     limpiarInterfazApoderado();
+
+
+    // ==========================================
+    // RESTABLECER TELÉFONO
+    // ==========================================
+
+    configurarLimiteTelefono(
+        "editTelefono",
+        "editCodigoPais"
+    );
 
 
     const editFotoPreview =
@@ -3070,7 +4610,8 @@ function cancelarEdicion() {
 
         editFotoPreview.src = "";
 
-        editFotoPreview.hidden = true;
+        editFotoPreview.hidden =
+            true;
     }
 
 
@@ -3124,6 +4665,7 @@ function limpiarFotoRegistro() {
 
 
     if (fotoInput) {
+
         fotoInput.value = "";
     }
 
@@ -3132,7 +4674,8 @@ function limpiarFotoRegistro() {
 
         fotoPreview.src = "";
 
-        fotoPreview.hidden = true;
+        fotoPreview.hidden =
+            true;
     }
 
 
@@ -3215,8 +4758,17 @@ async function cambiarEstadoEstudiante(
         }
 
 
-        const data =
-            await response.json();
+        let data = {};
+
+        try {
+
+            data =
+                await response.json();
+
+        } catch (error) {
+
+            data = {};
+        }
 
 
         if (!response.ok) {
@@ -3313,7 +4865,6 @@ function ocultarMensaje(
 
     elemento.textContent =
         "";
-
 
     elemento.hidden =
         true;

@@ -16,7 +16,6 @@
 
 <body>
 
-
     <main class="app-layout">
 
 
@@ -34,65 +33,42 @@
             <nav class="sidebar__nav">
 
                 <a href="/admin/admin" class="sidebar__link sidebar__link--active">
-
                     Dashboard
-
                 </a>
 
 
                 <a href="/admin/estudiantes" class="sidebar__link">
-
                     Estudiantes
-
                 </a>
 
 
                 <a href="/admin/grupos" class="sidebar__link">
-
                     Grupos
-
                 </a>
 
 
                 <a href="/admin/asistencia" class="sidebar__link">
-
                     Asistencia
-
                 </a>
 
 
                 <a href="/admin/horario" class="sidebar__link">
-
                     Horario
-
                 </a>
 
 
                 <a href="/admin/inscripciones" class="sidebar__link">
-
                     Inscripciones
-
                 </a>
 
 
                 <a href="/admin/reportes" class="sidebar__link">
-
                     Reportes
-
                 </a>
 
 
                 <a href="/admin/usuarios" class="sidebar__link">
-
                     Usuarios
-
-                </a>
-
-
-                <a href="/admin/perfil" class="sidebar__link">
-
-                    Mi perfil
-
                 </a>
 
             </nav>
@@ -115,9 +91,7 @@
             <header class="topbar">
 
 
-                <!-- ==========================================
-         ROL
-         ========================================== -->
+                <!-- ROL -->
 
                 <div class="topbar__role">
 
@@ -132,16 +106,13 @@
                 </div>
 
 
-                <!-- ==========================================
-         ACCIONES DEL USUARIO
-         ========================================== -->
+
+                <!-- ACCIONES DEL USUARIO -->
 
                 <div class="topbar__actions">
 
 
-                    <!-- ======================================
-             NOTIFICACIONES
-             ====================================== -->
+                    <!-- NOTIFICACIONES -->
 
                     <button type="button" class="topbar__notification" id="notificationButton"
                         aria-label="Notificaciones">
@@ -151,15 +122,16 @@
                         </span>
 
                         <span id="notificationCount" class="topbar__notification-count" hidden>
+
                             0
+
                         </span>
 
                     </button>
 
 
-                    <!-- ======================================
-             PERFIL
-             ====================================== -->
+
+                    <!-- PERFIL -->
 
                     <div class="topbar__profile" id="profileMenuContainer">
 
@@ -181,6 +153,7 @@
                             </div>
 
 
+
                             <!-- INFORMACIÓN -->
 
                             <div class="topbar__profile-info">
@@ -196,6 +169,7 @@
                             </div>
 
 
+
                             <!-- FLECHA -->
 
                             <span class="topbar__profile-arrow">
@@ -206,9 +180,8 @@
                         </button>
 
 
-                        <!-- ==================================
-                 MENÚ DESPLEGABLE
-                 ================================== -->
+
+                        <!-- MENÚ DESPLEGABLE -->
 
                         <div class="topbar__profile-menu" id="profileMenu" hidden>
 
@@ -235,7 +208,6 @@
 
 
                 </div>
-
 
             </header>
 
@@ -309,7 +281,6 @@
 
                     <article class="dashboard-kpi">
 
-
                         <div class="dashboard-kpi__icon">
                             👥
                         </div>
@@ -333,7 +304,6 @@
 
                         </div>
 
-
                     </article>
 
 
@@ -341,7 +311,6 @@
                     <!-- ALUMNOS ACTIVOS -->
 
                     <article class="dashboard-kpi dashboard-kpi--primary">
-
 
                         <div class="dashboard-kpi__icon">
                             ✓
@@ -366,7 +335,6 @@
 
                         </div>
 
-
                     </article>
 
 
@@ -374,7 +342,6 @@
                     <!-- GRUPOS ACTIVOS -->
 
                     <article class="dashboard-kpi dashboard-kpi--accent">
-
 
                         <div class="dashboard-kpi__icon">
                             🥋
@@ -399,7 +366,6 @@
 
                         </div>
 
-
                     </article>
 
 
@@ -417,9 +383,7 @@
             <section class="dashboard-grid">
 
 
-                <!-- ======================================
-                 ASISTENCIA SEMANAL
-                 ====================================== -->
+                <!-- ASISTENCIA SEMANAL -->
 
                 <article class="dashboard-section dashboard-chart-card">
 
@@ -460,11 +424,9 @@
 
                             <select id="attendanceGroupFilter" class="form-input">
 
-
                                 <option value="TODOS">
                                     Todos los grupos
                                 </option>
-
 
                             </select>
 
@@ -489,15 +451,12 @@
 
 
 
-                <!-- ======================================
-                 DISTRIBUCIÓN DE CINTURONES
-                 ====================================== -->
+                <!-- DISTRIBUCIÓN DE CINTURONES -->
 
                 <article class="dashboard-section dashboard-chart-card">
 
 
                     <div class="section-header">
-
 
                         <span class="section-kicker">
                             Estudiantes
@@ -512,7 +471,6 @@
                         <p>
                             Cantidad de estudiantes según su grado.
                         </p>
-
 
                     </div>
 
@@ -544,7 +502,6 @@
 
                 <div class="section-header">
 
-
                     <span class="section-kicker">
                         Clases
                     </span>
@@ -559,7 +516,6 @@
                         Consulta la clase actual y la siguiente actividad programada.
                     </p>
 
-
                 </div>
 
 
@@ -567,15 +523,12 @@
                 <div class="class-status-grid">
 
 
-                    <!-- ==================================
-                     CLASE ACTUAL
-                     ================================== -->
+                    <!-- CLASE ACTUAL -->
 
                     <article class="class-status-card">
 
 
                         <div class="class-status-card__header">
-
 
                             <span class="class-status-card__label">
                                 Ahora
@@ -588,13 +541,11 @@
 
                             </span>
 
-
                         </div>
 
 
 
                         <div class="class-status-card__content">
-
 
                             <h3 id="currentClassName">
                                 No hay clase en curso
@@ -610,7 +561,6 @@
                                 —
                             </span>
 
-
                         </div>
 
 
@@ -618,27 +568,22 @@
 
 
 
-                    <!-- ==================================
-                     PRÓXIMA CLASE
-                     ================================== -->
+                    <!-- PRÓXIMA CLASE -->
 
                     <article class="class-status-card">
 
 
                         <div class="class-status-card__header">
 
-
                             <span class="class-status-card__label">
                                 Próxima clase
                             </span>
-
 
                         </div>
 
 
 
                         <div class="class-status-card__content">
-
 
                             <h3 id="nextClassName">
                                 Sin clases próximas
@@ -653,7 +598,6 @@
                             <span id="nextClassGroup">
                                 —
                             </span>
-
 
                         </div>
 
@@ -721,7 +665,6 @@
 
         </section>
 
-
     </main>
 
 
@@ -735,7 +678,6 @@
     <script src="/js/admin.js"></script>
 
     <script src="/js/logout.js"></script>
-
 
 </body>
 

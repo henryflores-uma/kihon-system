@@ -2,19 +2,24 @@
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Kihon | Reportes</title>
 
     <link rel="stylesheet" href="/css/main.css">
+
 </head>
 
 <body>
 
-    <div class="app-layout">
+    <main class="app-layout">
 
-        <!-- SIDEBAR -->
+        <!-- ==========================================
+             SIDEBAR
+             ========================================== -->
 
         <aside class="sidebar">
 
@@ -24,28 +29,36 @@
 
             <nav class="sidebar__nav">
 
-                <a href="/dashboard" class="sidebar__link">
+                <a href="/admin/admin" class="sidebar__link">
                     Dashboard
                 </a>
 
-                <a href="/estudiantes" class="sidebar__link">
+                <a href="/admin/estudiantes" class="sidebar__link">
                     Estudiantes
                 </a>
 
-                <a href="/grupos" class="sidebar__link">
+                <a href="/admin/grupos" class="sidebar__link">
                     Grupos
                 </a>
 
-                <a href="/asistencias" class="sidebar__link">
-                    Asistencias
+                <a href="/admin/asistencia" class="sidebar__link">
+                    Asistencia
                 </a>
 
-                <a href="/reportes" class="sidebar__link sidebar__link--active">
+                <a href="/admin/horario" class="sidebar__link">
+                    Horario
+                </a>
+
+                <a href="/admin/inscripciones" class="sidebar__link">
+                    Inscripciones
+                </a>
+
+                <a href="/admin/reportes" class="sidebar__link sidebar__link--active">
                     Reportes
                 </a>
 
-                <a href="#" id="logoutButton" class="btn btn--logout">
-                    Cerrar sesión
+                <a href="/admin/usuarios" class="sidebar__link">
+                    Usuarios
                 </a>
 
             </nav>
@@ -53,18 +66,124 @@
         </aside>
 
 
-        <!-- CONTENIDO PRINCIPAL -->
+        <!-- ==========================================
+             CONTENIDO PRINCIPAL
+             ========================================== -->
 
-        <main class="main-content">
+        <section class="main-content">
+
+
+            <!-- ======================================
+                 TOPBAR
+                 ====================================== -->
+
+            <header class="topbar">
+
+                <div class="topbar__role">
+
+                    <span class="topbar__role-label">
+                        Rol
+                    </span>
+
+                    <strong id="roleDisplay">
+                        Administrador
+                    </strong>
+
+                </div>
+
+
+                <div class="topbar__actions">
+
+                    <!-- NOTIFICACIONES -->
+
+                    <button type="button" class="topbar__notification" id="notificationButton"
+                        aria-label="Notificaciones">
+
+                        <span class="topbar__notification-icon">
+                            🔔
+                        </span>
+
+                        <span id="notificationCount" class="topbar__notification-count" hidden>
+                            0
+                        </span>
+
+                    </button>
+
+
+                    <!-- PERFIL -->
+
+                    <div class="topbar__profile" id="profileMenuContainer">
+
+                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
+                            aria-expanded="false">
+
+                            <div class="topbar__avatar" id="userProfileAvatar">
+
+                                <span id="userAvatarInitial">
+                                    U
+                                </span>
+
+                            </div>
+
+
+                            <div class="topbar__profile-info">
+
+                                <strong id="usernameDisplay">
+                                    Usuario
+                                </strong>
+
+                                <span id="profileRoleDisplay">
+                                    Administrador
+                                </span>
+
+                            </div>
+
+
+                            <span class="topbar__profile-arrow">
+                                ▼
+                            </span>
+
+                        </button>
+
+
+                        <div class="topbar__profile-menu" id="profileMenu" hidden>
+
+                            <a href="/admin/perfil" class="topbar__profile-menu-item">
+                                Editar perfil
+                            </a>
+
+                            <button type="button" id="topbarLogoutButton"
+                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+                                Cerrar sesión
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- ======================================
+                 CONTENIDO DE REPORTES
+                 ====================================== -->
 
             <div class="container reportes-page">
 
 
-                <!-- ENCABEZADO -->
+                <!-- ======================================
+                     ENCABEZADO
+                     ====================================== -->
 
-                <header class="reportes-header">
+                <section class="dashboard-header">
 
                     <div>
+
+                        <span class="section-kicker">
+                            Administración
+                        </span>
 
                         <h1>
                             Reportes
@@ -77,19 +196,12 @@
 
                     </div>
 
-
-                    <div class="dashboard-user">
-
-                        <span id="usernameDisplay">
-                            Usuario
-                        </span>
-
-                    </div>
-
-                </header>
+                </section>
 
 
-                <!-- SELECTOR DE REPORTE -->
+                <!-- ======================================
+                     SELECTOR DE REPORTE
+                     ====================================== -->
 
                 <section class="card reportes-selector-card">
 
@@ -114,6 +226,7 @@
                             Tipo de reporte
 
                         </label>
+
 
                         <select id="tipoReporte" class="form-select">
 
@@ -145,7 +258,6 @@
                     <!-- FILTROS -->
 
                     <div id="reporteFiltros" class="reportes-filtros">
-
                     </div>
 
 
@@ -155,7 +267,7 @@
                     </div>
 
 
-                    <!-- BOTÓN -->
+                    <!-- ACCIONES -->
 
                     <div class="reportes-actions">
 
@@ -170,10 +282,14 @@
                 </section>
 
 
-                <!-- RESULTADO -->
+                <!-- ======================================
+                     RESULTADO
+                     ====================================== -->
 
                 <section id="reporteResultado" class="card reportes-result-card" hidden>
 
+
+                    <!-- ENCABEZADO DEL RESULTADO -->
 
                     <div class="reportes-result-header">
 
@@ -195,7 +311,6 @@
                     <!-- RESUMEN -->
 
                     <div id="reporteResumen" class="reportes-resumen">
-
                     </div>
 
 
@@ -207,8 +322,8 @@
                             Detalle de asistencias
                         </h3>
 
-                        <div id="reporteDetalle" class="reportes-table-wrapper">
 
+                        <div id="reporteDetalle" class="reportes-table-wrapper">
                         </div>
 
                     </div>
@@ -219,14 +334,17 @@
 
             </div>
 
-        </main>
+        </section>
 
-    </div>
+    </main>
 
 
-    <!-- JAVASCRIPT -->
+    <!-- ==========================================
+         JAVASCRIPT
+         ========================================== -->
 
     <script src="/js/reportes.js"></script>
+
     <script src="/js/logout.js"></script>
 
 </body>

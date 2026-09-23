@@ -2,12 +2,14 @@
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Kihon | Grupos</title>
 
     <link rel="stylesheet" href="/css/main.css">
+
 </head>
 
 <body>
@@ -56,14 +58,6 @@
 
                 <a href="/admin/usuarios" class="sidebar__link">
                     Usuarios
-                </a>
-
-                <a href="/admin/perfil" class="sidebar__link">
-                    Mi perfil
-                </a>
-
-                <a href="#" id="logoutButton" class="btn btn--logout">
-                    Cerrar sesión
                 </a>
 
             </nav>
@@ -160,9 +154,7 @@
 
                                 <button type="button" id="topbarLogoutButton"
                                     class="topbar__profile-menu-item topbar__profile-menu-item--danger">
-
                                     Cerrar sesión
-
                                 </button>
 
                             </div>
@@ -252,9 +244,7 @@
 
                             <button type="button" id="closeGroupModalButton" class="grupo-modal__close"
                                 aria-label="Cerrar">
-
                                 ×
-
                             </button>
 
                         </div>
@@ -289,25 +279,6 @@
 
                                     <input type="number" id="groupCapacidad" name="capacidad" min="1"
                                         placeholder="Ej. 20" required>
-
-                                </div>
-
-
-                                <!-- Frecuencia -->
-
-                                <div class="form-group">
-
-                                    <label for="groupFrecuenciaId">
-                                        Frecuencia semanal
-                                    </label>
-
-                                    <select id="groupFrecuenciaId" name="frecuenciaId" required>
-
-                                        <option value="">
-                                            Selecciona una frecuencia
-                                        </option>
-
-                                    </select>
 
                                 </div>
 
@@ -368,38 +339,79 @@
                                     <div class="grupos-dias">
 
                                         <label class="grupo-dia-option">
+
                                             <input type="checkbox" name="dias" value="LUNES">
-                                            <span>L</span>
+
+                                            <span>
+                                                L
+                                            </span>
+
                                         </label>
 
+
                                         <label class="grupo-dia-option">
+
                                             <input type="checkbox" name="dias" value="MARTES">
-                                            <span>M</span>
+
+                                            <span>
+                                                M
+                                            </span>
+
                                         </label>
 
+
                                         <label class="grupo-dia-option">
+
                                             <input type="checkbox" name="dias" value="MIERCOLES">
-                                            <span>X</span>
+
+                                            <span>
+                                                X
+                                            </span>
+
                                         </label>
 
+
                                         <label class="grupo-dia-option">
+
                                             <input type="checkbox" name="dias" value="JUEVES">
-                                            <span>J</span>
+
+                                            <span>
+                                                J
+                                            </span>
+
                                         </label>
 
+
                                         <label class="grupo-dia-option">
+
                                             <input type="checkbox" name="dias" value="VIERNES">
-                                            <span>V</span>
+
+                                            <span>
+                                                V
+                                            </span>
+
                                         </label>
 
+
                                         <label class="grupo-dia-option">
+
                                             <input type="checkbox" name="dias" value="SABADO">
-                                            <span>S</span>
+
+                                            <span>
+                                                S
+                                            </span>
+
                                         </label>
 
+
                                         <label class="grupo-dia-option">
+
                                             <input type="checkbox" name="dias" value="DOMINGO">
-                                            <span>D</span>
+
+                                            <span>
+                                                D
+                                            </span>
+
                                         </label>
 
                                     </div>
@@ -436,8 +448,8 @@
                                     </strong>
 
                                     <p>
-                                        La frecuencia semanal indica cuántos días debe entrenar el grupo.
-                                        El horario indicado se aplicará a todos los días seleccionados.
+                                        La frecuencia semanal se asignará automáticamente según la cantidad de días
+                                        seleccionados. El horario indicado se aplicará a todos los días seleccionados.
                                     </p>
 
                                 </div>
@@ -473,7 +485,6 @@
                  ========================================== -->
 
                 <section id="editGroupSection" class="card grupos-form-card grupos-edit-card" hidden>
-
 
                     <div class="grupos-form-header">
 
@@ -780,7 +791,6 @@
                     </div>
 
                 </section>
-
 
             </div>
 

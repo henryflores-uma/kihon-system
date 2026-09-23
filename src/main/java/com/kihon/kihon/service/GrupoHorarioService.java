@@ -23,21 +23,58 @@ public class GrupoHorarioService {
         this.grupoRepository = grupoRepository;
     }
 
+    // ==========================================
+    // LISTAR TODOS
+    // ==========================================
+
     public List<GrupoHorario> listarHorarios() {
+
         return grupoHorarioRepository.findAll();
     }
 
-    public List<GrupoHorario> listarPorGrupo(Long grupoId) {
+    // ==========================================
+    // LISTAR POR GRUPO
+    // ==========================================
+
+    public List<GrupoHorario> listarPorGrupo(
+            Long grupoId) {
 
         return grupoHorarioRepository.findByGrupoId(grupoId);
     }
 
-    public GrupoHorario buscarPorId(Long id) {
+    // ==========================================
+    // LISTAR POR DÍA
+    // ==========================================
+
+    public List<GrupoHorario> listarPorDia(
+            String diaSemana) {
+
+        validarDiaSemana(diaSemana);
+
+        return grupoHorarioRepository
+                .findByDiaSemana(diaSemana.toUpperCase())
+                .stream()
+                .filter(horario -> horario.getGrupo() != null
+                        && "ACTIVO".equalsIgnoreCase(
+                                horario.getGrupo().getEstado()))
+                .toList();
+    }
+
+    // ==========================================
+    // BUSCAR POR ID
+    // ==========================================
+
+    public GrupoHorario buscarPorId(
+            Long id) {
 
         return grupoHorarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException(
                         "Horario no encontrado"));
     }
+
+    // ==========================================
+    // CREAR
+    // ==========================================
 
     public GrupoHorario crearHorario(
             Long grupoId,
@@ -61,6 +98,10 @@ public class GrupoHorarioService {
 
         return grupoHorarioRepository.save(horario);
     }
+
+    // ==========================================
+    // ACTUALIZAR
+    // ==========================================
 
     public GrupoHorario actualizarHorario(
             Long id,
@@ -88,9 +129,14 @@ public class GrupoHorarioService {
         return grupoHorarioRepository.save(horario);
     }
 
+    // ==========================================
+    // ELIMINAR
+    // ==========================================
+
     public void eliminarHorario(Long id) {
 
         if (!grupoHorarioRepository.existsById(id)) {
+
             throw new RuntimeException(
                     "Horario no encontrado");
         }
@@ -98,9 +144,16 @@ public class GrupoHorarioService {
         grupoHorarioRepository.deleteById(id);
     }
 
-    private void validarDiaSemana(String diaSemana) {
+    // ==========================================
+    // VALIDAR DÍA
+    // ==========================================
 
-        if (diaSemana == null || diaSemana.isBlank()) {
+    private void validarDiaSemana(
+            String diaSemana) {
+
+        if (diaSemana == null
+                || diaSemana.isBlank()) {
+
             throw new RuntimeException(
                     "El día de la semana es obligatorio");
         }
@@ -120,16 +173,23 @@ public class GrupoHorarioService {
         }
     }
 
+    // ==========================================
+    // VALIDAR HORAS
+    // ==========================================
+
     private void validarHoras(
             LocalTime horaInicio,
             LocalTime horaFin) {
 
-        if (horaInicio == null || horaFin == null) {
+        if (horaInicio == null
+                || horaFin == null) {
+
             throw new RuntimeException(
                     "La hora de inicio y la hora de fin son obligatorias");
         }
 
         if (!horaInicio.isBefore(horaFin)) {
+
             throw new RuntimeException(
                     "La hora de inicio debe ser anterior a la hora de fin");
         }

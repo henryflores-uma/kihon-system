@@ -15,118 +15,168 @@ import java.util.List;
 @RequestMapping("/api/asistencias")
 public class AsistenciaController {
 
-    private final AsistenciaService asistenciaService;
+        private final AsistenciaService asistenciaService;
 
-    public AsistenciaController(
-            AsistenciaService asistenciaService) {
+        public AsistenciaController(
+                        AsistenciaService asistenciaService) {
 
-        this.asistenciaService = asistenciaService;
-    }
+                this.asistenciaService = asistenciaService;
+        }
 
-    @PostMapping
-    public ResponseEntity<AsistenciaResponse> registrarAsistencia(
-            @RequestBody AsistenciaRequest request) {
+        // ==========================================
+        // REGISTRAR
+        // ==========================================
 
-        Asistencia asistencia = asistenciaService.registrarAsistencia(
-                request.getEstudianteId(),
-                request.getGrupoId(),
-                request.getFecha(),
-                request.getHoraLlegada(),
-                request.getEstado(),
-                request.getObservacion());
+        @PostMapping
+        public ResponseEntity<AsistenciaResponse> registrarAsistencia(
+                        @RequestBody AsistenciaRequest request) {
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(convertirAResponse(asistencia));
-    }
+                Asistencia asistencia = asistenciaService.registrarAsistencia(
+                                request.getEstudianteId(),
+                                request.getGrupoId(),
+                                request.getFecha(),
+                                request.getHoraLlegada(),
+                                request.getEstado(),
+                                request.getObservacion());
 
-    @GetMapping("/estudiante/{estudianteId}")
-    public ResponseEntity<List<AsistenciaResponse>> listarPorEstudiante(
-            @PathVariable Long estudianteId) {
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(convertirAResponse(asistencia));
+        }
 
-        List<AsistenciaResponse> response = asistenciaService
-                .listarPorEstudiante(estudianteId)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
+        // ==========================================
+        // ACTUALIZAR
+        // ==========================================
 
-        return ResponseEntity.ok(response);
-    }
+        @PutMapping("/{id}")
+        public ResponseEntity<AsistenciaResponse> actualizarAsistencia(
+                        @PathVariable Long id,
+                        @RequestBody AsistenciaRequest request) {
 
-    @GetMapping("/grupo/{grupoId}")
-    public ResponseEntity<List<AsistenciaResponse>> listarPorGrupo(
-            @PathVariable Long grupoId) {
+                Asistencia asistencia = asistenciaService.actualizarAsistencia(
+                                id,
+                                request.getEstudianteId(),
+                                request.getGrupoId(),
+                                request.getFecha(),
+                                request.getHoraLlegada(),
+                                request.getEstado(),
+                                request.getObservacion());
 
-        List<AsistenciaResponse> response = asistenciaService
-                .listarPorGrupo(grupoId)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
+                return ResponseEntity.ok(
+                                convertirAResponse(asistencia));
+        }
 
-        return ResponseEntity.ok(response);
-    }
+        // ==========================================
+        // LISTAR POR ESTUDIANTE
+        // ==========================================
 
-    @GetMapping("/fecha/{fecha}")
-    public ResponseEntity<List<AsistenciaResponse>> listarPorFecha(
-            @PathVariable LocalDate fecha) {
+        @GetMapping("/estudiante/{estudianteId}")
+        public ResponseEntity<List<AsistenciaResponse>> listarPorEstudiante(
+                        @PathVariable Long estudianteId) {
 
-        List<AsistenciaResponse> response = asistenciaService
-                .listarPorFecha(fecha)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
+                List<AsistenciaResponse> response = asistenciaService
+                                .listarPorEstudiante(estudianteId)
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
 
-        return ResponseEntity.ok(response);
-    }
+                return ResponseEntity.ok(response);
+        }
 
-    @GetMapping("/estudiante/{estudianteId}/fecha/{fecha}")
-    public ResponseEntity<List<AsistenciaResponse>> listarPorEstudianteYFecha(
-            @PathVariable Long estudianteId,
-            @PathVariable LocalDate fecha) {
+        // ==========================================
+        // LISTAR POR GRUPO
+        // ==========================================
 
-        List<AsistenciaResponse> response = asistenciaService
-                .listarPorEstudianteYFecha(
-                        estudianteId,
-                        fecha)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
+        @GetMapping("/grupo/{grupoId}")
+        public ResponseEntity<List<AsistenciaResponse>> listarPorGrupo(
+                        @PathVariable Long grupoId) {
 
-        return ResponseEntity.ok(response);
-    }
+                List<AsistenciaResponse> response = asistenciaService
+                                .listarPorGrupo(grupoId)
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
 
-    @GetMapping("/grupo/{grupoId}/fecha/{fecha}")
-    public ResponseEntity<List<AsistenciaResponse>> listarPorGrupoYFecha(
-            @PathVariable Long grupoId,
-            @PathVariable LocalDate fecha) {
+                return ResponseEntity.ok(response);
+        }
 
-        List<AsistenciaResponse> response = asistenciaService
-                .listarPorGrupoYFecha(
-                        grupoId,
-                        fecha)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
+        // ==========================================
+        // LISTAR POR FECHA
+        // ==========================================
 
-        return ResponseEntity.ok(response);
-    }
+        @GetMapping("/fecha/{fecha}")
+        public ResponseEntity<List<AsistenciaResponse>> listarPorFecha(
+                        @PathVariable LocalDate fecha) {
 
-    private AsistenciaResponse convertirAResponse(
-            Asistencia asistencia) {
+                List<AsistenciaResponse> response = asistenciaService
+                                .listarPorFecha(fecha)
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
 
-        String estudianteNombre = asistencia.getEstudiante().getNombre()
-                + " "
-                + asistencia.getEstudiante().getApellido();
+                return ResponseEntity.ok(response);
+        }
 
-        return new AsistenciaResponse(
-                asistencia.getId(),
-                asistencia.getEstudiante().getId(),
-                estudianteNombre,
-                asistencia.getGrupo().getId(),
-                asistencia.getGrupo().getNombre(),
-                asistencia.getFecha(),
-                asistencia.getHoraLlegada(),
-                asistencia.getEstado(),
-                asistencia.getObservacion());
-    }
+        // ==========================================
+        // ESTUDIANTE + FECHA
+        // ==========================================
+
+        @GetMapping("/estudiante/{estudianteId}/fecha/{fecha}")
+        public ResponseEntity<List<AsistenciaResponse>> listarPorEstudianteYFecha(
+                        @PathVariable Long estudianteId,
+                        @PathVariable LocalDate fecha) {
+
+                List<AsistenciaResponse> response = asistenciaService
+                                .listarPorEstudianteYFecha(
+                                                estudianteId,
+                                                fecha)
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
+
+                return ResponseEntity.ok(response);
+        }
+
+        // ==========================================
+        // GRUPO + FECHA
+        // ==========================================
+
+        @GetMapping("/grupo/{grupoId}/fecha/{fecha}")
+        public ResponseEntity<List<AsistenciaResponse>> listarPorGrupoYFecha(
+                        @PathVariable Long grupoId,
+                        @PathVariable LocalDate fecha) {
+
+                List<AsistenciaResponse> response = asistenciaService
+                                .listarPorGrupoYFecha(
+                                                grupoId,
+                                                fecha)
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
+
+                return ResponseEntity.ok(response);
+        }
+
+        // ==========================================
+        // RESPONSE
+        // ==========================================
+
+        private AsistenciaResponse convertirAResponse(
+                        Asistencia asistencia) {
+
+                String estudianteNombre = asistencia.getEstudiante().getNombre()
+                                + " "
+                                + asistencia.getEstudiante().getApellido();
+
+                return new AsistenciaResponse(
+                                asistencia.getId(),
+                                asistencia.getEstudiante().getId(),
+                                estudianteNombre,
+                                asistencia.getGrupo().getId(),
+                                asistencia.getGrupo().getNombre(),
+                                asistencia.getFecha(),
+                                asistencia.getHoraLlegada(),
+                                asistencia.getEstado(),
+                                asistencia.getObservacion());
+        }
 }

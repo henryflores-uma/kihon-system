@@ -13,154 +13,170 @@ import java.util.List;
 @RequestMapping("/api/grupo-horarios")
 public class GrupoHorarioController {
 
-    private final GrupoHorarioService grupoHorarioService;
+        private final GrupoHorarioService grupoHorarioService;
 
-    public GrupoHorarioController(
-            GrupoHorarioService grupoHorarioService) {
+        public GrupoHorarioController(
+                        GrupoHorarioService grupoHorarioService) {
 
-        this.grupoHorarioService = grupoHorarioService;
-    }
+                this.grupoHorarioService = grupoHorarioService;
+        }
 
-    // ==========================================
-    // LISTAR TODOS
-    // ==========================================
+        // ==========================================
+        // LISTAR TODOS
+        // ==========================================
 
-    @GetMapping
-    public ResponseEntity<List<GrupoHorarioResponse>> listarHorarios() {
+        @GetMapping
+        public ResponseEntity<List<GrupoHorarioResponse>> listarHorarios() {
 
-        List<GrupoHorarioResponse> response = grupoHorarioService.listarHorarios()
-                .stream()
-                .map(this::convertirResponse)
-                .toList();
+                List<GrupoHorarioResponse> response = grupoHorarioService.listarHorarios()
+                                .stream()
+                                .map(this::convertirResponse)
+                                .toList();
 
-        return ResponseEntity.ok(response);
-    }
+                return ResponseEntity.ok(response);
+        }
 
-    // ==========================================
-    // LISTAR POR GRUPO
-    // ==========================================
+        // ==========================================
+        // LISTAR POR DÍA
+        // ==========================================
 
-    @GetMapping("/grupo/{grupoId}")
-    public ResponseEntity<List<GrupoHorarioResponse>> listarPorGrupo(
-            @PathVariable Long grupoId) {
+        @GetMapping("/dia/{diaSemana}")
+        public ResponseEntity<List<GrupoHorarioResponse>> listarPorDia(
+                        @PathVariable String diaSemana) {
 
-        List<GrupoHorarioResponse> response = grupoHorarioService.listarPorGrupo(grupoId)
-                .stream()
-                .map(this::convertirResponse)
-                .toList();
+                List<GrupoHorarioResponse> response = grupoHorarioService.listarPorDia(diaSemana)
+                                .stream()
+                                .map(this::convertirResponse)
+                                .toList();
 
-        return ResponseEntity.ok(response);
-    }
+                return ResponseEntity.ok(response);
+        }
 
-    // ==========================================
-    // BUSCAR POR ID
-    // ==========================================
+        // ==========================================
+        // LISTAR POR GRUPO
+        // ==========================================
 
-    @GetMapping("/{id}")
-    public ResponseEntity<GrupoHorarioResponse> buscarPorId(
-            @PathVariable Long id) {
+        @GetMapping("/grupo/{grupoId}")
+        public ResponseEntity<List<GrupoHorarioResponse>> listarPorGrupo(
+                        @PathVariable Long grupoId) {
 
-        GrupoHorario horario = grupoHorarioService.buscarPorId(id);
+                List<GrupoHorarioResponse> response = grupoHorarioService.listarPorGrupo(grupoId)
+                                .stream()
+                                .map(this::convertirResponse)
+                                .toList();
 
-        return ResponseEntity.ok(
-                convertirResponse(horario));
-    }
+                return ResponseEntity.ok(response);
+        }
 
-    // ==========================================
-    // CREAR
-    // ==========================================
+        // ==========================================
+        // BUSCAR POR ID
+        // ==========================================
 
-    @PostMapping
-    public ResponseEntity<GrupoHorarioResponse> crearHorario(
-            @RequestBody GrupoHorarioRequest request) {
+        @GetMapping("/{id}")
+        public ResponseEntity<GrupoHorarioResponse> buscarPorId(
+                        @PathVariable Long id) {
 
-        GrupoHorario horario = grupoHorarioService.crearHorario(
-                request.grupoId(),
-                request.diaSemana(),
-                request.horaInicio(),
-                request.horaFin());
+                GrupoHorario horario = grupoHorarioService.buscarPorId(id);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(convertirResponse(horario));
-    }
+                return ResponseEntity.ok(
+                                convertirResponse(horario));
+        }
 
-    // ==========================================
-    // ACTUALIZAR
-    // ==========================================
+        // ==========================================
+        // CREAR
+        // ==========================================
 
-    @PutMapping("/{id}")
-    public ResponseEntity<GrupoHorarioResponse> actualizarHorario(
-            @PathVariable Long id,
-            @RequestBody GrupoHorarioRequest request) {
+        @PostMapping
+        public ResponseEntity<GrupoHorarioResponse> crearHorario(
+                        @RequestBody GrupoHorarioRequest request) {
 
-        GrupoHorario horario = grupoHorarioService.actualizarHorario(
-                id,
-                request.grupoId(),
-                request.diaSemana(),
-                request.horaInicio(),
-                request.horaFin());
+                GrupoHorario horario = grupoHorarioService.crearHorario(
+                                request.grupoId(),
+                                request.diaSemana(),
+                                request.horaInicio(),
+                                request.horaFin());
 
-        return ResponseEntity.ok(
-                convertirResponse(horario));
-    }
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(convertirResponse(horario));
+        }
 
-    // ==========================================
-    // ELIMINAR
-    // ==========================================
+        // ==========================================
+        // ACTUALIZAR
+        // ==========================================
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarHorario(
-            @PathVariable Long id) {
+        @PutMapping("/{id}")
+        public ResponseEntity<GrupoHorarioResponse> actualizarHorario(
+                        @PathVariable Long id,
+                        @RequestBody GrupoHorarioRequest request) {
 
-        grupoHorarioService.eliminarHorario(id);
+                GrupoHorario horario = grupoHorarioService.actualizarHorario(
+                                id,
+                                request.grupoId(),
+                                request.diaSemana(),
+                                request.horaInicio(),
+                                request.horaFin());
 
-        return ResponseEntity.noContent().build();
-    }
+                return ResponseEntity.ok(
+                                convertirResponse(horario));
+        }
 
-    // ==========================================
-    // RESPONSE
-    // ==========================================
+        // ==========================================
+        // ELIMINAR
+        // ==========================================
 
-    private GrupoHorarioResponse convertirResponse(
-            GrupoHorario horario) {
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> eliminarHorario(
+                        @PathVariable Long id) {
 
-        return new GrupoHorarioResponse(
-                horario.getId(),
-                horario.getGrupo().getId(),
-                horario.getGrupo().getNombre(),
-                horario.getGrupo().getSensei() != null
-                        ? horario.getGrupo().getSensei().getNombre()
-                                + " "
-                                + horario.getGrupo().getSensei().getApellido()
-                        : null,
-                horario.getDiaSemana(),
-                horario.getHoraInicio(),
-                horario.getHoraFin());
-    }
+                grupoHorarioService.eliminarHorario(id);
 
-    // ==========================================
-    // REQUEST
-    // ==========================================
+                return ResponseEntity.noContent().build();
+        }
 
-    public record GrupoHorarioRequest(
-            Long grupoId,
-            String diaSemana,
-            LocalTime horaInicio,
-            LocalTime horaFin) {
-    }
+        // ==========================================
+        // RESPONSE
+        // ==========================================
 
-    // ==========================================
-    // RESPONSE
-    // ==========================================
+        private GrupoHorarioResponse convertirResponse(
+                        GrupoHorario horario) {
 
-    public record GrupoHorarioResponse(
-            Long id,
-            Long grupoId,
-            String grupoNombre,
-            String senseiNombre,
-            String diaSemana,
-            LocalTime horaInicio,
-            LocalTime horaFin) {
-    }
+                return new GrupoHorarioResponse(
+                                horario.getId(),
+                                horario.getGrupo().getId(),
+                                horario.getGrupo().getNombre(),
+                                horario.getGrupo().getSensei() != null
+                                                ? horario.getGrupo().getSensei().getNombre()
+                                                                + " "
+                                                                + horario.getGrupo().getSensei().getApellido()
+                                                : null,
+                                horario.getDiaSemana(),
+                                horario.getHoraInicio(),
+                                horario.getHoraFin());
+        }
+
+        // ==========================================
+        // REQUEST
+        // ==========================================
+
+        public record GrupoHorarioRequest(
+                        Long grupoId,
+                        String diaSemana,
+                        LocalTime horaInicio,
+                        LocalTime horaFin) {
+        }
+
+        // ==========================================
+        // RESPONSE
+        // ==========================================
+
+        public record GrupoHorarioResponse(
+                        Long id,
+                        Long grupoId,
+                        String grupoNombre,
+                        String senseiNombre,
+                        String diaSemana,
+                        LocalTime horaInicio,
+                        LocalTime horaFin) {
+        }
 }

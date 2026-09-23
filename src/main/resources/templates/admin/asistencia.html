@@ -2,25 +2,32 @@
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Kihon | Asistencias</title>
 
     <link rel="stylesheet" href="/css/main.css">
+
 </head>
+
 
 <body>
 
-    <div class="app-layout">
+    <main class="app-layout">
 
-        <!-- SIDEBAR -->
+
+        <!-- ==========================================
+         SIDEBAR
+         ========================================== -->
 
         <aside class="sidebar">
 
             <div class="sidebar__logo">
                 KIHON
             </div>
+
 
             <nav class="sidebar__nav">
 
@@ -56,224 +63,299 @@
                     Usuarios
                 </a>
 
-                <a href="/admin/perfil" class="sidebar__link">
-                    Mi perfil
-                </a>
-
-                <a href="#" id="logoutButton" class="btn btn--logout">
-                    Cerrar sesión
-                </a>
-
             </nav>
 
         </aside>
 
 
-        <!-- CONTENIDO PRINCIPAL -->
 
-        <main class="main-content">
+        <!-- ==========================================
+         CONTENIDO PRINCIPAL
+         ========================================== -->
+
+        <section class="main-content">
+
+
+            <!-- ==========================================
+             TOPBAR
+             ========================================== -->
+
+            <header class="topbar">
+
+                <div class="topbar__role">
+
+                    <span class="topbar__role-label">
+                        Rol
+                    </span>
+
+                    <strong id="roleDisplay">
+                        Administrador
+                    </strong>
+
+                </div>
+
+
+                <div class="topbar__actions">
+
+
+                    <!-- NOTIFICACIONES -->
+
+                    <button type="button" class="topbar__notification" id="notificationButton"
+                        aria-label="Notificaciones">
+
+                        <span class="topbar__notification-icon">
+                            🔔
+                        </span>
+
+                        <span id="notificationCount" class="topbar__notification-count" hidden>
+                            0
+                        </span>
+
+                    </button>
+
+
+
+                    <!-- PERFIL -->
+
+                    <div class="topbar__profile" id="profileMenuContainer">
+
+
+                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
+                            aria-expanded="false">
+
+
+                            <div class="topbar__avatar" id="userProfileAvatar">
+
+                                <span id="userAvatarInitial">
+                                    U
+                                </span>
+
+                            </div>
+
+
+                            <div class="topbar__profile-info">
+
+                                <strong id="usernameDisplay">
+                                    Usuario
+                                </strong>
+
+                                <span id="profileRoleDisplay">
+                                    Administrador
+                                </span>
+
+                            </div>
+
+
+                            <span class="topbar__profile-arrow">
+                                ▼
+                            </span>
+
+
+                        </button>
+
+
+
+                        <div class="topbar__profile-menu" id="profileMenu" hidden>
+
+                            <a href="/admin/perfil" class="topbar__profile-menu-item">
+
+                                Editar perfil
+
+                            </a>
+
+
+                            <button type="button" id="topbarLogoutButton"
+                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+
+                                Cerrar sesión
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- ==========================================
+             CONTENIDO
+             ========================================== -->
 
             <div class="container asistencia-page">
 
 
                 <!-- ENCABEZADO -->
 
-                <header class="asistencia-header">
+                <section class="dashboard-header">
 
                     <div>
+
+                        <span class="section-kicker">
+                            Administración
+                        </span>
 
                         <h1>
                             Asistencias
                         </h1>
 
                         <p>
-                            Registro y control de asistencia
-                            de los estudiantes
+                            Registra y consulta la asistencia
+                            de los estudiantes por grupo.
                         </p>
 
                     </div>
-
-
-                    <div class="dashboard-user">
-
-                        <span id="usernameDisplay">
-                            Usuario
-                        </span>
-
-                    </div>
-
-                </header>
-
-
-                <!-- FORMULARIO -->
-
-                <section class="card asistencia-form-card">
-
-                    <div class="asistencia-form-header">
-
-                        <h2>
-                            Registrar asistencia
-                        </h2>
-
-                        <p>
-                            Registra la asistencia de un estudiante
-                            para su grupo.
-                        </p>
-
-                    </div>
-
-
-                    <form id="attendanceForm" class="asistencia-form">
-
-
-                        <div class="grid grid--2">
-
-
-                            <!-- ESTUDIANTE -->
-
-                            <div class="form-group">
-
-                                <label for="estudianteId" class="form-label">
-
-                                    Estudiante
-
-                                </label>
-
-                                <select id="estudianteId" class="form-select" required>
-
-                                    <option value="">
-                                        Cargando estudiantes...
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-
-                            <!-- GRUPO -->
-
-                            <div class="form-group">
-
-                                <label for="grupoId" class="form-label">
-
-                                    Grupo
-
-                                </label>
-
-                                <select id="grupoId" class="form-select" required>
-
-                                    <option value="">
-                                        Cargando grupos...
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-
-                            <!-- FECHA -->
-
-                            <div class="form-group">
-
-                                <label for="fecha" class="form-label">
-
-                                    Fecha
-
-                                </label>
-
-                                <input type="date" id="fecha" class="form-input" required>
-
-                            </div>
-
-
-                            <!-- HORA -->
-
-                            <div class="form-group">
-
-                                <label for="horaLlegada" class="form-label">
-
-                                    Hora de llegada
-
-                                </label>
-
-                                <input type="time" id="horaLlegada" class="form-input" required>
-
-                            </div>
-
-
-                            <!-- ESTADO -->
-
-                            <div class="form-group">
-
-                                <label for="estado" class="form-label">
-
-                                    Estado
-
-                                </label>
-
-                                <select id="estado" class="form-select" required>
-
-                                    <option value="PRESENTE">
-                                        PRESENTE
-                                    </option>
-
-                                    <option value="TARDANZA">
-                                        TARDANZA
-                                    </option>
-
-                                    <option value="AUSENTE">
-                                        AUSENTE
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-
-                            <!-- OBSERVACIÓN -->
-
-                            <div class="form-group">
-
-                                <label for="observacion" class="form-label">
-
-                                    Observación
-
-                                </label>
-
-                                <input type="text" id="observacion" class="form-input"
-                                    placeholder="Ej. Llegó 10 minutos tarde">
-
-                            </div>
-
-
-                        </div>
-
-
-                        <!-- MENSAJE -->
-
-                        <div id="attendanceMessage" class="asistencia-message" hidden>
-                        </div>
-
-
-                        <!-- BOTÓN -->
-
-                        <div class="asistencia-form-actions">
-
-                            <button type="submit" class="btn btn--primary">
-
-                                Registrar asistencia
-
-                            </button>
-
-                        </div>
-
-
-                    </form>
 
                 </section>
 
 
-                <!-- LISTA DE ASISTENCIAS -->
+
+                <!-- ======================================
+                 REGISTRAR ASISTENCIA
+                 ====================================== -->
+
+                <section class="card asistencia-form-card">
+
+
+                    <div class="asistencia-form-header">
+
+                        <div>
+
+                            <h2>
+                                Registrar asistencia
+                            </h2>
+
+                            <p>
+                                Selecciona una fecha y un grupo
+                                para registrar la asistencia de sus estudiantes.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- FECHA Y GRUPO -->
+
+                    <div class="asistencia-selection">
+
+
+                        <div class="form-group">
+
+                            <label for="fecha" class="form-label">
+                                Fecha
+                            </label>
+
+                            <input type="date" id="fecha" class="form-input" required>
+
+                        </div>
+
+
+
+                        <div class="form-group">
+
+                            <label for="grupoId" class="form-label">
+                                Grupo
+                            </label>
+
+                            <select id="grupoId" class="form-select">
+
+                                <option value="">
+                                    Selecciona una fecha primero
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- INFORMACIÓN DEL GRUPO -->
+
+                    <div id="grupoInfo" class="asistencia-grupo-info" hidden>
+
+                        <div class="asistencia-grupo-info__main">
+
+                            <strong id="grupoInfoNombre">
+                                Grupo
+                            </strong>
+
+                            <span id="grupoInfoHorario">
+                                Horario
+                            </span>
+
+                        </div>
+
+
+                        <div class="asistencia-grupo-info__details">
+
+                            <span>
+                                Sensei:
+                                <strong id="grupoInfoSensei">
+                                    -
+                                </strong>
+                            </span>
+
+                            <span>
+                                Estudiantes:
+                                <strong id="grupoInfoCantidad">
+                                    0
+                                </strong>
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- MENSAJE -->
+
+                    <div id="attendanceMessage" class="asistencia-message" hidden>
+                    </div>
+
+
+
+                    <!-- LISTA DE ESTUDIANTES -->
+
+                    <div id="attendanceRegister" class="asistencia-register">
+
+                        <div class="asistencia-empty">
+
+                            Selecciona una fecha y un grupo
+                            para mostrar los estudiantes.
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- ACCIONES -->
+
+                    <div class="asistencia-form-actions">
+
+                        <button type="button" id="saveAttendanceButton" class="btn btn--primary" disabled>
+
+                            Guardar asistencia
+
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- ======================================
+                 CONSULTAR ASISTENCIA
+                 ====================================== -->
 
                 <section class="card asistencia-list-card">
 
@@ -283,11 +365,12 @@
                         <div>
 
                             <h2>
-                                Asistencias del día
+                                Consultar asistencia
                             </h2>
 
                             <p>
-                                Consulta los registros de una fecha determinada.
+                                Consulta y modifica los registros históricos
+                                de asistencia.
                             </p>
 
                         </div>
@@ -300,15 +383,17 @@
                     </div>
 
 
-                    <!-- FILTRO DE FECHA -->
 
-                    <div class="asistencia-filter">
+                    <!-- FILTROS -->
+
+                    <div class="asistencia-consultation-filters">
+
 
                         <div class="form-group">
 
                             <label for="fechaConsulta" class="form-label">
 
-                                Consultar fecha
+                                Fecha
 
                             </label>
 
@@ -316,7 +401,49 @@
 
                         </div>
 
+
+
+                        <div class="form-group">
+
+                            <label for="grupoConsulta" class="form-label">
+
+                                Grupo
+
+                            </label>
+
+                            <select id="grupoConsulta" class="form-select">
+
+                                <option value="">
+                                    Todos los grupos
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+
+                        <div class="form-group">
+
+                            <label for="estudianteConsulta" class="form-label">
+
+                                Estudiante
+
+                            </label>
+
+                            <select id="estudianteConsulta" class="form-select">
+
+                                <option value="">
+                                    Todos los estudiantes
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
                     </div>
+
 
 
                     <!-- LISTA -->
@@ -324,9 +451,7 @@
                     <div id="attendanceList" class="asistencia-table-wrapper">
 
                         <div class="asistencia-loading">
-
                             Cargando asistencias...
-
                         </div>
 
                     </div>
@@ -337,12 +462,11 @@
 
             </div>
 
-        </main>
+        </section>
 
-    </div>
+    </main>
 
 
-    <!-- JAVASCRIPT -->
 
     <script src="/js/asistencia.js"></script>
     <script src="/js/logout.js"></script>
