@@ -11,85 +11,85 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/apoderados")
+@RequestMapping("/api/apoderados/estudiante/{estudianteId}")
 public class ApoderadoController {
 
-    private final ApoderadoService apoderadoService;
+        private final ApoderadoService apoderadoService;
 
-    public ApoderadoController(
-            ApoderadoService apoderadoService) {
+        public ApoderadoController(
+                        ApoderadoService apoderadoService) {
 
-        this.apoderadoService = apoderadoService;
-    }
+                this.apoderadoService = apoderadoService;
+        }
 
-    /*
-     * ==========================================
-     * CREAR / VINCULAR APODERADO
-     * ==========================================
-     */
+        /*
+         * ==========================================
+         * CREAR / VINCULAR APODERADO
+         * ==========================================
+         */
 
-    @PostMapping("/estudiante/{estudianteId}")
-    public ResponseEntity<EstudianteApoderado> crearApoderado(
+        @PostMapping
+        public ResponseEntity<EstudianteApoderado> crearApoderado(
 
-            @PathVariable Long estudianteId,
+                        @PathVariable Long estudianteId,
 
-            @RequestParam String nombre,
+                        @RequestParam String nombre,
 
-            @RequestParam String apellido,
+                        @RequestParam String apellido,
 
-            @RequestParam String tipoDocumento,
+                        @RequestParam String tipoDocumento,
 
-            @RequestParam String documento,
+                        @RequestParam String documento,
 
-            @RequestParam String telefono,
+                        @RequestParam String telefono,
 
-            @RequestParam(required = false) String correo,
+                        @RequestParam(required = false) String correo,
 
-            @RequestParam String direccion,
+                        @RequestParam String direccion,
 
-            @RequestParam String parentesco) {
+                        @RequestParam String parentesco) {
 
-        EstudianteApoderado relacion = apoderadoService.crearApoderado(
+                EstudianteApoderado relacion = apoderadoService.crearApoderado(
 
-                estudianteId,
+                                estudianteId,
 
-                nombre,
+                                nombre,
 
-                apellido,
+                                apellido,
 
-                tipoDocumento,
+                                tipoDocumento,
 
-                documento,
+                                documento,
 
-                telefono,
+                                telefono,
 
-                correo,
+                                correo,
 
-                direccion,
+                                direccion,
 
-                parentesco);
+                                parentesco);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(relacion);
-    }
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(relacion);
+        }
 
-    /*
-     * ==========================================
-     * LISTAR APODERADOS DE UN ESTUDIANTE
-     * ==========================================
-     */
+        /*
+         * ==========================================
+         * LISTAR APODERADOS DE UN ESTUDIANTE
+         * ==========================================
+         */
 
-    @GetMapping("/estudiante/{estudianteId}")
-    public ResponseEntity<List<EstudianteApoderado>> listarPorEstudiante(
+        @GetMapping
+        public ResponseEntity<List<EstudianteApoderado>> listarPorEstudiante(
 
-            @PathVariable Long estudianteId) {
+                        @PathVariable Long estudianteId) {
 
-        List<EstudianteApoderado> relaciones = apoderadoService
-                .listarPorEstudiante(
-                        estudianteId);
+                List<EstudianteApoderado> relaciones = apoderadoService
+                                .listarPorEstudiante(
+                                                estudianteId);
 
-        return ResponseEntity.ok(
-                relaciones);
-    }
+                return ResponseEntity.ok(
+                                relaciones);
+        }
 }

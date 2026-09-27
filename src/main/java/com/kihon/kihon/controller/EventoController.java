@@ -1,7 +1,10 @@
 package com.kihon.kihon.controller;
 
 import com.kihon.kihon.model.Evento;
+import com.kihon.kihon.model.Persona;
+import com.kihon.kihon.model.Usuario;
 import com.kihon.kihon.service.EventoService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,231 +17,250 @@ import java.util.List;
 @RequestMapping("/api/eventos")
 public class EventoController {
 
-    private final EventoService eventoService;
+        private final EventoService eventoService;
 
-    public EventoController(EventoService eventoService) {
-        this.eventoService = eventoService;
-    }
-
-    /*
-     * ==========================================
-     * LISTAR EVENTOS
-     * ==========================================
-     */
-
-    @GetMapping
-    public ResponseEntity<List<EventoResponse>> listarEventos(
-            @RequestParam(required = false) String estado,
-            @RequestParam(required = false) LocalDate fechaInicio,
-            @RequestParam(required = false) LocalDate fechaFin) {
-
-        List<Evento> eventos;
-
-        /*
-         * FILTRAR POR RANGO DE FECHAS
-         */
-
-        if (fechaInicio != null || fechaFin != null) {
-
-            if (fechaInicio == null || fechaFin == null) {
-
-                throw new RuntimeException(
-                        "Debes indicar fechaInicio y fechaFin");
-            }
-
-            eventos = eventoService.listarPorRango(
-                    fechaInicio,
-                    fechaFin);
-
-            /*
-             * FILTRAR POR ESTADO
-             */
-
-        } else if (estado != null && !estado.isBlank()) {
-
-            eventos = eventoService.listarPorEstado(
-                    estado.toUpperCase());
-
-            /*
-             * TODOS
-             */
-
-        } else {
-
-            eventos = eventoService.listarEventos();
+        public EventoController(EventoService eventoService) {
+                this.eventoService = eventoService;
         }
 
-        List<EventoResponse> response = eventos.stream()
-                .map(this::convertirResponse)
-                .toList();
+        /*
+         * ==========================================
+         * LISTAR EVENTOS
+         * ==========================================
+         */
 
-        return ResponseEntity.ok(response);
-    }
+        @GetMapping
+        public ResponseEntity<List<EventoResponse>> listarEventos(
+                        @RequestParam(required = false) String estado,
+                        @RequestParam(required = false) LocalDate fechaInicio,
+                        @RequestParam(required = false) LocalDate fechaFin) {
 
-    /*
-     * ==========================================
-     * BUSCAR POR ID
-     * ==========================================
-     */
+                List<Evento> eventos;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<EventoResponse> buscarPorId(
-            @PathVariable Long id) {
+                /*
+                 * FILTRAR POR RANGO DE FECHAS
+                 */
 
-        Evento evento = eventoService.buscarPorId(id);
+                if (fechaInicio != null || fechaFin != null) {
 
-        return ResponseEntity.ok(
-                convertirResponse(evento));
-    }
+                        if (fechaInicio == null || fechaFin == null) {
 
-    /*
-     * ==========================================
-     * CREAR EVENTO
-     * ==========================================
-     */
+                                throw new RuntimeException(
+                                                "Debes indicar fechaInicio y fechaFin");
+                        }
 
-    @PostMapping
-    public ResponseEntity<EventoResponse> crearEvento(
-            @RequestBody EventoRequest request) {
+                        eventos = eventoService.listarPorRango(
+                                        fechaInicio,
+                                        fechaFin);
 
-        Evento evento = eventoService.crearEvento(
-                request.titulo(),
-                request.tipo(),
-                request.descripcion(),
-                request.fecha(),
-                request.horaInicio(),
-                request.horaFin(),
-                request.lugar(),
-                request.responsableId());
+                        /*
+                         * FILTRAR POR ESTADO
+                         */
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(convertirResponse(evento));
-    }
+                } else if (estado != null && !estado.isBlank()) {
 
-    /*
-     * ==========================================
-     * ACTUALIZAR EVENTO
-     * ==========================================
-     */
+                        eventos = eventoService.listarPorEstado(
+                                        estado.toUpperCase());
 
-    @PutMapping("/{id}")
-    public ResponseEntity<EventoResponse> actualizarEvento(
-            @PathVariable Long id,
-            @RequestBody EventoRequest request) {
+                        /*
+                         * TODOS
+                         */
 
-        Evento evento = eventoService.actualizarEvento(
-                id,
-                request.titulo(),
-                request.tipo(),
-                request.descripcion(),
-                request.fecha(),
-                request.horaInicio(),
-                request.horaFin(),
-                request.lugar(),
-                request.responsableId());
+                } else {
 
-        return ResponseEntity.ok(
-                convertirResponse(evento));
-    }
+                        eventos = eventoService.listarEventos();
+                }
 
-    /*
-     * ==========================================
-     * CAMBIAR ESTADO
-     * ==========================================
-     */
+                List<EventoResponse> response = eventos.stream()
+                                .map(this::convertirResponse)
+                                .toList();
 
-    @PatchMapping("/{id}/estado")
-    public ResponseEntity<EventoResponse> cambiarEstado(
-            @PathVariable Long id,
-            @RequestParam String estado) {
+                return ResponseEntity.ok(response);
+        }
 
-        Evento evento = eventoService.cambiarEstado(
-                id,
-                estado.toUpperCase());
+        /*
+         * ==========================================
+         * BUSCAR POR ID
+         * ==========================================
+         */
 
-        return ResponseEntity.ok(
-                convertirResponse(evento));
-    }
+        @GetMapping("/{id}")
+        public ResponseEntity<EventoResponse> buscarPorId(
+                        @PathVariable Long id) {
 
-    /*
-     * ==========================================
-     * ELIMINAR EVENTO
-     * ==========================================
-     */
+                Evento evento = eventoService.buscarPorId(id);
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarEvento(
-            @PathVariable Long id) {
+                return ResponseEntity.ok(
+                                convertirResponse(evento));
+        }
 
-        eventoService.eliminarEvento(id);
+        /*
+         * ==========================================
+         * CREAR EVENTO
+         * ==========================================
+         */
 
-        return ResponseEntity.noContent().build();
-    }
+        @PostMapping
+        public ResponseEntity<EventoResponse> crearEvento(
+                        @RequestBody EventoRequest request) {
 
-    /*
-     * ==========================================
-     * CONVERTIR A RESPONSE
-     * ==========================================
-     */
+                Evento evento = eventoService.crearEvento(
+                                request.titulo(),
+                                request.tipo(),
+                                request.descripcion(),
+                                request.fecha(),
+                                request.horaInicio(),
+                                request.horaFin(),
+                                request.lugar(),
+                                request.responsableId());
 
-    private EventoResponse convertirResponse(
-            Evento evento) {
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(convertirResponse(evento));
+        }
 
-        return new EventoResponse(
-                evento.getId(),
-                evento.getTitulo(),
-                evento.getTipo(),
-                evento.getDescripcion(),
-                evento.getFecha(),
-                evento.getHoraInicio(),
-                evento.getHoraFin(),
-                evento.getLugar(),
-                evento.getResponsable() != null
-                        ? evento.getResponsable().getId()
-                        : null,
-                evento.getResponsable() != null
-                        ? evento.getResponsable().getNombre()
-                                + " "
-                                + evento.getResponsable().getApellido()
-                        : null,
-                evento.getEstado());
-    }
+        /*
+         * ==========================================
+         * ACTUALIZAR EVENTO
+         * ==========================================
+         */
 
-    /*
-     * ==========================================
-     * REQUEST
-     * ==========================================
-     */
+        @PutMapping("/{id}")
+        public ResponseEntity<EventoResponse> actualizarEvento(
+                        @PathVariable Long id,
+                        @RequestBody EventoRequest request) {
 
-    public record EventoRequest(
-            String titulo,
-            String tipo,
-            String descripcion,
-            LocalDate fecha,
-            LocalTime horaInicio,
-            LocalTime horaFin,
-            String lugar,
-            Long responsableId) {
-    }
+                Evento evento = eventoService.actualizarEvento(
+                                id,
+                                request.titulo(),
+                                request.tipo(),
+                                request.descripcion(),
+                                request.fecha(),
+                                request.horaInicio(),
+                                request.horaFin(),
+                                request.lugar(),
+                                request.responsableId());
 
-    /*
-     * ==========================================
-     * RESPONSE
-     * ==========================================
-     */
+                return ResponseEntity.ok(
+                                convertirResponse(evento));
+        }
 
-    public record EventoResponse(
-            Long id,
-            String titulo,
-            String tipo,
-            String descripcion,
-            LocalDate fecha,
-            LocalTime horaInicio,
-            LocalTime horaFin,
-            String lugar,
-            Long responsableId,
-            String responsableNombre,
-            String estado) {
-    }
+        /*
+         * ==========================================
+         * CAMBIAR ESTADO
+         * ==========================================
+         */
+
+        @PatchMapping("/{id}/estado")
+        public ResponseEntity<EventoResponse> cambiarEstado(
+                        @PathVariable Long id,
+                        @RequestParam String estado) {
+
+                Evento evento = eventoService.cambiarEstado(
+                                id,
+                                estado.toUpperCase());
+
+                return ResponseEntity.ok(
+                                convertirResponse(evento));
+        }
+
+        /*
+         * ==========================================
+         * ELIMINAR EVENTO
+         * ==========================================
+         */
+
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> eliminarEvento(
+                        @PathVariable Long id) {
+
+                eventoService.eliminarEvento(id);
+
+                return ResponseEntity.noContent().build();
+        }
+
+        /*
+         * ==========================================
+         * CONVERTIR RESPONSE
+         * ==========================================
+         */
+
+        private EventoResponse convertirResponse(
+                        Evento evento) {
+
+                String responsableNombre = null;
+
+                Usuario responsable = evento.getResponsable();
+
+                if (responsable != null) {
+
+                        Persona persona = responsable.getPersona();
+
+                        if (persona != null) {
+
+                                responsableNombre = persona.getNombre()
+                                                + " "
+                                                + persona.getApellido();
+                        }
+                }
+
+                return new EventoResponse(
+                                evento.getId(),
+                                evento.getTitulo(),
+
+                                evento.getTipo() != null
+                                                ? evento.getTipo().getNombre()
+                                                : null,
+
+                                evento.getDescripcion(),
+                                evento.getFecha(),
+                                evento.getHoraInicio(),
+                                evento.getHoraFin(),
+                                evento.getLugar(),
+
+                                responsable != null
+                                                ? responsable.getId()
+                                                : null,
+
+                                responsableNombre,
+
+                                evento.getEstado());
+        }
+
+        /*
+         * ==========================================
+         * REQUEST
+         * ==========================================
+         */
+
+        public record EventoRequest(
+                        String titulo,
+                        String tipo,
+                        String descripcion,
+                        LocalDate fecha,
+                        LocalTime horaInicio,
+                        LocalTime horaFin,
+                        String lugar,
+                        Long responsableId) {
+        }
+
+        /*
+         * ==========================================
+         * RESPONSE
+         * ==========================================
+         */
+
+        public record EventoResponse(
+                        Long id,
+                        String titulo,
+                        String tipo,
+                        String descripcion,
+                        LocalDate fecha,
+                        LocalTime horaInicio,
+                        LocalTime horaFin,
+                        String lugar,
+                        Long responsableId,
+                        String responsableNombre,
+                        String estado) {
+        }
 }

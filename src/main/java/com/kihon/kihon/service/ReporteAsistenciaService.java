@@ -9,231 +9,243 @@ import com.kihon.kihon.repository.GrupoRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class ReporteAsistenciaService {
 
-    private final AsistenciaRepository asistenciaRepository;
-    private final EstudianteRepository estudianteRepository;
-    private final GrupoRepository grupoRepository;
+        private final AsistenciaRepository asistenciaRepository;
+        private final EstudianteRepository estudianteRepository;
+        private final GrupoRepository grupoRepository;
 
-    public ReporteAsistenciaService(
-            AsistenciaRepository asistenciaRepository,
-            EstudianteRepository estudianteRepository,
-            GrupoRepository grupoRepository) {
+        public ReporteAsistenciaService(
+                        AsistenciaRepository asistenciaRepository,
+                        EstudianteRepository estudianteRepository,
+                        GrupoRepository grupoRepository) {
 
-        this.asistenciaRepository = asistenciaRepository;
-        this.estudianteRepository = estudianteRepository;
-        this.grupoRepository = grupoRepository;
-    }
-
-    public ReporteAsistenciaResponse generarReporteDiario(
-            LocalDate fecha) {
-
-        if (fecha == null) {
-            throw new RuntimeException(
-                    "La fecha es obligatoria");
+                this.asistenciaRepository = asistenciaRepository;
+                this.estudianteRepository = estudianteRepository;
+                this.grupoRepository = grupoRepository;
         }
 
-        List<Asistencia> asistencias = asistenciaRepository.findByFecha(fecha);
+        public ReporteAsistenciaResponse generarReporteDiario(
+                        LocalDate fecha) {
 
-        return construirReporte(
-                fecha,
-                fecha,
-                asistencias);
-    }
+                if (fecha == null) {
+                        throw new RuntimeException(
+                                        "La fecha es obligatoria");
+                }
 
-    public ReporteAsistenciaResponse generarReporteSemanal(
-            LocalDate fechaInicio,
-            LocalDate fechaFin) {
+                List<Asistencia> asistencias = asistenciaRepository.findByFecha(fecha);
 
-        validarPeriodo(fechaInicio, fechaFin);
-
-        List<Asistencia> asistencias = asistenciaRepository.findByFechaBetween(
-                fechaInicio,
-                fechaFin);
-
-        return construirReporte(
-                fechaInicio,
-                fechaFin,
-                asistencias);
-    }
-
-    public ReporteAsistenciaResponse generarReporteMensual(
-            int anio,
-            int mes) {
-
-        if (mes < 1 || mes > 12) {
-            throw new RuntimeException(
-                    "El mes debe estar entre 1 y 12");
+                return construirReporte(
+                                fecha,
+                                fecha,
+                                asistencias);
         }
 
-        LocalDate fechaInicio = LocalDate.of(anio, mes, 1);
+        public ReporteAsistenciaResponse generarReporteSemanal(
+                        LocalDate fechaInicio,
+                        LocalDate fechaFin) {
 
-        LocalDate fechaFin = fechaInicio.withDayOfMonth(
-                fechaInicio.lengthOfMonth());
+                validarPeriodo(fechaInicio, fechaFin);
 
-        List<Asistencia> asistencias = asistenciaRepository.findByFechaBetween(
-                fechaInicio,
-                fechaFin);
+                List<Asistencia> asistencias = asistenciaRepository.findByFechaBetween(
+                                fechaInicio,
+                                fechaFin);
 
-        return construirReporte(
-                fechaInicio,
-                fechaFin,
-                asistencias);
-    }
-
-    public ReporteAsistenciaResponse generarReportePorEstudiante(
-            Long estudianteId) {
-
-        if (estudianteId == null) {
-            throw new RuntimeException(
-                    "El ID del estudiante es obligatorio");
+                return construirReporte(
+                                fechaInicio,
+                                fechaFin,
+                                asistencias);
         }
 
-        estudianteRepository.findById(estudianteId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Estudiante no encontrado"));
+        public ReporteAsistenciaResponse generarReporteMensual(
+                        int anio,
+                        int mes) {
 
-        List<Asistencia> asistencias = asistenciaRepository.findByEstudianteId(
-                estudianteId);
+                if (mes < 1 || mes > 12) {
+                        throw new RuntimeException(
+                                        "El mes debe estar entre 1 y 12");
+                }
 
-        if (asistencias.isEmpty()) {
-            return construirReporte(
-                    null,
-                    null,
-                    asistencias);
+                LocalDate fechaInicio = LocalDate.of(anio, mes, 1);
+
+                LocalDate fechaFin = fechaInicio.withDayOfMonth(
+                                fechaInicio.lengthOfMonth());
+
+                List<Asistencia> asistencias = asistenciaRepository.findByFechaBetween(
+                                fechaInicio,
+                                fechaFin);
+
+                return construirReporte(
+                                fechaInicio,
+                                fechaFin,
+                                asistencias);
         }
 
-        LocalDate fechaInicio = asistencias.stream()
-                .map(asistencia -> asistencia.getFecha())
-                .min(java.util.Comparator.naturalOrder())
-                .orElseThrow();
+        public ReporteAsistenciaResponse generarReportePorEstudiante(
+                        Long estudianteId) {
 
-        LocalDate fechaFin = asistencias.stream()
-                .map(asistencia -> asistencia.getFecha())
-                .max(java.util.Comparator.naturalOrder())
-                .orElseThrow();
+                if (estudianteId == null) {
+                        throw new RuntimeException(
+                                        "El ID del estudiante es obligatorio");
+                }
 
-        return construirReporte(
-                fechaInicio,
-                fechaFin,
-                asistencias);
-    }
+                estudianteRepository.findById(estudianteId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Estudiante no encontrado"));
 
-    public ReporteAsistenciaResponse generarReportePorGrupo(
-            Long grupoId) {
+                List<Asistencia> asistencias = asistenciaRepository.findByEstudianteId(
+                                estudianteId);
 
-        if (grupoId == null) {
-            throw new RuntimeException(
-                    "El ID del grupo es obligatorio");
+                if (asistencias.isEmpty()) {
+                        return construirReporte(
+                                        null,
+                                        null,
+                                        asistencias);
+                }
+
+                LocalDate fechaInicio = asistencias.stream()
+                                .map(a -> a.getFecha())
+                                .filter(fecha -> fecha != null)
+                                .min(Comparator.naturalOrder())
+                                .orElseThrow();
+
+                LocalDate fechaFin = asistencias.stream()
+                                .map(a -> a.getFecha())
+                                .filter(fecha -> fecha != null)
+                                .max(Comparator.naturalOrder())
+                                .orElseThrow();
+
+                return construirReporte(
+                                fechaInicio,
+                                fechaFin,
+                                asistencias);
         }
 
-        grupoRepository.findById(grupoId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Grupo no encontrado"));
+        public ReporteAsistenciaResponse generarReportePorGrupo(
+                        Long grupoId) {
 
-        List<Asistencia> asistencias = asistenciaRepository.findByGrupoId(
-                grupoId);
+                if (grupoId == null) {
+                        throw new RuntimeException(
+                                        "El ID del grupo es obligatorio");
+                }
 
-        if (asistencias.isEmpty()) {
-            return construirReporte(
-                    null,
-                    null,
-                    asistencias);
+                grupoRepository.findById(grupoId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Grupo no encontrado"));
+
+                List<Asistencia> asistencias = asistenciaRepository.findByGrupoId(
+                                grupoId);
+
+                if (asistencias.isEmpty()) {
+                        return construirReporte(
+                                        null,
+                                        null,
+                                        asistencias);
+                }
+
+                LocalDate fechaInicio = asistencias.stream()
+                                .map(a -> a.getFecha())
+                                .filter(fecha -> fecha != null)
+                                .min(Comparator.naturalOrder())
+                                .orElseThrow();
+
+                LocalDate fechaFin = asistencias.stream()
+                                .map(a -> a.getFecha())
+                                .filter(fecha -> fecha != null)
+                                .max(Comparator.naturalOrder())
+                                .orElseThrow();
+
+                return construirReporte(
+                                fechaInicio,
+                                fechaFin,
+                                asistencias);
         }
 
-        LocalDate fechaInicio = asistencias.stream()
-                .map(asistencia -> asistencia.getFecha())
-                .min(java.util.Comparator.naturalOrder())
-                .orElseThrow();
+        private ReporteAsistenciaResponse construirReporte(
+                        LocalDate fechaInicio,
+                        LocalDate fechaFin,
+                        List<Asistencia> asistencias) {
 
-        LocalDate fechaFin = asistencias.stream()
-                .map(asistencia -> asistencia.getFecha())
-                .max(java.util.Comparator.naturalOrder())
-                .orElseThrow();
-        return construirReporte(
-                fechaInicio,
-                fechaFin,
-                asistencias);
-    }
+                int total = asistencias.size();
 
-    private ReporteAsistenciaResponse construirReporte(
-            LocalDate fechaInicio,
-            LocalDate fechaFin,
-            List<Asistencia> asistencias) {
+                int presentes = (int) asistencias.stream()
+                                .filter(a -> "PRESENTE".equals(a.getEstado()))
+                                .count();
 
-        int total = asistencias.size();
+                int tardanzas = (int) asistencias.stream()
+                                .filter(a -> "TARDANZA".equals(a.getEstado()))
+                                .count();
 
-        int presentes = (int) asistencias.stream()
-                .filter(a -> "PRESENTE".equals(a.getEstado()))
-                .count();
+                int ausentes = (int) asistencias.stream()
+                                .filter(a -> "AUSENTE".equals(a.getEstado()))
+                                .count();
 
-        int tardanzas = (int) asistencias.stream()
-                .filter(a -> "TARDANZA".equals(a.getEstado()))
-                .count();
+                double porcentajeAsistencia = 0.0;
 
-        int ausentes = (int) asistencias.stream()
-                .filter(a -> "AUSENTE".equals(a.getEstado()))
-                .count();
+                if (total > 0) {
+                        porcentajeAsistencia = ((double) (presentes + tardanzas) / total)
+                                        * 100;
 
-        double porcentajeAsistencia = 0.0;
+                        porcentajeAsistencia = Math.round(porcentajeAsistencia * 100.0)
+                                        / 100.0;
+                }
 
-        if (total > 0) {
-            porcentajeAsistencia = ((double) (presentes + tardanzas) / total)
-                    * 100;
+                List<AsistenciaResponse> detalle = asistencias.stream()
+                                .map(this::convertirAResponse)
+                                .toList();
 
-            porcentajeAsistencia = Math.round(porcentajeAsistencia * 100.0)
-                    / 100.0;
+                return new ReporteAsistenciaResponse(
+                                fechaInicio,
+                                fechaFin,
+                                total,
+                                presentes,
+                                tardanzas,
+                                ausentes,
+                                porcentajeAsistencia,
+                                detalle);
         }
 
-        List<AsistenciaResponse> detalle = asistencias.stream()
-                .map(this::convertirAResponse)
-                .toList();
+        private void validarPeriodo(
+                        LocalDate fechaInicio,
+                        LocalDate fechaFin) {
 
-        return new ReporteAsistenciaResponse(
-                fechaInicio,
-                fechaFin,
-                total,
-                presentes,
-                tardanzas,
-                ausentes,
-                porcentajeAsistencia,
-                detalle);
-    }
+                if (fechaInicio == null || fechaFin == null) {
+                        throw new RuntimeException(
+                                        "Las fechas de inicio y fin son obligatorias");
+                }
 
-    private void validarPeriodo(
-            LocalDate fechaInicio,
-            LocalDate fechaFin) {
-
-        if (fechaInicio == null || fechaFin == null) {
-            throw new RuntimeException(
-                    "Las fechas de inicio y fin son obligatorias");
+                if (fechaInicio.isAfter(fechaFin)) {
+                        throw new RuntimeException(
+                                        "La fecha de inicio no puede ser posterior a la fecha de fin");
+                }
         }
 
-        if (fechaInicio.isAfter(fechaFin)) {
-            throw new RuntimeException(
-                    "La fecha de inicio no puede ser posterior a la fecha de fin");
+        private AsistenciaResponse convertirAResponse(
+                        Asistencia asistencia) {
+
+                String estudianteNombre = asistencia
+                                .getEstudiante()
+                                .getPersona()
+                                .getNombre()
+                                + " "
+                                + asistencia
+                                                .getEstudiante()
+                                                .getPersona()
+                                                .getApellido();
+
+                return new AsistenciaResponse(
+                                asistencia.getId(),
+                                asistencia.getEstudiante().getId(),
+                                estudianteNombre,
+                                asistencia.getGrupo().getId(),
+                                asistencia.getGrupo().getNombre(),
+                                asistencia.getFecha(),
+                                asistencia.getHoraLlegada(),
+                                asistencia.getEstado(),
+                                asistencia.getObservacion());
         }
-    }
-
-    private AsistenciaResponse convertirAResponse(
-            Asistencia asistencia) {
-
-        String estudianteNombre = asistencia.getEstudiante().getNombre()
-                + " "
-                + asistencia.getEstudiante().getApellido();
-
-        return new AsistenciaResponse(
-                asistencia.getId(),
-                asistencia.getEstudiante().getId(),
-                estudianteNombre,
-                asistencia.getGrupo().getId(),
-                asistencia.getGrupo().getNombre(),
-                asistencia.getFecha(),
-                asistencia.getHoraLlegada(),
-                asistencia.getEstado(),
-                asistencia.getObservacion());
-    }
 }

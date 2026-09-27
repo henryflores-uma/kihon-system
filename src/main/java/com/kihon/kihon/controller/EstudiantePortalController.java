@@ -16,11 +16,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/estudiante")
 public class EstudiantePortalController {
 
         private final EstudiantePortalService estudiantePortalService;
@@ -40,7 +42,7 @@ public class EstudiantePortalController {
          * =========================================================
          */
 
-        @GetMapping("/api/estudiante")
+        @GetMapping
         public Estudiante estudiante(
                         Authentication authentication) {
 
@@ -54,7 +56,7 @@ public class EstudiantePortalController {
          * =========================================================
          */
 
-        @GetMapping("/api/estudiante/asistencias")
+        @GetMapping("/asistencias")
         public List<AsistenciaResponse> listarMisAsistencias(
                         Authentication authentication) {
 
@@ -71,7 +73,7 @@ public class EstudiantePortalController {
          * =========================================================
          */
 
-        @GetMapping("/api/estudiante/grupos")
+        @GetMapping("/grupos")
         public List<GrupoEstudianteResponse> listarMisGrupos(
                         Authentication authentication) {
 
@@ -131,9 +133,15 @@ public class EstudiantePortalController {
         private AsistenciaResponse convertirAResponse(
                         Asistencia asistencia) {
 
-                String estudianteNombre = asistencia.getEstudiante().getNombre()
+                String estudianteNombre = asistencia
+                                .getEstudiante()
+                                .getPersona()
+                                .getNombre()
                                 + " "
-                                + asistencia.getEstudiante().getApellido();
+                                + asistencia
+                                                .getEstudiante()
+                                                .getPersona()
+                                                .getApellido();
 
                 return new AsistenciaResponse(
                                 asistencia.getId(),
@@ -153,7 +161,7 @@ public class EstudiantePortalController {
          * =========================================================
          */
 
-        @PutMapping("/api/estudiante/perfil")
+        @PutMapping("/perfil")
         public Estudiante actualizarPerfil(
                         Authentication authentication,
                         @RequestBody EstudiantePerfilRequest request) {
@@ -174,7 +182,7 @@ public class EstudiantePortalController {
          * =========================================================
          */
 
-        @PutMapping("/api/estudiante/password")
+        @PutMapping("/password")
         public ResponseEntity<String> cambiarPassword(
                         Authentication authentication,
                         @RequestBody CambiarPasswordRequest request) {

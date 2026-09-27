@@ -1,10 +1,12 @@
 package com.kihon.kihon.controller;
 
-import com.kihon.kihon.dto.UsuarioActualizarRequest;
 import com.kihon.kihon.dto.UsuarioEstudianteRequest;
 import com.kihon.kihon.dto.UsuarioRequest;
 import com.kihon.kihon.dto.UsuarioResponse;
+import com.kihon.kihon.model.Estudiante;
+import com.kihon.kihon.model.Persona;
 import com.kihon.kihon.model.Usuario;
+import com.kihon.kihon.repository.EstudianteRepository;
 import com.kihon.kihon.service.SupabaseStorageService;
 import com.kihon.kihon.service.UsuarioService;
 
@@ -22,13 +24,16 @@ public class UsuarioController {
 
         private final UsuarioService usuarioService;
         private final SupabaseStorageService storageService;
+        private final EstudianteRepository estudianteRepository;
 
         public UsuarioController(
                         UsuarioService usuarioService,
-                        SupabaseStorageService storageService) {
+                        SupabaseStorageService storageService,
+                        EstudianteRepository estudianteRepository) {
 
                 this.usuarioService = usuarioService;
                 this.storageService = storageService;
+                this.estudianteRepository = estudianteRepository;
         }
 
         @PostMapping
@@ -179,23 +184,32 @@ public class UsuarioController {
 
         private UsuarioResponse convertirResponse(Usuario usuario) {
 
+                Persona persona = usuario.getPersona();
+
+                if (persona == null) {
+                        throw new RuntimeException(
+                                        "El usuario no tiene una persona asociada");
+                }
+
                 String fotoUrl = null;
 
                 Long estudianteId = null;
 
                 /*
                  * =====================================================
-                 * FOTO DEL USUARIO
+                 * FOTO DE LA PERSONA
                  * =====================================================
+                 *
+                 * La foto ahora pertenece a Persona.
                  */
 
-                if (usuario.getFoto() != null
-                                && !usuario.getFoto().isBlank()) {
+                if (persona.getFoto() != null
+                                && !persona.getFoto().isBlank()) {
 
                         try {
 
                                 fotoUrl = storageService.generarUrlFirmada(
-                                                usuario.getFoto(),
+                                                persona.getFoto(),
                                                 300);
 
                         } catch (Exception e) {
@@ -213,36 +227,17 @@ public class UsuarioController {
                  * =====================================================
                  * ESTUDIANTE VINCULADO
                  * =====================================================
+                 *
+                 * La relación se obtiene mediante Persona.
                  */
 
-                if (usuario.getEstudiante() != null) {
+                Estudiante estudiante = estudianteRepository
+                                .findByPersona(persona)
+                                .orElse(null);
 
-                        estudianteId = usuario.getEstudiante().getId();
+                if (estudiante != null) {
 
-                        /*
-                         * Si el estudiante tiene una foto,
-                         * esta tiene prioridad para mostrarla.
-                         */
-
-                        if (usuario.getEstudiante().getFoto() != null
-                                        && !usuario.getEstudiante().getFoto().isBlank()) {
-
-                                try {
-
-                                        fotoUrl = storageService.generarUrlFirmada(
-                                                        usuario.getEstudiante().getFoto(),
-                                                        300);
-
-                                } catch (Exception e) {
-
-                                        System.err.println(
-                                                        "No se pudo generar la URL "
-                                                                        + "firmada de la foto del estudiante "
-                                                                        + usuario.getEstudiante().getId()
-                                                                        + ": "
-                                                                        + e.getMessage());
-                                }
-                        }
+                        estudianteId = estudiante.getId();
                 }
 
                 /*
@@ -254,16 +249,22 @@ public class UsuarioController {
                 return new UsuarioResponse(
                                 usuario.getId(),
                                 usuario.getUsername(),
-                                usuario.getNombre(),
-                                usuario.getApellido(),
-                                usuario.getTipoDocumento(),
-                                usuario.getNumeroDocumento(),
-                                usuario.getTelefono(),
-                                usuario.getFechaNacimiento() != null
-                                                ? usuario.getFechaNacimiento().toString()
+                                persona.getNombre(),
+                                persona.getApellido(),
+
+                                persona.getTipoDocumento() != null
+                                                ? persona.getTipoDocumento().getNombre()
                                                 : null,
-                                usuario.getGenero(),
-                                usuario.getCorreo(),
+
+                                persona.getNumeroDocumento(),
+                                persona.getTelefono(),
+
+                                persona.getFechaNacimiento() != null
+                                                ? persona.getFechaNacimiento().toString()
+                                                : null,
+
+                                persona.getGenero(),
+                                persona.getCorreo(),
                                 usuario.getRol().getNombre(),
                                 usuario.getEstado(),
                                 fotoUrl,

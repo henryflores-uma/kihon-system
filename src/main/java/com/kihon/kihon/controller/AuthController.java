@@ -2,6 +2,7 @@ package com.kihon.kihon.controller;
 
 import com.kihon.kihon.dto.CambiarPasswordRequest;
 import com.kihon.kihon.dto.PerfilResponse;
+import com.kihon.kihon.model.Persona;
 import com.kihon.kihon.model.Usuario;
 import com.kihon.kihon.service.SupabaseStorageService;
 import com.kihon.kihon.service.UsuarioService;
@@ -94,14 +95,18 @@ public class AuthController {
         private PerfilResponse convertirPerfilResponse(
                         Usuario usuario) {
 
+                Persona persona = usuario.getPersona();
+
                 String fotoUrl = null;
 
-                if (usuario.getFoto() != null
-                                && !usuario.getFoto().isBlank()) {
+                if (persona != null
+                                && persona.getFoto() != null
+                                && !persona.getFoto().isBlank()) {
 
                         try {
+
                                 fotoUrl = storageService.generarUrlFirmada(
-                                                usuario.getFoto(),
+                                                persona.getFoto(),
                                                 300);
 
                         } catch (Exception e) {
@@ -119,19 +124,49 @@ public class AuthController {
                 return new PerfilResponse(
                                 usuario.getId(),
                                 usuario.getUsername(),
-                                usuario.getNombre(),
-                                usuario.getApellido(),
-                                usuario.getTipoDocumento(),
-                                usuario.getNumeroDocumento(),
-                                usuario.getTelefono(),
-                                usuario.getFechaNacimiento() != null
-                                                ? usuario.getFechaNacimiento().toString()
+
+                                persona != null
+                                                ? persona.getNombre()
                                                 : null,
-                                usuario.getGenero(),
-                                usuario.getCorreo(),
-                                usuario.getRol().getNombre(),
+
+                                persona != null
+                                                ? persona.getApellido()
+                                                : null,
+
+                                persona != null
+                                                && persona.getTipoDocumento() != null
+                                                                ? persona.getTipoDocumento().getNombre()
+                                                                : null,
+
+                                persona != null
+                                                ? persona.getNumeroDocumento()
+                                                : null,
+
+                                persona != null
+                                                ? persona.getTelefono()
+                                                : null,
+
+                                persona != null
+                                                && persona.getFechaNacimiento() != null
+                                                                ? persona.getFechaNacimiento().toString()
+                                                                : null,
+
+                                persona != null
+                                                ? persona.getGenero()
+                                                : null,
+
+                                persona != null
+                                                ? persona.getCorreo()
+                                                : null,
+
+                                usuario.getRol() != null
+                                                ? usuario.getRol().getNombre()
+                                                : null,
+
                                 usuario.getEstado(),
+
                                 fotoUrl,
+
                                 usuario.getFechaRegistro() != null
                                                 ? usuario.getFechaRegistro().toString()
                                                 : null);

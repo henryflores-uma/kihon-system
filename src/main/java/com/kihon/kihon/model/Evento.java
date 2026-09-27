@@ -3,7 +3,6 @@ package com.kihon.kihon.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -17,8 +16,9 @@ public class Evento {
     @Column(nullable = false, length = 150)
     private String titulo;
 
-    @Column(nullable = false, length = 20)
-    private String tipo;
+    @ManyToOne
+    @JoinColumn(name = "tipo_evento_id", nullable = false)
+    private TipoEvento tipo;
 
     @Column(columnDefinition = "TEXT")
     private String descripcion;
@@ -49,6 +49,10 @@ public class Evento {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getTitulo() {
         return titulo;
     }
@@ -57,11 +61,11 @@ public class Evento {
         this.titulo = titulo;
     }
 
-    public String getTipo() {
+    public TipoEvento getTipo() {
         return tipo;
     }
 
-    public void setTipo(String tipo) {
+    public void setTipo(TipoEvento tipo) {
         this.tipo = tipo;
     }
 

@@ -2,6 +2,7 @@ package com.kihon.kihon.controller;
 
 import com.kihon.kihon.dto.EstudianteResponse;
 import com.kihon.kihon.model.Estudiante;
+import com.kihon.kihon.model.Persona;
 import com.kihon.kihon.service.EstudianteService;
 import com.kihon.kihon.service.SupabaseStorageService;
 
@@ -34,7 +35,6 @@ public class EstudianteController {
          * CREAR ESTUDIANTE
          * ==========================================
          */
-
         @PostMapping(consumes = "multipart/form-data")
         public ResponseEntity<EstudianteResponse> crearEstudiante(
 
@@ -80,7 +80,6 @@ public class EstudianteController {
          * LISTAR ESTUDIANTES
          * ==========================================
          */
-
         @GetMapping
         public ResponseEntity<List<EstudianteResponse>> listarEstudiantes(
 
@@ -110,7 +109,6 @@ public class EstudianteController {
          * BUSCAR ESTUDIANTE POR ID
          * ==========================================
          */
-
         @GetMapping("/{id}")
         public ResponseEntity<EstudianteResponse> buscarPorId(
 
@@ -127,7 +125,6 @@ public class EstudianteController {
          * ACTUALIZAR ESTUDIANTE
          * ==========================================
          */
-
         @PutMapping(value = "/{id}", consumes = "multipart/form-data")
         public ResponseEntity<EstudianteResponse> actualizarEstudiante(
 
@@ -169,7 +166,6 @@ public class EstudianteController {
          * CAMBIAR ESTADO
          * ==========================================
          */
-
         @PatchMapping("/{id}/estado")
         public ResponseEntity<EstudianteResponse> cambiarEstado(
 
@@ -190,19 +186,39 @@ public class EstudianteController {
          * CONVERTIR A RESPONSE
          * ==========================================
          */
-
         private EstudianteResponse convertirResponse(
                         Estudiante estudiante) {
 
                 String fotoUrl = null;
 
-                if (estudiante.getFoto() != null
-                                && !estudiante.getFoto().isBlank()) {
+                /*
+                 * ==========================================
+                 * PERSONA
+                 * ==========================================
+                 */
+
+                Persona persona = estudiante.getPersona();
+
+                if (persona == null) {
+
+                        throw new RuntimeException(
+                                        "El estudiante no tiene una persona asociada");
+                }
+
+                /*
+                 * ==========================================
+                 * FOTOGRAFÍA
+                 * ==========================================
+                 */
+
+                String foto = persona.getFoto();
+
+                if (foto != null && !foto.isBlank()) {
 
                         try {
 
                                 fotoUrl = storageService.generarUrlFirmada(
-                                                estudiante.getFoto(),
+                                                foto,
                                                 300);
 
                         } catch (Exception e) {
@@ -216,31 +232,44 @@ public class EstudianteController {
                         }
                 }
 
+                /*
+                 * ==========================================
+                 * RESPONSE
+                 * ==========================================
+                 *
+                 * Datos personales -> Persona
+                 * Datos académicos -> Estudiante
+                 */
+
                 return new EstudianteResponse(
 
                                 estudiante.getId(),
 
-                                estudiante.getNombre(),
+                                persona.getNombre(),
 
-                                estudiante.getApellido(),
+                                persona.getApellido(),
 
-                                estudiante.getTipoDocumento(),
+                                persona.getTipoDocumento() != null
+                                                ? persona.getTipoDocumento().getNombre()
+                                                : null,
 
-                                estudiante.getDocumento(),
+                                persona.getNumeroDocumento(),
 
-                                estudiante.getTelefono(),
+                                persona.getTelefono(),
 
-                                estudiante.getCorreo(),
+                                persona.getCorreo(),
 
-                                estudiante.getFechaNacimiento(),
+                                persona.getFechaNacimiento(),
 
-                                estudiante.getDireccion(),
+                                persona.getDireccion(),
 
-                                estudiante.getFoto(),
+                                foto,
 
                                 fotoUrl,
 
-                                estudiante.getCinturon(),
+                                estudiante.getCinturon() != null
+                                                ? estudiante.getCinturon().getNombre()
+                                                : null,
 
                                 estudiante.getEstado());
         }

@@ -1,9 +1,13 @@
 package com.kihon.kihon.service;
 
 import com.kihon.kihon.model.Evento;
+import com.kihon.kihon.model.TipoEvento;
 import com.kihon.kihon.model.Usuario;
+
 import com.kihon.kihon.repository.EventoRepository;
+import com.kihon.kihon.repository.TipoEventoRepository;
 import com.kihon.kihon.repository.UsuarioRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -13,274 +17,285 @@ import java.util.List;
 @Service
 public class EventoService {
 
-    private final EventoRepository eventoRepository;
-    private final UsuarioRepository usuarioRepository;
+        private final EventoRepository eventoRepository;
+        private final UsuarioRepository usuarioRepository;
+        private final TipoEventoRepository tipoEventoRepository;
 
-    public EventoService(
-            EventoRepository eventoRepository,
-            UsuarioRepository usuarioRepository) {
+        public EventoService(
+                        EventoRepository eventoRepository,
+                        UsuarioRepository usuarioRepository,
+                        TipoEventoRepository tipoEventoRepository) {
 
-        this.eventoRepository = eventoRepository;
-        this.usuarioRepository = usuarioRepository;
-    }
-
-    public List<Evento> listarEventos() {
-
-        return eventoRepository.findAll();
-    }
-
-    public List<Evento> listarPorEstado(String estado) {
-
-        validarEstado(estado);
-
-        return eventoRepository.findByEstado(
-                estado.toUpperCase());
-    }
-
-    public List<Evento> listarPorRango(
-            LocalDate fechaInicio,
-            LocalDate fechaFin) {
-
-        if (fechaInicio == null || fechaFin == null) {
-
-            throw new RuntimeException(
-                    "La fecha de inicio y la fecha de fin son obligatorias");
+                this.eventoRepository = eventoRepository;
+                this.usuarioRepository = usuarioRepository;
+                this.tipoEventoRepository = tipoEventoRepository;
         }
 
-        if (fechaInicio.isAfter(fechaFin)) {
+        public List<Evento> listarEventos() {
 
-            throw new RuntimeException(
-                    "La fecha de inicio no puede ser posterior a la fecha de fin");
+                return eventoRepository.findAll();
         }
 
-        return eventoRepository.findByFechaBetween(
-                fechaInicio,
-                fechaFin);
-    }
+        public List<Evento> listarPorEstado(String estado) {
 
-    public Evento buscarPorId(Long id) {
+                validarEstado(estado);
 
-        return eventoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Evento no encontrado"));
-    }
-
-    public Evento crearEvento(
-            String titulo,
-            String tipo,
-            String descripcion,
-            LocalDate fecha,
-            LocalTime horaInicio,
-            LocalTime horaFin,
-            String lugar,
-            Long responsableId) {
-
-        validarDatos(
-                titulo,
-                tipo,
-                fecha,
-                horaInicio,
-                horaFin);
-
-        Evento evento = new Evento();
-
-        evento.setTitulo(titulo.trim());
-        evento.setTipo(tipo.toUpperCase());
-        evento.setDescripcion(
-                descripcion != null
-                        ? descripcion.trim()
-                        : null);
-        evento.setFecha(fecha);
-        evento.setHoraInicio(horaInicio);
-        evento.setHoraFin(horaFin);
-        evento.setLugar(
-                lugar != null
-                        ? lugar.trim()
-                        : null);
-        evento.setEstado("ACTIVO");
-
-        if (responsableId != null) {
-
-            Usuario responsable = obtenerResponsable(responsableId);
-
-            evento.setResponsable(responsable);
+                return eventoRepository.findByEstado(
+                                estado.toUpperCase());
         }
 
-        return eventoRepository.save(evento);
-    }
+        public List<Evento> listarPorRango(
+                        LocalDate fechaInicio,
+                        LocalDate fechaFin) {
 
-    public Evento actualizarEvento(
-            Long id,
-            String titulo,
-            String tipo,
-            String descripcion,
-            LocalDate fecha,
-            LocalTime horaInicio,
-            LocalTime horaFin,
-            String lugar,
-            Long responsableId) {
+                if (fechaInicio == null || fechaFin == null) {
 
-        Evento evento = eventoRepository.findById(id)
-                .orElseThrow(
-                        () -> new RuntimeException(
-                                "Evento no encontrado"));
+                        throw new RuntimeException(
+                                        "La fecha de inicio y la fecha de fin son obligatorias");
+                }
 
-        validarDatos(
-                titulo,
-                tipo,
-                fecha,
-                horaInicio,
-                horaFin);
+                if (fechaInicio.isAfter(fechaFin)) {
 
-        evento.setTitulo(titulo.trim());
-        evento.setTipo(tipo.toUpperCase());
-        evento.setDescripcion(
-                descripcion != null
-                        ? descripcion.trim()
-                        : null);
-        evento.setFecha(fecha);
-        evento.setHoraInicio(horaInicio);
-        evento.setHoraFin(horaFin);
-        evento.setLugar(
-                lugar != null
-                        ? lugar.trim()
-                        : null);
+                        throw new RuntimeException(
+                                        "La fecha de inicio no puede ser posterior a la fecha de fin");
+                }
 
-        if (responsableId != null) {
-
-            Usuario responsable = obtenerResponsable(responsableId);
-
-            evento.setResponsable(responsable);
-
-        } else {
-
-            evento.setResponsable(null);
+                return eventoRepository.findByFechaBetween(
+                                fechaInicio,
+                                fechaFin);
         }
 
-        return eventoRepository.save(evento);
-    }
+        public Evento buscarPorId(Long id) {
 
-    public Evento cambiarEstado(
-            Long id,
-            String estado) {
-
-        validarEstado(estado);
-
-        Evento evento = eventoRepository.findById(id)
-                .orElseThrow(
-                        () -> new RuntimeException(
-                                "Evento no encontrado"));
-
-        evento.setEstado(
-                estado.toUpperCase());
-
-        return eventoRepository.save(evento);
-    }
-
-    public void eliminarEvento(Long id) {
-
-        if (!eventoRepository.existsById(id)) {
-
-            throw new RuntimeException(
-                    "Evento no encontrado");
+                return eventoRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Evento no encontrado"));
         }
 
-        eventoRepository.deleteById(id);
-    }
+        public Evento crearEvento(
+                        String titulo,
+                        String tipo,
+                        String descripcion,
+                        LocalDate fecha,
+                        LocalTime horaInicio,
+                        LocalTime horaFin,
+                        String lugar,
+                        Long responsableId) {
 
-    private void validarDatos(
-            String titulo,
-            String tipo,
-            LocalDate fecha,
-            LocalTime horaInicio,
-            LocalTime horaFin) {
+                validarDatos(
+                                titulo,
+                                tipo,
+                                fecha,
+                                horaInicio,
+                                horaFin);
 
-        if (titulo == null
-                || titulo.isBlank()) {
+                TipoEvento tipoEvento = tipoEventoRepository.findByNombre(
+                                tipo.trim().toUpperCase())
+                                .orElseThrow(() -> new RuntimeException(
+                                                "El tipo de evento no existe"));
 
-            throw new RuntimeException(
-                    "El título del evento es obligatorio");
+                Evento evento = new Evento();
+
+                evento.setTitulo(titulo.trim());
+
+                evento.setTipo(tipoEvento);
+
+                evento.setDescripcion(
+                                descripcion != null
+                                                ? descripcion.trim()
+                                                : null);
+
+                evento.setFecha(fecha);
+
+                evento.setHoraInicio(horaInicio);
+
+                evento.setHoraFin(horaFin);
+
+                evento.setLugar(
+                                lugar != null
+                                                ? lugar.trim()
+                                                : null);
+
+                evento.setEstado("ACTIVO");
+
+                if (responsableId != null) {
+
+                        Usuario responsable = obtenerResponsable(
+                                        responsableId);
+
+                        evento.setResponsable(responsable);
+                }
+
+                return eventoRepository.save(evento);
         }
 
-        if (tipo == null
-                || tipo.isBlank()) {
+        public Evento actualizarEvento(
+                        Long id,
+                        String titulo,
+                        String tipo,
+                        String descripcion,
+                        LocalDate fecha,
+                        LocalTime horaInicio,
+                        LocalTime horaFin,
+                        String lugar,
+                        Long responsableId) {
 
-            throw new RuntimeException(
-                    "El tipo de evento es obligatorio");
+                Evento evento = eventoRepository.findById(id)
+                                .orElseThrow(
+                                                () -> new RuntimeException(
+                                                                "Evento no encontrado"));
+
+                validarDatos(
+                                titulo,
+                                tipo,
+                                fecha,
+                                horaInicio,
+                                horaFin);
+
+                TipoEvento tipoEvento = tipoEventoRepository.findByNombre(
+                                tipo.trim().toUpperCase())
+                                .orElseThrow(() -> new RuntimeException(
+                                                "El tipo de evento no existe"));
+
+                evento.setTitulo(titulo.trim());
+
+                evento.setTipo(tipoEvento);
+
+                evento.setDescripcion(
+                                descripcion != null
+                                                ? descripcion.trim()
+                                                : null);
+
+                evento.setFecha(fecha);
+
+                evento.setHoraInicio(horaInicio);
+
+                evento.setHoraFin(horaFin);
+
+                evento.setLugar(
+                                lugar != null
+                                                ? lugar.trim()
+                                                : null);
+
+                if (responsableId != null) {
+
+                        Usuario responsable = obtenerResponsable(
+                                        responsableId);
+
+                        evento.setResponsable(responsable);
+
+                } else {
+
+                        evento.setResponsable(null);
+                }
+
+                return eventoRepository.save(evento);
         }
 
-        validarTipo(tipo);
+        public Evento cambiarEstado(
+                        Long id,
+                        String estado) {
 
-        if (fecha == null) {
+                validarEstado(estado);
 
-            throw new RuntimeException(
-                    "La fecha del evento es obligatoria");
+                Evento evento = eventoRepository.findById(id)
+                                .orElseThrow(
+                                                () -> new RuntimeException(
+                                                                "Evento no encontrado"));
+
+                evento.setEstado(
+                                estado.toUpperCase());
+
+                return eventoRepository.save(evento);
         }
 
-        if (horaInicio == null
-                || horaFin == null) {
+        public void eliminarEvento(Long id) {
 
-            throw new RuntimeException(
-                    "La hora de inicio y la hora de fin son obligatorias");
+                if (!eventoRepository.existsById(id)) {
+
+                        throw new RuntimeException(
+                                        "Evento no encontrado");
+                }
+
+                eventoRepository.deleteById(id);
         }
 
-        if (!horaInicio.isBefore(horaFin)) {
+        private void validarDatos(
+                        String titulo,
+                        String tipo,
+                        LocalDate fecha,
+                        LocalTime horaInicio,
+                        LocalTime horaFin) {
 
-            throw new RuntimeException(
-                    "La hora de inicio debe ser anterior a la hora de fin");
-        }
-    }
+                if (titulo == null
+                                || titulo.isBlank()) {
 
-    private void validarTipo(String tipo) {
+                        throw new RuntimeException(
+                                        "El título del evento es obligatorio");
+                }
 
-        String tipoNormalizado = tipo.toUpperCase();
+                if (tipo == null
+                                || tipo.isBlank()) {
 
-        if (!tipoNormalizado.equals("EXAMEN")
-                && !tipoNormalizado.equals("SEMINARIO")
-                && !tipoNormalizado.equals("RECUPERACION")
-                && !tipoNormalizado.equals("REFUERZO")
-                && !tipoNormalizado.equals("OTRO")) {
+                        throw new RuntimeException(
+                                        "El tipo de evento es obligatorio");
+                }
 
-            throw new RuntimeException(
-                    "El tipo de evento no es válido");
-        }
-    }
+                if (fecha == null) {
 
-    private void validarEstado(String estado) {
+                        throw new RuntimeException(
+                                        "La fecha del evento es obligatoria");
+                }
 
-        if (estado == null
-                || estado.isBlank()) {
+                if (horaInicio == null
+                                || horaFin == null) {
 
-            throw new RuntimeException(
-                    "El estado es obligatorio");
-        }
+                        throw new RuntimeException(
+                                        "La hora de inicio y la hora de fin son obligatorias");
+                }
 
-        String estadoNormalizado = estado.toUpperCase();
+                if (!horaInicio.isBefore(horaFin)) {
 
-        if (!estadoNormalizado.equals("ACTIVO")
-                && !estadoNormalizado.equals("CANCELADO")) {
-
-            throw new RuntimeException(
-                    "El estado debe ser ACTIVO o CANCELADO");
-        }
-    }
-
-    private Usuario obtenerResponsable(
-            Long responsableId) {
-
-        Usuario usuario = usuarioRepository.findById(
-                responsableId)
-                .orElseThrow(
-                        () -> new RuntimeException(
-                                "Responsable no encontrado"));
-
-        if (!"ACTIVO".equalsIgnoreCase(
-                usuario.getEstado())) {
-
-            throw new RuntimeException(
-                    "El responsable seleccionado no está activo");
+                        throw new RuntimeException(
+                                        "La hora de inicio debe ser anterior a la hora de fin");
+                }
         }
 
-        return usuario;
-    }
+        private void validarEstado(String estado) {
+
+                if (estado == null
+                                || estado.isBlank()) {
+
+                        throw new RuntimeException(
+                                        "El estado es obligatorio");
+                }
+
+                String estadoNormalizado = estado.toUpperCase();
+
+                if (!estadoNormalizado.equals("ACTIVO")
+                                && !estadoNormalizado.equals("CANCELADO")) {
+
+                        throw new RuntimeException(
+                                        "El estado debe ser ACTIVO o CANCELADO");
+                }
+        }
+
+        private Usuario obtenerResponsable(
+                        Long responsableId) {
+
+                Usuario usuario = usuarioRepository.findById(
+                                responsableId)
+                                .orElseThrow(
+                                                () -> new RuntimeException(
+                                                                "Responsable no encontrado"));
+
+                if (!"ACTIVO".equalsIgnoreCase(
+                                usuario.getEstado())) {
+
+                        throw new RuntimeException(
+                                        "El responsable seleccionado no está activo");
+                }
+
+                return usuario;
+        }
 }

@@ -28,7 +28,8 @@ public class GrupoHorarioController {
         @GetMapping
         public ResponseEntity<List<GrupoHorarioResponse>> listarHorarios() {
 
-                List<GrupoHorarioResponse> response = grupoHorarioService.listarHorarios()
+                List<GrupoHorarioResponse> response = grupoHorarioService
+                                .listarHorarios()
                                 .stream()
                                 .map(this::convertirResponse)
                                 .toList();
@@ -44,7 +45,8 @@ public class GrupoHorarioController {
         public ResponseEntity<List<GrupoHorarioResponse>> listarPorDia(
                         @PathVariable String diaSemana) {
 
-                List<GrupoHorarioResponse> response = grupoHorarioService.listarPorDia(diaSemana)
+                List<GrupoHorarioResponse> response = grupoHorarioService
+                                .listarPorDia(diaSemana)
                                 .stream()
                                 .map(this::convertirResponse)
                                 .toList();
@@ -60,7 +62,8 @@ public class GrupoHorarioController {
         public ResponseEntity<List<GrupoHorarioResponse>> listarPorGrupo(
                         @PathVariable Long grupoId) {
 
-                List<GrupoHorarioResponse> response = grupoHorarioService.listarPorGrupo(grupoId)
+                List<GrupoHorarioResponse> response = grupoHorarioService
+                                .listarPorGrupo(grupoId)
                                 .stream()
                                 .map(this::convertirResponse)
                                 .toList();
@@ -131,7 +134,9 @@ public class GrupoHorarioController {
 
                 grupoHorarioService.eliminarHorario(id);
 
-                return ResponseEntity.noContent().build();
+                return ResponseEntity
+                                .noContent()
+                                .build();
         }
 
         // ==========================================
@@ -141,15 +146,29 @@ public class GrupoHorarioController {
         private GrupoHorarioResponse convertirResponse(
                         GrupoHorario horario) {
 
+                String senseiNombre = null;
+
+                if (horario.getGrupo().getSensei() != null
+                                && horario.getGrupo()
+                                                .getSensei()
+                                                .getPersona() != null) {
+
+                        senseiNombre = horario.getGrupo()
+                                        .getSensei()
+                                        .getPersona()
+                                        .getNombre()
+                                        + " "
+                                        + horario.getGrupo()
+                                                        .getSensei()
+                                                        .getPersona()
+                                                        .getApellido();
+                }
+
                 return new GrupoHorarioResponse(
                                 horario.getId(),
                                 horario.getGrupo().getId(),
                                 horario.getGrupo().getNombre(),
-                                horario.getGrupo().getSensei() != null
-                                                ? horario.getGrupo().getSensei().getNombre()
-                                                                + " "
-                                                                + horario.getGrupo().getSensei().getApellido()
-                                                : null,
+                                senseiNombre,
                                 horario.getDiaSemana(),
                                 horario.getHoraInicio(),
                                 horario.getHoraFin());

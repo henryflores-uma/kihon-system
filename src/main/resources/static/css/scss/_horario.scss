@@ -390,6 +390,21 @@
     }
 }
 
+.horario-evento--cancelado {
+    background-color: $color-gray-200;
+    color: $color-gray-600;
+
+    border-left-color: $color-gray-600;
+
+    opacity: 0.8;
+
+    &:hover {
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+}
 
 // ==========================================
 // RESPONSIVE

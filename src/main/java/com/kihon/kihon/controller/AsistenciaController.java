@@ -164,9 +164,9 @@ public class AsistenciaController {
         private AsistenciaResponse convertirAResponse(
                         Asistencia asistencia) {
 
-                String estudianteNombre = asistencia.getEstudiante().getNombre()
+                String estudianteNombre = asistencia.getEstudiante().getPersona().getNombre()
                                 + " "
-                                + asistencia.getEstudiante().getApellido();
+                                + asistencia.getEstudiante().getPersona().getApellido();
 
                 return new AsistenciaResponse(
                                 asistencia.getId(),

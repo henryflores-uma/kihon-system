@@ -16,7 +16,9 @@ public class GrupoController {
 
         private final GrupoService grupoService;
 
-        public GrupoController(GrupoService grupoService) {
+        public GrupoController(
+                        GrupoService grupoService) {
+
                 this.grupoService = grupoService;
         }
 
@@ -45,8 +47,11 @@ public class GrupoController {
                 List<Grupo> grupos;
 
                 if (estado == null || estado.isBlank()) {
+
                         grupos = grupoService.listarGrupos();
+
                 } else {
+
                         grupos = grupoService.listarPorEstado(
                                         estado.toUpperCase());
                 }
@@ -105,15 +110,34 @@ public class GrupoController {
 
                 grupoService.eliminarGrupo(id);
 
-                return ResponseEntity.noContent().build();
+                return ResponseEntity
+                                .noContent()
+                                .build();
         }
 
-        private GrupoResponse convertirAResponse(Grupo grupo) {
+        private GrupoResponse convertirAResponse(
+                        Grupo grupo) {
 
                 long estudiantesActivos = grupoService
-                                .contarEstudiantesActivos(grupo.getId());
+                                .contarEstudiantesActivos(
+                                                grupo.getId());
 
-                long cuposDisponibles = grupo.getCapacidad() - estudiantesActivos;
+                long cuposDisponibles = grupo.getCapacidad()
+                                - estudiantesActivos;
+
+                String senseiNombre = null;
+
+                if (grupo.getSensei() != null
+                                && grupo.getSensei().getPersona() != null) {
+
+                        senseiNombre = grupo.getSensei()
+                                        .getPersona()
+                                        .getNombre()
+                                        + " "
+                                        + grupo.getSensei()
+                                                        .getPersona()
+                                                        .getApellido();
+                }
 
                 return new GrupoResponse(
                                 grupo.getId(),
@@ -126,11 +150,7 @@ public class GrupoController {
                                 grupo.getSensei() != null
                                                 ? grupo.getSensei().getId()
                                                 : null,
-                                grupo.getSensei() != null
-                                                ? grupo.getSensei().getNombre()
-                                                                + " "
-                                                                + grupo.getSensei().getApellido()
-                                                : null,
+                                senseiNombre,
                                 grupo.getFrecuencia() != null
                                                 ? grupo.getFrecuencia().getId()
                                                 : null,
