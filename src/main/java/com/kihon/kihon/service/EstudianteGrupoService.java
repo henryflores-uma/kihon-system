@@ -29,9 +29,49 @@ public class EstudianteGrupoService {
         }
 
         /*
-         * ================================
-         * ASIGNAR ESTUDIANTE A GRUPO
-         * =================================
+         * =========================================================
+         * LISTAR ASIGNACIONES
+         * =========================================================
+         */
+
+        public List<EstudianteGrupo> listarTodas() {
+                return estudianteGrupoRepository.findAll();
+        }
+
+        public List<EstudianteGrupo> listarPorEstudiante(Long estudianteId) {
+                return estudianteGrupoRepository.findByEstudianteId(estudianteId);
+        }
+
+        public List<EstudianteGrupo> listarPorGrupo(Long grupoId) {
+                return estudianteGrupoRepository.findByGrupoId(grupoId);
+        }
+
+        public List<EstudianteGrupo> listarPorEstado(String estado) {
+                return estudianteGrupoRepository.findByEstado(estado);
+        }
+
+        public List<EstudianteGrupo> listarActivasPorEstudiante(Long estudianteId) {
+                return estudianteGrupoRepository.findByEstudianteIdAndEstado(
+                                estudianteId,
+                                "ACTIVO");
+        }
+
+        /*
+         * =========================================================
+         * BUSCAR ASIGNACIÓN
+         * =========================================================
+         */
+
+        public EstudianteGrupo buscarPorId(Long id) {
+                return estudianteGrupoRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "No se encontró la asignación estudiante-grupo"));
+        }
+
+        /*
+         * =========================================================
+         * CREAR ASIGNACIÓN
+         * =========================================================
          */
 
         @Transactional
@@ -41,29 +81,14 @@ public class EstudianteGrupoService {
 
                 Estudiante estudiante = estudianteRepository.findById(estudianteId)
                                 .orElseThrow(() -> new RuntimeException(
-                                                "Estudiante no encontrado"));
+                                                "No se encontró el estudiante"));
 
                 Grupo grupo = grupoRepository.findById(grupoId)
                                 .orElseThrow(() -> new RuntimeException(
-                                                "Grupo no encontrado"));
+                                                "No se encontró el grupo"));
 
-                if (!"ACTIVO".equalsIgnoreCase(
-                                estudiante.getEstado())) {
-
-                        throw new RuntimeException(
-                                        "No se puede asignar un estudiante inactivo");
-                }
-
-                if (!"ACTIVO".equalsIgnoreCase(
-                                grupo.getEstado())) {
-
-                        throw new RuntimeException(
-                                        "No se puede asignar un estudiante a un grupo inactivo");
-                }
-
-                // ==========================================
-                // EVITAR DUPLICAR ASIGNACIÓN
-                // ==========================================
+                validarEstudianteActivo(estudiante);
+                validarGrupoActivo(grupo);
 
                 boolean yaAsignado = estudianteGrupoRepository
                                 .existsByEstudianteIdAndGrupoIdAndEstado(
@@ -72,100 +97,41 @@ public class EstudianteGrupoService {
                                                 "ACTIVO");
 
                 if (yaAsignado) {
-
                         throw new RuntimeException(
                                         "El estudiante ya está activo en este grupo");
                 }
 
-                // ==========================================
-                // VALIDAR CAPACIDAD
-                // ==========================================
+                validarCapacidadDisponible(grupo);
 
-                long estudiantesActivos = estudianteGrupoRepository
-                                .countByGrupoIdAndEstado(
-                                                grupoId,
-                                                "ACTIVO");
+                EstudianteGrupo asignacion = new EstudianteGrupo();
 
-                if (estudiantesActivos >= grupo.getCapacidad()) {
+                asignacion.setEstudiante(estudiante);
+                asignacion.setGrupo(grupo);
+                asignacion.setEstado("ACTIVO");
 
-                        throw new RuntimeException(
-                                        "El grupo ha alcanzado su capacidad máxima");
-                }
-
-                // ==========================================
-                // CREAR ASIGNACIÓN
-                // ==========================================
-
-                EstudianteGrupo estudianteGrupo = new EstudianteGrupo();
-
-                estudianteGrupo.setEstudiante(estudiante);
-                estudianteGrupo.setGrupo(grupo);
-                estudianteGrupo.setEstado("ACTIVO");
-
-                return estudianteGrupoRepository.save(
-                                estudianteGrupo);
+                return estudianteGrupoRepository.save(asignacion);
         }
 
         /*
-         * ================================
-         * LISTAR TODAS LAS ASIGNACIONES
-         * =================================
+         * =========================================================
+         * MÉTODO COMPATIBILIDAD
+         * =========================================================
          */
 
-        public List<EstudianteGrupo> listarTodas() {
-
-                return estudianteGrupoRepository.findAll();
-        }
-
-        /*
-         * ================================
-         * LISTAR POR ESTUDIANTE
-         * =================================
-         */
-
-        public List<EstudianteGrupo> listarPorEstudiante(
-                        Long estudianteId) {
-
-                if (!estudianteRepository.existsById(estudianteId)) {
-
-                        throw new RuntimeException(
-                                        "Estudiante no encontrado");
-                }
-
-                return estudianteGrupoRepository
-                                .findByEstudianteId(estudianteId);
-        }
-
-        /*
-         * ================================
-         * LISTAR POR GRUPO
-         * =================================
-         */
-
-        public List<EstudianteGrupo> listarPorGrupo(
+        @Transactional
+        public EstudianteGrupo asignarEstudiante(
+                        Long estudianteId,
                         Long grupoId) {
 
-                if (!grupoRepository.existsById(grupoId)) {
-
-                        throw new RuntimeException(
-                                        "Grupo no encontrado");
-                }
-
-                return estudianteGrupoRepository
-                                .findByGrupoId(grupoId);
+                return asignarEstudianteAGrupo(
+                                estudianteId,
+                                grupoId);
         }
 
         /*
-         * ================================
+         * =========================================================
          * CAMBIAR GRUPO
-         * =================================
-         *
-         * IMPORTANTE:
-         * Este método cambia una asignación específica.
-         *
-         * No se deben desactivar todos los grupos
-         * activos del estudiante porque un estudiante
-         * puede pertenecer a varios grupos.
+         * =========================================================
          */
 
         @Transactional
@@ -175,106 +141,56 @@ public class EstudianteGrupoService {
 
                 EstudianteGrupo asignacion = estudianteGrupoRepository.findById(asignacionId)
                                 .orElseThrow(() -> new RuntimeException(
-                                                "Asignación no encontrada"));
+                                                "No se encontró la asignación"));
 
-                Estudiante estudiante = asignacion.getEstudiante();
+                Grupo grupoActual = asignacion.getGrupo();
 
                 Grupo nuevoGrupo = grupoRepository.findById(nuevoGrupoId)
                                 .orElseThrow(() -> new RuntimeException(
-                                                "Grupo no encontrado"));
+                                                "No se encontró el nuevo grupo"));
 
-                // ==========================================
-                // VALIDAR ESTUDIANTE
-                // ==========================================
-
-                if (!"ACTIVO".equalsIgnoreCase(
-                                estudiante.getEstado())) {
-
-                        throw new RuntimeException(
-                                        "No se puede cambiar de grupo a un estudiante inactivo");
-                }
-
-                // ==========================================
-                // VALIDAR GRUPO NUEVO
-                // ==========================================
-
-                if (!"ACTIVO".equalsIgnoreCase(
-                                nuevoGrupo.getEstado())) {
-
-                        throw new RuntimeException(
-                                        "No se puede cambiar a un grupo inactivo");
-                }
-
-                // ==========================================
-                // EVITAR CAMBIAR AL MISMO GRUPO
-                // ==========================================
-
-                if (asignacion.getGrupo()
-                                .getId()
-                                .equals(nuevoGrupoId)) {
+                if (grupoActual != null
+                                && grupoActual.getId().equals(nuevoGrupoId)) {
 
                         throw new RuntimeException(
                                         "El estudiante ya pertenece a este grupo");
                 }
 
-                // ==========================================
-                // VERIFICAR SI YA TIENE EL NUEVO GRUPO
-                // ==========================================
+                validarEstudianteActivo(
+                                asignacion.getEstudiante());
 
-                boolean yaPerteneceAlNuevoGrupo = estudianteGrupoRepository
-                                .existsByEstudianteIdAndGrupoIdAndEstado(
-                                                estudiante.getId(),
-                                                nuevoGrupoId,
-                                                "ACTIVO");
+                validarGrupoActivo(nuevoGrupo);
 
-                if (yaPerteneceAlNuevoGrupo) {
+                /*
+                 * Solo comprobamos duplicidad si la asignación que
+                 * estamos moviendo se encuentra activa.
+                 */
+                if ("ACTIVO".equalsIgnoreCase(
+                                asignacion.getEstado())) {
 
-                        throw new RuntimeException(
-                                        "El estudiante ya está activo en el nuevo grupo");
+                        boolean yaAsignado = estudianteGrupoRepository
+                                        .existsByEstudianteIdAndGrupoIdAndEstado(
+                                                        asignacion.getEstudiante().getId(),
+                                                        nuevoGrupoId,
+                                                        "ACTIVO");
+
+                        if (yaAsignado) {
+                                throw new RuntimeException(
+                                                "El estudiante ya está activo en el nuevo grupo");
+                        }
+
+                        validarCapacidadDisponible(nuevoGrupo);
                 }
 
-                // ==========================================
-                // VALIDAR CAPACIDAD
-                // ==========================================
+                asignacion.setGrupo(nuevoGrupo);
 
-                long estudiantesActivos = estudianteGrupoRepository
-                                .countByGrupoIdAndEstado(
-                                                nuevoGrupoId,
-                                                "ACTIVO");
-
-                if (estudiantesActivos >= nuevoGrupo.getCapacidad()) {
-
-                        throw new RuntimeException(
-                                        "El nuevo grupo ha alcanzado su capacidad máxima");
-                }
-
-                // ==========================================
-                // DESACTIVAR ASIGNACIÓN ACTUAL
-                // ==========================================
-
-                asignacion.setEstado("INACTIVO");
-
-                estudianteGrupoRepository.save(
-                                asignacion);
-
-                // ==========================================
-                // CREAR NUEVA ASIGNACIÓN
-                // ==========================================
-
-                EstudianteGrupo nuevaAsignacion = new EstudianteGrupo();
-
-                nuevaAsignacion.setEstudiante(estudiante);
-                nuevaAsignacion.setGrupo(nuevoGrupo);
-                nuevaAsignacion.setEstado("ACTIVO");
-
-                return estudianteGrupoRepository.save(
-                                nuevaAsignacion);
+                return estudianteGrupoRepository.save(asignacion);
         }
 
         /*
-         * ================================
-         * CAMBIAR ESTADO DE ASIGNACIÓN
-         * =================================
+         * =========================================================
+         * CAMBIAR ESTADO
+         * =========================================================
          */
 
         @Transactional
@@ -284,7 +200,7 @@ public class EstudianteGrupoService {
 
                 EstudianteGrupo asignacion = estudianteGrupoRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException(
-                                                "Asignación no encontrada"));
+                                                "No se encontró la asignación"));
 
                 if (estado == null ||
                                 (!estado.equalsIgnoreCase("ACTIVO") &&
@@ -296,73 +212,129 @@ public class EstudianteGrupoService {
 
                 String nuevoEstado = estado.toUpperCase();
 
-                // ==========================================
-                // SI SE ACTIVA LA ASIGNACIÓN
-                // ==========================================
-
+                /*
+                 * Si se está activando la asignación,
+                 * validamos estudiante, grupo, duplicidad y capacidad.
+                 */
                 if ("ACTIVO".equals(nuevoEstado)) {
 
                         Estudiante estudiante = asignacion.getEstudiante();
-
                         Grupo grupo = asignacion.getGrupo();
 
-                        // ==========================================
-                        // VALIDAR ESTUDIANTE
-                        // ==========================================
+                        validarEstudianteActivo(estudiante);
+                        validarGrupoActivo(grupo);
 
-                        if (!"ACTIVO".equalsIgnoreCase(
-                                        estudiante.getEstado())) {
+                        /*
+                         * Si la asignación ya estaba activa, no es una nueva
+                         * inscripción. Por lo tanto, no debemos bloquearla
+                         * por duplicidad ni por capacidad.
+                         */
+                        boolean yaEstabaActiva = "ACTIVO".equalsIgnoreCase(
+                                        asignacion.getEstado());
 
-                                throw new RuntimeException(
-                                                "No se puede activar la asignación de un estudiante inactivo");
-                        }
+                        if (!yaEstabaActiva) {
 
-                        // ==========================================
-                        // VALIDAR GRUPO
-                        // ==========================================
+                                /*
+                                 * Buscamos otra asignación ACTIVA del mismo
+                                 * estudiante en el mismo grupo, excluyendo
+                                 * la asignación que estamos modificando.
+                                 */
+                                boolean otraAsignacionActiva = estudianteGrupoRepository
+                                                .existsByEstudianteIdAndGrupoIdAndEstadoAndIdNot(
+                                                                estudiante.getId(),
+                                                                grupo.getId(),
+                                                                "ACTIVO",
+                                                                asignacion.getId());
 
-                        if (!"ACTIVO".equalsIgnoreCase(
-                                        grupo.getEstado())) {
+                                if (otraAsignacionActiva) {
+                                        throw new RuntimeException(
+                                                        "El estudiante ya está activo en este grupo");
+                                }
 
-                                throw new RuntimeException(
-                                                "No se puede activar una asignación de un grupo inactivo");
-                        }
-
-                        // ==========================================
-                        // VERIFICAR QUE NO ESTÉ YA ACTIVO
-                        // ==========================================
-
-                        boolean otraAsignacionActiva = estudianteGrupoRepository
-                                        .existsByEstudianteIdAndGrupoIdAndEstado(
-                                                        estudiante.getId(),
-                                                        grupo.getId(),
-                                                        "ACTIVO");
-
-                        if (otraAsignacionActiva) {
-
-                                throw new RuntimeException(
-                                                "El estudiante ya está activo en este grupo");
-                        }
-
-                        // ==========================================
-                        // VERIFICAR CAPACIDAD
-                        // ==========================================
-
-                        long estudiantesActivos = estudianteGrupoRepository
-                                        .countByGrupoIdAndEstado(
-                                                        grupo.getId(),
-                                                        "ACTIVO");
-
-                        if (estudiantesActivos >= grupo.getCapacidad()) {
-
-                                throw new RuntimeException(
-                                                "El grupo ha alcanzado su capacidad máxima");
+                                /*
+                                 * Verificamos la capacidad únicamente cuando
+                                 * realmente estamos activando una asignación
+                                 * que estaba inactiva.
+                                 */
+                                validarCapacidadDisponible(grupo);
                         }
                 }
 
                 asignacion.setEstado(nuevoEstado);
 
-                return estudianteGrupoRepository.save(
-                                asignacion);
+                return estudianteGrupoRepository.save(asignacion);
+        }
+
+        /*
+         * =========================================================
+         * ELIMINAR ASIGNACIÓN
+         * =========================================================
+         */
+
+        @Transactional
+        public void eliminar(Long id) {
+
+                EstudianteGrupo asignacion = estudianteGrupoRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "No se encontró la asignación"));
+
+                estudianteGrupoRepository.delete(asignacion);
+        }
+
+        /*
+         * =========================================================
+         * VALIDAR ESTUDIANTE ACTIVO
+         * =========================================================
+         */
+
+        private void validarEstudianteActivo(
+                        Estudiante estudiante) {
+
+                if (estudiante == null
+                                || !"ACTIVO".equalsIgnoreCase(
+                                                estudiante.getEstado())) {
+
+                        throw new RuntimeException(
+                                        "El estudiante no se encuentra activo");
+                }
+        }
+
+        /*
+         * =========================================================
+         * VALIDAR GRUPO ACTIVO
+         * =========================================================
+         */
+
+        private void validarGrupoActivo(
+                        Grupo grupo) {
+
+                if (grupo == null
+                                || !"ACTIVO".equalsIgnoreCase(
+                                                grupo.getEstado())) {
+
+                        throw new RuntimeException(
+                                        "El grupo no se encuentra activo");
+                }
+        }
+
+        /*
+         * =========================================================
+         * VALIDAR CAPACIDAD
+         * =========================================================
+         */
+
+        private void validarCapacidadDisponible(
+                        Grupo grupo) {
+
+                long estudiantesActivos = estudianteGrupoRepository
+                                .countByGrupoIdAndEstado(
+                                                grupo.getId(),
+                                                "ACTIVO");
+
+                if (estudiantesActivos >= grupo.getCapacidad()) {
+
+                        throw new RuntimeException(
+                                        "El grupo ha alcanzado su capacidad máxima");
+                }
         }
 }

@@ -50,9 +50,7 @@ public class UsuarioController {
                                 request.getTelefono(),
                                 request.getFechaNacimiento(),
                                 request.getGenero(),
-                                request.getCorreo(),
-                                request.getFoto(),
-                                request.getEstudianteId());
+                                request.getCorreo());
 
                 UsuarioResponse response = convertirResponse(usuario);
 
@@ -145,18 +143,6 @@ public class UsuarioController {
                         @RequestParam String rol) {
 
                 Usuario usuario = usuarioService.cambiarRol(id, rol);
-
-                return ResponseEntity.ok(convertirResponse(usuario));
-        }
-
-        @PatchMapping("/{usuarioId}/estudiante/{estudianteId}")
-        public ResponseEntity<UsuarioResponse> vincularEstudiante(
-                        @PathVariable Long usuarioId,
-                        @PathVariable Long estudianteId) {
-
-                Usuario usuario = usuarioService.vincularEstudiante(
-                                usuarioId,
-                                estudianteId);
 
                 return ResponseEntity.ok(convertirResponse(usuario));
         }

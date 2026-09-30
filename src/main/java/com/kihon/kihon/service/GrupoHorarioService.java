@@ -105,11 +105,17 @@ public class GrupoHorarioService {
                                         "No se puede crear un horario para un grupo inactivo");
                 }
 
+                String diaNormalizado = diaSemana.toUpperCase(Locale.ROOT);
+
+                validarHorarioDuplicado(
+                                grupoId,
+                                diaNormalizado,
+                                null);
+
                 GrupoHorario horario = new GrupoHorario();
 
                 horario.setGrupo(grupo);
-                horario.setDiaSemana(
-                                diaSemana.toUpperCase(Locale.ROOT));
+                horario.setDiaSemana(diaNormalizado);
                 horario.setHoraInicio(horaInicio);
                 horario.setHoraFin(horaFin);
 
@@ -145,9 +151,27 @@ public class GrupoHorarioService {
                                         "No se puede asignar un horario a un grupo inactivo");
                 }
 
+                String diaNormalizado = diaSemana.toUpperCase(Locale.ROOT);
+
+                /*
+                 * Se valida el día dentro del grupo excluyendo
+                 * el propio horario que se está actualizando.
+                 *
+                 * Esto permite modificar:
+                 *
+                 * VIERNES 16:00 - 17:00
+                 * ↓
+                 * VIERNES 17:00 - 18:00
+                 *
+                 * sin considerarlo un duplicado de sí mismo.
+                 */
+                validarHorarioDuplicado(
+                                grupoId,
+                                diaNormalizado,
+                                id);
+
                 horario.setGrupo(grupo);
-                horario.setDiaSemana(
-                                diaSemana.toUpperCase(Locale.ROOT));
+                horario.setDiaSemana(diaNormalizado);
                 horario.setHoraInicio(horaInicio);
                 horario.setHoraFin(horaFin);
 
@@ -168,6 +192,31 @@ public class GrupoHorarioService {
                 }
 
                 grupoHorarioRepository.deleteById(id);
+        }
+
+        // ==========================================
+        // VALIDAR HORARIO DUPLICADO
+        // ==========================================
+
+        private void validarHorarioDuplicado(
+                        Long grupoId,
+                        String diaSemana,
+                        Long horarioIdExcluir) {
+
+                boolean existe = grupoHorarioRepository
+                                .findByGrupoId(grupoId)
+                                .stream()
+                                .anyMatch(horario -> diaSemana.equalsIgnoreCase(
+                                                horario.getDiaSemana())
+                                                && (horarioIdExcluir == null
+                                                                || !horario.getId().equals(
+                                                                                horarioIdExcluir)));
+
+                if (existe) {
+
+                        throw new RuntimeException(
+                                        "El grupo ya tiene un horario registrado para ese día");
+                }
         }
 
         // ==========================================

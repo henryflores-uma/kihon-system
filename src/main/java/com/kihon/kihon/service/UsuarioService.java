@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -136,6 +137,16 @@ public class UsuarioService {
          * =========================================================
          * CREAR USUARIO
          * =========================================================
+         *
+         * Este método corresponde al registro público.
+         *
+         * Los datos personales pertenecen a Persona.
+         * No se recibe estudianteId porque la relación
+         * Usuario -> Estudiante se determina mediante Persona.
+         *
+         * Tampoco se recibe foto porque el registro público
+         * actualmente no permite cargar fotografía.
+         * =========================================================
          */
         @Transactional
         public Usuario crearUsuario(
@@ -148,9 +159,7 @@ public class UsuarioService {
                         String telefono,
                         LocalDate fechaNacimiento,
                         String genero,
-                        String correo,
-                        String foto,
-                        Long estudianteId) {
+                        String correo) {
 
                 /*
                  * ==============================
@@ -214,7 +223,8 @@ public class UsuarioService {
                  * ==============================
                  */
 
-                if (usuarioRepository.findByUsername(username.trim()).isPresent()) {
+                if (usuarioRepository.findByUsername(
+                                username.trim()).isPresent()) {
 
                         throw new RuntimeException(
                                         "El username ya existe");
@@ -226,61 +236,35 @@ public class UsuarioService {
                  * ==============================
                  */
 
-                TipoDocumento tipoDocumentoEntidad = tipoDocumentoRepository.findByNombre(
-                                tipoDocumento.trim().toUpperCase())
+                TipoDocumento tipoDocumentoEntidad = tipoDocumentoRepository
+                                .findByNombre(
+                                                tipoDocumento.trim().toUpperCase())
                                 .orElseThrow(() -> new RuntimeException(
                                                 "El tipo de documento no existe"));
 
                 /*
                  * ==============================
-                 * PERSONA
+                 * BUSCAR PERSONA
                  * ==============================
+                 *
+                 * Una Persona puede existir previamente
+                 * como estudiante, apoderado u otro registro.
+                 *
+                 * Si existe, reutilizamos esa Persona.
                  */
 
-                Persona persona;
+                Persona persona = personaRepository
+                                .findByTipoDocumentoIdAndNumeroDocumento(
+                                                tipoDocumentoEntidad.getId(),
+                                                numeroDocumento.trim())
+                                .orElse(null);
 
-                if (estudianteId != null) {
-
-                        Estudiante estudiante = estudianteRepository.findById(
-                                        estudianteId)
-                                        .orElseThrow(() -> new RuntimeException(
-                                                        "Estudiante no encontrado"));
-
-                        persona = estudiante.getPersona();
-
-                        if (persona == null) {
-                                throw new RuntimeException(
-                                                "El estudiante no tiene una persona asociada");
-                        }
+                if (persona != null) {
 
                         /*
-                         * El documento debe corresponder
-                         * con la Persona del estudiante.
+                         * La Persona ya existe.
                          */
-                        if (!persona.getTipoDocumento().getId()
-                                        .equals(tipoDocumentoEntidad.getId())
-                                        || !persona.getNumeroDocumento()
-                                                        .equals(numeroDocumento.trim())) {
 
-                                throw new RuntimeException(
-                                                "Los datos del documento no coinciden con los del estudiante");
-                        }
-
-                        /*
-                         * El correo también debe corresponder
-                         * con la Persona.
-                         */
-                        if (!persona.getCorreo()
-                                        .equalsIgnoreCase(correo.trim())) {
-
-                                throw new RuntimeException(
-                                                "El correo no coincide con el del estudiante");
-                        }
-
-                        /*
-                         * Una Persona solo puede tener
-                         * una cuenta de usuario.
-                         */
                         if (usuarioRepository
                                         .findByPersona(persona)
                                         .isPresent()) {
@@ -289,78 +273,58 @@ public class UsuarioService {
                                                 "La persona ya tiene una cuenta de usuario");
                         }
 
+                        /*
+                         * El correo debe coincidir
+                         * con la Persona existente.
+                         */
+
+                        if (persona.getCorreo() == null
+                                        || !persona.getCorreo()
+                                                        .equalsIgnoreCase(
+                                                                        correo.trim())) {
+
+                                throw new RuntimeException(
+                                                "El correo no coincide con el de la persona registrada");
+                        }
+
                 } else {
 
                         /*
-                         * Usuario independiente.
-                         *
-                         * Primero buscamos si ya existe
-                         * una Persona con la misma identidad.
+                         * ==============================
+                         * VALIDAR CORREO GLOBAL
+                         * ==============================
                          */
-                        persona = personaRepository
-                                        .findByTipoDocumentoIdAndNumeroDocumento(
-                                                        tipoDocumentoEntidad.getId(),
-                                                        numeroDocumento.trim())
-                                        .orElse(null);
 
-                        if (persona != null) {
+                        if (personaRepository
+                                        .findByCorreo(correo.trim())
+                                        .isPresent()) {
 
-                                /*
-                                 * La Persona ya existe.
-                                 */
-                                if (usuarioRepository
-                                                .findByPersona(persona)
-                                                .isPresent()) {
-
-                                        throw new RuntimeException(
-                                                        "La persona ya tiene una cuenta de usuario");
-                                }
-
-                                /*
-                                 * El correo debe coincidir
-                                 * con la Persona existente.
-                                 */
-                                if (!persona.getCorreo()
-                                                .equalsIgnoreCase(correo.trim())) {
-
-                                        throw new RuntimeException(
-                                                        "El correo no coincide con el de la persona registrada");
-                                }
-
-                        } else {
-
-                                /*
-                                 * No existe Persona.
-                                 *
-                                 * Verificamos que el correo
-                                 * tampoco exista globalmente.
-                                 */
-                                if (personaRepository
-                                                .findByCorreo(correo.trim())
-                                                .isPresent()) {
-
-                                        throw new RuntimeException(
-                                                        "El correo ya existe");
-                                }
-
-                                persona = new Persona();
-
-                                persona.setNombre(nombre.trim());
-                                persona.setApellido(apellido.trim());
-                                persona.setTipoDocumento(
-                                                tipoDocumentoEntidad);
-                                persona.setNumeroDocumento(
-                                                numeroDocumento.trim());
-                                persona.setTelefono(telefono.trim());
-                                persona.setCorreo(correo.trim());
-                                persona.setFechaNacimiento(
-                                                fechaNacimiento);
-                                persona.setGenero(
-                                                genero.trim());
-                                persona.setFoto(foto);
-
-                                persona = personaRepository.save(persona);
+                                throw new RuntimeException(
+                                                "El correo ya existe");
                         }
+
+                        /*
+                         * ==============================
+                         * CREAR PERSONA
+                         * ==============================
+                         */
+
+                        persona = new Persona();
+
+                        persona.setNombre(nombre.trim());
+                        persona.setApellido(apellido.trim());
+                        persona.setTipoDocumento(
+                                        tipoDocumentoEntidad);
+                        persona.setNumeroDocumento(
+                                        numeroDocumento.trim());
+                        persona.setTelefono(telefono.trim());
+                        persona.setCorreo(correo.trim());
+                        persona.setFechaNacimiento(
+                                        fechaNacimiento);
+                        persona.setGenero(
+                                        genero.trim());
+
+                        persona = personaRepository.save(persona);
                 }
 
                 /*
@@ -388,12 +352,9 @@ public class UsuarioService {
                 /*
                  * Los datos personales NO se duplican
                  * en Usuario.
-                 *
-                 * Toda la información personal pertenece
-                 * a Persona.
                  */
-
                 usuario.setEstado("PENDIENTE");
+                usuario.setFechaRegistro(LocalDateTime.now());
                 usuario.setRol(rolEstudiante);
 
                 return usuarioRepository.save(usuario);
@@ -429,10 +390,6 @@ public class UsuarioService {
                                         "El usuario no tiene una persona asociada");
                 }
 
-                /*
-                 * Guardamos el ID en una variable independiente
-                 * porque será utilizada dentro de lambdas.
-                 */
                 Long personaId = persona.getId();
 
                 /*
@@ -509,8 +466,9 @@ public class UsuarioService {
                  * ==============================
                  */
 
-                TipoDocumento tipoDocumentoEntidad = tipoDocumentoRepository.findByNombre(
-                                tipoDocumento.trim().toUpperCase())
+                TipoDocumento tipoDocumentoEntidad = tipoDocumentoRepository
+                                .findByNombre(
+                                                tipoDocumento.trim().toUpperCase())
                                 .orElseThrow(() -> new RuntimeException(
                                                 "El tipo de documento no existe"));
 
@@ -634,11 +592,6 @@ public class UsuarioService {
 
                 usuario.setUsername(username.trim());
 
-                /*
-                 * No se sincronizan datos personales
-                 * porque Usuario ya no los almacena.
-                 */
-
                 return usuarioRepository.save(usuario);
         }
 
@@ -673,68 +626,6 @@ public class UsuarioService {
                 usuario.setEstado(estado);
 
                 return usuarioRepository.save(usuario);
-        }
-
-        /*
-         * =========================================================
-         * VINCULAR ESTUDIANTE
-         * =========================================================
-         *
-         * Este método se mantiene temporalmente porque el
-         * UsuarioController todavía puede utilizar este endpoint.
-         *
-         * Con el modelo normalizado ya NO se almacena
-         * usuarios.estudiante_id.
-         *
-         * La relación usuario-estudiante se determina porque
-         * ambos pertenecen a la misma Persona.
-         */
-        @Transactional
-        public Usuario vincularEstudiante(
-                        Long usuarioId,
-                        Long estudianteId) {
-
-                Usuario usuario = usuarioRepository.findById(usuarioId)
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Usuario no encontrado"));
-
-                Estudiante estudiante = estudianteRepository.findById(
-                                estudianteId)
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Estudiante no encontrado"));
-
-                if (!"ESTUDIANTE".equalsIgnoreCase(
-                                usuario.getRol().getNombre())) {
-
-                        throw new RuntimeException(
-                                        "El usuario no tiene el rol ESTUDIANTE");
-                }
-
-                if (usuario.getPersona() == null
-                                || estudiante.getPersona() == null) {
-
-                        throw new RuntimeException(
-                                        "El usuario o estudiante no tiene una persona asociada");
-                }
-
-                /*
-                 * El usuario y estudiante deben representar
-                 * a la misma Persona.
-                 */
-                if (!usuario.getPersona().getId()
-                                .equals(estudiante.getPersona().getId())) {
-
-                        throw new RuntimeException(
-                                        "El usuario y el estudiante pertenecen a personas diferentes");
-                }
-
-                /*
-                 * Ya no existe usuario.estudiante.
-                 *
-                 * La vinculación está determinada por
-                 * usuario.persona_id = estudiante.persona_id.
-                 */
-                return usuario;
         }
 
         /*
@@ -830,8 +721,6 @@ public class UsuarioService {
                 /*
                  * Verificamos si la Persona ya tiene
                  * una cuenta de usuario.
-                 *
-                 * Ya no usamos estudiante_id.
                  */
                 if (usuarioRepository.findByPersona(persona).isPresent()) {
 
@@ -871,6 +760,7 @@ public class UsuarioService {
                  */
 
                 usuario.setEstado("ACTIVO");
+                usuario.setFechaRegistro(LocalDateTime.now());
                 usuario.setRol(rolEstudiante);
 
                 return usuarioRepository.save(usuario);
@@ -927,12 +817,6 @@ public class UsuarioService {
                                         "El usuario no tiene una persona asociada");
                 }
 
-                /*
-                 * Guardamos el ID de la Persona.
-                 *
-                 * Esta variable NO se modifica posteriormente,
-                 * por lo que puede utilizarse dentro de lambdas.
-                 */
                 Long personaId = persona.getId();
 
                 if (nuevoUsername == null
@@ -1062,11 +946,6 @@ public class UsuarioService {
                  */
 
                 usuario.setUsername(nuevoUsername.trim());
-
-                /*
-                 * No se sincronizan datos personales
-                 * porque Usuario ya no los almacena.
-                 */
 
                 return usuarioRepository.save(usuario);
         }

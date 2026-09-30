@@ -109,7 +109,6 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 "/api/usuarios/*",
                                                                 "/api/usuarios/*/estado",
-                                                                "/api/usuarios/*/estudiante/*",
                                                                 "/api/usuarios/*/rol")
                                                 .hasRole("ADMIN")
 

@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Configuration
 public class DataInitializer {
@@ -29,14 +30,43 @@ public class DataInitializer {
 
                 return args -> {
 
+                        /*
+                         * =========================================================
+                         * INICIALIZAR ROLES
+                         * =========================================================
+                         */
+
                         Rol rolAdmin = rolRepository.findByNombre("ADMIN")
-                                        .orElseThrow(() -> new RuntimeException(
-                                                        "El rol ADMIN no existe"));
+                                        .orElseGet(() -> rolRepository.save(new Rol("ADMIN")));
+
+                        if (rolRepository.findByNombre("SECRETARIA").isEmpty()) {
+                                rolRepository.save(new Rol("SECRETARIA"));
+                        }
+
+                        if (rolRepository.findByNombre("SENSEI").isEmpty()) {
+                                rolRepository.save(new Rol("SENSEI"));
+                        }
+
+                        if (rolRepository.findByNombre("ESTUDIANTE").isEmpty()) {
+                                rolRepository.save(new Rol("ESTUDIANTE"));
+                        }
+
+                        /*
+                         * =========================================================
+                         * OBTENER TIPO DE DOCUMENTO DNI
+                         * =========================================================
+                         */
 
                         TipoDocumento tipoDocumentoDni = tipoDocumentoRepository
                                         .findByNombre("DNI")
                                         .orElseThrow(() -> new RuntimeException(
                                                         "El tipo de documento DNI no existe"));
+
+                        /*
+                         * =========================================================
+                         * VERIFICAR SI YA EXISTE UN ADMINISTRADOR
+                         * =========================================================
+                         */
 
                         boolean existeAdmin = usuarioRepository
                                         .findAll()
@@ -45,12 +75,18 @@ public class DataInitializer {
                                                         && "ADMIN".equalsIgnoreCase(
                                                                         usuario.getRol().getNombre()));
 
+                        /*
+                         * =========================================================
+                         * CREAR ADMINISTRADOR INICIAL
+                         * =========================================================
+                         */
+
                         if (!existeAdmin) {
 
                                 /*
-                                 * ==========================================
+                                 * -----------------------------------------------------
                                  * CREAR PERSONA DEL ADMINISTRADOR
-                                 * ==========================================
+                                 * -----------------------------------------------------
                                  */
 
                                 Persona personaAdmin = new Persona();
@@ -68,22 +104,19 @@ public class DataInitializer {
                                 personaAdmin = personaRepository.save(personaAdmin);
 
                                 /*
-                                 * ==========================================
+                                 * -----------------------------------------------------
                                  * CREAR USUARIO ADMINISTRADOR
-                                 * ==========================================
+                                 * -----------------------------------------------------
                                  */
 
                                 Usuario admin = new Usuario();
 
                                 admin.setPersona(personaAdmin);
-
                                 admin.setUsername("admin");
-
                                 admin.setPassword(
                                                 passwordEncoder.encode("Admin12345"));
-
                                 admin.setEstado("ACTIVO");
-
+                                admin.setFechaRegistro(LocalDateTime.now());
                                 admin.setRol(rolAdmin);
 
                                 usuarioRepository.save(admin);

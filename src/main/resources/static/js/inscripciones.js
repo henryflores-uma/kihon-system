@@ -1,327 +1,229 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const auth = sessionStorage.getItem("kihonAuth");
+  const username = sessionStorage.getItem("kihonUsername");
+  const rol = sessionStorage.getItem("kihonRol");
 
-    const auth = sessionStorage.getItem("kihonAuth");
-    const username = sessionStorage.getItem("kihonUsername");
-    const rol = sessionStorage.getItem("kihonRol");
+  // ==========================================
+  // VALIDAR SESIÓN
+  // ==========================================
 
+  if (!auth || !username || !rol) {
+    window.location.href = "/login";
 
-    // ==========================================
-    // VALIDAR SESIÓN
-    // ==========================================
+    return;
+  }
 
-    if (!auth || !username || !rol) {
+  // ==========================================
+  // VALIDAR ROL
+  // ==========================================
 
-        window.location.href = "/login";
+  if (rol !== "ADMIN" && rol !== "SECRETARIA") {
+    window.location.href = "/login";
 
-        return;
-    }
+    return;
+  }
 
+  // ==========================================
+  // ELEMENTOS
+  // ==========================================
 
-    // ==========================================
-    // VALIDAR ROL
-    // ==========================================
+  const usernameDisplay = document.getElementById("usernameDisplay");
 
-    if (rol !== "ADMIN" && rol !== "SECRETARIA") {
+  const studentSelect = document.getElementById("studentSelect");
 
-        window.location.href = "/login";
+  const groupSelect = document.getElementById("groupSelect");
 
-        return;
-    }
+  const inscripcionForm = document.getElementById("inscripcionForm");
 
+  const clearFormButton = document.getElementById("clearFormButton");
 
-    // ==========================================
-    // ELEMENTOS
-    // ==========================================
+  const groupInfo = document.getElementById("groupInfo");
 
-    const usernameDisplay =
-        document.getElementById("usernameDisplay");
+  const groupInfoName = document.getElementById("groupInfoName");
 
-    const studentSelect =
-        document.getElementById("studentSelect");
+  const groupInfoSensei = document.getElementById("groupInfoSensei");
 
-    const groupSelect =
-        document.getElementById("groupSelect");
+  const groupInfoSchedule = document.getElementById("groupInfoSchedule");
 
-    const inscripcionForm =
-        document.getElementById("inscripcionForm");
+  const groupInfoCapacity = document.getElementById("groupInfoCapacity");
 
-    const clearFormButton =
-        document.getElementById("clearFormButton");
+  const groupInfoAvailable = document.getElementById("groupInfoAvailable");
 
-    const groupInfo =
-        document.getElementById("groupInfo");
+  const groupInfoDescription = document.getElementById("groupInfoDescription");
 
-    const groupInfoName =
-        document.getElementById("groupInfoName");
+  const inscripcionFormMessage = document.getElementById(
+    "inscripcionFormMessage",
+  );
 
-    const groupInfoSensei =
-        document.getElementById("groupInfoSensei");
+  const inscripcionesMessage = document.getElementById("inscripcionesMessage");
 
-    const groupInfoSchedule =
-        document.getElementById("groupInfoSchedule");
+  const inscripcionesTableBody = document.getElementById(
+    "inscripcionesTableBody",
+  );
 
-    const groupInfoCapacity =
-        document.getElementById("groupInfoCapacity");
+  const changeGroupSection = document.getElementById("changeGroupSection");
 
-    const groupInfoAvailable =
-        document.getElementById("groupInfoAvailable");
+  const changeGroupForm = document.getElementById("changeGroupForm");
 
-    const groupInfoDescription =
-        document.getElementById("groupInfoDescription");
+  const changeStudentId = document.getElementById("changeStudentId");
 
-    const inscripcionFormMessage =
-        document.getElementById("inscripcionFormMessage");
+  const changeGroupStudent = document.getElementById("changeGroupStudent");
 
-    const inscripcionesMessage =
-        document.getElementById("inscripcionesMessage");
+  const newGroupSelect = document.getElementById("newGroupSelect");
 
-    const inscripcionesTableBody =
-        document.getElementById("inscripcionesTableBody");
+  const cancelChangeGroupButton = document.getElementById(
+    "cancelChangeGroupButton",
+  );
 
-    const changeGroupSection =
-        document.getElementById("changeGroupSection");
+  const changeGroupMessage = document.getElementById("changeGroupMessage");
 
-    const changeGroupForm =
-        document.getElementById("changeGroupForm");
+  usernameDisplay.textContent = username;
 
-    const changeStudentId =
-        document.getElementById("changeStudentId");
+  // ==========================================
+  // VARIABLES
+  // ==========================================
 
-    const changeGroupStudent =
-        document.getElementById("changeGroupStudent");
+  let estudiantes = [];
 
-    const newGroupSelect =
-        document.getElementById("newGroupSelect");
+  let grupos = [];
 
-    const cancelChangeGroupButton =
-        document.getElementById("cancelChangeGroupButton");
+  let inscripciones = [];
 
-    const changeGroupMessage =
-        document.getElementById("changeGroupMessage");
+  // ==========================================
+  // CARGAR ESTUDIANTES
+  // ==========================================
 
+  async function cargarEstudiantes() {
+    try {
+      const response = await fetch("/api/estudiantes", {
+        headers: {
+          Authorization: `Basic ${auth}`,
+        },
+      });
 
-    usernameDisplay.textContent = username;
+      if (!response.ok) {
+        throw new Error("No se pudieron cargar los estudiantes");
+      }
 
+      estudiantes = await response.json();
 
-    // ==========================================
-    // VARIABLES
-    // ==========================================
+      const estudiantesActivos = estudiantes.filter(
+        (estudiante) => estudiante.estado === "ACTIVO",
+      );
 
-    let estudiantes = [];
-
-    let grupos = [];
-
-    let inscripciones = [];
-
-
-    // ==========================================
-    // CARGAR ESTUDIANTES
-    // ==========================================
-
-    async function cargarEstudiantes() {
-
-        try {
-
-            const response = await fetch(
-                "/api/estudiantes",
-                {
-                    headers: {
-                        "Authorization": `Basic ${auth}`
-                    }
-                }
-            );
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "No se pudieron cargar los estudiantes"
-                );
-            }
-
-
-            estudiantes = await response.json();
-
-
-            const estudiantesActivos =
-                estudiantes.filter(
-                    estudiante =>
-                        estudiante.estado === "ACTIVO"
-                );
-
-
-            studentSelect.innerHTML = `
+      studentSelect.innerHTML = `
                 <option value="">
                     Seleccionar estudiante
                 </option>
             `;
 
+      estudiantesActivos.forEach((estudiante) => {
+        const option = document.createElement("option");
 
-            estudiantesActivos.forEach(estudiante => {
+        option.value = estudiante.id;
 
-                const option =
-                    document.createElement("option");
+        option.textContent = `${estudiante.nombre} ${estudiante.apellido}`;
 
-                option.value = estudiante.id;
-
-                option.textContent =
-                    `${estudiante.nombre} ${estudiante.apellido}`;
-
-                studentSelect.appendChild(option);
-
-            });
-
-        } catch (error) {
-
-            mostrarMensaje(
-                inscripcionFormMessage,
-                error.message,
-                "error"
-            );
-        }
+        studentSelect.appendChild(option);
+      });
+    } catch (error) {
+      mostrarMensaje(inscripcionFormMessage, error.message, "error");
     }
+  }
 
+  // ==========================================
+  // CARGAR GRUPOS
+  // ==========================================
 
-    // ==========================================
-    // CARGAR GRUPOS
-    // ==========================================
+  async function cargarGrupos() {
+    try {
+      const response = await fetch("/api/grupos", {
+        headers: {
+          Authorization: `Basic ${auth}`,
+        },
+      });
 
-    async function cargarGrupos() {
+      if (!response.ok) {
+        throw new Error("No se pudieron cargar los grupos");
+      }
 
-        try {
+      grupos = await response.json();
 
-            const response = await fetch(
-                "/api/grupos",
-                {
-                    headers: {
-                        "Authorization": `Basic ${auth}`
-                    }
-                }
-            );
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "No se pudieron cargar los grupos"
-                );
-            }
-
-
-            grupos = await response.json();
-
-
-            cargarOpcionesGrupos();
-
-        } catch (error) {
-
-            mostrarMensaje(
-                inscripcionFormMessage,
-                error.message,
-                "error"
-            );
-        }
+      cargarOpcionesGrupos();
+    } catch (error) {
+      mostrarMensaje(inscripcionFormMessage, error.message, "error");
     }
+  }
 
+  // ==========================================
+  // CARGAR OPCIONES DE GRUPOS
+  // ==========================================
 
-    // ==========================================
-    // CARGAR OPCIONES DE GRUPOS
-    // ==========================================
-
-    function cargarOpcionesGrupos() {
-
-        groupSelect.innerHTML = `
+  function cargarOpcionesGrupos() {
+    groupSelect.innerHTML = `
             <option value="">
                 Seleccionar grupo
             </option>
         `;
 
+    grupos
+      .filter(
+        (grupo) => grupo.estado === "ACTIVO" && grupo.cuposDisponibles > 0,
+      )
+      .forEach((grupo) => {
+        const option = document.createElement("option");
 
-        grupos
-            .filter(grupo =>
-                grupo.estado === "ACTIVO" &&
-                grupo.cuposDisponibles > 0
-            )
-            .forEach(grupo => {
+        option.value = grupo.id;
 
-                const option =
-                    document.createElement("option");
+        option.textContent = `${grupo.nombre} - ${grupo.senseiNombre}`;
 
-                option.value = grupo.id;
+        groupSelect.appendChild(option);
+      });
+  }
 
-                option.textContent =
-                    `${grupo.nombre} - ${grupo.senseiNombre}`;
+  // ==========================================
+  // MOSTRAR INFORMACIÓN DEL GRUPO
+  // ==========================================
 
-                groupSelect.appendChild(option);
+  function mostrarInformacionGrupo() {
+    const grupoId = Number(groupSelect.value);
 
-            });
+    if (!grupoId) {
+      groupInfo.hidden = true;
+
+      return;
     }
 
+    const grupo = grupos.find((item) => item.id === grupoId);
 
-    // ==========================================
-    // MOSTRAR INFORMACIÓN DEL GRUPO
-    // ==========================================
+    if (!grupo) {
+      groupInfo.hidden = true;
 
-    function mostrarInformacionGrupo() {
-
-        const grupoId =
-            Number(groupSelect.value);
-
-
-        if (!grupoId) {
-
-            groupInfo.hidden = true;
-
-            return;
-        }
-
-
-        const grupo =
-            grupos.find(
-                item => item.id === grupoId
-            );
-
-
-        if (!grupo) {
-
-            groupInfo.hidden = true;
-
-            return;
-        }
-
-
-        groupInfoName.textContent =
-            grupo.nombre;
-
-        groupInfoSensei.textContent =
-            grupo.senseiNombre || "Sin sensei";
-
-        groupInfoSchedule.textContent =
-            `${formatearHora(grupo.horaInicio)} - ${formatearHora(grupo.horaFin)}`;
-
-        groupInfoCapacity.textContent =
-            grupo.capacidad;
-
-        groupInfoAvailable.textContent =
-            grupo.cuposDisponibles;
-
-        groupInfoDescription.textContent =
-            grupo.descripcion || "Sin descripción";
-
-
-        groupInfo.hidden = false;
+      return;
     }
 
+    groupInfoName.textContent = grupo.nombre;
 
-    // ==========================================
-    // CARGAR INSCRIPCIONES
-    // ==========================================
+    groupInfoSensei.textContent = grupo.senseiNombre || "Sin sensei";
 
-    async function cargarInscripciones() {
+    groupInfoSchedule.textContent = `${formatearHora(grupo.horaInicio)} - ${formatearHora(grupo.horaFin)}`;
 
-        try {
+    groupInfoCapacity.textContent = grupo.capacidad;
 
-            inscripcionesTableBody.innerHTML = `
+    groupInfoAvailable.textContent = grupo.cuposDisponibles;
+
+    groupInfoDescription.textContent = grupo.descripcion || "Sin descripción";
+
+    groupInfo.hidden = false;
+  }
+
+  // ==========================================
+  // CARGAR INSCRIPCIONES
+  // ==========================================
+
+  async function cargarInscripciones() {
+    try {
+      inscripcionesTableBody.innerHTML = `
                 <tr>
                     <td colspan="4">
                         Cargando inscripciones...
@@ -329,53 +231,37 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
 
+      const response = await fetch("/api/estudiantes-grupos", {
+        headers: {
+          Authorization: `Basic ${auth}`,
+        },
+      });
 
-            const response = await fetch(
-                "/api/estudiantes-grupos",
-                {
-                    headers: {
-                        "Authorization": `Basic ${auth}`
-                    }
-                }
-            );
+      if (!response.ok) {
+        throw new Error("No se pudieron cargar las inscripciones");
+      }
 
+      inscripciones = await response.json();
 
-            if (!response.ok) {
-
-                throw new Error(
-                    "No se pudieron cargar las inscripciones"
-                );
-            }
-
-
-            inscripciones =
-                await response.json();
-
-
-            renderizarInscripciones();
-
-        } catch (error) {
-
-            inscripcionesTableBody.innerHTML = `
+      renderizarInscripciones();
+    } catch (error) {
+      inscripcionesTableBody.innerHTML = `
                 <tr>
                     <td colspan="4">
                         ${error.message}
                     </td>
                 </tr>
             `;
-        }
     }
+  }
 
+  // ==========================================
+  // RENDERIZAR INSCRIPCIONES
+  // ==========================================
 
-    // ==========================================
-    // RENDERIZAR INSCRIPCIONES
-    // ==========================================
-
-    function renderizarInscripciones() {
-
-        if (inscripciones.length === 0) {
-
-            inscripcionesTableBody.innerHTML = `
+  function renderizarInscripciones() {
+    if (inscripciones.length === 0) {
+      inscripcionesTableBody.innerHTML = `
                 <tr>
                     <td colspan="4">
                         No hay inscripciones registradas.
@@ -383,30 +269,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
 
-            return;
-        }
+      return;
+    }
 
+    inscripcionesTableBody.innerHTML = "";
 
-        inscripcionesTableBody.innerHTML = "";
+    inscripciones.forEach((inscripcion) => {
+      const row = document.createElement("tr");
 
+      const estado = inscripcion.estado;
 
-        inscripciones.forEach(inscripcion => {
+      const estadoTexto = estado === "ACTIVO" ? "Activo" : "Inactivo";
 
-            const row =
-                document.createElement("tr");
-
-
-            const estado =
-                inscripcion.estado;
-
-
-            const estadoTexto =
-                estado === "ACTIVO"
-                    ? "Activo"
-                    : "Inactivo";
-
-
-            row.innerHTML = `
+      row.innerHTML = `
 
                 <td>
                     ${inscripcion.estudianteNombre}
@@ -426,7 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         type="button"
                         class="btn btn--outline"
                         data-action="change-group"
-                        data-student-id="${inscripcion.estudianteId}"
+                        data-assignment-id="${inscripcion.id}"
                         data-student-name="${inscripcion.estudianteNombre}"
                     >
                         Cambiar grupo
@@ -434,575 +309,367 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     <button
                         type="button"
-                        class="btn ${estado === "ACTIVO"
-                    ? "btn--logout"
-                    : "btn--primary"}"
+                        class="btn ${
+                          estado === "ACTIVO" ? "btn--logout" : "btn--primary"
+                        }"
                         data-action="toggle-status"
                         data-id="${inscripcion.id}"
                         data-status="${estado}"
                     >
-                        ${estado === "ACTIVO"
-                    ? "Inactivar"
-                    : "Activar"}
+                        ${estado === "ACTIVO" ? "Inactivar" : "Activar"}
                     </button>
 
                 </td>
             `;
 
+      inscripcionesTableBody.appendChild(row);
+    });
+  }
 
-            inscripcionesTableBody.appendChild(row);
+  // ==========================================
+  // INSCRIBIR ESTUDIANTE
+  // ==========================================
 
-        });
+  async function inscribirEstudiante(event) {
+    event.preventDefault();
+
+    const estudianteId = Number(studentSelect.value);
+
+    const grupoId = Number(groupSelect.value);
+
+    if (!estudianteId || !grupoId) {
+      mostrarMensaje(
+        inscripcionFormMessage,
+        "Selecciona un estudiante y un grupo.",
+        "error",
+      );
+
+      return;
     }
 
+    try {
+      const response = await fetch("/api/estudiantes-grupos", {
+        method: "POST",
 
-    // ==========================================
-    // INSCRIBIR ESTUDIANTE
-    // ==========================================
+        headers: {
+          Authorization: `Basic ${auth}`,
+          "Content-Type": "application/json",
+        },
 
-    async function inscribirEstudiante(event) {
+        body: JSON.stringify({
+          estudianteId,
+          grupoId,
+        }),
+      });
 
-        event.preventDefault();
+      const data = await obtenerRespuesta(response);
 
+      if (!response.ok) {
+        throw new Error(obtenerMensajeError(data));
+      }
 
-        const estudianteId =
-            Number(studentSelect.value);
+      mostrarMensaje(
+        inscripcionFormMessage,
+        "Estudiante inscrito correctamente.",
+        "success",
+      );
 
-        const grupoId =
-            Number(groupSelect.value);
+      await cargarGrupos();
 
+      await cargarInscripciones();
 
-        if (!estudianteId || !grupoId) {
-
-            mostrarMensaje(
-                inscripcionFormMessage,
-                "Selecciona un estudiante y un grupo.",
-                "error"
-            );
-
-            return;
-        }
-
-
-        try {
-
-            const response = await fetch(
-                "/api/estudiantes-grupos",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Authorization": `Basic ${auth}`,
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        estudianteId,
-                        grupoId
-                    })
-                }
-            );
-
-
-            const data =
-                await obtenerRespuesta(response);
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    obtenerMensajeError(data)
-                );
-            }
-
-
-            mostrarMensaje(
-                inscripcionFormMessage,
-                "Estudiante inscrito correctamente.",
-                "success"
-            );
-
-
-            await cargarGrupos();
-
-            await cargarInscripciones();
-
-            limpiarFormulario();
-
-        } catch (error) {
-
-            mostrarMensaje(
-                inscripcionFormMessage,
-                error.message,
-                "error"
-            );
-        }
+      limpiarFormulario();
+    } catch (error) {
+      mostrarMensaje(inscripcionFormMessage, error.message, "error");
     }
+  }
 
+  // ==========================================
+  // CAMBIAR GRUPO
+  // ==========================================
 
-    // ==========================================
-    // CAMBIAR GRUPO
-    // ==========================================
+  function abrirCambiarGrupo(asignacionId, estudianteNombre) {
+    changeStudentId.value = asignacionId;
 
-    function abrirCambiarGrupo(
-        estudianteId,
-        estudianteNombre
-    ) {
+    changeGroupStudent.textContent = `Selecciona un nuevo grupo para ${estudianteNombre}.`;
 
-        changeStudentId.value =
-            estudianteId;
+    cargarOpcionesNuevoGrupo(asignacionId);
 
-        changeGroupStudent.textContent =
-            `Selecciona un nuevo grupo para ${estudianteNombre}.`;
+    changeGroupSection.hidden = false;
 
+    changeGroupSection.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
 
-        cargarOpcionesNuevoGrupo(
-            estudianteId
-        );
+  // ==========================================
+  // OPCIONES NUEVO GRUPO
+  // ==========================================
 
-
-        changeGroupSection.hidden = false;
-
-
-        changeGroupSection.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
-    }
-
-
-    // ==========================================
-    // OPCIONES NUEVO GRUPO
-    // ==========================================
-
-    function cargarOpcionesNuevoGrupo(
-        estudianteId
-    ) {
-
-        newGroupSelect.innerHTML = `
+  function cargarOpcionesNuevoGrupo(asignacionId) {
+    newGroupSelect.innerHTML = `
             <option value="">
                 Seleccionar grupo
             </option>
         `;
 
-
-        const inscripcionActual =
-            inscripciones.find(
-                inscripcion =>
-                    inscripcion.estudianteId ===
-                    Number(estudianteId) &&
-                    inscripcion.estado === "ACTIVO"
-            );
-
-
-        grupos
-            .filter(grupo =>
-                grupo.estado === "ACTIVO" &&
-                grupo.cuposDisponibles > 0 &&
-                (
-                    !inscripcionActual ||
-                    grupo.id !== inscripcionActual.grupoId
-                )
-            )
-            .forEach(grupo => {
-
-                const option =
-                    document.createElement("option");
-
-                option.value =
-                    grupo.id;
-
-                option.textContent =
-                    `${grupo.nombre} - ${grupo.senseiNombre}`;
-
-                newGroupSelect.appendChild(option);
-
-            });
-    }
-
-
-    // ==========================================
-    // PROCESAR CAMBIO DE GRUPO
-    // ==========================================
-
-    async function cambiarGrupo(event) {
-
-        event.preventDefault();
-
-
-        const estudianteId =
-            Number(changeStudentId.value);
-
-        const nuevoGrupoId =
-            Number(newGroupSelect.value);
-
-
-        if (!estudianteId || !nuevoGrupoId) {
-
-            mostrarMensaje(
-                changeGroupMessage,
-                "Selecciona un nuevo grupo.",
-                "error"
-            );
-
-            return;
-        }
-
-
-        try {
-
-            const response = await fetch(
-                `/api/estudiantes-grupos/estudiante/${estudianteId}/grupo/${nuevoGrupoId}`,
-                {
-                    method: "PATCH",
-
-                    headers: {
-                        "Authorization": `Basic ${auth}`
-                    }
-                }
-            );
-
-
-            const data =
-                await obtenerRespuesta(response);
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    obtenerMensajeError(data)
-                );
-            }
-
-
-            mostrarMensaje(
-                changeGroupMessage,
-                "El grupo del estudiante se cambió correctamente.",
-                "success"
-            );
-
-
-            await cargarGrupos();
-
-            await cargarInscripciones();
-
-
-            setTimeout(() => {
-
-                cerrarCambiarGrupo();
-
-            }, 800);
-
-        } catch (error) {
-
-            mostrarMensaje(
-                changeGroupMessage,
-                error.message,
-                "error"
-            );
-        }
-    }
-
-
-    // ==========================================
-    // CAMBIAR ESTADO
-    // ==========================================
-
-    async function cambiarEstado(
-        id,
-        estadoActual
-    ) {
-
-        const nuevoEstado =
-            estadoActual === "ACTIVO"
-                ? "INACTIVO"
-                : "ACTIVO";
-
-
-        try {
-
-            const response = await fetch(
-                `/api/estudiantes-grupos/${id}/estado?estado=${nuevoEstado}`,
-                {
-                    method: "PATCH",
-
-                    headers: {
-                        "Authorization": `Basic ${auth}`
-                    }
-                }
-            );
-
-
-            const data =
-                await obtenerRespuesta(response);
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    obtenerMensajeError(data)
-                );
-            }
-
-
-            mostrarMensaje(
-                inscripcionesMessage,
-                `La inscripción ahora está ${nuevoEstado.toLowerCase()}.`,
-                "success"
-            );
-
-
-            await cargarGrupos();
-
-            await cargarInscripciones();
-
-        } catch (error) {
-
-            mostrarMensaje(
-                inscripcionesMessage,
-                error.message,
-                "error"
-            );
-        }
-    }
-
-
-    // ==========================================
-    // LIMPIAR FORMULARIO
-    // ==========================================
-
-    function limpiarFormulario() {
-
-        inscripcionForm.reset();
-
-        groupInfo.hidden = true;
-
-        ocultarMensaje(
-            inscripcionFormMessage
-        );
-    }
-
-
-    // ==========================================
-    // CERRAR CAMBIO DE GRUPO
-    // ==========================================
-
-    function cerrarCambiarGrupo() {
-
-        changeGroupSection.hidden = true;
-
-        changeGroupForm.reset();
-
-        ocultarMensaje(
-            changeGroupMessage
-        );
-    }
-
-
-    // ==========================================
-    // MENSAJES
-    // ==========================================
-
-    function mostrarMensaje(
-        elemento,
-        mensaje,
-        tipo
-    ) {
-
-        elemento.textContent = mensaje;
-
-        elemento.className =
-            `inscripciones-message inscripciones-message--${tipo}`;
-
-        elemento.hidden = false;
-    }
-
-
-    function ocultarMensaje(elemento) {
-
-        elemento.hidden = true;
-
-        elemento.textContent = "";
-
-        elemento.className =
-            "inscripciones-message";
-    }
-
-
-    // ==========================================
-    // RESPUESTA API
-    // ==========================================
-
-    async function obtenerRespuesta(response) {
-
-        const text =
-            await response.text();
-
-
-        if (!text) {
-
-            return null;
-        }
-
-
-        try {
-
-            return JSON.parse(text);
-
-        } catch {
-
-            return text;
-        }
-    }
-
-
-    function obtenerMensajeError(data) {
-
-        if (!data) {
-
-            return "Ocurrió un error en la operación.";
-        }
-
-
-        if (typeof data === "string") {
-
-            return data;
-        }
-
-
-        return data.message ||
-            data.error ||
-            "Ocurrió un error en la operación.";
-    }
-
-
-    // ==========================================
-    // FORMATEAR HORA
-    // ==========================================
-
-    function formatearHora(hora) {
-
-        if (!hora) {
-
-            return "-";
-        }
-
-
-        return hora.substring(0, 5);
-    }
-
-
-    // ==========================================
-    // EVENTOS
-    // ==========================================
-
-    studentSelect.addEventListener(
-        "change",
-        () => {
-
-            ocultarMensaje(
-                inscripcionFormMessage
-            );
-
-        }
+    const inscripcionActual = inscripciones.find(
+      (inscripcion) => inscripcion.id === Number(asignacionId),
     );
 
+    grupos
+      .filter(
+        (grupo) =>
+          grupo.estado === "ACTIVO" &&
+          grupo.cuposDisponibles > 0 &&
+          (!inscripcionActual || grupo.id !== inscripcionActual.grupoId),
+      )
+      .forEach((grupo) => {
+        const option = document.createElement("option");
 
-    groupSelect.addEventListener(
-        "change",
-        () => {
+        option.value = grupo.id;
 
-            mostrarInformacionGrupo();
+        option.textContent = `${grupo.nombre} - ${grupo.senseiNombre}`;
 
-            ocultarMensaje(
-                inscripcionFormMessage
-            );
+        newGroupSelect.appendChild(option);
+      });
+  }
 
-        }
-    );
+  // ==========================================
+  // PROCESAR CAMBIO DE GRUPO
+  // ==========================================
 
+  async function cambiarGrupo(event) {
+    event.preventDefault();
 
-    inscripcionForm.addEventListener(
-        "submit",
-        inscribirEstudiante
-    );
+    const asignacionId = Number(changeStudentId.value);
 
+    const nuevoGrupoId = Number(newGroupSelect.value);
 
-    clearFormButton.addEventListener(
-        "click",
-        limpiarFormulario
-    );
+    if (!asignacionId || !nuevoGrupoId) {
+      mostrarMensaje(changeGroupMessage, "Selecciona un nuevo grupo.", "error");
 
-
-    inscripcionesTableBody.addEventListener(
-        "click",
-        event => {
-
-            const button =
-                event.target.closest("button");
-
-
-            if (!button) {
-
-                return;
-            }
-
-
-            const action =
-                button.dataset.action;
-
-
-            if (action === "change-group") {
-
-                abrirCambiarGrupo(
-                    Number(button.dataset.studentId),
-                    button.dataset.studentName
-                );
-
-                return;
-            }
-
-
-            if (action === "toggle-status") {
-
-                cambiarEstado(
-                    Number(button.dataset.id),
-                    button.dataset.status
-                );
-
-            }
-
-        }
-    );
-
-
-    changeGroupForm.addEventListener(
-        "submit",
-        cambiarGrupo
-    );
-
-
-    cancelChangeGroupButton.addEventListener(
-        "click",
-        cerrarCambiarGrupo
-    );
-
-
-    // ==========================================
-    // INICIALIZAR
-    // ==========================================
-
-    async function inicializar() {
-
-        await cargarEstudiantes();
-
-        await cargarGrupos();
-
-        await cargarInscripciones();
-
+      return;
     }
 
+    try {
+      const response = await fetch(
+        `/api/estudiantes-grupos/asignacion/${asignacionId}/grupo/${nuevoGrupoId}`,
+        {
+          method: "PATCH",
 
-    inicializar();
+          headers: {
+            Authorization: `Basic ${auth}`,
+          },
+        },
+      );
 
+      const data = await obtenerRespuesta(response);
+
+      if (!response.ok) {
+        throw new Error(obtenerMensajeError(data));
+      }
+
+      mostrarMensaje(
+        changeGroupMessage,
+        "El grupo del estudiante se cambió correctamente.",
+        "success",
+      );
+
+      await cargarGrupos();
+
+      await cargarInscripciones();
+
+      setTimeout(() => {
+        cerrarCambiarGrupo();
+      }, 800);
+    } catch (error) {
+      mostrarMensaje(changeGroupMessage, error.message, "error");
+    }
+  }
+
+  // ==========================================
+  // CAMBIAR ESTADO
+  // ==========================================
+
+  async function cambiarEstado(id, estadoActual) {
+    const nuevoEstado = estadoActual === "ACTIVO" ? "INACTIVO" : "ACTIVO";
+
+    try {
+      const response = await fetch(
+        `/api/estudiantes-grupos/${id}/estado?estado=${nuevoEstado}`,
+        {
+          method: "PATCH",
+
+          headers: {
+            Authorization: `Basic ${auth}`,
+          },
+        },
+      );
+
+      const data = await obtenerRespuesta(response);
+
+      if (!response.ok) {
+        throw new Error(obtenerMensajeError(data));
+      }
+
+      mostrarMensaje(
+        inscripcionesMessage,
+        `La inscripción ahora está ${nuevoEstado.toLowerCase()}.`,
+        "success",
+      );
+
+      await cargarGrupos();
+
+      await cargarInscripciones();
+    } catch (error) {
+      mostrarMensaje(inscripcionesMessage, error.message, "error");
+    }
+  }
+
+  // ==========================================
+  // LIMPIAR FORMULARIO
+  // ==========================================
+
+  function limpiarFormulario() {
+    inscripcionForm.reset();
+
+    groupInfo.hidden = true;
+
+    ocultarMensaje(inscripcionFormMessage);
+  }
+
+  // ==========================================
+  // CERRAR CAMBIO DE GRUPO
+  // ==========================================
+
+  function cerrarCambiarGrupo() {
+    changeGroupSection.hidden = true;
+
+    changeGroupForm.reset();
+
+    ocultarMensaje(changeGroupMessage);
+  }
+
+  // ==========================================
+  // MENSAJES
+  // ==========================================
+
+  function mostrarMensaje(elemento, mensaje, tipo) {
+    elemento.textContent = mensaje;
+
+    elemento.className = `inscripciones-message inscripciones-message--${tipo}`;
+
+    elemento.hidden = false;
+  }
+
+  function ocultarMensaje(elemento) {
+    elemento.hidden = true;
+
+    elemento.textContent = "";
+
+    elemento.className = "inscripciones-message";
+  }
+
+  // ==========================================
+  // RESPUESTA API
+  // ==========================================
+
+  async function obtenerRespuesta(response) {
+    const text = await response.text();
+
+    if (!text) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text;
+    }
+  }
+
+  function obtenerMensajeError(data) {
+    if (!data) {
+      return "Ocurrió un error en la operación.";
+    }
+
+    if (typeof data === "string") {
+      return data;
+    }
+
+    return data.message || data.error || "Ocurrió un error en la operación.";
+  }
+
+  // ==========================================
+  // FORMATEAR HORA
+  // ==========================================
+
+  function formatearHora(hora) {
+    if (!hora) {
+      return "-";
+    }
+
+    return hora.substring(0, 5);
+  }
+
+  // ==========================================
+  // EVENTOS
+  // ==========================================
+
+  studentSelect.addEventListener("change", () => {
+    ocultarMensaje(inscripcionFormMessage);
+  });
+
+  groupSelect.addEventListener("change", () => {
+    mostrarInformacionGrupo();
+
+    ocultarMensaje(inscripcionFormMessage);
+  });
+
+  inscripcionForm.addEventListener("submit", inscribirEstudiante);
+
+  clearFormButton.addEventListener("click", limpiarFormulario);
+
+  inscripcionesTableBody.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+
+    if (!button) {
+      return;
+    }
+
+    const action = button.dataset.action;
+
+    if (action === "change-group") {
+      abrirCambiarGrupo(
+        Number(button.dataset.assignmentId),
+        button.dataset.studentName,
+      );
+
+      return;
+    }
+
+    if (action === "toggle-status") {
+      cambiarEstado(Number(button.dataset.id), button.dataset.status);
+    }
+  });
+
+  changeGroupForm.addEventListener("submit", cambiarGrupo);
+
+  cancelChangeGroupButton.addEventListener("click", cerrarCambiarGrupo);
+
+  // ==========================================
+  // INICIALIZAR
+  // ==========================================
+
+  async function inicializar() {
+    await cargarEstudiantes();
+
+    await cargarGrupos();
+
+    await cargarInscripciones();
+  }
+
+  inicializar();
 });

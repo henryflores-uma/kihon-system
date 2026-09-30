@@ -53,6 +53,7 @@ public class AsistenciaService {
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Grupo no encontrado"));
 
+                validarEstudianteActivo(estudiante);
                 validarGrupoActivo(grupo);
 
                 validarEstudianteActivoEnGrupo(
@@ -111,11 +112,17 @@ public class AsistenciaService {
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Grupo no encontrado"));
 
-                validarGrupoActivo(grupo);
-
-                validarEstudianteActivoEnGrupo(
-                                estudianteId,
-                                grupoId);
+                /*
+                 * La asistencia puede ser histórica.
+                 *
+                 * Por eso no exigimos que el estudiante siga
+                 * perteneciendo actualmente al grupo.
+                 *
+                 * Tampoco exigimos que el grupo siga activo.
+                 *
+                 * Solo verificamos que estudiante y grupo existan
+                 * y que los datos de la asistencia sean válidos.
+                 */
 
                 validarDatosAsistencia(
                                 fecha,
@@ -208,12 +215,28 @@ public class AsistenciaService {
         }
 
         // ==========================================
+        // VALIDAR ESTUDIANTE ACTIVO
+        // ==========================================
+
+        private void validarEstudianteActivo(
+                        Estudiante estudiante) {
+
+                if (!"ACTIVO".equalsIgnoreCase(
+                                estudiante.getEstado())) {
+
+                        throw new RuntimeException(
+                                        "No se puede registrar asistencia para un estudiante inactivo");
+                }
+        }
+
+        // ==========================================
         // VALIDAR GRUPO
         // ==========================================
 
         private void validarGrupoActivo(Grupo grupo) {
 
-                if (!"ACTIVO".equalsIgnoreCase(grupo.getEstado())) {
+                if (!"ACTIVO".equalsIgnoreCase(
+                                grupo.getEstado())) {
 
                         throw new RuntimeException(
                                         "No se puede registrar asistencia en un grupo inactivo");

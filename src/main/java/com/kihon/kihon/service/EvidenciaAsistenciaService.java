@@ -16,6 +16,9 @@ import java.util.UUID;
 @Service
 public class EvidenciaAsistenciaService {
 
+    private static final int MIN_SEGUNDOS_URL = 60;
+    private static final int MAX_SEGUNDOS_URL = 3600;
+
     private final EvidenciaAsistenciaRepository evidenciaRepository;
     private final JustificacionAsistenciaRepository justificacionRepository;
     private final SupabaseStorageService supabaseStorageService;
@@ -30,13 +33,19 @@ public class EvidenciaAsistenciaService {
         this.supabaseStorageService = supabaseStorageService;
     }
 
+    // ==========================================
+    // SUBIR EVIDENCIA
+    // ==========================================
+
     @Transactional
     public EvidenciaAsistencia subirEvidencia(
             Long justificacionId,
             MultipartFile archivo) {
 
         if (justificacionId == null) {
-            throw new RuntimeException("La justificación es obligatoria");
+
+            throw new RuntimeException(
+                    "La justificación es obligatoria");
         }
 
         JustificacionAsistencia justificacion = justificacionRepository.findById(justificacionId)
@@ -44,30 +53,38 @@ public class EvidenciaAsistenciaService {
                         "La justificación no existe"));
 
         if (archivo == null || archivo.isEmpty()) {
-            throw new RuntimeException("El archivo está vacío");
+
+            throw new RuntimeException(
+                    "El archivo está vacío");
         }
 
         String nombreOriginal = archivo.getOriginalFilename();
 
-        if (nombreOriginal == null || nombreOriginal.isBlank()) {
+        if (nombreOriginal == null
+                || nombreOriginal.isBlank()) {
+
             throw new RuntimeException(
                     "El archivo no tiene un nombre válido");
         }
 
         /*
-         * Conservamos el nombre original para mostrarlo al usuario.
+         * Conservamos el nombre original para mostrarlo
+         * al usuario.
          */
         String nombreArchivo = obtenerNombreSeguro(nombreOriginal);
 
         String tipoMime = archivo.getContentType();
 
-        if (tipoMime == null || tipoMime.isBlank()) {
+        if (tipoMime == null
+                || tipoMime.isBlank()) {
+
             throw new RuntimeException(
                     "No se pudo determinar el tipo del archivo");
         }
 
         /*
-         * Primero creamos el registro para obtener su ID.
+         * Primero creamos el registro para obtener
+         * su ID.
          */
         EvidenciaAsistencia evidencia = new EvidenciaAsistencia();
 
@@ -80,14 +97,8 @@ public class EvidenciaAsistenciaService {
         evidencia = evidenciaRepository.save(evidencia);
 
         /*
-         * La ruta física de Storage NO utiliza directamente
-         * el nombre original.
-         *
-         * Esto evita problemas con:
-         * - espacios
-         * - tildes
-         * - paréntesis
-         * - caracteres especiales
+         * La ruta física de Storage no utiliza
+         * directamente el nombre original.
          */
         String nombreStorage = generarNombreStorage(nombreArchivo);
 
@@ -111,17 +122,19 @@ public class EvidenciaAsistenciaService {
         } catch (Exception e) {
 
             /*
-             * Si Storage falló, intentamos limpiar
+             * Si Storage falló, intentamos eliminar
              * cualquier archivo que pudiera haberse creado.
              */
             try {
-                supabaseStorageService.eliminarEvidencia(ruta);
+
+                supabaseStorageService
+                        .eliminarEvidencia(ruta);
+
             } catch (Exception ignored) {
             }
 
             /*
-             * También eliminamos el registro temporal
-             * de PostgreSQL.
+             * También eliminamos el registro temporal.
              */
             evidenciaRepository.delete(evidencia);
 
@@ -131,15 +144,22 @@ public class EvidenciaAsistenciaService {
         }
     }
 
+    // ==========================================
+    // LISTAR POR JUSTIFICACIÓN
+    // ==========================================
+
     public List<EvidenciaAsistencia> listarPorJustificacion(
             Long justificacionId) {
 
         if (justificacionId == null) {
+
             throw new RuntimeException(
                     "La justificación es obligatoria");
         }
 
-        if (!justificacionRepository.existsById(justificacionId)) {
+        if (!justificacionRepository.existsById(
+                justificacionId)) {
+
             throw new RuntimeException(
                     "La justificación no existe");
         }
@@ -148,9 +168,15 @@ public class EvidenciaAsistenciaService {
                 .findByJustificacionId(justificacionId);
     }
 
-    public EvidenciaAsistencia buscarPorId(Long id) {
+    // ==========================================
+    // BUSCAR POR ID
+    // ==========================================
+
+    public EvidenciaAsistencia buscarPorId(
+            Long id) {
 
         if (id == null) {
+
             throw new RuntimeException(
                     "El ID de la evidencia es obligatorio");
         }
@@ -160,11 +186,35 @@ public class EvidenciaAsistenciaService {
                         "La evidencia no existe"));
     }
 
+    // ==========================================
+    // GENERAR URL FIRMADA
+    // ==========================================
+
     public String generarUrlFirmada(
             Long id,
             int segundos) {
 
+        if (segundos < MIN_SEGUNDOS_URL
+                || segundos > MAX_SEGUNDOS_URL) {
+
+            throw new RuntimeException(
+                    "La duración de la URL debe estar entre "
+                            + MIN_SEGUNDOS_URL
+                            + " y "
+                            + MAX_SEGUNDOS_URL
+                            + " segundos");
+        }
+
         EvidenciaAsistencia evidencia = buscarPorId(id);
+
+        if (evidencia.getRutaArchivo() == null
+                || evidencia.getRutaArchivo().isBlank()
+                || "PENDIENTE".equals(
+                        evidencia.getRutaArchivo())) {
+
+            throw new RuntimeException(
+                    "La evidencia no tiene un archivo almacenado");
+        }
 
         try {
 
@@ -173,9 +223,15 @@ public class EvidenciaAsistenciaService {
                             evidencia.getRutaArchivo(),
                             segundos);
 
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
 
             Thread.currentThread().interrupt();
+
+            throw new RuntimeException(
+                    "La generación de la URL fue interrumpida",
+                    e);
+
+        } catch (IOException e) {
 
             throw new RuntimeException(
                     "No se pudo generar la URL firmada",
@@ -183,8 +239,13 @@ public class EvidenciaAsistenciaService {
         }
     }
 
+    // ==========================================
+    // ELIMINAR EVIDENCIA
+    // ==========================================
+
     @Transactional
-    public void eliminarEvidencia(Long id) {
+    public void eliminarEvidencia(
+            Long id) {
 
         EvidenciaAsistencia evidencia = buscarPorId(id);
 
@@ -192,12 +253,23 @@ public class EvidenciaAsistenciaService {
 
         try {
 
-            supabaseStorageService
-                    .eliminarEvidencia(ruta);
+            if (ruta != null
+                    && !ruta.isBlank()
+                    && !"PENDIENTE".equals(ruta)) {
 
-        } catch (IOException | InterruptedException e) {
+                supabaseStorageService
+                        .eliminarEvidencia(ruta);
+            }
+
+        } catch (InterruptedException e) {
 
             Thread.currentThread().interrupt();
+
+            throw new RuntimeException(
+                    "La eliminación del archivo fue interrumpida",
+                    e);
+
+        } catch (IOException e) {
 
             throw new RuntimeException(
                     "No se pudo eliminar el archivo de Supabase Storage",
@@ -207,11 +279,10 @@ public class EvidenciaAsistenciaService {
         evidenciaRepository.delete(evidencia);
     }
 
-    /**
-     * Obtiene solamente el nombre del archivo,
-     * eliminando cualquier ruta que pudiera venir
-     * desde el cliente.
-     */
+    // ==========================================
+    // OBTENER NOMBRE SEGURO
+    // ==========================================
+
     private String obtenerNombreSeguro(
             String nombreOriginal) {
 
@@ -222,11 +293,13 @@ public class EvidenciaAsistenciaService {
         int ultimaBarra = nombre.lastIndexOf("/");
 
         if (ultimaBarra >= 0) {
+
             nombre = nombre.substring(
                     ultimaBarra + 1);
         }
 
         if (nombre.isBlank()) {
+
             throw new RuntimeException(
                     "El nombre del archivo no es válido");
         }
@@ -234,12 +307,10 @@ public class EvidenciaAsistenciaService {
         return nombre;
     }
 
-    /**
-     * Genera un nombre seguro para la ruta de Storage.
-     *
-     * El nombre original se mantiene en nombre_archivo.
-     * Aquí solamente creamos el nombre físico.
-     */
+    // ==========================================
+    // GENERAR NOMBRE STORAGE
+    // ==========================================
+
     private String generarNombreStorage(
             String nombreArchivo) {
 
