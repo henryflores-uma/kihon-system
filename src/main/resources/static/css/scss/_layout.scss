@@ -38,8 +38,11 @@
     display: flex;
 }
 
+
 .main-content {
     flex: 1;
+
+    min-width: 0;
 
     padding: 2rem;
 }
@@ -53,11 +56,17 @@
     width: 250px;
     min-height: 100vh;
 
+    flex-shrink: 0;
+
     background-color: $color-black;
     color: $color-white;
 
     padding: 1.5rem;
 
+
+    // --------------------------------------
+    // LOGO
+    // --------------------------------------
 
     &__logo {
         margin-bottom: 2rem;
@@ -67,6 +76,10 @@
     }
 
 
+    // --------------------------------------
+    // NAVEGACIÓN
+    // --------------------------------------
+
     &__nav {
         display: flex;
         flex-direction: column;
@@ -74,6 +87,10 @@
         gap: 0.5rem;
     }
 
+
+    // --------------------------------------
+    // ENLACES
+    // --------------------------------------
 
     &__link {
         display: block;
@@ -83,6 +100,8 @@
         border-radius: 6px;
 
         color: $color-white;
+
+        text-decoration: none;
 
         transition: 0.2s ease;
 
@@ -96,6 +115,160 @@
             background-color: $color-red;
         }
     }
+}
+
+
+// ==========================================
+// ACORDEÓN DEL SIDEBAR
+// ==========================================
+
+.sidebar__accordion {
+    width: 100%;
+}
+
+
+// ------------------------------------------
+// BOTÓN DEL ACORDEÓN
+// ------------------------------------------
+
+.sidebar__accordion-button {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0.75rem 1rem;
+
+    border: none;
+    border-radius: 6px;
+
+    background-color: transparent;
+
+    color: $color-white;
+
+    font-family: $font-family-base;
+    font-size: inherit;
+    font-weight: 400;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+
+
+    &:hover {
+        background-color: $color-gray-900;
+    }
+
+
+    &[aria-expanded="true"] {
+        background-color: $color-gray-900;
+    }
+
+
+    &--open {
+        background-color: $color-gray-900;
+    }
+
+
+    &--active {
+        background-color: $color-gray-900;
+    }
+}
+
+
+// ------------------------------------------
+// FLECHA
+// ------------------------------------------
+
+.sidebar__accordion-arrow {
+    flex-shrink: 0;
+
+    font-size: 0.65rem;
+
+    transition:
+        transform 0.2s ease;
+}
+
+
+.sidebar__accordion-button[aria-expanded="true"] .sidebar__accordion-arrow {
+    transform: rotate(0deg);
+}
+
+
+// ------------------------------------------
+// SUBMENÚ
+// ------------------------------------------
+
+.sidebar__submenu {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.25rem;
+
+    margin-left: 0.5rem;
+    margin-top: 0.25rem;
+
+    padding-left: 0.75rem;
+
+    border-left: 1px solid $color-gray-900;
+}
+
+
+.sidebar__submenu[hidden] {
+    display: none;
+}
+
+
+.sidebar__submenu--open {
+    animation: sidebarSubmenuOpen 0.2s ease;
+}
+
+
+.sidebar__submenu .sidebar__link {
+    font-size: 0.9rem;
+}
+
+
+// ------------------------------------------
+// ANIMACIÓN DEL SUBMENÚ
+// ------------------------------------------
+
+@keyframes sidebarSubmenuOpen {
+
+    from {
+        opacity: 0;
+
+        transform: translateY(-4px);
+    }
+
+
+    to {
+        opacity: 1;
+
+        transform: translateY(0);
+    }
+}
+
+
+// ==========================================
+// MENÚ MÓVIL
+// ==========================================
+
+.mobile-nav {
+    display: none;
+}
+
+
+.mobile-menu-button {
+    display: none;
+}
+
+
+.mobile-menu-overlay {
+    display: none;
 }
 
 
@@ -135,6 +308,7 @@
         color: $color-gray-600;
 
         text-transform: uppercase;
+
         letter-spacing: 0.05em;
     }
 
@@ -371,10 +545,6 @@
         }
 
 
-        // ----------------------------------
-        // BOTÓN CERRAR SESIÓN
-        // ----------------------------------
-
         &--danger {
             color: $color-red;
         }
@@ -429,6 +599,7 @@
     font-weight: 700;
 
     text-transform: uppercase;
+
     letter-spacing: 0.08em;
 }
 
@@ -539,10 +710,6 @@
     }
 
 
-    // --------------------------------------
-    // ICONO
-    // --------------------------------------
-
     &__icon {
         width: 44px;
         height: 44px;
@@ -560,10 +727,6 @@
         font-size: 1.25rem;
     }
 
-
-    // --------------------------------------
-    // CONTENIDO
-    // --------------------------------------
 
     &__content {
         display: flex;
@@ -589,10 +752,6 @@
     }
 
 
-    // --------------------------------------
-    // VARIANTE PRINCIPAL
-    // --------------------------------------
-
     &--primary {
         border-color: $color-red;
 
@@ -609,10 +768,6 @@
         }
     }
 
-
-    // --------------------------------------
-    // VARIANTE ACCENT
-    // --------------------------------------
 
     &--accent {
         border-color: $color-yellow;
@@ -686,6 +841,10 @@
 }
 
 
+// ==========================================
+// TABLET
+// ==========================================
+
 @media (max-width: 900px) {
 
     .sidebar {
@@ -698,6 +857,10 @@
     }
 }
 
+
+// ==========================================
+// TABLET PEQUEÑA
+// ==========================================
 
 @media (max-width: 800px) {
 
@@ -724,24 +887,218 @@
 }
 
 
+// ==========================================
+// MENÚ MÓVIL
+// ==========================================
+
 @media (max-width: 700px) {
 
+    // --------------------------------------
+    // LAYOUT
+    // --------------------------------------
+
     .app-layout {
-        flex-direction: column;
-    }
+        display: block;
 
-
-    .sidebar {
-        width: 100%;
-
-        min-height: auto;
+        min-height: 100vh;
     }
 
 
     .main-content {
+        width: 100%;
+
         padding: 1rem;
     }
 
+
+    // --------------------------------------
+    // CABECERA MÓVIL
+    // --------------------------------------
+
+    .mobile-nav {
+        width: 100%;
+
+        display: flex;
+        align-items: center;
+
+        gap: 0.75rem;
+
+        margin-bottom: 1rem;
+
+        position: relative;
+
+        z-index: 1002;
+    }
+
+
+    // --------------------------------------
+    // OCULTAR CABECERA AL ABRIR MENÚ
+    // --------------------------------------
+
+    .mobile-nav--hidden {
+        display: none;
+    }
+
+
+    .mobile-nav__logo {
+        font-size: 1.1rem;
+
+        font-weight: 700;
+
+        letter-spacing: 0.05em;
+    }
+
+
+    // --------------------------------------
+    // BOTÓN HAMBURGUESA
+    // --------------------------------------
+
+    .mobile-menu-button {
+        width: 44px;
+        height: 44px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 0;
+
+        border: none;
+        border-radius: 6px;
+
+        background-color: $color-black;
+
+        color: $color-white;
+
+        font-size: 1.35rem;
+
+        line-height: 1;
+
+        cursor: pointer;
+
+        transition: 0.2s ease;
+
+
+        &:hover {
+            background-color: $color-gray-900;
+        }
+
+
+        &:focus-visible {
+            outline: 2px solid $color-red;
+
+            outline-offset: 2px;
+        }
+    }
+
+
+    // --------------------------------------
+    // SIDEBAR MÓVIL
+    // --------------------------------------
+
+    .sidebar {
+        position: fixed;
+
+        top: 0;
+        left: 0;
+
+        z-index: 1000;
+
+        width: 280px;
+        height: 100vh;
+
+        min-height: 100vh;
+
+        padding: 1.5rem;
+
+        overflow-y: auto;
+
+        transform: translateX(-100%);
+
+        transition:
+            transform 0.25s ease;
+
+        box-shadow: none;
+    }
+
+
+    .sidebar.sidebar--open {
+        transform: translateX(0);
+
+        box-shadow:
+            8px 0 24px rgba(0, 0, 0, 0.18);
+    }
+
+
+    // --------------------------------------
+    // OVERLAY
+    // --------------------------------------
+
+    .mobile-menu-overlay {
+        position: fixed;
+
+        inset: 0;
+
+        z-index: 999;
+
+        display: block;
+
+        background-color:
+            rgba(0, 0, 0, 0.45);
+
+        opacity: 0;
+
+        pointer-events: none;
+
+        transition:
+            opacity 0.25s ease;
+    }
+
+
+    .mobile-menu-overlay[hidden] {
+        display: none;
+    }
+
+
+    .mobile-menu-overlay--visible {
+        opacity: 1;
+
+        pointer-events: auto;
+    }
+
+
+    // --------------------------------------
+    // SUBMENÚ MÓVIL
+    // --------------------------------------
+
+    .sidebar__submenu {
+        margin-left: 0.5rem;
+
+        padding-left: 0.5rem;
+    }
+
+
+    // --------------------------------------
+    // BLOQUEAR SCROLL
+    // --------------------------------------
+
+    body.mobile-menu-open {
+        overflow: hidden;
+    }
+
+
+    // --------------------------------------
+    // TOPBAR
+    // --------------------------------------
+
+    .topbar__profile-info {
+        display: none;
+    }
+
+
+    // --------------------------------------
+    // GRID GENERAL
+    // --------------------------------------
 
     .grid--2,
     .grid--3,
@@ -750,6 +1107,10 @@
     }
 }
 
+
+// ==========================================
+// MÓVIL PEQUEÑO
+// ==========================================
 
 @media (max-width: 600px) {
 
@@ -811,10 +1172,6 @@
         0 2px 8px rgba(0, 0, 0, 0.05);
 
 
-    // --------------------------------------
-    // ICONO
-    // --------------------------------------
-
     &__icon {
         width: 52px;
         height: 52px;
@@ -832,10 +1189,6 @@
         font-size: 1.4rem;
     }
 
-
-    // --------------------------------------
-    // CONTENIDO
-    // --------------------------------------
 
     &__content {
         display: flex;
@@ -869,10 +1222,6 @@
     }
 
 
-    // --------------------------------------
-    // VARIANTE PRINCIPAL
-    // --------------------------------------
-
     &--primary {
         border-top: 3px solid $color-red;
 
@@ -884,10 +1233,6 @@
         }
     }
 
-
-    // --------------------------------------
-    // VARIANTE ACCENT
-    // --------------------------------------
 
     &--accent {
         border-top: 3px solid $color-yellow;
@@ -1152,7 +1497,8 @@
 
     background-color: $color-white;
 
-    transition: background-color 0.2s ease;
+    transition:
+        background-color 0.2s ease;
 
 
     &:hover {
@@ -1267,6 +1613,10 @@
 }
 
 
+// ==========================================
+// DASHBOARD TABLET
+// ==========================================
+
 @media (max-width: 800px) {
 
     .dashboard-kpis {
@@ -1291,6 +1641,10 @@
     }
 }
 
+
+// ==========================================
+// DASHBOARD MÓVIL
+// ==========================================
 
 @media (max-width: 600px) {
 

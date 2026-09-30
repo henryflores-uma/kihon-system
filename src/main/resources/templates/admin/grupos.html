@@ -1,811 +1,654 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="es">
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Kihon | Grupos</title>
 
-    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/main.css" />
+  </head>
 
-</head>
-
-<body>
-
+  <body>
     <div class="app-layout">
-
-        <!-- ==========================================
+      <!-- =========================================================
          SIDEBAR
-         ========================================== -->
+         ========================================================= -->
 
-        <aside class="sidebar">
+      <aside class="sidebar" id="sidebarMenu">
+        <div class="sidebar__logo">KIHON</div>
 
-            <div class="sidebar__logo">
-                KIHON
+        <nav class="sidebar__nav">
+          <!-- =====================================================
+             DASHBOARD
+             ===================================================== -->
+
+          <a href="/admin/admin" class="sidebar__link"> Dashboard </a>
+
+          <!-- =====================================================
+             GESTIÓN
+             ===================================================== -->
+
+          <div class="sidebar__accordion">
+            <button
+              type="button"
+              class="sidebar__accordion-button"
+              data-target="sidebarGestion"
+              aria-expanded="false"
+            >
+              <span> Gestión </span>
+
+              <span class="sidebar__accordion-arrow"> ▶ </span>
+            </button>
+
+            <div class="sidebar__submenu" id="sidebarGestion" hidden>
+              <a href="/admin/estudiantes" class="sidebar__link">
+                Estudiantes
+              </a>
+
+              <a
+                href="/admin/grupos"
+                class="sidebar__link sidebar__link--active"
+              >
+                Grupos
+              </a>
+
+              <a href="/admin/inscripciones" class="sidebar__link">
+                Inscripciones
+              </a>
             </div>
+          </div>
 
-            <nav class="sidebar__nav">
+          <!-- =====================================================
+             CONTROL
+             ===================================================== -->
 
-                <a href="/admin/admin" class="sidebar__link">
-                    Dashboard
-                </a>
+          <div class="sidebar__accordion">
+            <button
+              type="button"
+              class="sidebar__accordion-button"
+              data-target="sidebarControl"
+              aria-expanded="false"
+            >
+              <span> Control </span>
 
-                <a href="/admin/estudiantes" class="sidebar__link">
-                    Estudiantes
-                </a>
+              <span class="sidebar__accordion-arrow"> ▶ </span>
+            </button>
 
-                <a href="/admin/grupos" class="sidebar__link sidebar__link--active">
-                    Grupos
-                </a>
+            <div class="sidebar__submenu" id="sidebarControl" hidden>
+              <a href="/admin/asistencia" class="sidebar__link"> Asistencia </a>
 
-                <a href="/admin/asistencia" class="sidebar__link">
-                    Asistencia
-                </a>
+              <a href="/admin/horario" class="sidebar__link"> Horario </a>
+            </div>
+          </div>
 
-                <a href="/admin/horario" class="sidebar__link">
-                    Horario
-                </a>
+          <!-- =====================================================
+             ADMINISTRACIÓN
+             ===================================================== -->
 
-                <a href="/admin/inscripciones" class="sidebar__link">
-                    Inscripciones
-                </a>
+          <div class="sidebar__accordion">
+            <button
+              type="button"
+              class="sidebar__accordion-button"
+              data-target="sidebarAdministracion"
+              aria-expanded="false"
+            >
+              <span> Administración </span>
 
-                <a href="/admin/reportes" class="sidebar__link">
-                    Reportes
-                </a>
+              <span class="sidebar__accordion-arrow"> ▶ </span>
+            </button>
 
-                <a href="/admin/usuarios" class="sidebar__link">
-                    Usuarios
-                </a>
+            <div class="sidebar__submenu" id="sidebarAdministracion" hidden>
+              <a href="/admin/reportes" class="sidebar__link"> Reportes </a>
 
-            </nav>
+              <a href="/admin/usuarios" class="sidebar__link"> Usuarios </a>
+            </div>
+          </div>
+        </nav>
+      </aside>
 
-        </aside>
+      <!-- =========================================================
+         OVERLAY MENÚ MÓVIL
+         ========================================================= -->
 
+      <div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden></div>
 
-        <!-- ==========================================
+      <!-- =========================================================
          CONTENIDO PRINCIPAL
-         ========================================== -->
-
-        <main class="main-content">
-
-            <div class="container grupos-page">
-
-
-                <!-- ==========================================
-                 TOPBAR
-                 ========================================== -->
-
-                <header class="topbar">
-
-                    <div class="topbar__role">
-
-                        <span class="topbar__role-label">
-                            Rol
-                        </span>
-
-                        <strong id="roleDisplay">
-                            Administrador
-                        </strong>
-
-                    </div>
-
-
-                    <div class="topbar__actions">
-
-                        <!-- Notificaciones -->
-
-                        <button type="button" class="topbar__notification" id="notificationButton"
-                            aria-label="Notificaciones">
-
-                            <span class="topbar__notification-icon">
-                                🔔
-                            </span>
-
-                            <span id="notificationCount" class="topbar__notification-count" hidden>
-                                0
-                            </span>
-
-                        </button>
-
-
-                        <!-- Perfil -->
-
-                        <div class="topbar__profile" id="profileMenuContainer">
-
-                            <button type="button" class="topbar__profile-button" id="profileMenuButton">
-
-                                <div class="topbar__avatar" id="userProfileAvatar">
-
-                                    <span id="userAvatarInitial">
-                                        U
-                                    </span>
-
-                                </div>
-
-
-                                <div class="topbar__profile-info">
-
-                                    <strong id="usernameDisplay">
-                                        Usuario
-                                    </strong>
-
-                                    <span id="profileRoleDisplay">
-                                        Administrador
-                                    </span>
-
-                                </div>
-
-
-                                <span class="topbar__profile-arrow">
-                                    ▼
-                                </span>
-
-                            </button>
-
-
-                            <div class="topbar__profile-menu" id="profileMenu" hidden>
-
-                                <a href="/admin/perfil" class="topbar__profile-menu-item">
-                                    Editar perfil
-                                </a>
-
-                                <button type="button" id="topbarLogoutButton"
-                                    class="topbar__profile-menu-item topbar__profile-menu-item--danger">
-                                    Cerrar sesión
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </header>
-
-
-                <!-- ==========================================
-                 ENCABEZADO
-                 ========================================== -->
-
-                <header class="grupos-header">
-
-                    <div class="grupos-header__content">
-
-                        <span class="section-kicker">
-                            ADMINISTRACIÓN
-                        </span>
-
-                        <h1>
-                            Grupos
-                        </h1>
-
-                        <p>
-                            Gestiona los grupos, horarios, capacidad y senseis del dojo.
-                        </p>
-
-                    </div>
-
-                </header>
-
-
-                <!-- ==========================================
-                 ACCIONES
-                 ========================================== -->
-
-                <div class="grupos-page-actions">
-
-                    <button type="button" id="openGroupModalButton" class="btn btn--primary">
-
-                        <span>
-                            +
-                        </span>
-
-                        Registrar grupo
-
-                    </button>
-
-                </div>
-
-
-                <!-- ==========================================
-                 MODAL REGISTRAR GRUPO
-                 ========================================== -->
-
-                <div id="groupModal" class="grupo-modal" hidden>
-
-                    <div class="grupo-modal__overlay" id="groupModalOverlay">
-                    </div>
-
-
-                    <div class="grupo-modal__content" role="dialog" aria-modal="true" aria-labelledby="groupModalTitle">
-
-
-                        <div class="grupo-modal__header">
-
-                            <div>
-
-                                <span class="grupo-modal__kicker">
-                                    NUEVO GRUPO
-                                </span>
-
-                                <h2 id="groupModalTitle">
-                                    Registrar nuevo grupo
-                                </h2>
-
-                                <p>
-                                    Ingresa los datos principales del grupo y configura su horario.
-                                </p>
-
-                            </div>
-
-
-                            <button type="button" id="closeGroupModalButton" class="grupo-modal__close"
-                                aria-label="Cerrar">
-                                ×
-                            </button>
-
-                        </div>
-
-
-                        <form id="groupForm" class="grupos-form">
-
-                            <div class="grid grid--2">
-
-
-                                <!-- Nombre -->
-
-                                <div class="form-group">
-
-                                    <label for="groupNombre">
-                                        Nombre del grupo
-                                    </label>
-
-                                    <input type="text" id="groupNombre" name="nombre" placeholder="Ej. Karate Infantil"
-                                        required>
-
-                                </div>
-
-
-                                <!-- Capacidad -->
-
-                                <div class="form-group">
-
-                                    <label for="groupCapacidad">
-                                        Capacidad
-                                    </label>
-
-                                    <input type="number" id="groupCapacidad" name="capacidad" min="1"
-                                        placeholder="Ej. 20" required>
-
-                                </div>
-
-
-                                <!-- Hora inicio -->
-
-                                <div class="form-group">
-
-                                    <label for="groupHoraInicio">
-                                        Hora de inicio
-                                    </label>
-
-                                    <input type="time" id="groupHoraInicio" name="horaInicio" required>
-
-                                </div>
-
-
-                                <!-- Hora fin -->
-
-                                <div class="form-group">
-
-                                    <label for="groupHoraFin">
-                                        Hora de fin
-                                    </label>
-
-                                    <input type="time" id="groupHoraFin" name="horaFin" required>
-
-                                </div>
-
-
-                                <!-- Sensei -->
-
-                                <div class="form-group grupos-form-full">
-
-                                    <label for="groupSenseiId">
-                                        Sensei
-                                    </label>
-
-                                    <select id="groupSenseiId" name="senseiId" required>
-
-                                        <option value="">
-                                            Selecciona un sensei
-                                        </option>
-
-                                    </select>
-
-                                </div>
-
-
-                                <!-- Días -->
-
-                                <div class="form-group grupos-form-full">
-
-                                    <label>
-                                        Días de entrenamiento
-                                    </label>
-
-                                    <div class="grupos-dias">
-
-                                        <label class="grupo-dia-option">
-
-                                            <input type="checkbox" name="dias" value="LUNES">
-
-                                            <span>
-                                                L
-                                            </span>
-
-                                        </label>
-
-
-                                        <label class="grupo-dia-option">
-
-                                            <input type="checkbox" name="dias" value="MARTES">
-
-                                            <span>
-                                                M
-                                            </span>
-
-                                        </label>
-
-
-                                        <label class="grupo-dia-option">
-
-                                            <input type="checkbox" name="dias" value="MIERCOLES">
-
-                                            <span>
-                                                X
-                                            </span>
-
-                                        </label>
-
-
-                                        <label class="grupo-dia-option">
-
-                                            <input type="checkbox" name="dias" value="JUEVES">
-
-                                            <span>
-                                                J
-                                            </span>
-
-                                        </label>
-
-
-                                        <label class="grupo-dia-option">
-
-                                            <input type="checkbox" name="dias" value="VIERNES">
-
-                                            <span>
-                                                V
-                                            </span>
-
-                                        </label>
-
-
-                                        <label class="grupo-dia-option">
-
-                                            <input type="checkbox" name="dias" value="SABADO">
-
-                                            <span>
-                                                S
-                                            </span>
-
-                                        </label>
-
-
-                                        <label class="grupo-dia-option">
-
-                                            <input type="checkbox" name="dias" value="DOMINGO">
-
-                                            <span>
-                                                D
-                                            </span>
-
-                                        </label>
-
-                                    </div>
-
-                                </div>
-
-
-                                <!-- Descripción -->
-
-                                <div class="form-group grupos-form-full">
-
-                                    <label for="groupDescripcion">
-                                        Descripción
-                                    </label>
-
-                                    <textarea id="groupDescripcion" name="descripcion" rows="4"
-                                        placeholder="Describe brevemente el grupo..."></textarea>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="grupos-horario-info">
-
-                                <span class="grupos-horario-info__icon">
-                                    🕒
-                                </span>
-
-                                <div>
-
-                                    <strong>
-                                        Horario del grupo
-                                    </strong>
-
-                                    <p>
-                                        La frecuencia semanal se asignará automáticamente según la cantidad de días
-                                        seleccionados. El horario indicado se aplicará a todos los días seleccionados.
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <div id="groupMessage" class="grupos-message" hidden>
-                            </div>
-
-
-                            <div class="grupos-form-actions">
-
-                                <button type="button" id="cancelGroupModalButton" class="btn btn--secondary">
-                                    Cancelar
-                                </button>
-
-                                <button type="submit" class="btn btn--primary">
-                                    Registrar grupo
-                                </button>
-
-                            </div>
-
-                        </form>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ==========================================
-                 EDITAR GRUPO
-                 ========================================== -->
-
-                <section id="editGroupSection" class="card grupos-form-card grupos-edit-card" hidden>
-
-                    <div class="grupos-form-header">
-
-                        <div>
-
-                            <span class="grupos-form-header__kicker">
-                                EDICIÓN
-                            </span>
-
-                            <h2>
-                                Editar grupo
-                            </h2>
-
-                            <p>
-                                Actualiza los datos del grupo y administra sus horarios habituales.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <form id="editGroupForm">
-
-                        <input type="hidden" id="editId">
-
-
-                        <div class="grid grid--2">
-
-
-                            <!-- Nombre -->
-
-                            <div class="form-group">
-
-                                <label for="editNombre">
-                                    Nombre del grupo
-                                </label>
-
-                                <input type="text" id="editNombre" required>
-
-                            </div>
-
-
-                            <!-- Capacidad -->
-
-                            <div class="form-group">
-
-                                <label for="editCapacidad">
-                                    Capacidad
-                                </label>
-
-                                <input type="number" id="editCapacidad" min="1" required>
-
-                            </div>
-
-
-                            <!-- Frecuencia -->
-
-                            <div class="form-group">
-
-                                <label for="editFrecuenciaId">
-                                    Frecuencia semanal
-                                </label>
-
-                                <select id="editFrecuenciaId" required>
-
-                                    <option value="">
-                                        Selecciona una frecuencia
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-
-                            <!-- Sensei -->
-
-                            <div class="form-group">
-
-                                <label for="editSenseiId">
-                                    Sensei
-                                </label>
-
-                                <select id="editSenseiId" required>
-
-                                    <option value="">
-                                        Selecciona un sensei
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-
-                            <!-- Descripción -->
-
-                            <div class="form-group grupos-form-full">
-
-                                <label for="editDescripcion">
-                                    Descripción
-                                </label>
-
-                                <textarea id="editDescripcion" rows="4"
-                                    placeholder="Descripción del grupo..."></textarea>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- ==========================================
-                         HORARIOS HABITUALES
-                         ========================================== -->
-
-                        <div class="grupos-horarios-section">
-
-                            <div class="grupos-horarios-header">
-
-                                <div>
-
-                                    <span class="grupos-form-header__kicker">
-                                        HORARIOS
-                                    </span>
-
-                                    <h3>
-                                        Horarios habituales
-                                    </h3>
-
-                                    <p>
-                                        Agrega los días y horarios en los que normalmente entrena el grupo.
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <div id="groupSchedulesList" class="grupos-horarios-list">
-                            </div>
-
-
-                            <div class="grupos-horario-form">
-
-
-                                <div class="form-group">
-
-                                    <label for="scheduleDay">
-                                        Día
-                                    </label>
-
-                                    <select id="scheduleDay">
-
-                                        <option value="">
-                                            Selecciona un día
-                                        </option>
-
-                                        <option value="LUNES">
-                                            Lunes
-                                        </option>
-
-                                        <option value="MARTES">
-                                            Martes
-                                        </option>
-
-                                        <option value="MIERCOLES">
-                                            Miércoles
-                                        </option>
-
-                                        <option value="JUEVES">
-                                            Jueves
-                                        </option>
-
-                                        <option value="VIERNES">
-                                            Viernes
-                                        </option>
-
-                                        <option value="SABADO">
-                                            Sábado
-                                        </option>
-
-                                        <option value="DOMINGO">
-                                            Domingo
-                                        </option>
-
-                                    </select>
-
-                                </div>
-
-
-                                <div class="form-group">
-
-                                    <label for="scheduleStart">
-                                        Hora inicio
-                                    </label>
-
-                                    <input type="time" id="scheduleStart">
-
-                                </div>
-
-
-                                <div class="form-group">
-
-                                    <label for="scheduleEnd">
-                                        Hora fin
-                                    </label>
-
-                                    <input type="time" id="scheduleEnd">
-
-                                </div>
-
-
-                                <div class="grupos-horario-form__action">
-
-                                    <button type="button" id="addScheduleButton" class="btn btn--secondary">
-                                        + Agregar horario
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-
-                            <div id="scheduleMessage" class="grupos-message" hidden>
-                            </div>
-
-                        </div>
-
-
-                        <div id="editGroupMessage" class="grupos-message" hidden>
-                        </div>
-
-
-                        <div class="grupos-form-actions">
-
-                            <button type="button" id="cancelEditButton" class="btn btn--secondary">
-                                Cancelar
-                            </button>
-
-                            <button type="submit" class="btn btn--primary">
-                                Guardar cambios
-                            </button>
-
-                        </div>
-
-                    </form>
-
-                </section>
-
-
-                <!-- ==========================================
-                 LISTA DE GRUPOS
-                 ========================================== -->
-
-                <section class="card grupos-list-card">
-
-
-                    <div class="grupos-list-header">
-
-                        <div>
-
-                            <span class="grupos-form-header__kicker">
-                                REGISTROS
-                            </span>
-
-                            <h2>
-                                Lista de grupos
-                            </h2>
-
-                            <p>
-                                Consulta y administra los grupos registrados.
-                            </p>
-
-                        </div>
-
-
-                        <div class="grupos-list-count">
-
-                            <span id="groupsCount">
-                                0 grupos
-                            </span>
-
-                        </div>
-
-                    </div>
-
-
-                    <div id="groupsMessage" class="grupos-message">
-                    </div>
-
-
-                    <div id="groupsList" class="grupos-table-wrapper">
-
-                        <div class="grupos-loading">
-
-                            <div class="grupos-loading__spinner">
-                            </div>
-
-                            <span>
-                                Cargando grupos...
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
+         ========================================================= -->
+
+      <main class="main-content">
+        <!-- =====================================================
+           MENÚ MÓVIL
+           ===================================================== -->
+
+        <div class="mobile-nav">
+          <button
+            type="button"
+            class="mobile-menu-button"
+            id="mobileMenuButton"
+            aria-label="Abrir menú"
+            aria-expanded="false"
+            aria-controls="sidebarMenu"
+          >
+            <span id="mobileMenuIcon"> ☰ </span>
+          </button>
+
+          <div class="mobile-nav__logo">KIHON</div>
+        </div>
+
+        <div class="container grupos-page">
+          <!-- =====================================================
+             TOPBAR
+             ===================================================== -->
+
+          <header class="topbar">
+            <div class="topbar__role">
+              <span class="topbar__role-label"> Rol </span>
+
+              <strong id="roleDisplay"> Administrador </strong>
             </div>
 
-        </main>
+            <div class="topbar__actions">
+              <!-- NOTIFICACIONES -->
 
+              <button
+                type="button"
+                class="topbar__notification"
+                id="notificationButton"
+                aria-label="Notificaciones"
+              >
+                <span class="topbar__notification-icon"> 🔔 </span>
+
+                <span
+                  id="notificationCount"
+                  class="topbar__notification-count"
+                  hidden
+                >
+                  0
+                </span>
+              </button>
+
+              <!-- PERFIL -->
+
+              <div class="topbar__profile" id="profileMenuContainer">
+                <button
+                  type="button"
+                  class="topbar__profile-button"
+                  id="profileMenuButton"
+                >
+                  <div class="topbar__avatar" id="userProfileAvatar">
+                    <span id="userAvatarInitial"> U </span>
+                  </div>
+
+                  <div class="topbar__profile-info">
+                    <strong id="usernameDisplay"> Usuario </strong>
+
+                    <span id="profileRoleDisplay"> Administrador </span>
+                  </div>
+
+                  <span class="topbar__profile-arrow"> ▼ </span>
+                </button>
+
+                <div class="topbar__profile-menu" id="profileMenu" hidden>
+                  <a href="/admin/perfil" class="topbar__profile-menu-item">
+                    Editar perfil
+                  </a>
+
+                  <button
+                    type="button"
+                    id="topbarLogoutButton"
+                    class="topbar__profile-menu-item topbar__profile-menu-item--danger"
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <!-- =====================================================
+             ENCABEZADO
+             ===================================================== -->
+
+          <header class="grupos-header">
+            <div class="grupos-header__content">
+              <span class="section-kicker"> ADMINISTRACIÓN </span>
+
+              <h1>Grupos</h1>
+
+              <p>
+                Gestiona los grupos, horarios, capacidad y senseis del dojo.
+              </p>
+            </div>
+          </header>
+
+          <!-- =====================================================
+             ACCIONES
+             ===================================================== -->
+
+          <div class="grupos-page-actions">
+            <button
+              type="button"
+              id="openGroupModalButton"
+              class="btn btn--primary"
+            >
+              <span> + </span>
+
+              Registrar grupo
+            </button>
+          </div>
+
+          <!-- =====================================================
+             MODAL REGISTRAR GRUPO
+             ===================================================== -->
+
+          <div id="groupModal" class="grupo-modal" hidden>
+            <div class="grupo-modal__overlay" id="groupModalOverlay"></div>
+
+            <div
+              class="grupo-modal__content"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="groupModalTitle"
+            >
+              <div class="grupo-modal__header">
+                <div>
+                  <span class="grupo-modal__kicker"> NUEVO GRUPO </span>
+
+                  <h2 id="groupModalTitle">Registrar nuevo grupo</h2>
+
+                  <p>
+                    Ingresa los datos principales del grupo y configura su
+                    horario.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  id="closeGroupModalButton"
+                  class="grupo-modal__close"
+                  aria-label="Cerrar"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form id="groupForm" class="grupos-form">
+                <div class="grid grid--2">
+                  <!-- NOMBRE -->
+
+                  <div class="form-group">
+                    <label for="groupNombre"> Nombre del grupo </label>
+
+                    <input
+                      type="text"
+                      id="groupNombre"
+                      name="nombre"
+                      placeholder="Ej. Karate Infantil"
+                      required
+                    />
+                  </div>
+
+                  <!-- CAPACIDAD -->
+
+                  <div class="form-group">
+                    <label for="groupCapacidad"> Capacidad </label>
+
+                    <input
+                      type="number"
+                      id="groupCapacidad"
+                      name="capacidad"
+                      min="1"
+                      placeholder="Ej. 20"
+                      required
+                    />
+                  </div>
+
+                  <!-- HORA INICIO -->
+
+                  <div class="form-group">
+                    <label for="groupHoraInicio"> Hora de inicio </label>
+
+                    <input
+                      type="time"
+                      id="groupHoraInicio"
+                      name="horaInicio"
+                      required
+                    />
+                  </div>
+
+                  <!-- HORA FIN -->
+
+                  <div class="form-group">
+                    <label for="groupHoraFin"> Hora de fin </label>
+
+                    <input
+                      type="time"
+                      id="groupHoraFin"
+                      name="horaFin"
+                      required
+                    />
+                  </div>
+
+                  <!-- SENSEI -->
+
+                  <div class="form-group grupos-form-full">
+                    <label for="groupSenseiId"> Sensei </label>
+
+                    <select id="groupSenseiId" name="senseiId" required>
+                      <option value="">Selecciona un sensei</option>
+                    </select>
+                  </div>
+
+                  <!-- DÍAS -->
+
+                  <div class="form-group grupos-form-full">
+                    <label> Días de entrenamiento </label>
+
+                    <div class="grupos-dias">
+                      <label class="grupo-dia-option">
+                        <input type="checkbox" name="dias" value="LUNES" />
+
+                        <span> L </span>
+                      </label>
+
+                      <label class="grupo-dia-option">
+                        <input type="checkbox" name="dias" value="MARTES" />
+
+                        <span> M </span>
+                      </label>
+
+                      <label class="grupo-dia-option">
+                        <input type="checkbox" name="dias" value="MIERCOLES" />
+
+                        <span> X </span>
+                      </label>
+
+                      <label class="grupo-dia-option">
+                        <input type="checkbox" name="dias" value="JUEVES" />
+
+                        <span> J </span>
+                      </label>
+
+                      <label class="grupo-dia-option">
+                        <input type="checkbox" name="dias" value="VIERNES" />
+
+                        <span> V </span>
+                      </label>
+
+                      <label class="grupo-dia-option">
+                        <input type="checkbox" name="dias" value="SABADO" />
+
+                        <span> S </span>
+                      </label>
+
+                      <label class="grupo-dia-option">
+                        <input type="checkbox" name="dias" value="DOMINGO" />
+
+                        <span> D </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- DESCRIPCIÓN -->
+
+                  <div class="form-group grupos-form-full">
+                    <label for="groupDescripcion"> Descripción </label>
+
+                    <textarea
+                      id="groupDescripcion"
+                      name="descripcion"
+                      rows="4"
+                      placeholder="Describe brevemente el grupo..."
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="grupos-horario-info">
+                  <span class="grupos-horario-info__icon"> 🕒 </span>
+
+                  <div>
+                    <strong> Horario del grupo </strong>
+
+                    <p>
+                      La frecuencia semanal se asignará automáticamente según la
+                      cantidad de días seleccionados. El horario indicado se
+                      aplicará a todos los días seleccionados.
+                    </p>
+                  </div>
+                </div>
+
+                <div id="groupMessage" class="grupos-message" hidden></div>
+
+                <div class="grupos-form-actions">
+                  <button
+                    type="button"
+                    id="cancelGroupModalButton"
+                    class="btn btn--secondary"
+                  >
+                    Cancelar
+                  </button>
+
+                  <button type="submit" class="btn btn--primary">
+                    Registrar grupo
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- =====================================================
+             EDITAR GRUPO
+             ===================================================== -->
+
+          <section
+            id="editGroupSection"
+            class="card grupos-form-card grupos-edit-card"
+            hidden
+          >
+            <div class="grupos-form-header">
+              <div>
+                <span class="grupos-form-header__kicker"> EDICIÓN </span>
+
+                <h2>Editar grupo</h2>
+
+                <p>
+                  Actualiza los datos del grupo y administra sus horarios
+                  habituales.
+                </p>
+              </div>
+            </div>
+
+            <form id="editGroupForm">
+              <input type="hidden" id="editId" />
+
+              <div class="grid grid--2">
+                <!-- NOMBRE -->
+
+                <div class="form-group">
+                  <label for="editNombre"> Nombre del grupo </label>
+
+                  <input type="text" id="editNombre" required />
+                </div>
+
+                <!-- CAPACIDAD -->
+
+                <div class="form-group">
+                  <label for="editCapacidad"> Capacidad </label>
+
+                  <input type="number" id="editCapacidad" min="1" required />
+                </div>
+
+                <!-- FRECUENCIA -->
+
+                <div class="form-group">
+                  <label for="editFrecuenciaId"> Frecuencia semanal </label>
+
+                  <select id="editFrecuenciaId" required>
+                    <option value="">Selecciona una frecuencia</option>
+                  </select>
+                </div>
+
+                <!-- SENSEI -->
+
+                <div class="form-group">
+                  <label for="editSenseiId"> Sensei </label>
+
+                  <select id="editSenseiId" required>
+                    <option value="">Selecciona un sensei</option>
+                  </select>
+                </div>
+
+                <!-- DESCRIPCIÓN -->
+
+                <div class="form-group grupos-form-full">
+                  <label for="editDescripcion"> Descripción </label>
+
+                  <textarea
+                    id="editDescripcion"
+                    rows="4"
+                    placeholder="Descripción del grupo..."
+                  ></textarea>
+                </div>
+              </div>
+
+              <!-- =================================================
+                 HORARIOS HABITUALES
+                 ================================================= -->
+
+              <div class="grupos-horarios-section">
+                <div class="grupos-horarios-header">
+                  <div>
+                    <span class="grupos-form-header__kicker"> HORARIOS </span>
+
+                    <h3>Horarios habituales</h3>
+
+                    <p>
+                      Agrega los días y horarios en los que normalmente entrena
+                      el grupo.
+                    </p>
+                  </div>
+                </div>
+
+                <div id="groupSchedulesList" class="grupos-horarios-list"></div>
+
+                <div class="grupos-horario-form">
+                  <div class="form-group">
+                    <label for="scheduleDay"> Día </label>
+
+                    <select id="scheduleDay">
+                      <option value="">Selecciona un día</option>
+
+                      <option value="LUNES">Lunes</option>
+
+                      <option value="MARTES">Martes</option>
+
+                      <option value="MIERCOLES">Miércoles</option>
+
+                      <option value="JUEVES">Jueves</option>
+
+                      <option value="VIERNES">Viernes</option>
+
+                      <option value="SABADO">Sábado</option>
+
+                      <option value="DOMINGO">Domingo</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="scheduleStart"> Hora inicio </label>
+
+                    <input type="time" id="scheduleStart" />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="scheduleEnd"> Hora fin </label>
+
+                    <input type="time" id="scheduleEnd" />
+                  </div>
+
+                  <div class="grupos-horario-form__action">
+                    <button
+                      type="button"
+                      id="addScheduleButton"
+                      class="btn btn--secondary"
+                    >
+                      + Agregar horario
+                    </button>
+                  </div>
+                </div>
+
+                <div id="scheduleMessage" class="grupos-message" hidden></div>
+              </div>
+
+              <div id="editGroupMessage" class="grupos-message" hidden></div>
+
+              <div class="grupos-form-actions">
+                <button
+                  type="button"
+                  id="cancelEditButton"
+                  class="btn btn--secondary"
+                >
+                  Cancelar
+                </button>
+
+                <button type="submit" class="btn btn--primary">
+                  Guardar cambios
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <!-- =====================================================
+             LISTA DE GRUPOS
+             ===================================================== -->
+
+          <section class="card grupos-list-card">
+            <div class="grupos-list-header">
+              <div>
+                <span class="grupos-form-header__kicker"> REGISTROS </span>
+
+                <h2>Lista de grupos</h2>
+
+                <p>Consulta y administra los grupos registrados.</p>
+              </div>
+
+              <div class="grupos-list-count">
+                <span id="groupsCount"> 0 grupos </span>
+              </div>
+            </div>
+
+            <div id="groupsMessage" class="grupos-message"></div>
+
+            <div id="groupsList" class="grupos-table-wrapper">
+              <div class="grupos-loading">
+                <div class="grupos-loading__spinner"></div>
+
+                <span> Cargando grupos... </span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
     </div>
 
+    <!-- =========================================================
+       JAVASCRIPT
+       ========================================================= -->
 
-    <!-- ==========================================
-     SCRIPTS
-     ========================================== -->
+    <!-- Lógica común de sesión, usuario, avatar, perfil y logout -->
+
+    <script src="/js/topbar.js"></script>
+
+    <!-- Navegación lateral, acordeones y menú móvil -->
+
+    <script src="/js/nav-acordeon.js"></script>
+
+    <!-- Lógica exclusiva de grupos -->
 
     <script src="/js/grupos.js"></script>
-    <script src="/js/logout.js"></script>
-
-</body>
-
+  </body>
 </html>

@@ -12,4 +12,6 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     Optional<Persona> findByTipoDocumentoIdAndNumeroDocumento(
             Long tipoDocumentoId,
             String numeroDocumento);
+
+    Optional<Persona> findByTelefono(String telefono);
 }

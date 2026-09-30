@@ -52,11 +52,9 @@ public class UsuarioController {
                                 request.getGenero(),
                                 request.getCorreo());
 
-                UsuarioResponse response = convertirResponse(usuario);
-
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
-                                .body(response);
+                                .body(convertirResponse(usuario));
         }
 
         @PostMapping("/estudiante")
@@ -72,6 +70,16 @@ public class UsuarioController {
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
                                 .body(convertirResponse(usuario));
+        }
+
+        @GetMapping("/me")
+        public ResponseEntity<UsuarioResponse> obtenerUsuarioActual(
+                        java.security.Principal principal) {
+
+                Usuario usuario = usuarioService.buscarPorUsername(
+                                principal.getName());
+
+                return ResponseEntity.ok(convertirResponse(usuario));
         }
 
         @GetMapping
@@ -97,23 +105,56 @@ public class UsuarioController {
                 return ResponseEntity.ok(response);
         }
 
+        /*
+         * =========================================================
+         * ACTUALIZAR USUARIO
+         * =========================================================
+         *
+         * Ahora permite:
+         *
+         * - Datos personales
+         * - Username
+         * - Rol
+         * - Contraseña opcional
+         * - Fotografía opcional
+         *
+         * Si password llega vacío/null:
+         * NO se modifica la contraseña.
+         */
         @PutMapping(value = "/{id}", consumes = "multipart/form-data")
         public ResponseEntity<UsuarioResponse> actualizarUsuario(
+
                         @PathVariable Long id,
+
                         @RequestParam String username,
+
+                        @RequestParam(required = false) String rol,
+
+                        @RequestParam(required = false) String password,
+
                         @RequestParam String nombre,
+
                         @RequestParam String apellido,
+
                         @RequestParam String tipoDocumento,
+
                         @RequestParam String numeroDocumento,
+
                         @RequestParam String telefono,
+
                         @RequestParam String fechaNacimiento,
+
                         @RequestParam String genero,
+
                         @RequestParam String correo,
+
                         @RequestPart(required = false) MultipartFile foto) {
 
                 Usuario usuario = usuarioService.actualizarUsuario(
                                 id,
                                 username,
+                                rol,
+                                password,
                                 nombre,
                                 apellido,
                                 tipoDocumento,
@@ -124,7 +165,8 @@ public class UsuarioController {
                                 correo,
                                 foto);
 
-                return ResponseEntity.ok(convertirResponse(usuario));
+                return ResponseEntity.ok(
+                                convertirResponse(usuario));
         }
 
         @PatchMapping("/{id}/estado")
@@ -132,9 +174,12 @@ public class UsuarioController {
                         @PathVariable Long id,
                         @RequestParam String estado) {
 
-                Usuario usuario = usuarioService.cambiarEstado(id, estado);
+                Usuario usuario = usuarioService.cambiarEstado(
+                                id,
+                                estado);
 
-                return ResponseEntity.ok(convertirResponse(usuario));
+                return ResponseEntity.ok(
+                                convertirResponse(usuario));
         }
 
         @PatchMapping("/{id}/rol")
@@ -142,9 +187,12 @@ public class UsuarioController {
                         @PathVariable Long id,
                         @RequestParam String rol) {
 
-                Usuario usuario = usuarioService.cambiarRol(id, rol);
+                Usuario usuario = usuarioService.cambiarRol(
+                                id,
+                                rol);
 
-                return ResponseEntity.ok(convertirResponse(usuario));
+                return ResponseEntity.ok(
+                                convertirResponse(usuario));
         }
 
         @DeleteMapping("/{id}")
@@ -168,11 +216,13 @@ public class UsuarioController {
                 return ResponseEntity.ok(response);
         }
 
-        private UsuarioResponse convertirResponse(Usuario usuario) {
+        private UsuarioResponse convertirResponse(
+                        Usuario usuario) {
 
                 Persona persona = usuario.getPersona();
 
                 if (persona == null) {
+
                         throw new RuntimeException(
                                         "El usuario no tiene una persona asociada");
                 }
@@ -183,10 +233,8 @@ public class UsuarioController {
 
                 /*
                  * =====================================================
-                 * FOTO DE LA PERSONA
+                 * FOTO
                  * =====================================================
-                 *
-                 * La foto ahora pertenece a Persona.
                  */
 
                 if (persona.getFoto() != null
@@ -213,8 +261,6 @@ public class UsuarioController {
                  * =====================================================
                  * ESTUDIANTE VINCULADO
                  * =====================================================
-                 *
-                 * La relación se obtiene mediante Persona.
                  */
 
                 Estudiante estudiante = estudianteRepository
@@ -222,13 +268,12 @@ public class UsuarioController {
                                 .orElse(null);
 
                 if (estudiante != null) {
-
                         estudianteId = estudiante.getId();
                 }
 
                 /*
                  * =====================================================
-                 * RESPUESTA
+                 * RESPONSE
                  * =====================================================
                  */
 
@@ -239,14 +284,16 @@ public class UsuarioController {
                                 persona.getApellido(),
 
                                 persona.getTipoDocumento() != null
-                                                ? persona.getTipoDocumento().getNombre()
+                                                ? persona.getTipoDocumento()
+                                                                .getNombre()
                                                 : null,
 
                                 persona.getNumeroDocumento(),
                                 persona.getTelefono(),
 
                                 persona.getFechaNacimiento() != null
-                                                ? persona.getFechaNacimiento().toString()
+                                                ? persona.getFechaNacimiento()
+                                                                .toString()
                                                 : null,
 
                                 persona.getGenero(),

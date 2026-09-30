@@ -1,21 +1,31 @@
 document.addEventListener("DOMContentLoaded", () => {
+  /*
+   * ==========================================
+   * AUTENTICACIÓN
+   * ==========================================
+   */
+
   const auth = sessionStorage.getItem("kihonAuth");
-  const username = sessionStorage.getItem("kihonUsername");
+
   const rol = sessionStorage.getItem("kihonRol");
 
-  // ==========================================
-  // VALIDAR SESIÓN
-  // ==========================================
+  /*
+   * ==========================================
+   * VALIDAR SESIÓN
+   * ==========================================
+   */
 
-  if (!auth || !username || !rol) {
+  if (!auth || !rol) {
     window.location.href = "/login";
 
     return;
   }
 
-  // ==========================================
-  // VALIDAR ROL
-  // ==========================================
+  /*
+   * ==========================================
+   * VALIDAR ROL
+   * ==========================================
+   */
 
   if (rol !== "ADMIN" && rol !== "SECRETARIA") {
     window.location.href = "/login";
@@ -23,11 +33,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // ==========================================
-  // ELEMENTOS
-  // ==========================================
-
-  const usernameDisplay = document.getElementById("usernameDisplay");
+  /*
+   * ==========================================
+   * ELEMENTOS
+   * ==========================================
+   */
 
   const studentSelect = document.getElementById("studentSelect");
 
@@ -77,11 +87,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const changeGroupMessage = document.getElementById("changeGroupMessage");
 
-  usernameDisplay.textContent = username;
-
-  // ==========================================
-  // VARIABLES
-  // ==========================================
+  /*
+   * ==========================================
+   * VARIABLES
+   * ==========================================
+   */
 
   let estudiantes = [];
 
@@ -89,9 +99,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let inscripciones = [];
 
-  // ==========================================
-  // CARGAR ESTUDIANTES
-  // ==========================================
+  /*
+   * ==========================================
+   * CARGAR ESTUDIANTES
+   * ==========================================
+   */
 
   async function cargarEstudiantes() {
     try {
@@ -100,6 +112,14 @@ document.addEventListener("DOMContentLoaded", () => {
           Authorization: `Basic ${auth}`,
         },
       });
+
+      if (response.status === 401) {
+        sessionStorage.clear();
+
+        window.location.href = "/login";
+
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("No se pudieron cargar los estudiantes");
@@ -112,10 +132,10 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       studentSelect.innerHTML = `
-                <option value="">
-                    Seleccionar estudiante
-                </option>
-            `;
+        <option value="">
+          Seleccionar estudiante
+        </option>
+      `;
 
       estudiantesActivos.forEach((estudiante) => {
         const option = document.createElement("option");
@@ -131,9 +151,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ==========================================
-  // CARGAR GRUPOS
-  // ==========================================
+  /*
+   * ==========================================
+   * CARGAR GRUPOS
+   * ==========================================
+   */
 
   async function cargarGrupos() {
     try {
@@ -142,6 +164,14 @@ document.addEventListener("DOMContentLoaded", () => {
           Authorization: `Basic ${auth}`,
         },
       });
+
+      if (response.status === 401) {
+        sessionStorage.clear();
+
+        window.location.href = "/login";
+
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("No se pudieron cargar los grupos");
@@ -155,16 +185,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ==========================================
-  // CARGAR OPCIONES DE GRUPOS
-  // ==========================================
+  /*
+   * ==========================================
+   * CARGAR OPCIONES DE GRUPOS
+   * ==========================================
+   */
 
   function cargarOpcionesGrupos() {
     groupSelect.innerHTML = `
-            <option value="">
-                Seleccionar grupo
-            </option>
-        `;
+      <option value="">
+        Seleccionar grupo
+      </option>
+    `;
 
     grupos
       .filter(
@@ -181,9 +213,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  // ==========================================
-  // MOSTRAR INFORMACIÓN DEL GRUPO
-  // ==========================================
+  /*
+   * ==========================================
+   * MOSTRAR INFORMACIÓN DEL GRUPO
+   * ==========================================
+   */
 
   function mostrarInformacionGrupo() {
     const grupoId = Number(groupSelect.value);
@@ -206,7 +240,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     groupInfoSensei.textContent = grupo.senseiNombre || "Sin sensei";
 
-    groupInfoSchedule.textContent = `${formatearHora(grupo.horaInicio)} - ${formatearHora(grupo.horaFin)}`;
+    groupInfoSchedule.textContent =
+      `${formatearHora(grupo.horaInicio)} - ` +
+      `${formatearHora(grupo.horaFin)}`;
 
     groupInfoCapacity.textContent = grupo.capacidad;
 
@@ -217,25 +253,35 @@ document.addEventListener("DOMContentLoaded", () => {
     groupInfo.hidden = false;
   }
 
-  // ==========================================
-  // CARGAR INSCRIPCIONES
-  // ==========================================
+  /*
+   * ==========================================
+   * CARGAR INSCRIPCIONES
+   * ==========================================
+   */
 
   async function cargarInscripciones() {
     try {
       inscripcionesTableBody.innerHTML = `
-                <tr>
-                    <td colspan="4">
-                        Cargando inscripciones...
-                    </td>
-                </tr>
-            `;
+        <tr>
+          <td colspan="4">
+            Cargando inscripciones...
+          </td>
+        </tr>
+      `;
 
       const response = await fetch("/api/estudiantes-grupos", {
         headers: {
           Authorization: `Basic ${auth}`,
         },
       });
+
+      if (response.status === 401) {
+        sessionStorage.clear();
+
+        window.location.href = "/login";
+
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("No se pudieron cargar las inscripciones");
@@ -246,28 +292,30 @@ document.addEventListener("DOMContentLoaded", () => {
       renderizarInscripciones();
     } catch (error) {
       inscripcionesTableBody.innerHTML = `
-                <tr>
-                    <td colspan="4">
-                        ${error.message}
-                    </td>
-                </tr>
-            `;
+        <tr>
+          <td colspan="4">
+            ${error.message}
+          </td>
+        </tr>
+      `;
     }
   }
 
-  // ==========================================
-  // RENDERIZAR INSCRIPCIONES
-  // ==========================================
+  /*
+   * ==========================================
+   * RENDERIZAR INSCRIPCIONES
+   * ==========================================
+   */
 
   function renderizarInscripciones() {
     if (inscripciones.length === 0) {
       inscripcionesTableBody.innerHTML = `
-                <tr>
-                    <td colspan="4">
-                        No hay inscripciones registradas.
-                    </td>
-                </tr>
-            `;
+        <tr>
+          <td colspan="4">
+            No hay inscripciones registradas.
+          </td>
+        </tr>
+      `;
 
       return;
     }
@@ -282,53 +330,54 @@ document.addEventListener("DOMContentLoaded", () => {
       const estadoTexto = estado === "ACTIVO" ? "Activo" : "Inactivo";
 
       row.innerHTML = `
+          <td>
+            ${inscripcion.estudianteNombre}
+          </td>
 
-                <td>
-                    ${inscripcion.estudianteNombre}
-                </td>
+          <td>
+            ${inscripcion.grupoNombre}
+          </td>
 
-                <td>
-                    ${inscripcion.grupoNombre}
-                </td>
+          <td>
+            ${estadoTexto}
+          </td>
 
-                <td>
-                    ${estadoTexto}
-                </td>
+          <td>
 
-                <td>
+            <button
+              type="button"
+              class="btn btn--outline"
+              data-action="change-group"
+              data-assignment-id="${inscripcion.id}"
+              data-student-name="${inscripcion.estudianteNombre}"
+            >
+              Cambiar grupo
+            </button>
 
-                    <button
-                        type="button"
-                        class="btn btn--outline"
-                        data-action="change-group"
-                        data-assignment-id="${inscripcion.id}"
-                        data-student-name="${inscripcion.estudianteNombre}"
-                    >
-                        Cambiar grupo
-                    </button>
+            <button
+              type="button"
+              class="btn ${
+                estado === "ACTIVO" ? "btn--logout" : "btn--primary"
+              }"
+              data-action="toggle-status"
+              data-id="${inscripcion.id}"
+              data-status="${estado}"
+            >
+              ${estado === "ACTIVO" ? "Inactivar" : "Activar"}
+            </button>
 
-                    <button
-                        type="button"
-                        class="btn ${
-                          estado === "ACTIVO" ? "btn--logout" : "btn--primary"
-                        }"
-                        data-action="toggle-status"
-                        data-id="${inscripcion.id}"
-                        data-status="${estado}"
-                    >
-                        ${estado === "ACTIVO" ? "Inactivar" : "Activar"}
-                    </button>
-
-                </td>
-            `;
+          </td>
+        `;
 
       inscripcionesTableBody.appendChild(row);
     });
   }
 
-  // ==========================================
-  // INSCRIBIR ESTUDIANTE
-  // ==========================================
+  /*
+   * ==========================================
+   * INSCRIBIR ESTUDIANTE
+   * ==========================================
+   */
 
   async function inscribirEstudiante(event) {
     event.preventDefault();
@@ -362,6 +411,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }),
       });
 
+      if (response.status === 401) {
+        sessionStorage.clear();
+
+        window.location.href = "/login";
+
+        return;
+      }
+
       const data = await obtenerRespuesta(response);
 
       if (!response.ok) {
@@ -384,9 +441,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ==========================================
-  // CAMBIAR GRUPO
-  // ==========================================
+  /*
+   * ==========================================
+   * CAMBIAR GRUPO
+   * ==========================================
+   */
 
   function abrirCambiarGrupo(asignacionId, estudianteNombre) {
     changeStudentId.value = asignacionId;
@@ -403,16 +462,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ==========================================
-  // OPCIONES NUEVO GRUPO
-  // ==========================================
+  /*
+   * ==========================================
+   * OPCIONES NUEVO GRUPO
+   * ==========================================
+   */
 
   function cargarOpcionesNuevoGrupo(asignacionId) {
     newGroupSelect.innerHTML = `
-            <option value="">
-                Seleccionar grupo
-            </option>
-        `;
+      <option value="">
+        Seleccionar grupo
+      </option>
+    `;
 
     const inscripcionActual = inscripciones.find(
       (inscripcion) => inscripcion.id === Number(asignacionId),
@@ -436,9 +497,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  // ==========================================
-  // PROCESAR CAMBIO DE GRUPO
-  // ==========================================
+  /*
+   * ==========================================
+   * PROCESAR CAMBIO DE GRUPO
+   * ==========================================
+   */
 
   async function cambiarGrupo(event) {
     event.preventDefault();
@@ -465,6 +528,14 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       );
 
+      if (response.status === 401) {
+        sessionStorage.clear();
+
+        window.location.href = "/login";
+
+        return;
+      }
+
       const data = await obtenerRespuesta(response);
 
       if (!response.ok) {
@@ -489,9 +560,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ==========================================
-  // CAMBIAR ESTADO
-  // ==========================================
+  /*
+   * ==========================================
+   * CAMBIAR ESTADO
+   * ==========================================
+   */
 
   async function cambiarEstado(id, estadoActual) {
     const nuevoEstado = estadoActual === "ACTIVO" ? "INACTIVO" : "ACTIVO";
@@ -507,6 +580,14 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         },
       );
+
+      if (response.status === 401) {
+        sessionStorage.clear();
+
+        window.location.href = "/login";
+
+        return;
+      }
 
       const data = await obtenerRespuesta(response);
 
@@ -528,9 +609,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ==========================================
-  // LIMPIAR FORMULARIO
-  // ==========================================
+  /*
+   * ==========================================
+   * LIMPIAR FORMULARIO
+   * ==========================================
+   */
 
   function limpiarFormulario() {
     inscripcionForm.reset();
@@ -540,9 +623,11 @@ document.addEventListener("DOMContentLoaded", () => {
     ocultarMensaje(inscripcionFormMessage);
   }
 
-  // ==========================================
-  // CERRAR CAMBIO DE GRUPO
-  // ==========================================
+  /*
+   * ==========================================
+   * CERRAR CAMBIO DE GRUPO
+   * ==========================================
+   */
 
   function cerrarCambiarGrupo() {
     changeGroupSection.hidden = true;
@@ -552,9 +637,11 @@ document.addEventListener("DOMContentLoaded", () => {
     ocultarMensaje(changeGroupMessage);
   }
 
-  // ==========================================
-  // MENSAJES
-  // ==========================================
+  /*
+   * ==========================================
+   * MENSAJES
+   * ==========================================
+   */
 
   function mostrarMensaje(elemento, mensaje, tipo) {
     elemento.textContent = mensaje;
@@ -572,9 +659,11 @@ document.addEventListener("DOMContentLoaded", () => {
     elemento.className = "inscripciones-message";
   }
 
-  // ==========================================
-  // RESPUESTA API
-  // ==========================================
+  /*
+   * ==========================================
+   * RESPUESTA API
+   * ==========================================
+   */
 
   async function obtenerRespuesta(response) {
     const text = await response.text();
@@ -602,9 +691,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return data.message || data.error || "Ocurrió un error en la operación.";
   }
 
-  // ==========================================
-  // FORMATEAR HORA
-  // ==========================================
+  /*
+   * ==========================================
+   * FORMATEAR HORA
+   * ==========================================
+   */
 
   function formatearHora(hora) {
     if (!hora) {
@@ -614,9 +705,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return hora.substring(0, 5);
   }
 
-  // ==========================================
-  // EVENTOS
-  // ==========================================
+  /*
+   * ==========================================
+   * EVENTOS
+   * ==========================================
+   */
 
   studentSelect.addEventListener("change", () => {
     ocultarMensaje(inscripcionFormMessage);
@@ -659,9 +752,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   cancelChangeGroupButton.addEventListener("click", cerrarCambiarGrupo);
 
-  // ==========================================
-  // INICIALIZAR
-  // ==========================================
+  /*
+   * ==========================================
+   * INICIALIZAR
+   * ==========================================
+   */
 
   async function inicializar() {
     await cargarEstudiantes();

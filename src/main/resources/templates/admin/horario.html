@@ -1,634 +1,528 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Kihon | Horario</title>
 
-    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/main.css" />
+  </head>
 
-</head>
-
-<body>
-
+  <body>
     <main class="app-layout">
+      <!-- ==========================================
+           SIDEBAR
+           ========================================== -->
 
-        <!-- ==========================================
-             SIDEBAR
-             ========================================== -->
+      <aside class="sidebar" id="sidebarMenu">
+        <div class="sidebar__logo">KIHON</div>
 
-        <aside class="sidebar">
+        <nav class="sidebar__nav">
+          <!-- DASHBOARD -->
 
-            <div class="sidebar__logo">
-                KIHON
+          <a href="/admin/admin" class="sidebar__link"> Dashboard </a>
+
+          <!-- ======================================
+               GESTIÓN
+               ====================================== -->
+
+          <div class="sidebar__accordion">
+            <button
+              type="button"
+              class="sidebar__accordion-button"
+              data-target="sidebarGestion"
+              aria-expanded="false"
+            >
+              <span>Gestión</span>
+
+              <span class="sidebar__accordion-arrow">▶</span>
+            </button>
+
+            <div class="sidebar__submenu" id="sidebarGestion" hidden>
+              <a href="/admin/estudiantes" class="sidebar__link">
+                Estudiantes
+              </a>
+
+              <a href="/admin/grupos" class="sidebar__link"> Grupos </a>
+
+              <a href="/admin/inscripciones" class="sidebar__link">
+                Inscripciones
+              </a>
+            </div>
+          </div>
+
+          <!-- ======================================
+               CONTROL
+               ====================================== -->
+
+          <div class="sidebar__accordion">
+            <button
+              type="button"
+              class="sidebar__accordion-button"
+              data-target="sidebarControl"
+              aria-expanded="true"
+            >
+              <span>Control</span>
+
+              <span class="sidebar__accordion-arrow">▼</span>
+            </button>
+
+            <div class="sidebar__submenu" id="sidebarControl">
+              <a href="/admin/asistencia" class="sidebar__link"> Asistencia </a>
+
+              <a
+                href="/admin/horario"
+                class="sidebar__link sidebar__link--active"
+              >
+                Horario
+              </a>
+            </div>
+          </div>
+
+          <!-- ======================================
+               ADMINISTRACIÓN
+               ====================================== -->
+
+          <div class="sidebar__accordion">
+            <button
+              type="button"
+              class="sidebar__accordion-button"
+              data-target="sidebarAdministracion"
+              aria-expanded="false"
+            >
+              <span>Administración</span>
+
+              <span class="sidebar__accordion-arrow">▶</span>
+            </button>
+
+            <div class="sidebar__submenu" id="sidebarAdministracion" hidden>
+              <a href="/admin/reportes" class="sidebar__link"> Reportes </a>
+
+              <a href="/admin/usuarios" class="sidebar__link"> Usuarios </a>
+            </div>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- ==========================================
+           OVERLAY MENÚ MÓVIL
+           ========================================== -->
+
+      <div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden></div>
+
+      <!-- ==========================================
+           CONTENIDO PRINCIPAL
+           ========================================== -->
+
+      <section class="main-content">
+        <!-- ======================================
+             NAVEGACIÓN MÓVIL
+             ====================================== -->
+
+        <div class="mobile-nav">
+          <button
+            type="button"
+            class="mobile-menu-button"
+            id="mobileMenuButton"
+            aria-label="Abrir menú"
+            aria-expanded="false"
+            aria-controls="sidebarMenu"
+          >
+            <span id="mobileMenuIcon">☰</span>
+          </button>
+
+          <div class="mobile-nav__logo">KIHON</div>
+        </div>
+
+        <!-- ======================================
+             TOPBAR
+             ====================================== -->
+
+        <header class="topbar">
+          <div class="topbar__role">
+            <span class="topbar__role-label"> Rol </span>
+
+            <strong id="roleDisplay"> Administrador </strong>
+          </div>
+
+          <div class="topbar__actions">
+            <!-- NOTIFICACIONES -->
+
+            <button
+              type="button"
+              class="topbar__notification"
+              id="notificationButton"
+              aria-label="Notificaciones"
+            >
+              <span class="topbar__notification-icon"> 🔔 </span>
+
+              <span
+                id="notificationCount"
+                class="topbar__notification-count"
+                hidden
+              >
+                0
+              </span>
+            </button>
+
+            <!-- PERFIL -->
+
+            <div class="topbar__profile" id="profileMenuContainer">
+              <button
+                type="button"
+                class="topbar__profile-button"
+                id="profileMenuButton"
+                aria-expanded="false"
+              >
+                <div class="topbar__avatar" id="userProfileAvatar">
+                  <span id="userAvatarInitial"> U </span>
+                </div>
+
+                <div class="topbar__profile-info">
+                  <strong id="usernameDisplay"> Usuario </strong>
+
+                  <span id="profileRoleDisplay"> Administrador </span>
+                </div>
+
+                <span class="topbar__profile-arrow"> ▼ </span>
+              </button>
+
+              <div class="topbar__profile-menu" id="profileMenu" hidden>
+                <a href="/admin/perfil" class="topbar__profile-menu-item">
+                  Editar perfil
+                </a>
+
+                <button
+                  type="button"
+                  id="topbarLogoutButton"
+                  class="topbar__profile-menu-item topbar__profile-menu-item--danger"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- ======================================
+             CONTENIDO DE HORARIO
+             ====================================== -->
+
+        <div class="container horario-page">
+          <!-- ======================================
+               ENCABEZADO
+               ====================================== -->
+
+          <section class="dashboard-header">
+            <div>
+              <span class="section-kicker"> Administración </span>
+
+              <h1>Horario</h1>
+
+              <p>Calendario semanal de clases y eventos</p>
+            </div>
+          </section>
+
+          <!-- ======================================
+               CONTROLES DEL CALENDARIO
+               ====================================== -->
+
+          <section class="card horario-controls">
+            <div class="horario-navigation">
+              <button
+                type="button"
+                id="previousWeekButton"
+                class="btn btn--secondary"
+              >
+                ‹
+              </button>
+
+              <div class="horario-week">
+                <strong id="weekLabel"> Semana actual </strong>
+              </div>
+
+              <button
+                type="button"
+                id="nextWeekButton"
+                class="btn btn--secondary"
+              >
+                ›
+              </button>
             </div>
 
-            <nav class="sidebar__nav">
-
-                <a href="/admin/admin" class="sidebar__link">
-                    Dashboard
-                </a>
-
-                <a href="/admin/estudiantes" class="sidebar__link">
-                    Estudiantes
-                </a>
-
-                <a href="/admin/grupos" class="sidebar__link">
-                    Grupos
-                </a>
-
-                <a href="/admin/asistencia" class="sidebar__link">
-                    Asistencia
-                </a>
-
-                <a href="/admin/horario" class="sidebar__link sidebar__link--active">
-                    Horario
-                </a>
-
-                <a href="/admin/inscripciones" class="sidebar__link">
-                    Inscripciones
-                </a>
-
-                <a href="/admin/reportes" class="sidebar__link">
-                    Reportes
-                </a>
-
-                <a href="/admin/usuarios" class="sidebar__link">
-                    Usuarios
-                </a>
-
-            </nav>
-
-        </aside>
-
-
-        <!-- ==========================================
-             CONTENIDO PRINCIPAL
-             ========================================== -->
-
-        <section class="main-content">
-
-            <!-- ======================================
-                 TOPBAR
-                 ====================================== -->
-
-            <header class="topbar">
-
-                <div class="topbar__role">
-
-                    <span class="topbar__role-label">
-                        Rol
-                    </span>
-
-                    <strong id="roleDisplay">
-                        Administrador
-                    </strong>
-
-                </div>
-
-
-                <div class="topbar__actions">
-
-                    <!-- NOTIFICACIONES -->
-
-                    <button type="button" class="topbar__notification" id="notificationButton"
-                        aria-label="Notificaciones">
-
-                        <span class="topbar__notification-icon">
-                            🔔
-                        </span>
-
-                        <span id="notificationCount" class="topbar__notification-count" hidden>
-                            0
-                        </span>
-
-                    </button>
-
-
-                    <!-- PERFIL -->
-
-                    <div class="topbar__profile" id="profileMenuContainer">
-
-                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
-                            aria-expanded="false">
-
-                            <div class="topbar__avatar" id="userProfileAvatar">
-
-                                <span id="userAvatarInitial">
-                                    U
-                                </span>
-
-                            </div>
-
-
-                            <div class="topbar__profile-info">
-
-                                <strong id="usernameDisplay">
-                                    Usuario
-                                </strong>
-
-                                <span id="profileRoleDisplay">
-                                    Administrador
-                                </span>
-
-                            </div>
-
-
-                            <span class="topbar__profile-arrow">
-                                ▼
-                            </span>
-
-                        </button>
-
-
-                        <div class="topbar__profile-menu" id="profileMenu" hidden>
-
-                            <a href="/admin/perfil" class="topbar__profile-menu-item">
-                                Editar perfil
-                            </a>
-
-                            <button type="button" id="topbarLogoutButton"
-                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
-                                Cerrar sesión
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </header>
-
-
-            <!-- ======================================
-                 CONTENIDO DE HORARIO
-                 ====================================== -->
-
-            <div class="container horario-page">
-
-
-                <!-- ======================================
-                     ENCABEZADO
-                     ====================================== -->
-
-                <section class="dashboard-header">
-
-                    <div>
-
-                        <span class="section-kicker">
-                            Administración
-                        </span>
-
-                        <h1>
-                            Horario
-                        </h1>
-
-                        <p>
-                            Calendario semanal de clases y eventos
-                        </p>
-
-                    </div>
-
-                </section>
-
-
-                <!-- ======================================
-                     CONTROLES DEL CALENDARIO
-                     ====================================== -->
-
-                <section class="card horario-controls">
-
-                    <div class="horario-navigation">
-
-                        <button type="button" id="previousWeekButton" class="btn btn--secondary">
-
-                            ‹
-
-                        </button>
-
-
-                        <div class="horario-week">
-
-                            <strong id="weekLabel">
-                                Semana actual
-                            </strong>
-
-                        </div>
-
-
-                        <button type="button" id="nextWeekButton" class="btn btn--secondary">
-
-                            ›
-
-                        </button>
-
-                    </div>
-
-
-                    <div class="horario-actions">
-
-                        <button type="button" id="todayButton" class="btn btn--outline">
-
-                            Hoy
-
-                        </button>
-
-
-                        <button type="button" id="showEventFormButton" class="btn btn--primary">
-
-                            + Agregar evento
-
-                        </button>
-
-                    </div>
-
-                </section>
-
-
-                <!-- ======================================
-                     FORMULARIO DE EVENTO
-                     ====================================== -->
-
-                <section id="eventFormSection" class="card horario-event-form" hidden>
-
-                    <div class="horario-event-form__header">
-
-                        <div>
-
-                            <h2>
-                                Nuevo evento
-                            </h2>
-
-                            <p>
-                                Registra una actividad especial en el calendario.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <form id="eventForm">
-
-                        <div class="horario-event-form__grid">
-
-
-                            <!-- TÍTULO -->
-
-                            <div class="form-group">
-
-                                <label for="eventTitle">
-                                    Título
-                                </label>
-
-                                <input type="text" id="eventTitle" name="titulo" maxlength="150" required>
-
-                            </div>
-
-
-                            <!-- TIPO -->
-
-                            <div class="form-group">
-
-                                <label for="eventType">
-                                    Tipo
-                                </label>
-
-                                <select id="eventType" name="tipo" required>
-
-                                    <option value="">
-                                        Seleccionar tipo
-                                    </option>
-
-                                    <option value="EXAMEN">
-                                        Examen
-                                    </option>
-
-                                    <option value="SEMINARIO">
-                                        Seminario
-                                    </option>
-
-                                    <option value="RECUPERACION">
-                                        Recuperación
-                                    </option>
-
-                                    <option value="REFUERZO">
-                                        Refuerzo
-                                    </option>
-
-                                    <option value="OTRO">
-                                        Otro
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-
-                            <!-- FECHA -->
-
-                            <div class="form-group">
-
-                                <label for="eventDate">
-                                    Fecha
-                                </label>
-
-                                <input type="date" id="eventDate" name="fecha" required>
-
-                            </div>
-
-
-                            <!-- HORA INICIO -->
-
-                            <div class="form-group">
-
-                                <label for="eventStart">
-                                    Hora de inicio
-                                </label>
-
-                                <input type="time" id="eventStart" name="horaInicio" required>
-
-                            </div>
-
-
-                            <!-- HORA FIN -->
-
-                            <div class="form-group">
-
-                                <label for="eventEnd">
-                                    Hora de fin
-                                </label>
-
-                                <input type="time" id="eventEnd" name="horaFin" required>
-
-                            </div>
-
-
-                            <!-- LUGAR -->
-
-                            <div class="form-group">
-
-                                <label for="eventPlace">
-                                    Lugar
-                                </label>
-
-                                <input type="text" id="eventPlace" name="lugar" maxlength="150">
-
-                            </div>
-
-
-                            <!-- RESPONSABLE -->
-
-                            <div class="form-group">
-
-                                <label for="eventResponsible">
-                                    Responsable
-                                </label>
-
-                                <select id="eventResponsible" name="responsableId">
-
-                                    <option value="">
-                                        Sin responsable
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-
-                            <!-- DESCRIPCIÓN -->
-
-                            <div class="form-group horario-event-form__description">
-
-                                <label for="eventDescription">
-                                    Descripción
-                                </label>
-
-                                <textarea id="eventDescription" name="descripcion" rows="4"></textarea>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- MENSAJE -->
-
-                        <div id="eventFormMessage" class="horario-message" hidden>
-                        </div>
-
-
-                        <!-- ACCIONES -->
-
-                        <div class="horario-event-form__actions">
-
-                            <button type="submit" class="btn btn--primary">
-
-                                Guardar evento
-
-                            </button>
-
-
-                            <button type="button" id="cancelEventButton" class="btn btn--outline">
-
-                                Cancelar
-
-                            </button>
-
-                        </div>
-
-                    </form>
-
-                </section>
-
-
-                <!-- ======================================
-                     MENSAJE DEL CALENDARIO
-                     ====================================== -->
-
-                <div id="scheduleMessage" class="horario-message" hidden>
-                </div>
-
-
-                <!-- ======================================
-                     DETALLE DEL EVENTO
-                     ====================================== -->
-
-                <section id="eventDetailSection" class="card horario-event-detail" hidden>
-
-                    <div class="horario-event-detail__header">
-
-                        <div>
-
-                            <h2 id="eventDetailTitle">
-                                Evento
-                            </h2>
-
-                            <p id="eventDetailType">
-                                Tipo
-                            </p>
-
-                        </div>
-
-
-                        <button type="button" id="closeEventDetailButton" class="btn btn--outline">
-
-                            Cerrar
-
-                        </button>
-
-                    </div>
-
-
-                    <div class="horario-event-detail__content">
-
-                        <div class="horario-event-detail__item">
-
-                            <strong>
-                                Fecha
-                            </strong>
-
-                            <span id="eventDetailDate">
-                                -
-                            </span>
-
-                        </div>
-
-
-                        <div class="horario-event-detail__item">
-
-                            <strong>
-                                Horario
-                            </strong>
-
-                            <span id="eventDetailTime">
-                                -
-                            </span>
-
-                        </div>
-
-
-                        <div class="horario-event-detail__item">
-
-                            <strong>
-                                Lugar
-                            </strong>
-
-                            <span id="eventDetailPlace">
-                                -
-                            </span>
-
-                        </div>
-
-
-                        <div class="horario-event-detail__item">
-
-                            <strong>
-                                Responsable
-                            </strong>
-
-                            <span id="eventDetailResponsible">
-                                -
-                            </span>
-
-                        </div>
-
-
-                        <div class="horario-event-detail__item horario-event-detail__item--full">
-
-                            <strong>
-                                Descripción
-                            </strong>
-
-                            <span id="eventDetailDescription">
-                                -
-                            </span>
-
-                        </div>
-
-
-                        <div class="horario-event-detail__item">
-
-                            <strong>
-                                Estado
-                            </strong>
-
-                            <span id="eventDetailStatus">
-                                -
-                            </span>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="horario-event-detail__actions">
-
-                        <button type="button" id="editEventButton" class="btn btn--primary">
-
-                            Editar
-
-                        </button>
-
-
-                        <button type="button" id="toggleEventStatusButton" class="btn btn--outline">
-
-                            Cancelar evento
-
-                        </button>
-
-
-                        <button type="button" id="deleteEventButton" class="btn btn--logout">
-
-                            Eliminar
-
-                        </button>
-
-                    </div>
-
-
-                    <div id="eventDetailMessage" class="horario-message" hidden>
-                    </div>
-
-                </section>
-
-
-                <!-- ======================================
-                     CALENDARIO
-                     ====================================== -->
-
-                <section class="card horario-calendar-card">
-
-                    <div id="scheduleCalendar" class="horario-calendar">
-
-                        <div class="horario-loading">
-                            Cargando horario...
-                        </div>
-
-                    </div>
-
-                </section>
-
-
+            <div class="horario-actions">
+              <button type="button" id="todayButton" class="btn btn--outline">
+                Hoy
+              </button>
+
+              <button
+                type="button"
+                id="showEventFormButton"
+                class="btn btn--primary"
+              >
+                + Agregar evento
+              </button>
+            </div>
+          </section>
+
+          <!-- ======================================
+               FORMULARIO DE EVENTO
+               ====================================== -->
+
+          <section id="eventFormSection" class="card horario-event-form" hidden>
+            <div class="horario-event-form__header">
+              <div>
+                <h2>Nuevo evento</h2>
+
+                <p>Registra una actividad especial en el calendario.</p>
+              </div>
             </div>
 
-        </section>
+            <form id="eventForm">
+              <div class="horario-event-form__grid">
+                <!-- TÍTULO -->
 
+                <div class="form-group">
+                  <label for="eventTitle"> Título </label>
+
+                  <input
+                    type="text"
+                    id="eventTitle"
+                    name="titulo"
+                    maxlength="150"
+                    required
+                  />
+                </div>
+
+                <!-- TIPO -->
+
+                <div class="form-group">
+                  <label for="eventType"> Tipo </label>
+
+                  <select id="eventType" name="tipo" required>
+                    <option value="">Seleccionar tipo</option>
+
+                    <option value="EXAMEN">Examen</option>
+
+                    <option value="SEMINARIO">Seminario</option>
+
+                    <option value="RECUPERACION">Recuperación</option>
+
+                    <option value="REFUERZO">Refuerzo</option>
+
+                    <option value="OTRO">Otro</option>
+                  </select>
+                </div>
+
+                <!-- FECHA -->
+
+                <div class="form-group">
+                  <label for="eventDate"> Fecha </label>
+
+                  <input type="date" id="eventDate" name="fecha" required />
+                </div>
+
+                <!-- HORA INICIO -->
+
+                <div class="form-group">
+                  <label for="eventStart"> Hora de inicio </label>
+
+                  <input
+                    type="time"
+                    id="eventStart"
+                    name="horaInicio"
+                    required
+                  />
+                </div>
+
+                <!-- HORA FIN -->
+
+                <div class="form-group">
+                  <label for="eventEnd"> Hora de fin </label>
+
+                  <input type="time" id="eventEnd" name="horaFin" required />
+                </div>
+
+                <!-- LUGAR -->
+
+                <div class="form-group">
+                  <label for="eventPlace"> Lugar </label>
+
+                  <input
+                    type="text"
+                    id="eventPlace"
+                    name="lugar"
+                    maxlength="150"
+                  />
+                </div>
+
+                <!-- RESPONSABLE -->
+
+                <div class="form-group">
+                  <label for="eventResponsible"> Responsable </label>
+
+                  <select id="eventResponsible" name="responsableId">
+                    <option value="">Sin responsable</option>
+                  </select>
+                </div>
+
+                <!-- DESCRIPCIÓN -->
+
+                <div class="form-group horario-event-form__description">
+                  <label for="eventDescription"> Descripción </label>
+
+                  <textarea
+                    id="eventDescription"
+                    name="descripcion"
+                    rows="4"
+                  ></textarea>
+                </div>
+              </div>
+
+              <!-- MENSAJE -->
+
+              <div id="eventFormMessage" class="horario-message" hidden></div>
+
+              <!-- ACCIONES -->
+
+              <div class="horario-event-form__actions">
+                <button type="submit" class="btn btn--primary">
+                  Guardar evento
+                </button>
+
+                <button
+                  type="button"
+                  id="cancelEventButton"
+                  class="btn btn--outline"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <!-- ======================================
+               MENSAJE DEL CALENDARIO
+               ====================================== -->
+
+          <div id="scheduleMessage" class="horario-message" hidden></div>
+
+          <!-- ======================================
+               DETALLE DEL EVENTO
+               ====================================== -->
+
+          <section
+            id="eventDetailSection"
+            class="card horario-event-detail"
+            hidden
+          >
+            <div class="horario-event-detail__header">
+              <div>
+                <h2 id="eventDetailTitle">Evento</h2>
+
+                <p id="eventDetailType">Tipo</p>
+              </div>
+
+              <button
+                type="button"
+                id="closeEventDetailButton"
+                class="btn btn--outline"
+              >
+                Cerrar
+              </button>
+            </div>
+
+            <div class="horario-event-detail__content">
+              <div class="horario-event-detail__item">
+                <strong> Fecha </strong>
+
+                <span id="eventDetailDate"> - </span>
+              </div>
+
+              <div class="horario-event-detail__item">
+                <strong> Horario </strong>
+
+                <span id="eventDetailTime"> - </span>
+              </div>
+
+              <div class="horario-event-detail__item">
+                <strong> Lugar </strong>
+
+                <span id="eventDetailPlace"> - </span>
+              </div>
+
+              <div class="horario-event-detail__item">
+                <strong> Responsable </strong>
+
+                <span id="eventDetailResponsible"> - </span>
+              </div>
+
+              <div
+                class="horario-event-detail__item horario-event-detail__item--full"
+              >
+                <strong> Descripción </strong>
+
+                <span id="eventDetailDescription"> - </span>
+              </div>
+
+              <div class="horario-event-detail__item">
+                <strong> Estado </strong>
+
+                <span id="eventDetailStatus"> - </span>
+              </div>
+            </div>
+
+            <div class="horario-event-detail__actions">
+              <button
+                type="button"
+                id="editEventButton"
+                class="btn btn--primary"
+              >
+                Editar
+              </button>
+
+              <button
+                type="button"
+                id="toggleEventStatusButton"
+                class="btn btn--outline"
+              >
+                Cancelar evento
+              </button>
+
+              <button
+                type="button"
+                id="deleteEventButton"
+                class="btn btn--logout"
+              >
+                Eliminar
+              </button>
+            </div>
+
+            <div id="eventDetailMessage" class="horario-message" hidden></div>
+          </section>
+
+          <!-- ======================================
+               CALENDARIO
+               ====================================== -->
+
+          <section class="card horario-calendar-card">
+            <div id="scheduleCalendar" class="horario-calendar">
+              <div class="horario-loading">Cargando horario...</div>
+            </div>
+          </section>
+        </div>
+      </section>
     </main>
-
 
     <!-- ==========================================
          JAVASCRIPT
          ========================================== -->
 
-    <script src="/js/horario.js"></script>
+    <script src="/js/topbar.js"></script>
+    <script src="/js/nav-acordeon.js"></script>
     <script src="/js/eventos.js"></script>
-    <script src="/js/logout.js"></script>
-
-</body>
-
+    <script src="/js/horario.js"></script>
+  </body>
 </html>

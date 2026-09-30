@@ -1,352 +1,337 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Kihon | Reportes</title>
 
-    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/main.css" />
+  </head>
 
-</head>
-
-<body>
-
+  <body>
     <main class="app-layout">
+      <!-- ==========================================
+           SIDEBAR
+           ========================================== -->
 
-        <!-- ==========================================
-             SIDEBAR
-             ========================================== -->
+      <aside class="sidebar" id="sidebarMenu">
+        <div class="sidebar__logo">KIHON</div>
 
-        <aside class="sidebar">
+        <nav class="sidebar__nav">
+          <!-- DASHBOARD -->
 
-            <div class="sidebar__logo">
-                KIHON
+          <a href="/admin/admin" class="sidebar__link"> Dashboard </a>
+
+          <!-- ======================================
+               GESTIÓN
+               ====================================== -->
+
+          <div class="sidebar__accordion">
+            <button
+              type="button"
+              class="sidebar__accordion-button"
+              data-target="sidebarGestion"
+              aria-expanded="false"
+            >
+              <span>Gestión</span>
+
+              <span class="sidebar__accordion-arrow">▶</span>
+            </button>
+
+            <div class="sidebar__submenu" id="sidebarGestion" hidden>
+              <a href="/admin/estudiantes" class="sidebar__link">
+                Estudiantes
+              </a>
+
+              <a href="/admin/grupos" class="sidebar__link"> Grupos </a>
+
+              <a href="/admin/inscripciones" class="sidebar__link">
+                Inscripciones
+              </a>
             </div>
+          </div>
 
-            <nav class="sidebar__nav">
+          <!-- ======================================
+               CONTROL
+               ====================================== -->
 
-                <a href="/admin/admin" class="sidebar__link">
-                    Dashboard
-                </a>
+          <div class="sidebar__accordion">
+            <button
+              type="button"
+              class="sidebar__accordion-button"
+              data-target="sidebarControl"
+              aria-expanded="false"
+            >
+              <span>Control</span>
 
-                <a href="/admin/estudiantes" class="sidebar__link">
-                    Estudiantes
-                </a>
+              <span class="sidebar__accordion-arrow">▶</span>
+            </button>
 
-                <a href="/admin/grupos" class="sidebar__link">
-                    Grupos
-                </a>
+            <div class="sidebar__submenu" id="sidebarControl" hidden>
+              <a href="/admin/asistencia" class="sidebar__link"> Asistencia </a>
 
-                <a href="/admin/asistencia" class="sidebar__link">
-                    Asistencia
-                </a>
+              <a href="/admin/horario" class="sidebar__link"> Horario </a>
+            </div>
+          </div>
 
-                <a href="/admin/horario" class="sidebar__link">
-                    Horario
-                </a>
+          <!-- ======================================
+               ADMINISTRACIÓN
+               ====================================== -->
 
-                <a href="/admin/inscripciones" class="sidebar__link">
-                    Inscripciones
-                </a>
+          <div class="sidebar__accordion">
+            <button
+              type="button"
+              class="sidebar__accordion-button"
+              data-target="sidebarAdministracion"
+              aria-expanded="true"
+            >
+              <span>Administración</span>
 
-                <a href="/admin/reportes" class="sidebar__link sidebar__link--active">
-                    Reportes
-                </a>
+              <span class="sidebar__accordion-arrow">▼</span>
+            </button>
 
-                <a href="/admin/usuarios" class="sidebar__link">
-                    Usuarios
-                </a>
+            <div class="sidebar__submenu" id="sidebarAdministracion">
+              <a
+                href="/admin/reportes"
+                class="sidebar__link sidebar__link--active"
+              >
+                Reportes
+              </a>
 
-            </nav>
+              <a href="/admin/usuarios" class="sidebar__link"> Usuarios </a>
+            </div>
+          </div>
+        </nav>
+      </aside>
 
-        </aside>
+      <!-- ==========================================
+           OVERLAY MENÚ MÓVIL
+           ========================================== -->
 
+      <div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden></div>
 
-        <!-- ==========================================
-             CONTENIDO PRINCIPAL
-             ========================================== -->
+      <!-- ==========================================
+           CONTENIDO PRINCIPAL
+           ========================================== -->
 
-        <section class="main-content">
+      <section class="main-content">
+        <!-- ======================================
+             NAVEGACIÓN MÓVIL
+             ====================================== -->
 
+        <div class="mobile-nav">
+          <button
+            type="button"
+            class="mobile-menu-button"
+            id="mobileMenuButton"
+            aria-label="Abrir menú"
+            aria-expanded="false"
+            aria-controls="sidebarMenu"
+          >
+            <span id="mobileMenuIcon">☰</span>
+          </button>
 
-            <!-- ======================================
-                 TOPBAR
-                 ====================================== -->
+          <div class="mobile-nav__logo">KIHON</div>
+        </div>
 
-            <header class="topbar">
+        <!-- ======================================
+             TOPBAR
+             ====================================== -->
 
-                <div class="topbar__role">
+        <header class="topbar">
+          <!-- ROL -->
 
-                    <span class="topbar__role-label">
-                        Rol
-                    </span>
+          <div class="topbar__role">
+            <span class="topbar__role-label"> Rol </span>
 
-                    <strong id="roleDisplay">
-                        Administrador
-                    </strong>
+            <strong id="roleDisplay"> Administrador </strong>
+          </div>
 
+          <div class="topbar__actions">
+            <!-- ==================================
+                 NOTIFICACIONES
+                 ================================== -->
+
+            <button
+              type="button"
+              class="topbar__notification"
+              id="notificationButton"
+              aria-label="Notificaciones"
+            >
+              <span class="topbar__notification-icon"> 🔔 </span>
+
+              <span
+                id="notificationCount"
+                class="topbar__notification-count"
+                hidden
+              >
+                0
+              </span>
+            </button>
+
+            <!-- ==================================
+                 PERFIL
+                 ================================== -->
+
+            <div class="topbar__profile" id="profileMenuContainer">
+              <button
+                type="button"
+                class="topbar__profile-button"
+                id="profileMenuButton"
+                aria-expanded="false"
+              >
+                <!-- AVATAR -->
+
+                <div class="topbar__avatar" id="userProfileAvatar">
+                  <span id="userAvatarInitial"> U </span>
                 </div>
 
+                <!-- INFORMACIÓN DEL USUARIO -->
 
-                <div class="topbar__actions">
+                <div class="topbar__profile-info">
+                  <strong id="usernameDisplay"> Usuario </strong>
 
-                    <!-- NOTIFICACIONES -->
-
-                    <button type="button" class="topbar__notification" id="notificationButton"
-                        aria-label="Notificaciones">
-
-                        <span class="topbar__notification-icon">
-                            🔔
-                        </span>
-
-                        <span id="notificationCount" class="topbar__notification-count" hidden>
-                            0
-                        </span>
-
-                    </button>
-
-
-                    <!-- PERFIL -->
-
-                    <div class="topbar__profile" id="profileMenuContainer">
-
-                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
-                            aria-expanded="false">
-
-                            <div class="topbar__avatar" id="userProfileAvatar">
-
-                                <span id="userAvatarInitial">
-                                    U
-                                </span>
-
-                            </div>
-
-
-                            <div class="topbar__profile-info">
-
-                                <strong id="usernameDisplay">
-                                    Usuario
-                                </strong>
-
-                                <span id="profileRoleDisplay">
-                                    Administrador
-                                </span>
-
-                            </div>
-
-
-                            <span class="topbar__profile-arrow">
-                                ▼
-                            </span>
-
-                        </button>
-
-
-                        <div class="topbar__profile-menu" id="profileMenu" hidden>
-
-                            <a href="/admin/perfil" class="topbar__profile-menu-item">
-                                Editar perfil
-                            </a>
-
-                            <button type="button" id="topbarLogoutButton"
-                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
-                                Cerrar sesión
-                            </button>
-
-                        </div>
-
-                    </div>
-
+                  <span id="profileRoleDisplay"> Administrador </span>
                 </div>
 
-            </header>
-
-
-            <!-- ======================================
-                 CONTENIDO DE REPORTES
-                 ====================================== -->
-
-            <div class="container reportes-page">
-
-
-                <!-- ======================================
-                     ENCABEZADO
-                     ====================================== -->
-
-                <section class="dashboard-header">
-
-                    <div>
-
-                        <span class="section-kicker">
-                            Administración
-                        </span>
-
-                        <h1>
-                            Reportes
-                        </h1>
-
-                        <p>
-                            Consulta y analiza la asistencia
-                            de los estudiantes.
-                        </p>
-
-                    </div>
-
-                </section>
-
-
-                <!-- ======================================
-                     SELECTOR DE REPORTE
-                     ====================================== -->
-
-                <section class="card reportes-selector-card">
-
-                    <div class="reportes-section-header">
-
-                        <h2>
-                            Generar reporte
-                        </h2>
-
-                        <p>
-                            Selecciona el tipo de reporte
-                            que deseas consultar.
-                        </p>
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="tipoReporte" class="form-label">
-
-                            Tipo de reporte
-
-                        </label>
-
-
-                        <select id="tipoReporte" class="form-select">
-
-                            <option value="diario">
-                                Reporte diario
-                            </option>
-
-                            <option value="semanal">
-                                Reporte semanal
-                            </option>
-
-                            <option value="mensual">
-                                Reporte mensual
-                            </option>
-
-                            <option value="estudiante">
-                                Reporte por estudiante
-                            </option>
-
-                            <option value="grupo">
-                                Reporte por grupo
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <!-- FILTROS -->
-
-                    <div id="reporteFiltros" class="reportes-filtros">
-                    </div>
-
-
-                    <!-- MENSAJE -->
-
-                    <div id="reporteMessage" class="reportes-message" hidden>
-                    </div>
-
-
-                    <!-- ACCIONES -->
-
-                    <div class="reportes-actions">
-
-                        <button type="button" id="generarReporteBtn" class="btn btn--primary">
-
-                            Generar reporte
-
-                        </button>
-
-                    </div>
-
-                </section>
-
-
-                <!-- ======================================
-                     RESULTADO
-                     ====================================== -->
-
-                <section id="reporteResultado" class="card reportes-result-card" hidden>
-
-
-                    <!-- ENCABEZADO DEL RESULTADO -->
-
-                    <div class="reportes-result-header">
-
-                        <div>
-
-                            <h2>
-                                Resultado del reporte
-                            </h2>
-
-                            <p id="reportePeriodo">
-                                -
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- RESUMEN -->
-
-                    <div id="reporteResumen" class="reportes-resumen">
-                    </div>
-
-
-                    <!-- DETALLE -->
-
-                    <div class="reportes-detalle">
-
-                        <h3>
-                            Detalle de asistencias
-                        </h3>
-
-
-                        <div id="reporteDetalle" class="reportes-table-wrapper">
-                        </div>
-
-                    </div>
-
-
-                </section>
-
-
+                <!-- FLECHA -->
+
+                <span class="topbar__profile-arrow"> ▼ </span>
+              </button>
+
+              <!-- MENÚ -->
+
+              <div class="topbar__profile-menu" id="profileMenu" hidden>
+                <a href="/admin/perfil" class="topbar__profile-menu-item">
+                  Editar perfil
+                </a>
+
+                <button
+                  type="button"
+                  id="topbarLogoutButton"
+                  class="topbar__profile-menu-item topbar__profile-menu-item--danger"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- ======================================
+             CONTENIDO DE REPORTES
+             ====================================== -->
+
+        <div class="container reportes-page">
+          <!-- ======================================
+               ENCABEZADO
+               ====================================== -->
+
+          <section class="dashboard-header">
+            <div>
+              <span class="section-kicker"> Administración </span>
+
+              <h1>Reportes</h1>
+
+              <p>Consulta y analiza la asistencia de los estudiantes.</p>
+            </div>
+          </section>
+
+          <!-- ======================================
+               SELECTOR DE REPORTE
+               ====================================== -->
+
+          <section class="card reportes-selector-card">
+            <div class="reportes-section-header">
+              <h2>Generar reporte</h2>
+
+              <p>Selecciona el tipo de reporte que deseas consultar.</p>
             </div>
 
-        </section>
+            <!-- TIPO DE REPORTE -->
 
+            <div class="form-group">
+              <label for="tipoReporte" class="form-label">
+                Tipo de reporte
+              </label>
+
+              <select id="tipoReporte" class="form-select">
+                <option value="diario">Reporte diario</option>
+
+                <option value="semanal">Reporte semanal</option>
+
+                <option value="mensual">Reporte mensual</option>
+
+                <option value="estudiante">Reporte por estudiante</option>
+
+                <option value="grupo">Reporte por grupo</option>
+              </select>
+            </div>
+
+            <!-- FILTROS -->
+
+            <div id="reporteFiltros" class="reportes-filtros"></div>
+
+            <!-- MENSAJE -->
+
+            <div id="reporteMessage" class="reportes-message" hidden></div>
+
+            <!-- ACCIONES -->
+
+            <div class="reportes-actions">
+              <button
+                type="button"
+                id="generarReporteBtn"
+                class="btn btn--primary"
+              >
+                Generar reporte
+              </button>
+            </div>
+          </section>
+
+          <!-- ======================================
+               RESULTADO
+               ====================================== -->
+
+          <section
+            id="reporteResultado"
+            class="card reportes-result-card"
+            hidden
+          >
+            <!-- ENCABEZADO -->
+
+            <div class="reportes-result-header">
+              <div>
+                <h2>Resultado del reporte</h2>
+
+                <p id="reportePeriodo">-</p>
+              </div>
+            </div>
+
+            <!-- RESUMEN -->
+
+            <div id="reporteResumen" class="reportes-resumen"></div>
+
+            <!-- DETALLE -->
+
+            <div class="reportes-detalle">
+              <h3>Detalle de asistencias</h3>
+
+              <div id="reporteDetalle" class="reportes-table-wrapper"></div>
+            </div>
+          </section>
+        </div>
+      </section>
     </main>
-
 
     <!-- ==========================================
          JAVASCRIPT
          ========================================== -->
 
+    <script src="/js/topbar.js"></script>
+    <script src="/js/nav-acordeon.js"></script>
     <script src="/js/reportes.js"></script>
-
-    <script src="/js/logout.js"></script>
-
-</body>
-
+  </body>
 </html>

@@ -1,476 +1,413 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Kihon | Asistencias</title>
 
-    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/main.css" />
+  </head>
 
-</head>
-
-
-<body>
-
+  <body>
     <main class="app-layout">
+      <!-- ==========================================
+           SIDEBAR
+           ========================================== -->
 
+      <aside class="sidebar" id="sidebarMenu">
+        <div class="sidebar__logo">KIHON</div>
 
-        <!-- ==========================================
-         SIDEBAR
-         ========================================== -->
+        <nav class="sidebar__nav">
+          <!-- DASHBOARD -->
 
-        <aside class="sidebar">
+          <a href="/admin/admin" class="sidebar__link"> Dashboard </a>
 
-            <div class="sidebar__logo">
-                KIHON
+          <!-- ======================================
+               GESTIÓN
+               ====================================== -->
+
+          <div class="sidebar__accordion">
+            <button
+              type="button"
+              class="sidebar__accordion-button"
+              data-target="sidebarGestion"
+              aria-expanded="false"
+            >
+              <span>Gestión</span>
+
+              <span class="sidebar__accordion-arrow">▶</span>
+            </button>
+
+            <div class="sidebar__submenu" id="sidebarGestion" hidden>
+              <a href="/admin/estudiantes" class="sidebar__link">
+                Estudiantes
+              </a>
+
+              <a href="/admin/grupos" class="sidebar__link"> Grupos </a>
+
+              <a href="/admin/inscripciones" class="sidebar__link">
+                Inscripciones
+              </a>
             </div>
+          </div>
 
+          <!-- ======================================
+               CONTROL
+               ====================================== -->
 
-            <nav class="sidebar__nav">
+          <div class="sidebar__accordion">
+            <button
+              type="button"
+              class="sidebar__accordion-button"
+              data-target="sidebarControl"
+              aria-expanded="true"
+            >
+              <span>Control</span>
 
-                <a href="/admin/admin" class="sidebar__link">
-                    Dashboard
+              <span class="sidebar__accordion-arrow">▼</span>
+            </button>
+
+            <div class="sidebar__submenu" id="sidebarControl">
+              <a
+                href="/admin/asistencia"
+                class="sidebar__link sidebar__link--active"
+              >
+                Asistencia
+              </a>
+
+              <a href="/admin/horario" class="sidebar__link"> Horario </a>
+            </div>
+          </div>
+
+          <!-- ======================================
+               ADMINISTRACIÓN
+               ====================================== -->
+
+          <div class="sidebar__accordion">
+            <button
+              type="button"
+              class="sidebar__accordion-button"
+              data-target="sidebarAdministracion"
+              aria-expanded="false"
+            >
+              <span>Administración</span>
+
+              <span class="sidebar__accordion-arrow">▶</span>
+            </button>
+
+            <div class="sidebar__submenu" id="sidebarAdministracion" hidden>
+              <a href="/admin/reportes" class="sidebar__link"> Reportes </a>
+
+              <a href="/admin/usuarios" class="sidebar__link"> Usuarios </a>
+            </div>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- ==========================================
+           OVERLAY MENÚ MÓVIL
+           ========================================== -->
+
+      <div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden></div>
+
+      <!-- ==========================================
+           CONTENIDO PRINCIPAL
+           ========================================== -->
+
+      <section class="main-content">
+        <!-- ======================================
+             NAVEGACIÓN MÓVIL
+             ====================================== -->
+
+        <div class="mobile-nav">
+          <button
+            type="button"
+            class="mobile-menu-button"
+            id="mobileMenuButton"
+            aria-label="Abrir menú"
+            aria-expanded="false"
+            aria-controls="sidebarMenu"
+          >
+            <span id="mobileMenuIcon">☰</span>
+          </button>
+
+          <div class="mobile-nav__logo">KIHON</div>
+        </div>
+
+        <!-- ======================================
+             TOPBAR
+             ====================================== -->
+
+        <header class="topbar">
+          <!-- ROL -->
+
+          <div class="topbar__role">
+            <span class="topbar__role-label"> Rol </span>
+
+            <strong id="roleDisplay"> Administrador </strong>
+          </div>
+
+          <div class="topbar__actions">
+            <!-- ======================================
+                 NOTIFICACIONES
+                 ====================================== -->
+
+            <button
+              type="button"
+              class="topbar__notification"
+              id="notificationButton"
+              aria-label="Notificaciones"
+            >
+              <span class="topbar__notification-icon"> 🔔 </span>
+
+              <span
+                id="notificationCount"
+                class="topbar__notification-count"
+                hidden
+              >
+                0
+              </span>
+            </button>
+
+            <!-- ======================================
+                 PERFIL
+                 ====================================== -->
+
+            <div class="topbar__profile" id="profileMenuContainer">
+              <!-- BOTÓN DEL PERFIL -->
+
+              <button
+                type="button"
+                class="topbar__profile-button"
+                id="profileMenuButton"
+                aria-expanded="false"
+                aria-haspopup="true"
+              >
+                <!-- AVATAR -->
+
+                <div class="topbar__avatar" id="userProfileAvatar">
+                  <span id="userAvatarInitial"> U </span>
+                </div>
+
+                <!-- INFORMACIÓN DEL USUARIO -->
+
+                <div class="topbar__profile-info">
+                  <strong id="usernameDisplay"> Usuario </strong>
+
+                  <span id="profileRoleDisplay"> Administrador </span>
+                </div>
+
+                <!-- FLECHA -->
+
+                <span class="topbar__profile-arrow"> ▼ </span>
+              </button>
+
+              <!-- ==================================
+                   MENÚ DEL PERFIL
+                   ================================== -->
+
+              <div class="topbar__profile-menu" id="profileMenu" hidden>
+                <a href="/admin/perfil" class="topbar__profile-menu-item">
+                  Editar perfil
                 </a>
 
-                <a href="/admin/estudiantes" class="sidebar__link">
-                    Estudiantes
-                </a>
-
-                <a href="/admin/grupos" class="sidebar__link">
-                    Grupos
-                </a>
-
-                <a href="/admin/asistencia" class="sidebar__link sidebar__link--active">
-                    Asistencia
-                </a>
-
-                <a href="/admin/horario" class="sidebar__link">
-                    Horario
-                </a>
-
-                <a href="/admin/inscripciones" class="sidebar__link">
-                    Inscripciones
-                </a>
-
-                <a href="/admin/reportes" class="sidebar__link">
-                    Reportes
-                </a>
-
-                <a href="/admin/usuarios" class="sidebar__link">
-                    Usuarios
-                </a>
-
-            </nav>
-
-        </aside>
-
-
+                <button
+                  type="button"
+                  id="topbarLogoutButton"
+                  class="topbar__profile-menu-item topbar__profile-menu-item--danger"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
 
         <!-- ==========================================
-         CONTENIDO PRINCIPAL
-         ========================================== -->
-
-        <section class="main-content">
-
-
-            <!-- ==========================================
-             TOPBAR
-             ========================================== -->
-
-            <header class="topbar">
-
-                <div class="topbar__role">
-
-                    <span class="topbar__role-label">
-                        Rol
-                    </span>
-
-                    <strong id="roleDisplay">
-                        Administrador
-                    </strong>
-
-                </div>
-
-
-                <div class="topbar__actions">
-
-
-                    <!-- NOTIFICACIONES -->
-
-                    <button type="button" class="topbar__notification" id="notificationButton"
-                        aria-label="Notificaciones">
-
-                        <span class="topbar__notification-icon">
-                            🔔
-                        </span>
-
-                        <span id="notificationCount" class="topbar__notification-count" hidden>
-                            0
-                        </span>
-
-                    </button>
-
-
-
-                    <!-- PERFIL -->
-
-                    <div class="topbar__profile" id="profileMenuContainer">
-
-
-                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
-                            aria-expanded="false">
-
-
-                            <div class="topbar__avatar" id="userProfileAvatar">
-
-                                <span id="userAvatarInitial">
-                                    U
-                                </span>
-
-                            </div>
-
-
-                            <div class="topbar__profile-info">
-
-                                <strong id="usernameDisplay">
-                                    Usuario
-                                </strong>
-
-                                <span id="profileRoleDisplay">
-                                    Administrador
-                                </span>
-
-                            </div>
-
-
-                            <span class="topbar__profile-arrow">
-                                ▼
-                            </span>
-
-
-                        </button>
-
-
-
-                        <div class="topbar__profile-menu" id="profileMenu" hidden>
-
-                            <a href="/admin/perfil" class="topbar__profile-menu-item">
-
-                                Editar perfil
-
-                            </a>
-
-
-                            <button type="button" id="topbarLogoutButton"
-                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
-
-                                Cerrar sesión
-
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </header>
-
-
-
-            <!-- ==========================================
              CONTENIDO
              ========================================== -->
 
-            <div class="container asistencia-page">
-
-
-                <!-- ENCABEZADO -->
-
-                <section class="dashboard-header">
-
-                    <div>
-
-                        <span class="section-kicker">
-                            Administración
-                        </span>
-
-                        <h1>
-                            Asistencias
-                        </h1>
-
-                        <p>
-                            Registra y consulta la asistencia
-                            de los estudiantes por grupo.
-                        </p>
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- ======================================
-                 REGISTRAR ASISTENCIA
-                 ====================================== -->
-
-                <section class="card asistencia-form-card">
-
-
-                    <div class="asistencia-form-header">
-
-                        <div>
-
-                            <h2>
-                                Registrar asistencia
-                            </h2>
-
-                            <p>
-                                Selecciona una fecha y un grupo
-                                para registrar la asistencia de sus estudiantes.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- FECHA Y GRUPO -->
-
-                    <div class="asistencia-selection">
-
-
-                        <div class="form-group">
-
-                            <label for="fecha" class="form-label">
-                                Fecha
-                            </label>
-
-                            <input type="date" id="fecha" class="form-input" required>
-
-                        </div>
-
-
-
-                        <div class="form-group">
-
-                            <label for="grupoId" class="form-label">
-                                Grupo
-                            </label>
-
-                            <select id="grupoId" class="form-select">
-
-                                <option value="">
-                                    Selecciona una fecha primero
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- INFORMACIÓN DEL GRUPO -->
-
-                    <div id="grupoInfo" class="asistencia-grupo-info" hidden>
-
-                        <div class="asistencia-grupo-info__main">
-
-                            <strong id="grupoInfoNombre">
-                                Grupo
-                            </strong>
-
-                            <span id="grupoInfoHorario">
-                                Horario
-                            </span>
-
-                        </div>
-
-
-                        <div class="asistencia-grupo-info__details">
-
-                            <span>
-                                Sensei:
-                                <strong id="grupoInfoSensei">
-                                    -
-                                </strong>
-                            </span>
-
-                            <span>
-                                Estudiantes:
-                                <strong id="grupoInfoCantidad">
-                                    0
-                                </strong>
-                            </span>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- MENSAJE -->
-
-                    <div id="attendanceMessage" class="asistencia-message" hidden>
-                    </div>
-
-
-
-                    <!-- LISTA DE ESTUDIANTES -->
-
-                    <div id="attendanceRegister" class="asistencia-register">
-
-                        <div class="asistencia-empty">
-
-                            Selecciona una fecha y un grupo
-                            para mostrar los estudiantes.
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- ACCIONES -->
-
-                    <div class="asistencia-form-actions">
-
-                        <button type="button" id="saveAttendanceButton" class="btn btn--primary" disabled>
-
-                            Guardar asistencia
-
-                        </button>
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- ======================================
-                 CONSULTAR ASISTENCIA
-                 ====================================== -->
-
-                <section class="card asistencia-list-card">
-
-
-                    <div class="asistencia-list-header">
-
-                        <div>
-
-                            <h2>
-                                Consultar asistencia
-                            </h2>
-
-                            <p>
-                                Consulta y modifica los registros históricos
-                                de asistencia.
-                            </p>
-
-                        </div>
-
-
-                        <span id="attendanceCount">
-                            0 asistencias
-                        </span>
-
-                    </div>
-
-
-
-                    <!-- FILTROS -->
-
-                    <div class="asistencia-consultation-filters">
-
-
-                        <div class="form-group">
-
-                            <label for="fechaConsulta" class="form-label">
-
-                                Fecha
-
-                            </label>
-
-                            <input type="date" id="fechaConsulta" class="form-input">
-
-                        </div>
-
-
-
-                        <div class="form-group">
-
-                            <label for="grupoConsulta" class="form-label">
-
-                                Grupo
-
-                            </label>
-
-                            <select id="grupoConsulta" class="form-select">
-
-                                <option value="">
-                                    Todos los grupos
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-
-                        <div class="form-group">
-
-                            <label for="estudianteConsulta" class="form-label">
-
-                                Estudiante
-
-                            </label>
-
-                            <select id="estudianteConsulta" class="form-select">
-
-                                <option value="">
-                                    Todos los estudiantes
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                    </div>
-
-
-
-                    <!-- LISTA -->
-
-                    <div id="attendanceList" class="asistencia-table-wrapper">
-
-                        <div class="asistencia-loading">
-                            Cargando asistencias...
-                        </div>
-
-                    </div>
-
-
-                </section>
-
-
+        <div class="container asistencia-page">
+          <!-- ======================================
+               ENCABEZADO
+               ====================================== -->
+
+          <section class="dashboard-header">
+            <div>
+              <span class="section-kicker"> Administración </span>
+
+              <h1>Asistencias</h1>
+
+              <p>
+                Registra y consulta la asistencia de los estudiantes por grupo.
+              </p>
+            </div>
+          </section>
+
+          <!-- ======================================
+               REGISTRAR ASISTENCIA
+               ====================================== -->
+
+          <section class="card asistencia-form-card">
+            <div class="asistencia-form-header">
+              <div>
+                <h2>Registrar asistencia</h2>
+
+                <p>
+                  Selecciona una fecha y un grupo para registrar la asistencia
+                  de sus estudiantes.
+                </p>
+              </div>
             </div>
 
-        </section>
+            <!-- FECHA Y GRUPO -->
 
+            <div class="asistencia-selection">
+              <div class="form-group">
+                <label for="fecha" class="form-label"> Fecha </label>
+
+                <input type="date" id="fecha" class="form-input" required />
+              </div>
+
+              <div class="form-group">
+                <label for="grupoId" class="form-label"> Grupo </label>
+
+                <select id="grupoId" class="form-select">
+                  <option value="">Selecciona una fecha primero</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- ==================================
+                 INFORMACIÓN DEL GRUPO
+                 ================================== -->
+
+            <div id="grupoInfo" class="asistencia-grupo-info" hidden>
+              <div class="asistencia-grupo-info__main">
+                <strong id="grupoInfoNombre"> Grupo </strong>
+
+                <span id="grupoInfoHorario"> Horario </span>
+              </div>
+
+              <div class="asistencia-grupo-info__details">
+                <span>
+                  Sensei:
+
+                  <strong id="grupoInfoSensei"> - </strong>
+                </span>
+
+                <span>
+                  Estudiantes:
+
+                  <strong id="grupoInfoCantidad"> 0 </strong>
+                </span>
+              </div>
+            </div>
+
+            <!-- ==================================
+                 MENSAJE
+                 ================================== -->
+
+            <div id="attendanceMessage" class="asistencia-message" hidden></div>
+
+            <!-- ==================================
+                 LISTA DE ESTUDIANTES
+                 ================================== -->
+
+            <div id="attendanceRegister" class="asistencia-register">
+              <div class="asistencia-empty">
+                Selecciona una fecha y un grupo para mostrar los estudiantes.
+              </div>
+            </div>
+
+            <!-- ==================================
+                 ACCIONES
+                 ================================== -->
+
+            <div class="asistencia-form-actions">
+              <button
+                type="button"
+                id="saveAttendanceButton"
+                class="btn btn--primary"
+                disabled
+              >
+                Guardar asistencia
+              </button>
+            </div>
+          </section>
+
+          <!-- ======================================
+               CONSULTAR ASISTENCIA
+               ====================================== -->
+
+          <section class="card asistencia-list-card">
+            <div class="asistencia-list-header">
+              <div>
+                <h2>Consultar asistencia</h2>
+
+                <p>
+                  Consulta y modifica los registros históricos de asistencia.
+                </p>
+              </div>
+
+              <span id="attendanceCount"> 0 asistencias </span>
+            </div>
+
+            <!-- ==================================
+                 FILTROS
+                 ================================== -->
+
+            <div class="asistencia-consultation-filters">
+              <div class="form-group">
+                <label for="fechaConsulta" class="form-label"> Fecha </label>
+
+                <input type="date" id="fechaConsulta" class="form-input" />
+              </div>
+
+              <div class="form-group">
+                <label for="grupoConsulta" class="form-label"> Grupo </label>
+
+                <select id="grupoConsulta" class="form-select">
+                  <option value="">Todos los grupos</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="estudianteConsulta" class="form-label">
+                  Estudiante
+                </label>
+
+                <select id="estudianteConsulta" class="form-select">
+                  <option value="">Todos los estudiantes</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- ==================================
+                 LISTA
+                 ================================== -->
+
+            <div id="attendanceList" class="asistencia-table-wrapper">
+              <div class="asistencia-loading">Cargando asistencias...</div>
+            </div>
+          </section>
+        </div>
+      </section>
     </main>
 
+    <!-- ==========================================
+         JAVASCRIPT
+         ========================================== -->
 
+    <!-- LÓGICA COMÚN DEL TOPBAR -->
+    <script src="/js/topbar.js"></script>
 
+    <!-- LÓGICA DE NAVEGACIÓN -->
+    <script src="/js/nav-acordeon.js"></script>
+
+    <!-- LÓGICA ESPECÍFICA DE ASISTENCIAS -->
     <script src="/js/asistencia.js"></script>
-    <script src="/js/logout.js"></script>
-
-</body>
-
+  </body>
 </html>

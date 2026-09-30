@@ -86,6 +86,24 @@ public class SecurityConfig {
 
                                                 /*
                                                  * =====================================================
+                                                 * USUARIO ACTUAL
+                                                 *
+                                                 * Cualquier usuario autenticado puede consultar
+                                                 * sus propios datos mediante /api/usuarios/me.
+                                                 *
+                                                 * Esta regla debe aparecer ANTES de /api/usuarios/*
+                                                 * para que /me no sea interpretado como un ID de usuario
+                                                 * que requiere rol ADMIN.
+                                                 * =====================================================
+                                                 */
+
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/usuarios/me")
+                                                .authenticated()
+
+                                                /*
+                                                 * =====================================================
                                                  * USUARIOS - CONSULTAS
                                                  * =====================================================
                                                  */
@@ -93,7 +111,7 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/usuarios/senseis")
-                                                .hasRole("ADMIN")
+                                                .hasAnyRole("ADMIN", "SECRETARIA")
 
                                                 .requestMatchers(
                                                                 HttpMethod.GET,

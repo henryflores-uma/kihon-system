@@ -6,11 +6,12 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "personas", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_personas_documento", columnNames = {
+        @UniqueConstraint(name = "uk_personas_documento", columnNames = {
                 "tipo_documento_id",
                 "numero_documento"
         }),
-        @UniqueConstraint(name = "uq_personas_correo", columnNames = "correo")
+        @UniqueConstraint(name = "uk_personas_correo", columnNames = "correo"),
+        @UniqueConstraint(name = "uk_personas_telefono", columnNames = "telefono")
 })
 public class Persona {
 
