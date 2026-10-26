@@ -171,7 +171,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!regla) {
         telefono.value = "";
+
         telefono.removeAttribute("maxlength");
+
         telefono.placeholder = "Ingresa tu número";
 
         return;
@@ -358,8 +360,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return error.mensaje;
           }
 
-          // Compatibilidad con
-          // posibles respuestas anteriores
+          // Compatibilidad con posibles respuestas anteriores
 
           if (
             error &&
@@ -390,6 +391,68 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       return mensajePorDefecto;
+    }
+
+    // ==========================================
+    // MOSTRAR MODAL KIHON
+    // ==========================================
+
+    async function mostrarModalError(mensaje, titulo = "Ocurrió un error") {
+      /*
+       * usuarios.js expone estos helpers
+       * globalmente para que registro.js
+       * pueda utilizarlos.
+       *
+       * Si no están disponibles todavía,
+       * utilizamos el mensaje interno
+       * del formulario como respaldo.
+       */
+
+      if (typeof window.mostrarModalKihon === "function") {
+        await window.mostrarModalKihon({
+          titulo: titulo,
+          mensaje: mensaje,
+          tipo: "error",
+        });
+
+        return;
+      }
+
+      mostrarMensaje(mensaje);
+    }
+
+    // ==========================================
+    // MOSTRAR MODAL DE CONFIRMACION
+    // ==========================================
+
+    async function confirmarRegistro() {
+      const nombreCompleto =
+        `${nombre.value.trim()} ${apellido.value.trim()}`.trim();
+
+      const mensaje =
+        `¿Estás seguro de registrar al usuario "${username.value.trim()}"` +
+        `${nombreCompleto ? ` para ${nombreCompleto}` : ""}?`;
+
+      /*
+       * Utilizamos el modal creado por usuarios.js.
+       */
+
+      if (typeof window.mostrarConfirmacionKihon === "function") {
+        return await window.mostrarConfirmacionKihon({
+          titulo: "Confirmar registro",
+          mensaje: mensaje,
+          textoConfirmar: "Registrar usuario",
+          textoCancelar: "Cancelar",
+          tipo: "confirmacion",
+        });
+      }
+
+      /*
+       * Respaldo si usuarios.js todavía
+       * no cargó el helper.
+       */
+
+      return window.confirm(mensaje);
     }
 
     // ==========================================
@@ -572,7 +635,17 @@ document.addEventListener("DOMContentLoaded", function () {
         correo: correo.value.trim(),
       };
 
-      console.log("Datos enviados:", datos);
+      console.log("Datos preparados para registro:", datos);
+
+      // ======================================
+      // CONFIRMACION
+      // ======================================
+
+      const confirmar = await confirmarRegistro();
+
+      if (!confirmar) {
+        return;
+      }
 
       // ======================================
       // DESHABILITAR BOTÓN
@@ -607,7 +680,10 @@ document.addEventListener("DOMContentLoaded", function () {
           const auth = sessionStorage.getItem("kihonAuth");
 
           if (!auth) {
-            mostrarMensaje("Tu sesión ha expirado. Inicia sesión nuevamente.");
+            await mostrarModalError(
+              "Tu sesión ha expirado. Inicia sesión nuevamente.",
+              "Sesión expirada",
+            );
 
             sessionStorage.clear();
 
@@ -661,19 +737,14 @@ document.addEventListener("DOMContentLoaded", function () {
           // MODO PÁGINA
           // ==================================
 
-          mostrarMensaje(
+          await mostrarModalExito(
             "Usuario creado correctamente. Tu cuenta está pendiente de activación.",
+            "Usuario registrado",
           );
-
-          registroMessage.style.color = "green";
 
           registroForm.reset();
 
           restaurarFormulario();
-
-          setTimeout(function () {
-            window.location.href = "/login";
-          }, 5000);
 
           return;
         }
@@ -688,7 +759,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "Los datos enviados no son válidos.",
           );
 
-          mostrarMensaje(mensaje);
+          await mostrarModalError(mensaje, "Datos no válidos");
 
           return;
         }
@@ -699,6 +770,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (response.status === 401) {
           if (modo === "modal") {
+            await mostrarModalError(
+              "Tu sesión ha expirado. Inicia sesión nuevamente.",
+              "Sesión expirada",
+            );
+
             sessionStorage.clear();
 
             window.location.href = "/login";
@@ -706,7 +782,10 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
           }
 
-          mostrarMensaje("No se pudo completar el registro.");
+          await mostrarModalError(
+            "No se pudo completar el registro.",
+            "No autorizado",
+          );
 
           return;
         }
@@ -716,7 +795,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // ==================================
 
         if (response.status === 403) {
-          mostrarMensaje("No tienes permisos para realizar esta acción.");
+          await mostrarModalError(
+            "No tienes permisos para realizar esta acción.",
+            "Acceso denegado",
+          );
 
           return;
         }
@@ -731,7 +813,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "No se encontró uno de los recursos necesarios para crear el usuario.",
           );
 
-          mostrarMensaje(mensaje);
+          await mostrarModalError(mensaje, "Recurso no encontrado");
 
           return;
         }
@@ -746,7 +828,22 @@ document.addEventListener("DOMContentLoaded", function () {
             "El usuario o los datos ingresados ya están registrados.",
           );
 
-          mostrarMensaje(mensaje);
+          /*
+           * IMPORTANTE:
+           *
+           * Aquí se muestra exactamente
+           * el mensaje enviado por Spring.
+           *
+           * Ejemplo:
+           *
+           * "El número de documento ya está registrado."
+           *
+           * "El correo ya está registrado."
+           *
+           * "El teléfono ya está registrado."
+           */
+
+          await mostrarModalError(mensaje, "Dato ya registrado");
 
           return;
         }
@@ -756,8 +853,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // ==================================
 
         if (response.status >= 500) {
-          mostrarMensaje(
+          await mostrarModalError(
             "Ocurrió un error interno en el servidor. Inténtalo nuevamente.",
+            "Error del servidor",
           );
 
           return;
@@ -772,11 +870,14 @@ document.addEventListener("DOMContentLoaded", function () {
           "Ocurrió un error al crear el usuario.",
         );
 
-        mostrarMensaje(mensaje);
+        await mostrarModalError(mensaje, "Ocurrió un error");
       } catch (error) {
         console.error("Error de conexión:", error);
 
-        mostrarMensaje("No se pudo conectar con el servidor.");
+        await mostrarModalError(
+          "No se pudo conectar con el servidor.",
+          "Error de conexión",
+        );
       } finally {
         if (botonSubmit) {
           botonSubmit.disabled = false;
@@ -805,7 +906,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // ==========================================
-    // MOSTRAR MENSAJE
+    // MOSTRAR MENSAJE INTERNO
     // ==========================================
 
     function mostrarMensaje(mensaje) {
@@ -814,6 +915,28 @@ document.addEventListener("DOMContentLoaded", function () {
       registroMessage.hidden = false;
 
       registroMessage.style.color = "";
+    }
+
+    // ==========================================
+    // MOSTRAR MODAL DE ÉXITO
+    // ==========================================
+
+    async function mostrarModalExito(mensaje, titulo = "Operación exitosa") {
+      if (typeof window.mostrarModalKihon === "function") {
+        await window.mostrarModalKihon({
+          titulo: titulo,
+          mensaje: mensaje,
+          tipo: "exito",
+        });
+
+        return;
+      }
+
+      registroMessage.textContent = mensaje;
+
+      registroMessage.hidden = false;
+
+      registroMessage.style.color = "green";
     }
 
     // ==========================================

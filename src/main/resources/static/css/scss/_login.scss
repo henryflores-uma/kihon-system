@@ -156,6 +156,77 @@
          0 0 0 3px rgba(255, 36, 0, 0.12);
  }
 
+ // ==========================================
+ // CAMPO DE CONTRASEÑA
+ // ==========================================
+
+ .password-input-container {
+     position: relative;
+
+     width: 100%;
+ }
+
+
+ .password-input-container .form-input {
+     padding-right: 3rem;
+ }
+
+
+ .password-toggle {
+     position: absolute;
+
+     top: 50%;
+     right: 0.75rem;
+
+     display: flex;
+
+     align-items: center;
+     justify-content: center;
+
+     width: 2rem;
+     height: 2rem;
+
+     padding: 0;
+
+     transform: translateY(-50%);
+
+     color: $color-gray-600;
+
+     background: transparent;
+
+     border: none;
+
+     border-radius: 4px;
+
+     cursor: pointer;
+
+     font-family: inherit;
+     font-size: 1rem;
+
+     line-height: 1;
+
+     transition:
+         color 0.2s ease,
+         background-color 0.2s ease;
+ }
+
+
+ .password-toggle:hover {
+     color: $color-gray-900;
+
+     background-color: rgba(0, 0, 0, 0.05);
+ }
+
+
+ .password-toggle:focus {
+     outline: none;
+
+     color: $color-red;
+
+     box-shadow:
+         0 0 0 2px rgba(255, 36, 0, 0.12);
+ }
+
 
  // ==========================================
  // ERROR

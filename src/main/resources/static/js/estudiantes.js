@@ -13,75 +13,35 @@ if (!auth) {
 // ==========================================
 
 let estudiantesData = [];
-
 let fotoNueva = null;
 let quitarFotoEdicion = false;
-
 let apoderadoActual = null;
-
 let estudianteEditandoId = null;
 
-// ==========================================
-// PAGINACIÓN
-// ==========================================
-
 const ESTUDIANTES_POR_PAGINA = 10;
-
 let paginaActual = 1;
 
+// Evita que se acumulen notificaciones.
+window.toastErrorTimer = null;
+
 // ==========================================
-// REGLAS DE TELEFONO POR PAIS
+// REGLAS DE TELÉFONO POR PAÍS
 // ==========================================
 
 const reglasTelefono = {
-  "+51": {
-    nombre: "Perú",
-    min: 9,
-    max: 9,
-  },
-
-  "+57": {
-    nombre: "Colombia",
-    min: 10,
-    max: 10,
-  },
-
-  "+56": {
-    nombre: "Chile",
-    min: 9,
-    max: 9,
-  },
-
-  "+54": {
-    nombre: "Argentina",
-    min: 10,
-    max: 10,
-  },
-
-  "+55": {
-    nombre: "Brasil",
-    min: 10,
-    max: 11,
-  },
-
-  "+52": {
-    nombre: "México",
-    min: 10,
-    max: 10,
-  },
-
-  "+1": {
-    nombre: "Estados Unidos / Canadá",
-    min: 10,
-    max: 10,
-  },
-
-  "+34": {
-    nombre: "España",
-    min: 9,
-    max: 9,
-  },
+  "+51": { nombre: "Perú", min: 9, max: 9 },
+  "+57": { nombre: "Colombia", min: 10, max: 10 },
+  "+56": { nombre: "Chile", min: 9, max: 9 },
+  "+54": { nombre: "Argentina", min: 10, max: 10 },
+  "+55": { nombre: "Brasil", min: 10, max: 11 },
+  "+52": { nombre: "México", min: 10, max: 10 },
+  "+1": { nombre: "Estados Unidos / Canadá", min: 10, max: 10 },
+  "+34": { nombre: "España", min: 9, max: 9 },
 };
+
+// Permite letras con tildes, ñ, espacios, apóstrofes y guiones.
+const REGEX_NOMBRE = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s'-]{1,50}$/;
+const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // ==========================================
 // INICIALIZACIÓN
@@ -89,25 +49,20 @@ const reglasTelefono = {
 
 document.addEventListener("DOMContentLoaded", () => {
   configurarModalRegistro();
-
   configurarModalEdicion();
-
   configurarFotoRegistro();
-
   configurarFotoEdicion();
-
   configurarFechaNacimiento();
-
   configurarValidacionesRegistro();
-
   configurarValidacionesEdicion();
 
   configurarValidacionTelefono("telefono", "codigoPais");
-
   configurarValidacionTelefono("editTelefono", "editCodigoPais");
 
-  configurarBusquedaYFiltros();
+  configurarValidacionesApoderadoRegistro();
+  configurarValidacionesApoderadoEdicion();
 
+  configurarBusquedaYFiltros();
   cargarEstudiantes();
 });
 
@@ -117,102 +72,57 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function configurarModalRegistro() {
   const openButton = document.getElementById("openRegisterStudentButton");
-
   const closeButton = document.getElementById("closeRegisterStudentButton");
-
   const cancelButton = document.getElementById("cancelRegisterStudentButton");
-
   const overlay = document.getElementById("registerStudentModalOverlay");
-
   const studentForm = document.getElementById("studentForm");
 
-  if (openButton) {
-    openButton.addEventListener("click", abrirModalRegistro);
-  }
-
-  if (closeButton) {
-    closeButton.addEventListener("click", cerrarModalRegistro);
-  }
-
-  if (cancelButton) {
-    cancelButton.addEventListener("click", cerrarModalRegistro);
-  }
-
-  if (overlay) {
-    overlay.addEventListener("click", cerrarModalRegistro);
-  }
-
-  if (studentForm) {
-    studentForm.addEventListener("submit", registrarEstudiante);
-  }
+  openButton?.addEventListener("click", abrirModalRegistro);
+  closeButton?.addEventListener("click", cerrarModalRegistro);
+  cancelButton?.addEventListener("click", cerrarModalRegistro);
+  overlay?.addEventListener("click", cerrarModalRegistro);
+  studentForm?.addEventListener("submit", registrarEstudiante);
 }
-
-// ==========================================
-// ABRIR MODAL REGISTRO
-// ==========================================
 
 function abrirModalRegistro() {
   const modal = document.getElementById("registerStudentModal");
 
-  if (!modal) {
-    return;
-  }
+  if (!modal) return;
 
   limpiarFormularioRegistro();
 
   modal.hidden = false;
-
   document.body.classList.add("modal-open");
 }
-
-// ==========================================
-// CERRAR MODAL REGISTRO
-// ==========================================
 
 function cerrarModalRegistro() {
   const modal = document.getElementById("registerStudentModal");
 
-  if (!modal) {
-    return;
-  }
+  if (!modal) return;
 
   limpiarFormularioRegistro();
 
   modal.hidden = true;
-
   document.body.classList.remove("modal-open");
 }
-
-// ==========================================
-// LIMPIAR FORMULARIO REGISTRO
-// ==========================================
 
 function limpiarFormularioRegistro() {
   const form = document.getElementById("studentForm");
 
-  if (form) {
-    form.reset();
-  }
+  form?.reset();
 
   fotoNueva = null;
 
   const fotoInput = document.getElementById("foto");
-
   const fotoPreview = document.getElementById("fotoPreview");
-
   const fotoUploadText = document.getElementById("fotoUploadText");
-
   const removeFotoButton = document.getElementById("removeFotoButton");
-
   const guardianSection = document.getElementById("guardianSection");
 
-  if (fotoInput) {
-    fotoInput.value = "";
-  }
+  if (fotoInput) fotoInput.value = "";
 
   if (fotoPreview) {
     fotoPreview.src = "";
-
     fotoPreview.hidden = true;
   }
 
@@ -230,25 +140,14 @@ function limpiarFormularioRegistro() {
 
   deshabilitarCamposApoderado();
 
-  // ==========================================
-  // RESTABLECER REGLAS DEL DOCUMENTO
-  // ==========================================
-
   const tipoDocumento = document.getElementById("tipoDocumento");
-
   const numeroDocumento = document.getElementById("documento");
 
   if (tipoDocumento && numeroDocumento) {
     numeroDocumento.value = "";
-
     numeroDocumento.disabled = !tipoDocumento.value;
-
     configurarReglasDocumento(tipoDocumento, numeroDocumento);
   }
-
-  // ==========================================
-  // RESTABLECER REGLAS DEL TELÉFONO
-  // ==========================================
 
   configurarLimiteTelefono("telefono", "codigoPais");
 
@@ -261,98 +160,59 @@ function limpiarFormularioRegistro() {
 
 function configurarModalEdicion() {
   const closeButton = document.getElementById("closeEditStudentButton");
-
   const cancelButton = document.getElementById("cancelEditButton");
-
   const overlay = document.getElementById("editStudentModalOverlay");
-
   const editStudentForm = document.getElementById("editStudentForm");
-
   const editGuardianButton = document.getElementById("editGuardianButton");
-
   const addGuardianButton = document.getElementById("addGuardianButton");
-
   const cancelGuardianEditButton = document.getElementById(
     "cancelGuardianEditButton",
   );
-
-  if (closeButton) {
-    closeButton.addEventListener("click", cancelarEdicion);
-  }
-
-  if (cancelButton) {
-    cancelButton.addEventListener("click", cancelarEdicion);
-  }
-
-  if (overlay) {
-    overlay.addEventListener("click", cancelarEdicion);
-  }
-
-  if (editStudentForm) {
-    editStudentForm.addEventListener("submit", actualizarEstudiante);
-  }
-
-  if (editGuardianButton) {
-    editGuardianButton.addEventListener("click", editarApoderado);
-  }
-
-  if (addGuardianButton) {
-    addGuardianButton.addEventListener("click", agregarApoderado);
-  }
-
-  if (cancelGuardianEditButton) {
-    cancelGuardianEditButton.addEventListener(
-      "click",
-      ocultarFormularioApoderado,
-    );
-  }
-
   const saveGuardianButton = document.getElementById("saveGuardianButton");
 
-  if (saveGuardianButton) {
-    saveGuardianButton.addEventListener("click", guardarApoderado);
-  }
+  closeButton?.addEventListener("click", cancelarEdicion);
+  cancelButton?.addEventListener("click", cancelarEdicion);
+  overlay?.addEventListener("click", cancelarEdicion);
+  editStudentForm?.addEventListener("submit", actualizarEstudiante);
+
+  editGuardianButton?.addEventListener("click", editarApoderado);
+  addGuardianButton?.addEventListener("click", agregarApoderado);
+
+  cancelGuardianEditButton?.addEventListener(
+    "click",
+    ocultarFormularioApoderado,
+  );
+
+  saveGuardianButton?.addEventListener("click", guardarApoderado);
 }
 
 // ==========================================
-// FOTO - REGISTRO
+// CONFIGURAR FOTO DE REGISTRO
 // ==========================================
 
 function configurarFotoRegistro() {
   const fotoInput = document.getElementById("foto");
-
   const fotoPreview = document.getElementById("fotoPreview");
-
   const fotoUploadText = document.getElementById("fotoUploadText");
-
   const removeFotoButton = document.getElementById("removeFotoButton");
 
-  if (!fotoInput) {
-    return;
-  }
+  if (!fotoInput) return;
 
   fotoInput.addEventListener("change", () => {
     const archivo = fotoInput.files[0];
 
-    if (!archivo) {
-      return;
-    }
+    if (!archivo) return;
 
     if (!validarArchivoFoto(archivo)) {
       fotoInput.value = "";
-
       fotoNueva = null;
-
       return;
     }
 
     fotoNueva = archivo;
 
-    const url = URL.createObjectURL(archivo);
-
     if (fotoPreview) {
-      fotoPreview.src = url;
-
+      fotoPreview.src = URL.createObjectURL(archivo);
       fotoPreview.hidden = false;
     }
 
@@ -365,68 +225,51 @@ function configurarFotoRegistro() {
     }
   });
 
-  if (removeFotoButton) {
-    removeFotoButton.addEventListener("click", () => {
-      fotoInput.value = "";
+  removeFotoButton?.addEventListener("click", () => {
+    fotoInput.value = "";
+    fotoNueva = null;
 
-      fotoNueva = null;
+    if (fotoPreview) {
+      fotoPreview.src = "";
+      fotoPreview.hidden = true;
+    }
 
-      if (fotoPreview) {
-        fotoPreview.src = "";
+    if (fotoUploadText) {
+      fotoUploadText.textContent = "👤";
+    }
 
-        fotoPreview.hidden = true;
-      }
-
-      if (fotoUploadText) {
-        fotoUploadText.textContent = "👤";
-      }
-
-      removeFotoButton.hidden = true;
-    });
-  }
+    removeFotoButton.hidden = true;
+  });
 }
 
 // ==========================================
-// FOTO - EDICIÓN
+// CONFIGURAR FOTO DE EDICIÓN
 // ==========================================
 
 function configurarFotoEdicion() {
   const fotoInput = document.getElementById("editFoto");
-
   const fotoPreview = document.getElementById("editFotoPreview");
-
   const fotoUploadText = document.getElementById("editFotoUploadText");
-
   const removeFotoButton = document.getElementById("removeEditFotoButton");
 
-  if (!fotoInput) {
-    return;
-  }
+  if (!fotoInput) return;
 
   fotoInput.addEventListener("change", () => {
     const archivo = fotoInput.files[0];
 
-    if (!archivo) {
-      return;
-    }
+    if (!archivo) return;
 
     if (!validarArchivoFoto(archivo)) {
       fotoInput.value = "";
-
       fotoNueva = null;
-
       return;
     }
 
     fotoNueva = archivo;
-
     quitarFotoEdicion = false;
 
-    const url = URL.createObjectURL(archivo);
-
     if (fotoPreview) {
-      fotoPreview.src = url;
-
+      fotoPreview.src = URL.createObjectURL(archivo);
       fotoPreview.hidden = false;
     }
 
@@ -439,30 +282,22 @@ function configurarFotoEdicion() {
     }
   });
 
-  if (removeFotoButton) {
-    removeFotoButton.addEventListener("click", () => {
-      fotoInput.value = "";
+  removeFotoButton?.addEventListener("click", () => {
+    fotoInput.value = "";
+    fotoNueva = null;
+    quitarFotoEdicion = true;
 
-      fotoNueva = null;
+    if (fotoPreview) {
+      fotoPreview.src = "";
+      fotoPreview.hidden = true;
+    }
 
-      quitarFotoEdicion = true;
+    if (fotoUploadText) {
+      fotoUploadText.textContent = "👤";
+    }
 
-      if (fotoPreview) {
-        fotoPreview.src = "";
-
-        fotoPreview.hidden = true;
-      }
-
-      if (fotoUploadText) {
-        fotoUploadText.textContent = "👤";
-      }
-
-      // CORREGIDO:
-      // al quitar la foto el botón debe ocultarse
-
-      removeFotoButton.hidden = true;
-    });
-  }
+    removeFotoButton.hidden = true;
+  });
 }
 
 // ==========================================
@@ -473,16 +308,14 @@ function validarArchivoFoto(archivo) {
   const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
 
   if (!tiposPermitidos.includes(archivo.type)) {
-    alert("La fotografía debe ser JPG, PNG o WEBP.");
-
+    notificarErrorGeneral("La fotografía debe ser JPG, PNG o WEBP.");
     return false;
   }
 
   const tamanioMaximo = 5 * 1024 * 1024;
 
   if (archivo.size > tamanioMaximo) {
-    alert("La fotografía no puede superar los 5 MB.");
-
+    notificarErrorGeneral("La fotografía no puede superar los 5 MB.");
     return false;
   }
 
@@ -490,72 +323,58 @@ function validarArchivoFoto(archivo) {
 }
 
 // ==========================================
-// CONFIGURAR FECHA DE NACIMIENTO
+// FECHA DE NACIMIENTO
 // ==========================================
 
 function configurarFechaNacimiento() {
   const fechaNacimiento = document.getElementById("fechaNacimiento");
 
-  if (!fechaNacimiento) {
-    return;
-  }
+  if (!fechaNacimiento) return;
 
-  const hoy = new Date().toISOString().split("T")[0];
-
-  fechaNacimiento.max = hoy;
-
+  fechaNacimiento.max = obtenerFechaLocalActual();
   fechaNacimiento.addEventListener("change", verificarEdadEstudiante);
 
   verificarEdadEstudiante();
 }
 
-// ==========================================
-// VERIFICAR EDAD DEL ESTUDIANTE
-// ==========================================
+function obtenerFechaLocalActual() {
+  const hoy = new Date();
+
+  const anio = hoy.getFullYear();
+  const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoy.getDate()).padStart(2, "0");
+
+  return `${anio}-${mes}-${dia}`;
+}
 
 function verificarEdadEstudiante() {
   const fechaNacimiento = document.getElementById("fechaNacimiento");
-
   const guardianSection = document.getElementById("guardianSection");
 
-  if (!fechaNacimiento || !guardianSection) {
-    return;
-  }
+  if (!fechaNacimiento || !guardianSection) return;
 
-  const valor = fechaNacimiento.value;
-
-  if (!valor) {
+  if (!fechaNacimiento.value) {
     guardianSection.hidden = true;
-
     deshabilitarCamposApoderado();
-
     return;
   }
 
-  const edad = calcularEdad(valor);
+  const edad = calcularEdad(fechaNacimiento.value);
 
   if (edad < 18) {
     guardianSection.hidden = false;
-
     habilitarCamposApoderado();
   } else {
     guardianSection.hidden = true;
-
     deshabilitarCamposApoderado();
   }
 }
 
-// ==========================================
-// CALCULAR EDAD
-// ==========================================
-
 function calcularEdad(fechaNacimiento) {
-  const fecha = new Date(fechaNacimiento + "T00:00:00");
-
+  const fecha = new Date(`${fechaNacimiento}T00:00:00`);
   const hoy = new Date();
 
   let edad = hoy.getFullYear() - fecha.getFullYear();
-
   const mes = hoy.getMonth() - fecha.getMonth();
 
   if (mes < 0 || (mes === 0 && hoy.getDate() < fecha.getDate())) {
@@ -566,7 +385,7 @@ function calcularEdad(fechaNacimiento) {
 }
 
 // ==========================================
-// HABILITAR APODERADO
+// HABILITAR / DESHABILITAR APODERADO
 // ==========================================
 
 function habilitarCamposApoderado() {
@@ -583,16 +402,9 @@ function habilitarCamposApoderado() {
 
   campos.forEach((id) => {
     const campo = document.getElementById(id);
-
-    if (campo) {
-      campo.disabled = false;
-    }
+    if (campo) campo.disabled = false;
   });
 }
-
-// ==========================================
-// DESHABILITAR APODERADO
-// ==========================================
 
 function deshabilitarCamposApoderado() {
   const campos = [
@@ -611,7 +423,6 @@ function deshabilitarCamposApoderado() {
 
     if (campo) {
       campo.disabled = true;
-
       campo.value = "";
     }
   });
@@ -623,69 +434,17 @@ function deshabilitarCamposApoderado() {
 
 function configurarValidacionesRegistro() {
   const tipoDocumento = document.getElementById("tipoDocumento");
-
   const numeroDocumento = document.getElementById("documento");
-
-  const telefono = document.getElementById("telefono");
-
-  const nombre = document.getElementById("nombre");
-
-  const apellido = document.getElementById("apellido");
-
   const fechaNacimiento = document.getElementById("fechaNacimiento");
 
   if (fechaNacimiento) {
-    const hoy = new Date().toISOString().split("T")[0];
-
-    fechaNacimiento.max = hoy;
+    fechaNacimiento.max = obtenerFechaLocalActual();
   }
 
-  if (tipoDocumento && numeroDocumento) {
-    numeroDocumento.disabled = !tipoDocumento.value;
+  configurarValidacionDocumento(tipoDocumento, numeroDocumento);
 
-    tipoDocumento.addEventListener("change", function () {
-      numeroDocumento.value = "";
-
-      configurarReglasDocumento(tipoDocumento, numeroDocumento);
-    });
-
-    numeroDocumento.addEventListener("input", function () {
-      if (tipoDocumento.value === "DNI") {
-        numeroDocumento.value = numeroDocumento.value
-          .replace(/\D/g, "")
-          .slice(0, 8);
-      } else if (
-        tipoDocumento.value === "CE" ||
-        tipoDocumento.value === "PASAPORTE"
-      ) {
-        numeroDocumento.value = numeroDocumento.value
-          .replace(/[^a-zA-Z0-9]/g, "")
-          .slice(0, 12);
-      }
-    });
-
-    configurarReglasDocumento(tipoDocumento, numeroDocumento);
-  }
-
-  if (telefono) {
-    configurarLimiteTelefono("telefono", "codigoPais");
-  }
-
-  if (nombre) {
-    nombre.addEventListener("input", function () {
-      nombre.value = nombre.value
-        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "")
-        .slice(0, 50);
-    });
-  }
-
-  if (apellido) {
-    apellido.addEventListener("input", function () {
-      apellido.value = apellido.value
-        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "")
-        .slice(0, 50);
-    });
-  }
+  configurarFiltroNombre(document.getElementById("nombre"));
+  configurarFiltroNombre(document.getElementById("apellido"));
 }
 
 // ==========================================
@@ -694,170 +453,181 @@ function configurarValidacionesRegistro() {
 
 function configurarValidacionesEdicion() {
   const tipoDocumento = document.getElementById("editTipoDocumento");
-
   const numeroDocumento = document.getElementById("editDocumento");
-
-  const telefono = document.getElementById("editTelefono");
-
-  const nombre = document.getElementById("editNombre");
-
-  const apellido = document.getElementById("editApellido");
-
   const fechaNacimiento = document.getElementById("editFechaNacimiento");
 
   if (fechaNacimiento) {
-    const hoy = new Date().toISOString().split("T")[0];
-
-    fechaNacimiento.max = hoy;
+    fechaNacimiento.max = obtenerFechaLocalActual();
   }
 
-  if (tipoDocumento && numeroDocumento) {
-    numeroDocumento.disabled = !tipoDocumento.value;
+  configurarValidacionDocumento(tipoDocumento, numeroDocumento);
 
-    tipoDocumento.addEventListener("change", function () {
-      numeroDocumento.value = "";
+  configurarFiltroNombre(document.getElementById("editNombre"));
+  configurarFiltroNombre(document.getElementById("editApellido"));
+}
 
-      configurarReglasDocumento(tipoDocumento, numeroDocumento);
-    });
+// ==========================================
+// VALIDACIÓN DE DOCUMENTO
+// ==========================================
 
-    numeroDocumento.addEventListener("input", function () {
-      if (tipoDocumento.value === "DNI") {
-        numeroDocumento.value = numeroDocumento.value
-          .replace(/\D/g, "")
-          .slice(0, 8);
-      } else if (
-        tipoDocumento.value === "CE" ||
-        tipoDocumento.value === "PASAPORTE"
-      ) {
-        numeroDocumento.value = numeroDocumento.value
-          .replace(/[^a-zA-Z0-9]/g, "")
-          .slice(0, 12);
-      }
-    });
-  }
+function configurarValidacionDocumento(tipoDocumento, numeroDocumento) {
+  if (!tipoDocumento || !numeroDocumento) return;
+
+  numeroDocumento.disabled = !tipoDocumento.value;
+
+  tipoDocumento.addEventListener("change", () => {
+    numeroDocumento.value = "";
+    configurarReglasDocumento(tipoDocumento, numeroDocumento);
+  });
+
+  numeroDocumento.addEventListener("input", () => {
+    const tipo = tipoDocumento.value;
+
+    if (tipo === "DNI") {
+      numeroDocumento.value = numeroDocumento.value
+        .replace(/\D/g, "")
+        .slice(0, 8);
+    } else if (["CE", "PASAPORTE"].includes(tipo)) {
+      numeroDocumento.value = numeroDocumento.value
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .slice(0, 12);
+    }
+  });
+
+  configurarReglasDocumento(tipoDocumento, numeroDocumento);
+}
+
+// ==========================================
+// FILTRO DE NOMBRE Y APELLIDO
+// ==========================================
+
+function configurarFiltroNombre(campo) {
+  if (!campo) return;
+
+  campo.maxLength = 50;
+
+  campo.addEventListener("input", () => {
+    campo.value = campo.value
+      .replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s'-]/g, "")
+      .slice(0, 50);
+  });
+}
+
+// ==========================================
+// VALIDACIONES DE APODERADO
+// ==========================================
+
+function configurarValidacionesApoderadoRegistro() {
+  configurarFiltroNombre(document.getElementById("guardianNombre"));
+  configurarFiltroNombre(document.getElementById("guardianApellido"));
+
+  configurarValidacionDocumento(
+    document.getElementById("guardianTipoDocumento"),
+    document.getElementById("guardianDocumento"),
+  );
+
+  const telefono = document.getElementById("guardianTelefono");
 
   if (telefono) {
-    configurarLimiteTelefono("editTelefono", "editCodigoPais");
-  }
+    telefono.maxLength = 15;
 
-  if (nombre) {
-    nombre.addEventListener("input", function () {
-      nombre.value = nombre.value
-        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "")
-        .slice(0, 50);
+    telefono.addEventListener("input", () => {
+      telefono.value = telefono.value.replace(/\D/g, "").slice(0, 15);
     });
   }
+}
 
-  if (apellido) {
-    apellido.addEventListener("input", function () {
-      apellido.value = apellido.value
-        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "")
-        .slice(0, 50);
+function configurarValidacionesApoderadoEdicion() {
+  configurarFiltroNombre(document.getElementById("editGuardianNombre"));
+  configurarFiltroNombre(document.getElementById("editGuardianApellido"));
+
+  configurarValidacionDocumento(
+    document.getElementById("editGuardianTipoDocumento"),
+    document.getElementById("editGuardianDocumento"),
+  );
+
+  const telefono = document.getElementById("editGuardianTelefono");
+
+  if (telefono) {
+    telefono.maxLength = 15;
+
+    telefono.addEventListener("input", () => {
+      telefono.value = telefono.value.replace(/\D/g, "").slice(0, 15);
     });
   }
 }
 
 // ==========================================
-// CONFIGURAR VALIDACIÓN DE TELÉFONO
+// VALIDACIÓN DE TELÉFONO
 // ==========================================
 
 function configurarValidacionTelefono(inputId, codigoPaisId) {
   const telefono = document.getElementById(inputId);
-
   const codigoPais = document.getElementById(codigoPaisId);
 
-  if (!telefono || !codigoPais) {
-    return;
-  }
+  if (!telefono || !codigoPais) return;
 
-  codigoPais.addEventListener("change", function () {
+  codigoPais.addEventListener("change", () => {
     telefono.value = "";
-
     configurarLimiteTelefono(inputId, codigoPaisId);
   });
 
-  telefono.addEventListener("input", function () {
+  telefono.addEventListener("input", () => {
     const regla = reglasTelefono[codigoPais.value];
-
-    if (!regla) {
-      return;
-    }
 
     telefono.value = telefono.value.replace(/\D/g, "");
 
-    telefono.value = telefono.value.slice(0, regla.max);
+    if (regla) {
+      telefono.value = telefono.value.slice(0, regla.max);
+    }
   });
 
   configurarLimiteTelefono(inputId, codigoPaisId);
 }
 
-// ==========================================
-// CONFIGURAR LÍMITE DEL TELÉFONO
-// ==========================================
-
 function configurarLimiteTelefono(inputId, codigoPaisId) {
   const telefono = document.getElementById(inputId);
-
   const codigoPais = document.getElementById(codigoPaisId);
 
-  if (!telefono || !codigoPais) {
-    return;
-  }
+  if (!telefono || !codigoPais) return;
 
   const regla = reglasTelefono[codigoPais.value];
 
   if (!regla) {
     telefono.removeAttribute("maxlength");
-
     return;
   }
 
   telefono.maxLength = regla.max;
-
   telefono.value = telefono.value.replace(/\D/g, "").slice(0, regla.max);
 }
 
 // ==========================================
-// CONFIGURAR REGLAS DEL DOCUMENTO
+// REGLAS DEL DOCUMENTO
 // ==========================================
 
 function configurarReglasDocumento(tipoDocumento, numeroDocumento) {
-  if (!tipoDocumento || !numeroDocumento) {
-    return;
-  }
+  if (!tipoDocumento || !numeroDocumento) return;
 
-  if (tipoDocumento.value === "DNI") {
+  const tipo = tipoDocumento.value;
+
+  if (tipo === "DNI") {
     numeroDocumento.disabled = false;
-
     numeroDocumento.maxLength = 8;
-
     numeroDocumento.inputMode = "numeric";
-
     numeroDocumento.pattern = "[0-9]{8}";
-
     numeroDocumento.placeholder = "8 dígitos";
-  } else if (
-    tipoDocumento.value === "CE" ||
-    tipoDocumento.value === "PASAPORTE"
-  ) {
+  } else if (["CE", "PASAPORTE"].includes(tipo)) {
     numeroDocumento.disabled = false;
-
     numeroDocumento.maxLength = 12;
-
     numeroDocumento.inputMode = "text";
-
     numeroDocumento.pattern = "[A-Za-z0-9]{1,12}";
-
     numeroDocumento.placeholder = "Hasta 12 caracteres";
   } else {
     numeroDocumento.disabled = true;
-
     numeroDocumento.removeAttribute("maxlength");
-
     numeroDocumento.removeAttribute("pattern");
-
     numeroDocumento.inputMode = "text";
-
     numeroDocumento.placeholder = "Selecciona el tipo de documento";
   }
 }
@@ -869,180 +639,174 @@ function configurarReglasDocumento(tipoDocumento, numeroDocumento) {
 function validarFormularioEstudiante(prefijo) {
   const esEdicion = prefijo === "edit";
 
-  const nombre = document.getElementById(esEdicion ? "editNombre" : "nombre");
+  const obtenerCampo = (nombre) =>
+    document.getElementById(
+      esEdicion
+        ? `edit${nombre.charAt(0).toUpperCase()}${nombre.slice(1)}`
+        : nombre,
+    );
 
-  const apellido = document.getElementById(
-    esEdicion ? "editApellido" : "apellido",
-  );
+  const nombre = obtenerCampo("nombre");
+  const apellido = obtenerCampo("apellido");
+  const tipoDocumento = obtenerCampo("tipoDocumento");
+  const documento = obtenerCampo("documento");
+  const telefono = obtenerCampo("telefono");
+  const codigoPais = obtenerCampo("codigoPais");
+  const fechaNacimiento = obtenerCampo("fechaNacimiento");
+  const correo = obtenerCampo("correo");
+  const direccion = obtenerCampo("direccion");
+  const cinturon = obtenerCampo("cinturon");
 
-  const tipoDocumento = document.getElementById(
-    esEdicion ? "editTipoDocumento" : "tipoDocumento",
-  );
+  const campos = {
+    nombre,
+    apellido,
+    tipoDocumento,
+    documento,
+    telefono,
+    codigoPais,
+    fechaNacimiento,
+    correo,
+    direccion,
+    cinturon,
+  };
 
-  const documento = document.getElementById(
-    esEdicion ? "editDocumento" : "documento",
-  );
+  for (const [nombreCampo, campo] of Object.entries(campos)) {
+    if (!campo) {
+      console.error(`No se encontró el campo: ${nombreCampo}`);
 
-  const telefono = document.getElementById(
-    esEdicion ? "editTelefono" : "telefono",
-  );
-
-  const codigoPais = document.getElementById(
-    esEdicion ? "editCodigoPais" : "codigoPais",
-  );
-
-  const fechaNacimiento = document.getElementById(
-    esEdicion ? "editFechaNacimiento" : "fechaNacimiento",
-  );
-
-  const correo = document.getElementById(esEdicion ? "editCorreo" : "correo");
-
-  if (!nombre || !nombre.value.trim()) {
-    return {
-      campo: nombre,
-      mensaje: "El nombre es obligatorio.",
-    };
+      return {
+        campo: null,
+        mensaje: `No se encontró el campo "${nombreCampo}" en el formulario.`,
+      };
+    }
   }
 
-  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{1,50}$/.test(nombre.value.trim())) {
+  if (!nombre.value.trim()) {
+    return { campo: nombre, mensaje: "Este campo es obligatorio." };
+  }
+
+  if (!REGEX_NOMBRE.test(nombre.value.trim())) {
     return {
       campo: nombre,
       mensaje:
-        "El nombre solo puede contener letras y espacios, con un máximo de 50 caracteres.",
+        "Usa solo letras, espacios, apóstrofes o guiones; máximo 50 caracteres.",
     };
   }
 
-  if (!apellido || !apellido.value.trim()) {
-    return {
-      campo: apellido,
-      mensaje: "El apellido es obligatorio.",
-    };
+  if (!apellido.value.trim()) {
+    return { campo: apellido, mensaje: "Este campo es obligatorio." };
   }
 
-  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{1,50}$/.test(apellido.value.trim())) {
+  if (!REGEX_NOMBRE.test(apellido.value.trim())) {
     return {
       campo: apellido,
       mensaje:
-        "El apellido solo puede contener letras y espacios, con un máximo de 50 caracteres.",
+        "Usa solo letras, espacios, apóstrofes o guiones; máximo 50 caracteres.",
     };
   }
 
-  if (!tipoDocumento || !tipoDocumento.value) {
+  if (!tipoDocumento.value) {
     return {
       campo: tipoDocumento,
-      mensaje: "Debes seleccionar un tipo de documento.",
+      mensaje: "Selecciona un tipo de documento.",
     };
   }
 
-  if (!documento || !documento.value.trim()) {
+  if (!["DNI", "CE", "PASAPORTE"].includes(tipoDocumento.value)) {
+    return {
+      campo: tipoDocumento,
+      mensaje: "Selecciona un tipo de documento válido.",
+    };
+  }
+
+  if (!documento.value.trim()) {
+    return { campo: documento, mensaje: "Este campo es obligatorio." };
+  }
+
+  if (
+    tipoDocumento.value === "DNI" &&
+    !/^\d{8}$/.test(documento.value.trim())
+  ) {
     return {
       campo: documento,
-      mensaje: "Debes ingresar el número de documento.",
+      mensaje: "El DNI debe tener exactamente 8 dígitos.",
     };
   }
 
-  if (tipoDocumento.value === "DNI") {
-    if (!/^\d{8}$/.test(documento.value)) {
-      return {
-        campo: documento,
-        mensaje: "El DNI debe contener exactamente 8 dígitos.",
-      };
-    }
-  } else if (
-    tipoDocumento.value === "CE" ||
-    tipoDocumento.value === "PASAPORTE"
+  if (
+    ["CE", "PASAPORTE"].includes(tipoDocumento.value) &&
+    !/^[a-zA-Z0-9]{1,12}$/.test(documento.value.trim())
   ) {
-    if (!/^[a-zA-Z0-9]{1,12}$/.test(documento.value)) {
-      return {
-        campo: documento,
-        mensaje: "El número de documento no es válido.",
-      };
-    }
+    return {
+      campo: documento,
+      mensaje: "El documento debe tener entre 1 y 12 caracteres alfanuméricos.",
+    };
   }
 
-  if (telefono && telefono.value.trim()) {
-    const codigo = codigoPais ? codigoPais.value : "+51";
-
-    const regla = reglasTelefono[codigo];
-
-    if (!regla) {
-      return {
-        campo: codigoPais || telefono,
-        mensaje: "Selecciona un código de país válido.",
-      };
-    }
-
-    const telefonoValor = telefono.value.trim();
-
-    if (!/^\d+$/.test(telefonoValor)) {
-      return {
-        campo: telefono,
-        mensaje: "El teléfono solo debe contener números.",
-      };
-    }
-
-    if (telefonoValor.length < regla.min) {
-      if (regla.min === regla.max) {
-        return {
-          campo: telefono,
-          mensaje: `El número de ${regla.nombre} debe contener exactamente ${regla.min} dígitos.`,
-        };
-      }
-
-      return {
-        campo: telefono,
-        mensaje: `El número de ${regla.nombre} debe contener entre ${regla.min} y ${regla.max} dígitos.`,
-      };
-    }
-
-    if (telefonoValor.length > regla.max) {
-      if (regla.min === regla.max) {
-        return {
-          campo: telefono,
-          mensaje: `El número de ${regla.nombre} debe contener exactamente ${regla.max} dígitos.`,
-        };
-      }
-
-      return {
-        campo: telefono,
-        mensaje: `El número de ${regla.nombre} debe contener entre ${regla.min} y ${regla.max} dígitos.`,
-      };
-    }
+  if (!fechaNacimiento.value) {
+    return {
+      campo: fechaNacimiento,
+      mensaje: "Este campo es obligatorio.",
+    };
   }
 
-  if (fechaNacimiento && fechaNacimiento.value) {
-    const fechaSeleccionada = new Date(fechaNacimiento.value + "T00:00:00");
+  const fecha = new Date(`${fechaNacimiento.value}T00:00:00`);
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
 
-    const fechaActual = new Date();
-
-    const añoSeleccionado = fechaSeleccionada.getFullYear();
-
-    const añoActual = fechaActual.getFullYear();
-
-    if (añoSeleccionado > añoActual) {
-      return {
-        campo: fechaNacimiento,
-        mensaje: "El año de nacimiento no puede ser superior al año actual.",
-      };
-    }
-
-    if (fechaSeleccionada > fechaActual) {
-      return {
-        campo: fechaNacimiento,
-        mensaje: "La fecha de nacimiento no puede ser futura.",
-      };
-    }
+  if (Number.isNaN(fecha.getTime()) || fecha > hoy) {
+    return {
+      campo: fechaNacimiento,
+      mensaje: "La fecha no puede ser futura.",
+    };
   }
 
-  if (correo && correo.value.trim()) {
-    const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.value.trim());
+  if (!codigoPais.value || !reglasTelefono[codigoPais.value]) {
+    return {
+      campo: codigoPais,
+      mensaje: "Selecciona un código de país válido.",
+    };
+  }
 
-    if (!correoValido) {
-      return {
-        campo: correo,
-        mensaje: "Ingresa un correo electrónico válido.",
-      };
-    }
+  if (!telefono.value.trim()) {
+    return { campo: telefono, mensaje: "Este campo es obligatorio." };
+  }
+
+  const regla = reglasTelefono[codigoPais.value];
+  const numero = telefono.value.trim();
+
+  if (
+    !/^\d+$/.test(numero) ||
+    numero.length < regla.min ||
+    numero.length > regla.max
+  ) {
+    return {
+      campo: telefono,
+      mensaje: `El teléfono de ${regla.nombre} debe tener ${
+        regla.min === regla.max
+          ? `exactamente ${regla.min}`
+          : `entre ${regla.min} y ${regla.max}`
+      } dígitos.`,
+    };
+  }
+
+  if (!correo.value.trim()) {
+    return { campo: correo, mensaje: "Este campo es obligatorio." };
+  }
+
+  if (!REGEX_CORREO.test(correo.value.trim())) {
+    return {
+      campo: correo,
+      mensaje: "Ingresa un correo electrónico válido.",
+    };
+  }
+
+  if (!direccion.value.trim()) {
+    return { campo: direccion, mensaje: "Este campo es obligatorio." };
+  }
+
+  if (!cinturon.value) {
+    return { campo: cinturon, mensaje: "Selecciona un cinturón." };
   }
 
   return null;
@@ -1054,135 +818,272 @@ function validarFormularioEstudiante(prefijo) {
 
 function validarFormularioApoderado() {
   const nombre = document.getElementById("guardianNombre");
-
   const apellido = document.getElementById("guardianApellido");
-
   const tipoDocumento = document.getElementById("guardianTipoDocumento");
-
   const documento = document.getElementById("guardianDocumento");
-
   const telefono = document.getElementById("guardianTelefono");
-
   const correo = document.getElementById("guardianCorreo");
+  const direccion = document.getElementById("guardianDireccion");
+  const parentesco = document.getElementById("guardianParentesco");
 
-  if (!nombre.value.trim()) {
-    return {
-      campo: nombre,
-      mensaje: "El nombre del apoderado es obligatorio.",
-    };
+  const campos = {
+    nombre,
+    apellido,
+    tipoDocumento,
+    documento,
+    telefono,
+    correo,
+    direccion,
+    parentesco,
+  };
+
+  for (const [nombreCampo, campo] of Object.entries(campos)) {
+    if (!campo) {
+      console.error(`No se encontró el campo del apoderado: ${nombreCampo}`);
+
+      return {
+        campo: null,
+        mensaje: `No se encontró el campo "${nombreCampo}" del apoderado.`,
+      };
+    }
   }
 
-  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{1,50}$/.test(nombre.value.trim())) {
+  if (!nombre.value.trim()) {
+    return { campo: nombre, mensaje: "Este campo es obligatorio." };
+  }
+
+  if (!REGEX_NOMBRE.test(nombre.value.trim())) {
     return {
       campo: nombre,
-      mensaje: "El nombre del apoderado solo puede contener letras y espacios.",
+      mensaje:
+        "Usa solo letras, espacios, apóstrofes o guiones; máximo 50 caracteres.",
     };
   }
 
   if (!apellido.value.trim()) {
-    return {
-      campo: apellido,
-      mensaje: "El apellido del apoderado es obligatorio.",
-    };
+    return { campo: apellido, mensaje: "Este campo es obligatorio." };
   }
 
-  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{1,50}$/.test(apellido.value.trim())) {
+  if (!REGEX_NOMBRE.test(apellido.value.trim())) {
     return {
       campo: apellido,
       mensaje:
-        "El apellido del apoderado solo puede contener letras y espacios.",
+        "Usa solo letras, espacios, apóstrofes o guiones; máximo 50 caracteres.",
     };
   }
 
   if (!tipoDocumento.value) {
     return {
       campo: tipoDocumento,
-      mensaje: "Debes seleccionar un tipo de documento para el apoderado.",
+      mensaje: "Selecciona un tipo de documento.",
     };
   }
 
-  if (tipoDocumento.value === "DNI") {
-    if (!/^\d{8}$/.test(documento.value)) {
-      return {
-        campo: documento,
-        mensaje: "El DNI del apoderado debe contener exactamente 8 dígitos.",
-      };
-    }
-  } else if (
-    tipoDocumento.value === "CE" ||
-    tipoDocumento.value === "PASAPORTE"
+  if (!["DNI", "CE", "PASAPORTE"].includes(tipoDocumento.value)) {
+    return {
+      campo: tipoDocumento,
+      mensaje: "Selecciona un tipo de documento válido.",
+    };
+  }
+
+  if (!documento.value.trim()) {
+    return { campo: documento, mensaje: "Este campo es obligatorio." };
+  }
+
+  if (
+    tipoDocumento.value === "DNI" &&
+    !/^\d{8}$/.test(documento.value.trim())
   ) {
-    if (!/^[a-zA-Z0-9]{1,12}$/.test(documento.value)) {
-      return {
-        campo: documento,
-        mensaje: "El número de documento del apoderado no es válido.",
-      };
-    }
+    return {
+      campo: documento,
+      mensaje: "El DNI debe tener exactamente 8 dígitos.",
+    };
   }
 
-  if (telefono.value.trim()) {
-    if (!/^\d{1,15}$/.test(telefono.value.trim())) {
-      return {
-        campo: telefono,
-        mensaje:
-          "El teléfono del apoderado solo debe contener números y tener como máximo 15 dígitos.",
-      };
-    }
+  if (
+    ["CE", "PASAPORTE"].includes(tipoDocumento.value) &&
+    !/^[a-zA-Z0-9]{1,12}$/.test(documento.value.trim())
+  ) {
+    return {
+      campo: documento,
+      mensaje: "El documento debe tener entre 1 y 12 caracteres alfanuméricos.",
+    };
   }
 
-  if (correo.value.trim()) {
-    const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.value.trim());
+  // Teléfono del apoderado: opcional.
+  if (telefono.value.trim() && !/^\d{1,15}$/.test(telefono.value.trim())) {
+    return {
+      campo: telefono,
+      mensaje: "Usa solo números, con un máximo de 15 dígitos.",
+    };
+  }
 
-    if (!correoValido) {
-      return {
-        campo: correo,
-        mensaje: "Ingresa un correo electrónico válido para el apoderado.",
-      };
-    }
+  // Correo del apoderado: opcional.
+  if (correo.value.trim() && !REGEX_CORREO.test(correo.value.trim())) {
+    return {
+      campo: correo,
+      mensaje: "Ingresa un correo electrónico válido.",
+    };
+  }
+
+  if (!direccion.value.trim()) {
+    return { campo: direccion, mensaje: "Este campo es obligatorio." };
+  }
+
+  if (!parentesco.value) {
+    return {
+      campo: parentesco,
+      mensaje: "Selecciona el parentesco del apoderado.",
+    };
   }
 
   return null;
 }
 
 // ==========================================
-// CONFIGURAR BÚSQUEDA Y FILTROS
+// VALIDAR DUPLICADOS DE ESTUDIANTE
+// ==========================================
+
+function validarDuplicadosEstudiante({
+  documento,
+  tipoDocumento,
+  correo,
+  excluirId = null,
+}) {
+  const documentoNormalizado = String(documento || "")
+    .trim()
+    .toLowerCase();
+  const tipoNormalizado = String(tipoDocumento || "")
+    .trim()
+    .toUpperCase();
+  const correoNormalizado = String(correo || "")
+    .trim()
+    .toLowerCase();
+
+  const duplicadoDocumento = estudiantesData.find((estudiante) => {
+    if (excluirId !== null && String(estudiante.id) === String(excluirId)) {
+      return false;
+    }
+
+    return (
+      String(estudiante.documento || "")
+        .trim()
+        .toLowerCase() === documentoNormalizado &&
+      String(estudiante.tipoDocumento || "")
+        .trim()
+        .toUpperCase() === tipoNormalizado
+    );
+  });
+
+  if (duplicadoDocumento) {
+    return {
+      campo: document.getElementById(
+        excluirId !== null ? "editDocumento" : "documento",
+      ),
+      mensaje:
+        tipoNormalizado === "DNI"
+          ? "Ya existe un estudiante registrado con ese DNI."
+          : "Ya existe un estudiante registrado con ese número de documento.",
+    };
+  }
+
+  const duplicadoCorreo = estudiantesData.find((estudiante) => {
+    if (excluirId !== null && String(estudiante.id) === String(excluirId)) {
+      return false;
+    }
+
+    return (
+      String(estudiante.correo || "")
+        .trim()
+        .toLowerCase() === correoNormalizado
+    );
+  });
+
+  if (duplicadoCorreo) {
+    return {
+      campo: document.getElementById(
+        excluirId !== null ? "editCorreo" : "correo",
+      ),
+      mensaje: "Ya existe un estudiante registrado con ese correo electrónico.",
+    };
+  }
+
+  return null;
+}
+
+// ==========================================
+// INTERPRETAR ERROR DE LA API
+// ==========================================
+
+function obtenerMensajeErrorApi(data, status, entidad = "estudiante") {
+  const mensajeOriginal = [
+    data?.mensaje,
+    data?.message,
+    data?.detail,
+    data?.error,
+  ]
+    .filter((valor) => typeof valor === "string" && valor.trim())
+    .join(" ")
+    .trim();
+
+  const mensaje = mensajeOriginal.toLowerCase();
+
+  const esDuplicado =
+    status === 409 ||
+    /duplicad|duplicate|unique constraint|already exists|ya existe|ya está registrado|ya esta registrado|constraintviolation|unique index/.test(
+      mensaje,
+    );
+
+  if (esDuplicado) {
+    if (/correo|email|e-mail/.test(mensaje)) {
+      return `El correo electrónico ya existe. Verifica el correo del ${entidad} e inténtalo nuevamente.`;
+    }
+
+    if (/documento|dni|pasaporte|carnet de extranjería|\bce\b/.test(mensaje)) {
+      return `El número de documento ya existe. Verifica el documento del ${entidad} e inténtalo nuevamente.`;
+    }
+
+    return `No se pudo registrar o actualizar el ${entidad}: el correo electrónico o el documento ya están registrados.`;
+  }
+
+  if (status === 400) {
+    return (
+      mensajeOriginal || `Los datos enviados para el ${entidad} no son válidos.`
+    );
+  }
+
+  if (status >= 500) {
+    return `Ocurrió un error en el servidor al procesar el ${entidad}. Inténtalo nuevamente.`;
+  }
+
+  if (mensajeOriginal) {
+    return mensajeOriginal;
+  }
+
+  return `No se pudo procesar el ${entidad}. Verifica los datos e inténtalo nuevamente.`;
+}
+
+// ==========================================
+// BÚSQUEDA Y FILTROS
 // ==========================================
 
 function configurarBusquedaYFiltros() {
   const searchInput = document.getElementById("studentSearch");
-
   const ageFilter = document.getElementById("ageFilter");
-
   const beltFilter = document.getElementById("beltFilter");
 
-  if (searchInput) {
-    searchInput.addEventListener("input", aplicarFiltros);
-  }
-
-  if (ageFilter) {
-    ageFilter.addEventListener("change", aplicarFiltros);
-  }
-
-  if (beltFilter) {
-    beltFilter.addEventListener("change", aplicarFiltros);
-  }
+  searchInput?.addEventListener("input", aplicarFiltros);
+  ageFilter?.addEventListener("change", aplicarFiltros);
+  beltFilter?.addEventListener("change", aplicarFiltros);
 }
-
-// ==========================================
-// OBTENER ESTUDIANTES FILTRADOS
-// ==========================================
 
 function obtenerEstudiantesFiltrados() {
   const searchInput = document.getElementById("studentSearch");
-
   const ageFilter = document.getElementById("ageFilter");
-
   const beltFilter = document.getElementById("beltFilter");
 
   const texto = searchInput ? searchInput.value.trim().toLowerCase() : "";
-
   const edadFiltro = ageFilter ? ageFilter.value : "TODOS";
-
   const cinturonFiltro = beltFilter ? beltFilter.value : "TODOS";
 
   return estudiantesData.filter((estudiante) => {
@@ -1215,18 +1116,12 @@ function obtenerEstudiantesFiltrados() {
   });
 }
 
-// ==========================================
-// APLICAR FILTROS
-// ==========================================
-
 function aplicarFiltros() {
-  // Cada búsqueda/filtro comienza desde la página 1
   paginaActual = 1;
 
   const filtrados = obtenerEstudiantesFiltrados();
 
   actualizarContador(filtrados.length);
-
   renderizarEstudiantes(filtrados);
 }
 
@@ -1237,14 +1132,11 @@ function aplicarFiltros() {
 async function cargarEstudiantes() {
   const studentsList = document.getElementById("studentsList");
 
-  if (!studentsList) {
-    return;
-  }
+  if (!studentsList) return;
 
   try {
     const response = await fetch("/api/estudiantes", {
       method: "GET",
-
       headers: {
         Authorization: "Basic " + auth,
       },
@@ -1252,7 +1144,6 @@ async function cargarEstudiantes() {
 
     if (response.status === 401) {
       cerrarSesion();
-
       return;
     }
 
@@ -1271,7 +1162,6 @@ async function cargarEstudiantes() {
     const filtrados = obtenerEstudiantesFiltrados();
 
     actualizarContador(filtrados.length);
-
     renderizarEstudiantes(filtrados);
   } catch (error) {
     console.error("Error al cargar estudiantes:", error);
@@ -1291,13 +1181,9 @@ async function cargarEstudiantes() {
 function actualizarContador(cantidad) {
   const studentsCount = document.getElementById("studentsCount");
 
-  if (!studentsCount) {
-    return;
-  }
+  if (!studentsCount) return;
 
-  studentsCount.textContent = `${cantidad} estudiante${
-    cantidad === 1 ? "" : "s"
-  }`;
+  studentsCount.textContent = `${cantidad} estudiante${cantidad === 1 ? "" : "s"}`;
 }
 
 // ==========================================
@@ -1307,37 +1193,25 @@ function actualizarContador(cantidad) {
 function renderizarEstudiantes(estudiantes) {
   const studentsList = document.getElementById("studentsList");
 
-  if (!studentsList) {
-    return;
-  }
+  if (!studentsList) return;
 
   if (estudiantes.length === 0) {
     studentsList.innerHTML = `
-            <div class="estudiantes-empty">
-                No se encontraron estudiantes.
-            </div>
-        `;
-
+      <div class="estudiantes-empty">
+        No se encontraron estudiantes.
+      </div>
+    `;
     return;
   }
 
-  // ==========================================
-  // CALCULAR PAGINACIÓN
-  // ==========================================
-
   const totalPaginas = Math.ceil(estudiantes.length / ESTUDIANTES_POR_PAGINA);
-
-  // Evitar que la página actual quede fuera
-  // de rango después de aplicar filtros.
 
   if (paginaActual > totalPaginas) {
     paginaActual = totalPaginas;
   }
 
   const inicio = (paginaActual - 1) * ESTUDIANTES_POR_PAGINA;
-
   const fin = inicio + ESTUDIANTES_POR_PAGINA;
-
   const estudiantesPagina = estudiantes.slice(inicio, fin);
 
   studentsList.innerHTML =
@@ -1350,15 +1224,9 @@ function renderizarEstudiantes(estudiantes) {
 // ==========================================
 
 function crearPaginacion(totalEstudiantes, totalPaginas) {
-  // Si solamente hay una página,
-  // no mostramos controles.
-
-  if (totalPaginas <= 1) {
-    return "";
-  }
+  if (totalPaginas <= 1) return "";
 
   const inicio = (paginaActual - 1) * ESTUDIANTES_POR_PAGINA + 1;
-
   const fin = Math.min(paginaActual * ESTUDIANTES_POR_PAGINA, totalEstudiantes);
 
   let botonesPaginas = "";
@@ -1368,78 +1236,45 @@ function crearPaginacion(totalEstudiantes, totalPaginas) {
       pagina === paginaActual ? "btn btn--primary" : "btn btn--secondary";
 
     botonesPaginas += `
-            <button
-                type="button"
-                class="${clase}"
-                onclick="cambiarPaginaEstudiantes(${pagina})"
-                ${pagina === paginaActual ? "disabled" : ""}
-            >
-                ${pagina}
-            </button>
-        `;
+      <button
+        type="button"
+        class="${clase}"
+        onclick="cambiarPaginaEstudiantes(${pagina})"
+        ${pagina === paginaActual ? "disabled" : ""}
+      >
+        ${pagina}
+      </button>
+    `;
   }
 
   return `
-        <div
-            style="
-                display:flex;
-                align-items:center;
-                justify-content:space-between;
-                gap:1rem;
-                margin-top:1rem;
-                flex-wrap:wrap;
-            "
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:1rem;flex-wrap:wrap;">
+      <span>Mostrando ${inicio}-${fin} de ${totalEstudiantes} estudiantes</span>
+
+      <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;">
+        <button
+          type="button"
+          class="btn btn--secondary"
+          onclick="cambiarPaginaEstudiantes(${paginaActual - 1})"
+          ${paginaActual === 1 ? "disabled" : ""}
         >
+          Anterior
+        </button>
 
-            <span>
-                Mostrando
-                ${inicio}-${fin}
-                de
-                ${totalEstudiantes}
-                estudiantes
-            </span>
+        ${botonesPaginas}
 
-
-            <div
-                style="
-                    display:flex;
-                    align-items:center;
-                    gap:.4rem;
-                    flex-wrap:wrap;
-                "
-            >
-
-                <button
-                    type="button"
-                    class="btn btn--secondary"
-                    onclick="cambiarPaginaEstudiantes(${paginaActual - 1})"
-                    ${paginaActual === 1 ? "disabled" : ""}
-                >
-                    Anterior
-                </button>
-
-
-                ${botonesPaginas}
-
-
-                <button
-                    type="button"
-                    class="btn btn--secondary"
-                    onclick="cambiarPaginaEstudiantes(${paginaActual + 1})"
-                    ${paginaActual === totalPaginas ? "disabled" : ""}
-                >
-                    Siguiente
-                </button>
-
-            </div>
-
-        </div>
-    `;
+        <button
+          type="button"
+          class="btn btn--secondary"
+          onclick="cambiarPaginaEstudiantes(${paginaActual + 1})"
+          ${paginaActual === totalPaginas ? "disabled" : ""}
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  `;
 }
-
-// ==========================================
-// CAMBIAR PÁGINA
-// ==========================================
 
 function cambiarPaginaEstudiantes(pagina) {
   const estudiantesFiltrados = obtenerEstudiantesFiltrados();
@@ -1448,14 +1283,11 @@ function cambiarPaginaEstudiantes(pagina) {
     estudiantesFiltrados.length / ESTUDIANTES_POR_PAGINA,
   );
 
-  if (pagina < 1 || pagina > totalPaginas) {
-    return;
-  }
+  if (pagina < 1 || pagina > totalPaginas) return;
 
   paginaActual = pagina;
 
   actualizarContador(estudiantesFiltrados.length);
-
   renderizarEstudiantes(estudiantesFiltrados);
 }
 
@@ -1465,50 +1297,27 @@ function cambiarPaginaEstudiantes(pagina) {
 
 function crearTablaEstudiantes(estudiantes) {
   return `
-        <table class="estudiantes-table">
+    <table class="estudiantes-table">
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>Estudiante</th>
+          <th>Documento</th>
+          <th>Contacto</th>
+          <th>Fecha de nacimiento</th>
+          <th>Dirección</th>
+          <th>Cinturón</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
 
-            <thead>
-
-                <tr>
-
-                    <th>Foto</th>
-
-                    <th>Estudiante</th>
-
-                    <th>Documento</th>
-
-                    <th>Contacto</th>
-
-                    <th>Fecha de nacimiento</th>
-
-                    <th>Dirección</th>
-
-                    <th>Cinturón</th>
-
-                    <th>Estado</th>
-
-                    <th>Acciones</th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                ${estudiantes
-                  .map((estudiante) => crearEstudianteFila(estudiante))
-                  .join("")}
-
-            </tbody>
-
-        </table>
-    `;
+      <tbody>
+        ${estudiantes.map(crearEstudianteFila).join("")}
+      </tbody>
+    </table>
+  `;
 }
-
-// ==========================================
-// CREAR FILA
-// ==========================================
 
 function crearEstudianteFila(estudiante) {
   const estadoClase =
@@ -1518,135 +1327,71 @@ function crearEstudianteFila(estudiante) {
 
   const foto = estudiante.fotoUrl
     ? `
-                <img
-                    src="${escapeHtml(estudiante.fotoUrl)}"
-                    alt="Foto de ${escapeHtml(estudiante.nombre)}"
-                    class="estudiante-foto"
-                >
-            `
-    : `
-                <span class="estudiante-sin-foto">
-                    Sin foto
-                </span>
-            `;
+      <img
+        src="${escapeHtml(estudiante.fotoUrl)}"
+        alt="Foto de ${escapeHtml(estudiante.nombre)}"
+        class="estudiante-foto"
+      >
+    `
+    : `<span class="estudiante-sin-foto">Sin foto</span>`;
 
   return `
-        <tr>
+    <tr>
+      <td>${foto}</td>
 
-            <td>
-                ${foto}
-            </td>
+      <td>
+        <div class="estudiante-nombre">
+          ${escapeHtml(estudiante.nombre)}
+          ${escapeHtml(estudiante.apellido)}
+        </div>
+      </td>
 
+      <td>
+        <div class="estudiante-documento">
+          ${escapeHtml(estudiante.tipoDocumento)}
+          <br>
+          ${escapeHtml(estudiante.documento)}
+        </div>
+      </td>
 
-            <td>
+      <td>
+        <div class="estudiante-contacto">
+          <span>${escapeHtml(estudiante.telefono)}</span>
+          <span>${escapeHtml(estudiante.correo)}</span>
+        </div>
+      </td>
 
-                <div class="estudiante-nombre">
+      <td>${escapeHtml(estudiante.fechaNacimiento)}</td>
+      <td>${escapeHtml(estudiante.direccion)}</td>
+      <td>${escapeHtml(estudiante.cinturon)}</td>
 
-                    ${escapeHtml(estudiante.nombre)}
+      <td>
+        <span class="estudiante-estado ${estadoClase}">
+          ${escapeHtml(estudiante.estado)}
+        </span>
+      </td>
 
-                    ${escapeHtml(estudiante.apellido)}
+      <td>
+        <div class="estudiante-acciones">
+          <button
+            type="button"
+            class="btn btn--primary"
+            onclick="editarEstudiante(${Number(estudiante.id)})"
+          >
+            Editar
+          </button>
 
-                </div>
-
-            </td>
-
-
-            <td>
-
-                <div class="estudiante-documento">
-
-                    ${escapeHtml(estudiante.tipoDocumento)}
-
-                    <br>
-
-                    ${escapeHtml(estudiante.documento)}
-
-                </div>
-
-            </td>
-
-
-            <td>
-
-                <div class="estudiante-contacto">
-
-                    <span>
-                        ${escapeHtml(estudiante.telefono)}
-                    </span>
-
-                    <span>
-                        ${escapeHtml(estudiante.correo)}
-                    </span>
-
-                </div>
-
-            </td>
-
-
-            <td>
-                ${escapeHtml(estudiante.fechaNacimiento)}
-            </td>
-
-
-            <td>
-                ${escapeHtml(estudiante.direccion)}
-            </td>
-
-
-            <td>
-                ${escapeHtml(estudiante.cinturon)}
-            </td>
-
-
-            <td>
-
-                <span
-                    class="estudiante-estado ${estadoClase}"
-                >
-
-                    ${escapeHtml(estudiante.estado)}
-
-                </span>
-
-            </td>
-
-
-            <td>
-
-                <div class="estudiante-acciones">
-
-                    <button
-                        type="button"
-                        class="btn btn--primary"
-                        onclick="editarEstudiante(${estudiante.id})"
-                    >
-                        Editar
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="btn btn--secondary"
-                        onclick="cambiarEstadoEstudiante(
-                            ${estudiante.id},
-                            '${escapeHtml(estudiante.estado)}'
-                        )"
-                    >
-
-                        ${
-                          estudiante.estado === "ACTIVO"
-                            ? "Desactivar"
-                            : "Activar"
-                        }
-
-                    </button>
-
-                </div>
-
-            </td>
-
-        </tr>
-    `;
+          <button
+            type="button"
+            class="btn btn--secondary"
+            onclick="cambiarEstadoEstudiante(${Number(estudiante.id)}, '${escapeHtml(estudiante.estado)}')"
+          >
+            ${estudiante.estado === "ACTIVO" ? "Desactivar" : "Activar"}
+          </button>
+        </div>
+      </td>
+    </tr>
+  `;
 }
 
 // ==========================================
@@ -1656,68 +1401,63 @@ function crearEstudianteFila(estudiante) {
 async function registrarEstudiante(event) {
   event.preventDefault();
 
-  const form = event.target;
-
-  const mensaje = document.getElementById("studentMessage");
-
   const validacion = validarFormularioEstudiante("");
 
   if (validacion) {
-    mostrarMensaje(mensaje, validacion.mensaje, "error");
-
-    if (validacion.campo) {
-      validacion.campo.focus();
-    }
-
+    notificarErrorCampo(validacion.campo, validacion.mensaje);
+    validacion.campo?.focus();
     return;
   }
 
   const fechaNacimiento = document.getElementById("fechaNacimiento").value;
-
   const edad = calcularEdad(fechaNacimiento);
-
   const esMenor = edad < 18;
 
   if (esMenor) {
     const validacionApoderado = validarFormularioApoderado();
 
     if (validacionApoderado) {
-      mostrarMensaje(mensaje, validacionApoderado.mensaje, "error");
+      notificarErrorCampo(
+        validacionApoderado.campo,
+        validacionApoderado.mensaje,
+      );
 
-      validacionApoderado.campo.focus();
-
+      validacionApoderado.campo?.focus();
       return;
     }
   }
 
+  const duplicado = validarDuplicadosEstudiante({
+    documento: document.getElementById("documento").value,
+    tipoDocumento: document.getElementById("tipoDocumento").value,
+    correo: document.getElementById("correo").value,
+  });
+
+  if (duplicado) {
+    notificarErrorCampo(duplicado.campo, duplicado.mensaje);
+    duplicado.campo?.focus();
+    return;
+  }
+
   const formData = new FormData();
 
-  formData.append("nombre", document.getElementById("nombre").value.trim());
+  const campos = [
+    ["nombre", "nombre"],
+    ["apellido", "apellido"],
+    ["tipoDocumento", "tipoDocumento"],
+    ["documento", "documento"],
+    ["telefono", "telefono"],
+    ["correo", "correo"],
+    ["direccion", "direccion"],
+    ["cinturon", "cinturon"],
+  ];
 
-  formData.append("apellido", document.getElementById("apellido").value.trim());
-
-  formData.append(
-    "tipoDocumento",
-    document.getElementById("tipoDocumento").value,
-  );
-
-  formData.append(
-    "documento",
-    document.getElementById("documento").value.trim(),
-  );
-
-  formData.append("telefono", document.getElementById("telefono").value.trim());
-
-  formData.append("correo", document.getElementById("correo").value.trim());
+  campos.forEach(([nombreCampo, id]) => {
+    const campo = document.getElementById(id);
+    formData.append(nombreCampo, campo.value.trim());
+  });
 
   formData.append("fechaNacimiento", fechaNacimiento);
-
-  formData.append(
-    "direccion",
-    document.getElementById("direccion").value.trim(),
-  );
-
-  formData.append("cinturon", document.getElementById("cinturon").value);
 
   if (fotoNueva) {
     formData.append("foto", fotoNueva);
@@ -1726,71 +1466,57 @@ async function registrarEstudiante(event) {
   try {
     const response = await fetch("/api/estudiantes", {
       method: "POST",
-
       headers: {
         Authorization: "Basic " + auth,
       },
-
       body: formData,
     });
 
     if (response.status === 401) {
       cerrarSesion();
-
       return;
     }
+
+    const data = await leerRespuestaJson(response);
 
     if (response.status === 403) {
       throw new Error("No tienes permisos para registrar estudiantes.");
     }
 
-    let data = {};
-
-    try {
-      data = await response.json();
-    } catch (error) {
-      data = {};
-    }
-
     if (!response.ok) {
       throw new Error(
-        data.message || data.error || "No se pudo registrar el estudiante.",
+        obtenerMensajeErrorApi(data, response.status, "estudiante"),
       );
     }
 
     if (esMenor) {
       if (!data.id) {
         throw new Error(
-          "El estudiante fue creado, pero no se recibió su ID para registrar el apoderado.",
+          "El estudiante se creó, pero la API no devolvió su ID para registrar al apoderado.",
         );
       }
 
-      await registrarApoderado(data.id);
+      const apoderadoRegistrado = await registrarApoderado(data.id);
+
+      if (!apoderadoRegistrado) return;
     }
 
-    mostrarMensaje(
-      mensaje,
+    await cargarEstudiantes();
+
+    notificarErrorGeneral(
       esMenor
         ? "Estudiante y apoderado registrados correctamente."
         : "Estudiante registrado correctamente.",
       "success",
     );
 
-    form.reset();
-
-    fotoNueva = null;
-
-    limpiarFotoRegistro();
-
-    verificarEdadEstudiante();
-
-    await cargarEstudiantes();
-
-    setTimeout(cerrarModalRegistro, 600);
+    cerrarModalRegistro();
   } catch (error) {
     console.error("Error al registrar estudiante:", error);
 
-    mostrarMensaje(mensaje, error.message, "error");
+    notificarErrorGeneral(
+      error.message || "Ocurrió un error al registrar al estudiante.",
+    );
   }
 }
 
@@ -1801,78 +1527,43 @@ async function registrarEstudiante(event) {
 async function registrarApoderado(estudianteId) {
   const formData = new FormData();
 
-  formData.append(
-    "nombre",
-    document.getElementById("guardianNombre").value.trim(),
-  );
+  const campos = [
+    ["nombre", "guardianNombre"],
+    ["apellido", "guardianApellido"],
+    ["tipoDocumento", "guardianTipoDocumento"],
+    ["documento", "guardianDocumento"],
+    ["telefono", "guardianTelefono"],
+    ["correo", "guardianCorreo"],
+    ["direccion", "guardianDireccion"],
+    ["parentesco", "guardianParentesco"],
+  ];
 
-  formData.append(
-    "apellido",
-    document.getElementById("guardianApellido").value.trim(),
-  );
-
-  formData.append(
-    "tipoDocumento",
-    document.getElementById("guardianTipoDocumento").value,
-  );
-
-  formData.append(
-    "documento",
-    document.getElementById("guardianDocumento").value.trim(),
-  );
-
-  formData.append(
-    "telefono",
-    document.getElementById("guardianTelefono").value.trim(),
-  );
-
-  formData.append(
-    "correo",
-    document.getElementById("guardianCorreo").value.trim(),
-  );
-
-  formData.append(
-    "direccion",
-    document.getElementById("guardianDireccion").value.trim(),
-  );
-
-  formData.append(
-    "parentesco",
-    document.getElementById("guardianParentesco").value,
-  );
+  campos.forEach(([nombreCampo, id]) => {
+    const campo = document.getElementById(id);
+    formData.append(nombreCampo, campo.value.trim());
+  });
 
   const response = await fetch(`/api/apoderados/estudiante/${estudianteId}`, {
     method: "POST",
-
     headers: {
       Authorization: "Basic " + auth,
     },
-
     body: formData,
   });
 
   if (response.status === 401) {
     cerrarSesion();
-
     return false;
   }
+
+  const data = await leerRespuestaJson(response);
 
   if (response.status === 403) {
     throw new Error("No tienes permisos para registrar el apoderado.");
   }
 
-  let data = {};
-
-  try {
-    data = await response.json();
-  } catch (error) {
-    data = {};
-  }
-
   if (!response.ok) {
-    throw new Error(
-      data.message || data.error || "No se pudo registrar el apoderado.",
-    );
+    throw new Error(obtenerMensajeErrorApi(data, response.status, "apoderado"));
   }
 
   return true;
@@ -1886,7 +1577,6 @@ async function editarEstudiante(id) {
   try {
     const response = await fetch(`/api/estudiantes/${id}`, {
       method: "GET",
-
       headers: {
         Authorization: "Basic " + auth,
       },
@@ -1894,7 +1584,6 @@ async function editarEstudiante(id) {
 
     if (response.status === 401) {
       cerrarSesion();
-
       return;
     }
 
@@ -1911,40 +1600,27 @@ async function editarEstudiante(id) {
     estudianteEditandoId = estudiante.id;
 
     document.getElementById("editId").value = estudiante.id;
-
     document.getElementById("editNombre").value = estudiante.nombre || "";
-
     document.getElementById("editApellido").value = estudiante.apellido || "";
-
     document.getElementById("editTipoDocumento").value =
       estudiante.tipoDocumento || "";
-
     document.getElementById("editDocumento").value = estudiante.documento || "";
-
     document.getElementById("editFechaNacimiento").value =
       estudiante.fechaNacimiento || "";
-
     document.getElementById("editTelefono").value = estudiante.telefono || "";
-
     document.getElementById("editCorreo").value = estudiante.correo || "";
-
     document.getElementById("editDireccion").value = estudiante.direccion || "";
-
     document.getElementById("editCinturon").value =
       estudiante.cinturon || "BLANCO";
 
-    const tipoDocumento = document.getElementById("editTipoDocumento");
-
-    const numeroDocumento = document.getElementById("editDocumento");
-
-    if (tipoDocumento && numeroDocumento) {
-      configurarReglasDocumento(tipoDocumento, numeroDocumento);
-    }
+    configurarReglasDocumento(
+      document.getElementById("editTipoDocumento"),
+      document.getElementById("editDocumento"),
+    );
 
     configurarLimiteTelefono("editTelefono", "editCodigoPais");
 
     prepararFotoEdicion(estudiante);
-
     limpiarInterfazApoderado();
 
     await cargarApoderados(estudiante.id);
@@ -1953,13 +1629,11 @@ async function editarEstudiante(id) {
 
     if (modal) {
       modal.hidden = false;
-
       document.body.classList.add("modal-open");
     }
   } catch (error) {
     console.error("Error al editar estudiante:", error);
-
-    alert(error.message);
+    notificarErrorGeneral(error.message || "No se pudo abrir la edición.");
   }
 }
 
@@ -1969,15 +1643,11 @@ async function editarEstudiante(id) {
 
 function prepararFotoEdicion(estudiante) {
   fotoNueva = null;
-
   quitarFotoEdicion = false;
 
   const editFotoInput = document.getElementById("editFoto");
-
   const editFotoPreview = document.getElementById("editFotoPreview");
-
   const editFotoUploadText = document.getElementById("editFotoUploadText");
-
   const removeEditFotoButton = document.getElementById("removeEditFotoButton");
 
   if (editFotoInput) {
@@ -1987,7 +1657,6 @@ function prepararFotoEdicion(estudiante) {
   if (estudiante.fotoUrl) {
     if (editFotoPreview) {
       editFotoPreview.src = estudiante.fotoUrl;
-
       editFotoPreview.hidden = false;
     }
 
@@ -2001,7 +1670,6 @@ function prepararFotoEdicion(estudiante) {
   } else {
     if (editFotoPreview) {
       editFotoPreview.src = "";
-
       editFotoPreview.hidden = true;
     }
 
@@ -2023,7 +1691,6 @@ async function cargarApoderados(estudianteId) {
   try {
     const response = await fetch(`/api/apoderados/estudiante/${estudianteId}`, {
       method: "GET",
-
       headers: {
         Authorization: "Basic " + auth,
       },
@@ -2031,7 +1698,6 @@ async function cargarApoderados(estudianteId) {
 
     if (response.status === 401) {
       cerrarSesion();
-
       return;
     }
 
@@ -2047,16 +1713,13 @@ async function cargarApoderados(estudianteId) {
 
     if (Array.isArray(apoderados) && apoderados.length > 0) {
       apoderadoActual = apoderados[0];
-
       mostrarApoderado(apoderadoActual);
     } else {
       apoderadoActual = null;
-
       mostrarSinApoderado();
     }
   } catch (error) {
     console.error("Error al cargar apoderados:", error);
-
     mostrarSinApoderado(error.message);
   }
 }
@@ -2067,40 +1730,21 @@ async function cargarApoderados(estudianteId) {
 
 function mostrarApoderado(apoderado) {
   const guardianInfo = document.getElementById("guardianInfo");
-
   const guardianEmptyState = document.getElementById("guardianEmptyState");
-
   const editGuardianButton = document.getElementById("editGuardianButton");
-
   const addGuardianButton = document.getElementById("addGuardianButton");
-
   const guardianFullName = document.getElementById("guardianFullName");
-
   const guardianRelationship = document.getElementById("guardianRelationship");
-
   const guardianDocumentDisplay = document.getElementById(
     "guardianDocumentDisplay",
   );
-
   const guardianPhoneDisplay = document.getElementById("guardianPhoneDisplay");
-
   const guardianEmailDisplay = document.getElementById("guardianEmailDisplay");
 
-  if (guardianInfo) {
-    guardianInfo.hidden = false;
-  }
-
-  if (guardianEmptyState) {
-    guardianEmptyState.hidden = true;
-  }
-
-  if (editGuardianButton) {
-    editGuardianButton.hidden = false;
-  }
-
-  if (addGuardianButton) {
-    addGuardianButton.hidden = false;
-  }
+  if (guardianInfo) guardianInfo.hidden = false;
+  if (guardianEmptyState) guardianEmptyState.hidden = true;
+  if (editGuardianButton) editGuardianButton.hidden = false;
+  if (addGuardianButton) addGuardianButton.hidden = false;
 
   if (guardianFullName) {
     guardianFullName.textContent =
@@ -2131,16 +1775,11 @@ function mostrarApoderado(apoderado) {
 
 function mostrarSinApoderado(mensaje = null) {
   const guardianInfo = document.getElementById("guardianInfo");
-
   const guardianEmptyState = document.getElementById("guardianEmptyState");
-
   const editGuardianButton = document.getElementById("editGuardianButton");
-
   const addGuardianButton = document.getElementById("addGuardianButton");
 
-  if (guardianInfo) {
-    guardianInfo.hidden = true;
-  }
+  if (guardianInfo) guardianInfo.hidden = true;
 
   if (guardianEmptyState) {
     guardianEmptyState.hidden = false;
@@ -2154,13 +1793,8 @@ function mostrarSinApoderado(mensaje = null) {
     }
   }
 
-  if (editGuardianButton) {
-    editGuardianButton.hidden = true;
-  }
-
-  if (addGuardianButton) {
-    addGuardianButton.hidden = false;
-  }
+  if (editGuardianButton) editGuardianButton.hidden = true;
+  if (addGuardianButton) addGuardianButton.hidden = false;
 }
 
 // ==========================================
@@ -2171,36 +1805,18 @@ function limpiarInterfazApoderado() {
   apoderadoActual = null;
 
   const guardianInfo = document.getElementById("guardianInfo");
-
   const guardianEmptyState = document.getElementById("guardianEmptyState");
-
   const editGuardianButton = document.getElementById("editGuardianButton");
-
   const addGuardianButton = document.getElementById("addGuardianButton");
-
   const editGuardianFormSection = document.getElementById(
     "editGuardianFormSection",
   );
 
-  if (guardianInfo) {
-    guardianInfo.hidden = true;
-  }
-
-  if (guardianEmptyState) {
-    guardianEmptyState.hidden = false;
-  }
-
-  if (editGuardianButton) {
-    editGuardianButton.hidden = true;
-  }
-
-  if (addGuardianButton) {
-    addGuardianButton.hidden = false;
-  }
-
-  if (editGuardianFormSection) {
-    editGuardianFormSection.hidden = true;
-  }
+  if (guardianInfo) guardianInfo.hidden = true;
+  if (guardianEmptyState) guardianEmptyState.hidden = false;
+  if (editGuardianButton) editGuardianButton.hidden = true;
+  if (addGuardianButton) addGuardianButton.hidden = false;
+  if (editGuardianFormSection) editGuardianFormSection.hidden = true;
 
   limpiarFormularioApoderado();
 }
@@ -2211,8 +1827,7 @@ function limpiarInterfazApoderado() {
 
 function editarApoderado() {
   if (!apoderadoActual) {
-    alert("No existe un apoderado para editar.");
-
+    notificarErrorGeneral("No existe un apoderado para editar.");
     return;
   }
 
@@ -2244,27 +1859,19 @@ function agregarApoderado() {
 }
 
 // ==========================================
-// CARGAR DATOS DEL FORMULARIO
+// CARGAR DATOS DEL FORMULARIO DE APODERADO
 // ==========================================
 
 function cargarDatosFormularioApoderado(apoderado) {
   const campos = {
     editGuardianId: apoderado.id || "",
-
     editGuardianNombre: apoderado.nombre || "",
-
     editGuardianApellido: apoderado.apellido || "",
-
     editGuardianTipoDocumento: apoderado.tipoDocumento || "",
-
     editGuardianDocumento: apoderado.documento || "",
-
     editGuardianTelefono: apoderado.telefono || "",
-
     editGuardianCorreo: apoderado.correo || "",
-
     editGuardianDireccion: apoderado.direccion || "",
-
     editGuardianParentesco: apoderado.parentesco || "",
   };
 
@@ -2275,6 +1882,11 @@ function cargarDatosFormularioApoderado(apoderado) {
       campo.value = valor;
     }
   });
+
+  configurarReglasDocumento(
+    document.getElementById("editGuardianTipoDocumento"),
+    document.getElementById("editGuardianDocumento"),
+  );
 }
 
 // ==========================================
@@ -2323,23 +1935,17 @@ function ocultarFormularioApoderado() {
 
 async function guardarApoderado() {
   if (!estudianteEditandoId) {
-    alert("No se encontró el estudiante.");
-
+    notificarErrorGeneral("No se encontró el estudiante.");
     return;
   }
 
   /*
-   * IMPORTANTE:
-   *
-   * La API PUT/PATCH del apoderado
-   * todavía debe implementarse en el backend.
-   *
-   * Por ahora mostramos un mensaje
-   * para no inventar un endpoint.
+   * El endpoint PUT/PATCH para actualizar apoderados aún no está implementado.
+   * Se conserva este aviso para no enviar peticiones a rutas inexistentes.
    */
 
-  alert(
-    "La edición y guardado del apoderado se conectará cuando implementemos el endpoint correspondiente en el backend.",
+  notificarErrorGeneral(
+    "La edición y el guardado del apoderado se conectarán cuando implementemos el endpoint correspondiente en el backend.",
   );
 }
 
@@ -2350,60 +1956,58 @@ async function guardarApoderado() {
 async function actualizarEstudiante(event) {
   event.preventDefault();
 
-  const mensaje = document.getElementById("editStudentMessage");
-
   const validacion = validarFormularioEstudiante("edit");
 
   if (validacion) {
-    mostrarMensaje(mensaje, validacion.mensaje, "error");
-
-    if (validacion.campo) {
-      validacion.campo.focus();
-    }
-
+    notificarErrorCampo(validacion.campo, validacion.mensaje);
+    validacion.campo?.focus();
     return;
   }
 
   const id = document.getElementById("editId").value;
 
+  const duplicado = validarDuplicadosEstudiante({
+    documento: document.getElementById("editDocumento").value,
+    tipoDocumento: document.getElementById("editTipoDocumento").value,
+    correo: document.getElementById("editCorreo").value,
+    excluirId: id,
+  });
+
+  if (duplicado) {
+    notificarErrorCampo(duplicado.campo, duplicado.mensaje);
+    duplicado.campo?.focus();
+    return;
+  }
+
   const formData = new FormData();
 
   formData.append("nombre", document.getElementById("editNombre").value.trim());
-
   formData.append(
     "apellido",
     document.getElementById("editApellido").value.trim(),
   );
-
   formData.append(
     "tipoDocumento",
     document.getElementById("editTipoDocumento").value,
   );
-
   formData.append(
     "documento",
     document.getElementById("editDocumento").value.trim(),
   );
-
   formData.append(
     "fechaNacimiento",
     document.getElementById("editFechaNacimiento").value,
   );
-
   formData.append(
     "telefono",
     document.getElementById("editTelefono").value.trim(),
   );
-
   formData.append("correo", document.getElementById("editCorreo").value.trim());
-
   formData.append(
     "direccion",
     document.getElementById("editDireccion").value.trim(),
   );
-
   formData.append("cinturon", document.getElementById("editCinturon").value);
-
   formData.append("quitarFoto", quitarFotoEdicion);
 
   if (fotoNueva) {
@@ -2413,51 +2017,42 @@ async function actualizarEstudiante(event) {
   try {
     const response = await fetch(`/api/estudiantes/${id}`, {
       method: "PUT",
-
       headers: {
         Authorization: "Basic " + auth,
       },
-
       body: formData,
     });
 
     if (response.status === 401) {
       cerrarSesion();
-
       return;
     }
+
+    const data = await leerRespuestaJson(response);
 
     if (response.status === 403) {
       throw new Error("No tienes permisos para actualizar estudiantes.");
     }
 
-    let data = {};
-
-    try {
-      data = await response.json();
-    } catch (error) {
-      data = {};
-    }
-
     if (!response.ok) {
       throw new Error(
-        data.message || data.error || "No se pudo actualizar el estudiante.",
+        obtenerMensajeErrorApi(data, response.status, "estudiante"),
       );
     }
 
-    mostrarMensaje(mensaje, "Estudiante actualizado correctamente.", "success");
-
     fotoNueva = null;
-
     quitarFotoEdicion = false;
 
     await cargarEstudiantes();
+    cancelarEdicion();
 
-    setTimeout(cancelarEdicion, 500);
+    notificarErrorGeneral("Estudiante actualizado correctamente.", "success");
   } catch (error) {
     console.error("Error al actualizar estudiante:", error);
 
-    mostrarMensaje(mensaje, error.message, "error");
+    notificarErrorGeneral(
+      error.message || "No se pudo actualizar el estudiante.",
+    );
   }
 }
 
@@ -2467,12 +2062,9 @@ async function actualizarEstudiante(event) {
 
 function cancelarEdicion() {
   const modal = document.getElementById("editStudentModal");
-
   const editForm = document.getElementById("editStudentForm");
 
-  if (editForm) {
-    editForm.reset();
-  }
+  editForm?.reset();
 
   if (modal) {
     modal.hidden = true;
@@ -2481,11 +2073,8 @@ function cancelarEdicion() {
   document.body.classList.remove("modal-open");
 
   fotoNueva = null;
-
   quitarFotoEdicion = false;
-
   estudianteEditandoId = null;
-
   apoderadoActual = null;
 
   limpiarInterfazApoderado();
@@ -2493,14 +2082,11 @@ function cancelarEdicion() {
   configurarLimiteTelefono("editTelefono", "editCodigoPais");
 
   const editFotoPreview = document.getElementById("editFotoPreview");
-
   const editFotoUploadText = document.getElementById("editFotoUploadText");
-
   const removeEditFotoButton = document.getElementById("removeEditFotoButton");
 
   if (editFotoPreview) {
     editFotoPreview.src = "";
-
     editFotoPreview.hidden = true;
   }
 
@@ -2516,25 +2102,19 @@ function cancelarEdicion() {
 }
 
 // ==========================================
-// LIMPIAR FOTO REGISTRO
+// LIMPIAR FOTO DE REGISTRO
 // ==========================================
 
 function limpiarFotoRegistro() {
   const fotoInput = document.getElementById("foto");
-
   const fotoPreview = document.getElementById("fotoPreview");
-
   const fotoUploadText = document.getElementById("fotoUploadText");
-
   const removeFotoButton = document.getElementById("removeFotoButton");
 
-  if (fotoInput) {
-    fotoInput.value = "";
-  }
+  if (fotoInput) fotoInput.value = "";
 
   if (fotoPreview) {
     fotoPreview.src = "";
-
     fotoPreview.hidden = true;
   }
 
@@ -2558,16 +2138,13 @@ async function cambiarEstadoEstudiante(id, estadoActual) {
     `¿Deseas cambiar el estado del estudiante a ${nuevoEstado}?`,
   );
 
-  if (!confirmar) {
-    return;
-  }
+  if (!confirmar) return;
 
   try {
     const response = await fetch(
       `/api/estudiantes/${id}/estado?estado=${nuevoEstado}`,
       {
         method: "PATCH",
-
         headers: {
           Authorization: "Basic " + auth,
         },
@@ -2576,7 +2153,6 @@ async function cambiarEstadoEstudiante(id, estadoActual) {
 
     if (response.status === 401) {
       cerrarSesion();
-
       return;
     }
 
@@ -2584,13 +2160,7 @@ async function cambiarEstadoEstudiante(id, estadoActual) {
       throw new Error("No tienes permisos para cambiar el estado.");
     }
 
-    let data = {};
-
-    try {
-      data = await response.json();
-    } catch (error) {
-      data = {};
-    }
+    const data = await leerRespuestaJson(response);
 
     if (!response.ok) {
       throw new Error(
@@ -2599,41 +2169,148 @@ async function cambiarEstadoEstudiante(id, estadoActual) {
     }
 
     await cargarEstudiantes();
+
+    notificarErrorGeneral(
+      `El estudiante ahora está ${nuevoEstado.toLowerCase()}.`,
+      "success",
+    );
   } catch (error) {
     console.error("Error al cambiar estado:", error);
-
-    alert(error.message);
+    notificarErrorGeneral(error.message || "No se pudo cambiar el estado.");
   }
 }
 
 // ==========================================
-// MOSTRAR MENSAJE
+// LEER RESPUESTA JSON SIN INTERRUMPIR EL FLUJO
+// ==========================================
+
+async function leerRespuestaJson(response) {
+  try {
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
+
+// ==========================================
+// MOSTRAR Y OCULTAR MENSAJES
 // ==========================================
 
 function mostrarMensaje(elemento, mensaje, tipo) {
-  if (!elemento) {
-    return;
-  }
+  if (!elemento) return;
 
   elemento.textContent = mensaje;
-
-  elemento.className = `form-message ${tipo}`;
-
   elemento.hidden = false;
+
+  if (elemento.id === "studentToast") {
+    elemento.className = `student-toast student-toast--${tipo}`;
+    elemento.setAttribute("role", tipo === "error" ? "alert" : "status");
+    elemento.setAttribute(
+      "aria-live",
+      tipo === "error" ? "assertive" : "polite",
+    );
+  } else {
+    elemento.className = `estudiantes-message estudiantes-message--${tipo}`;
+    elemento.setAttribute("role", tipo === "error" ? "alert" : "status");
+    elemento.setAttribute("aria-live", "polite");
+  }
+}
+
+function ocultarMensaje(elemento) {
+  if (!elemento) return;
+
+  elemento.textContent = "";
+  elemento.hidden = true;
 }
 
 // ==========================================
-// OCULTAR MENSAJE
+// NOTIFICACIÓN GENERAL TOAST
 // ==========================================
 
-function ocultarMensaje(elemento) {
-  if (!elemento) {
+function notificarErrorGeneral(mensaje, tipo = "error") {
+  const toast = document.getElementById("studentToast");
+
+  if (!toast) {
+    console.error(mensaje);
     return;
   }
 
-  elemento.textContent = "";
+  clearTimeout(window.toastErrorTimer);
 
-  elemento.hidden = true;
+  mostrarMensaje(toast, mensaje, tipo);
+
+  window.toastErrorTimer = setTimeout(
+    () => ocultarMensaje(toast),
+    tipo === "error" ? 5000 : 4000,
+  );
+}
+
+// ==========================================
+// NOTIFICACIÓN DE ERROR POR CAMPO
+// ==========================================
+
+function notificarErrorCampo(campo, mensaje) {
+  if (!campo) {
+    notificarErrorGeneral(mensaje);
+    return;
+  }
+
+  const etiqueta = obtenerEtiquetaCampo(campo);
+  const nombreCampo = etiqueta || campo.id || "campo";
+
+  notificarErrorGeneral(
+    `Revisa el campo "${nombreCampo}". ${mensaje}`,
+    "error",
+  );
+}
+
+function obtenerEtiquetaCampo(campo) {
+  if (!campo) return "";
+
+  const label = document.querySelector(`label[for="${campo.id}"]`);
+
+  if (label) {
+    return label.textContent.trim().replace(/\s+/g, " ");
+  }
+
+  const etiquetasAlternativas = {
+    nombre: "Nombre",
+    apellido: "Apellido",
+    tipoDocumento: "Tipo de documento",
+    documento: "Número de documento",
+    telefono: "Teléfono",
+    correo: "Correo electrónico",
+    direccion: "Dirección",
+    fechaNacimiento: "Fecha de nacimiento",
+    cinturon: "Cinturón",
+    guardianNombre: "Nombre del apoderado",
+    guardianApellido: "Apellido del apoderado",
+    guardianTipoDocumento: "Tipo de documento del apoderado",
+    guardianDocumento: "Documento del apoderado",
+    guardianTelefono: "Teléfono del apoderado",
+    guardianCorreo: "Correo del apoderado",
+    guardianDireccion: "Dirección del apoderado",
+    guardianParentesco: "Parentesco del apoderado",
+    editNombre: "Nombre",
+    editApellido: "Apellido",
+    editTipoDocumento: "Tipo de documento",
+    editDocumento: "Número de documento",
+    editTelefono: "Teléfono",
+    editCorreo: "Correo electrónico",
+    editDireccion: "Dirección",
+    editFechaNacimiento: "Fecha de nacimiento",
+    editCinturon: "Cinturón",
+    editGuardianNombre: "Nombre del apoderado",
+    editGuardianApellido: "Apellido del apoderado",
+    editGuardianTipoDocumento: "Tipo de documento del apoderado",
+    editGuardianDocumento: "Documento del apoderado",
+    editGuardianTelefono: "Teléfono del apoderado",
+    editGuardianCorreo: "Correo del apoderado",
+    editGuardianDireccion: "Dirección del apoderado",
+    editGuardianParentesco: "Parentesco del apoderado",
+  };
+
+  return etiquetasAlternativas[campo.id] || campo.id;
 }
 
 // ==========================================
@@ -2647,14 +2324,19 @@ function escapeHtml(valor) {
 
   return String(valor)
     .replace(/&/g, "&amp;")
-
     .replace(/</g, "&lt;")
-
     .replace(/>/g, "&gt;")
-
     .replace(/"/g, "&quot;")
-
     .replace(/'/g, "&#039;");
+}
+
+// ==========================================
+// CERRAR SESIÓN
+// ==========================================
+
+function cerrarSesion() {
+  sessionStorage.removeItem("kihonAuth");
+  window.location.href = "/login";
 }
 
 // ==========================================
@@ -2662,17 +2344,13 @@ function escapeHtml(valor) {
 // ==========================================
 
 document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape") {
-    return;
-  }
+  if (event.key !== "Escape") return;
 
   const registerModal = document.getElementById("registerStudentModal");
-
   const editModal = document.getElementById("editStudentModal");
 
   if (registerModal && !registerModal.hidden) {
     cerrarModalRegistro();
-
     return;
   }
 

@@ -194,6 +194,42 @@ document.addEventListener("DOMContentLoaded", async function () {
   const editarUsuarioSubmit = document.getElementById("editarUsuarioSubmit");
 
   // =========================================================
+  // ELEMENTOS - MODAL ALERTAS / CONFIRMACIONES
+  // =========================================================
+
+  const sistemaAlertModal = document.getElementById("sistemaAlertModal");
+
+  const sistemaAlertModalOverlay = document.getElementById(
+    "sistemaAlertModalOverlay",
+  );
+
+  const sistemaAlertModalClose = document.getElementById(
+    "sistemaAlertModalClose",
+  );
+
+  const sistemaAlertModalTitle = document.getElementById(
+    "sistemaAlertModalTitle",
+  );
+
+  const sistemaAlertModalIcon = document.getElementById(
+    "sistemaAlertModalIcon",
+  );
+
+  const sistemaAlertModalMessage = document.getElementById(
+    "sistemaAlertModalMessage",
+  );
+
+  const sistemaAlertModalCancel = document.getElementById(
+    "sistemaAlertModalCancel",
+  );
+
+  const sistemaAlertModalConfirm = document.getElementById(
+    "sistemaAlertModalConfirm",
+  );
+
+  let resolverSistemaAlertModal = null;
+
+  // =========================================================
   // DATOS EN MEMORIA
   // =========================================================
 
@@ -248,7 +284,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (response.status === 401) {
       sessionStorage.clear();
+
       window.location.href = "/login";
+
       return null;
     }
 
@@ -295,15 +333,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         return mensajePorDefecto;
       }
 
-      if (contenido.mensaje) {
+      if (typeof contenido.mensaje === "string" && contenido.mensaje.trim()) {
         return contenido.mensaje;
       }
 
-      if (contenido.message) {
+      if (typeof contenido.message === "string" && contenido.message.trim()) {
         return contenido.message;
       }
 
-      if (contenido.error) {
+      if (typeof contenido.error === "string" && contenido.error.trim()) {
         return contenido.error;
       }
 
@@ -413,6 +451,179 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   // =========================================================
+  // MODAL DE ALERTAS / CONFIRMACIONES
+  // =========================================================
+
+  function mostrarModalSistema({
+    tipo = "success",
+    titulo = "Información",
+    mensaje = "",
+    textoConfirmar = "Aceptar",
+    textoCancelar = "Cancelar",
+    mostrarCancelar = false,
+  }) {
+    return new Promise(function (resolve) {
+      if (
+        !sistemaAlertModal ||
+        !sistemaAlertModalTitle ||
+        !sistemaAlertModalMessage ||
+        !sistemaAlertModalConfirm
+      ) {
+        console.error(
+          "No se encontró correctamente el modal de alertas del sistema.",
+        );
+
+        resolve(true);
+
+        return;
+      }
+
+      resolverSistemaAlertModal = resolve;
+
+      sistemaAlertModal.classList.remove(
+        "sistema-alert-modal--success",
+        "sistema-alert-modal--error",
+        "sistema-alert-modal--confirm",
+      );
+
+      sistemaAlertModal.classList.add(`sistema-alert-modal--${tipo}`);
+
+      sistemaAlertModalTitle.textContent = titulo;
+
+      sistemaAlertModalMessage.textContent = mensaje;
+
+      if (sistemaAlertModalIcon) {
+        if (tipo === "error") {
+          sistemaAlertModalIcon.textContent = "!";
+        } else if (tipo === "confirm") {
+          sistemaAlertModalIcon.textContent = "?";
+        } else {
+          sistemaAlertModalIcon.textContent = "✓";
+        }
+      }
+
+      sistemaAlertModalConfirm.textContent = textoConfirmar;
+
+      if (sistemaAlertModalCancel) {
+        sistemaAlertModalCancel.textContent = textoCancelar;
+
+        sistemaAlertModalCancel.hidden = !mostrarCancelar;
+      }
+
+      sistemaAlertModal.hidden = false;
+
+      setTimeout(function () {
+        sistemaAlertModalConfirm.focus();
+      }, 50);
+    });
+  }
+
+  // =========================================================
+  // CERRAR MODAL DEL SISTEMA
+  // =========================================================
+
+  function cerrarModalSistema(resultado = false) {
+    if (!sistemaAlertModal) {
+      return;
+    }
+
+    sistemaAlertModal.hidden = true;
+
+    const resolver = resolverSistemaAlertModal;
+
+    resolverSistemaAlertModal = null;
+
+    if (resolver) {
+      resolver(resultado);
+    }
+  }
+
+  // =========================================================
+  // ALERTA DE ÉXITO
+  // =========================================================
+
+  async function mostrarExito(titulo, mensaje) {
+    await mostrarModalSistema({
+      tipo: "success",
+      titulo,
+      mensaje,
+      textoConfirmar: "Aceptar",
+      mostrarCancelar: false,
+    });
+  }
+
+  // =========================================================
+  // ALERTA DE ERROR
+  // =========================================================
+
+  async function mostrarError(titulo, mensaje) {
+    await mostrarModalSistema({
+      tipo: "error",
+      titulo,
+      mensaje,
+      textoConfirmar: "Aceptar",
+      mostrarCancelar: false,
+    });
+  }
+
+  // =========================================================
+  // CONFIRMACIÓN
+  // =========================================================
+
+  async function mostrarConfirmacion(
+    titulo,
+    mensaje,
+    textoConfirmar = "Confirmar",
+  ) {
+    return await mostrarModalSistema({
+      tipo: "confirm",
+      titulo,
+      mensaje,
+      textoConfirmar,
+      textoCancelar: "Cancelar",
+      mostrarCancelar: true,
+    });
+  }
+
+  // =========================================================
+  // EXPONER MODALES PARA registro.js
+  // =========================================================
+
+  window.mostrarErrorKihon = mostrarError;
+
+  window.mostrarExitoKihon = mostrarExito;
+
+  window.mostrarConfirmacionKihon = mostrarConfirmacion;
+
+  // =========================================================
+  // EVENTOS MODAL DEL SISTEMA
+  // =========================================================
+
+  if (sistemaAlertModalConfirm) {
+    sistemaAlertModalConfirm.addEventListener("click", function () {
+      cerrarModalSistema(true);
+    });
+  }
+
+  if (sistemaAlertModalCancel) {
+    sistemaAlertModalCancel.addEventListener("click", function () {
+      cerrarModalSistema(false);
+    });
+  }
+
+  if (sistemaAlertModalClose) {
+    sistemaAlertModalClose.addEventListener("click", function () {
+      cerrarModalSistema(false);
+    });
+  }
+
+  if (sistemaAlertModalOverlay) {
+    sistemaAlertModalOverlay.addEventListener("click", function () {
+      cerrarModalSistema(false);
+    });
+  }
+
+  // =========================================================
   // CARGAR USUARIOS
   // =========================================================
 
@@ -502,9 +713,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
 
       usuariosPaginaActual = 1;
+
       estudiantesPaginaActual = 1;
 
       renderizarUsuarios();
+
       renderizarEstudiantesSinCuenta();
     } catch (error) {
       console.error("Error cargando datos:", error);
@@ -825,36 +1038,36 @@ document.addEventListener("DOMContentLoaded", async function () {
       const fotoUrl = estudiante.fotoUrl || estudiante.foto || null;
 
       fila.innerHTML = `
-          <td>
-            ${generarFotoHtml(fotoUrl, nombreCompletoEstudiante(estudiante))}
-          </td>
+        <td>
+          ${generarFotoHtml(fotoUrl, nombreCompletoEstudiante(estudiante))}
+        </td>
 
-          <td>
-            ${escaparHtml(nombreCompletoEstudiante(estudiante))}
-          </td>
+        <td>
+          ${escaparHtml(nombreCompletoEstudiante(estudiante))}
+        </td>
 
-          <td>
-            ${escaparHtml(estudiante.documento)}
-          </td>
+        <td>
+          ${escaparHtml(estudiante.documento)}
+        </td>
 
-          <td>
-            ${escaparHtml(estudiante.correo)}
-          </td>
+        <td>
+          ${escaparHtml(estudiante.correo)}
+        </td>
 
-          <td>
-            ${escaparHtml(estudiante.telefono)}
-          </td>
+        <td>
+          ${escaparHtml(estudiante.telefono)}
+        </td>
 
-          <td>
-            <button
-              type="button"
-              class="btn btn--primary btn-crear-cuenta"
-              data-id="${estudiante.id}"
-            >
-              Crear usuario
-            </button>
-          </td>
-        `;
+        <td>
+          <button
+            type="button"
+            class="btn btn--primary btn-crear-cuenta"
+            data-id="${estudiante.id}"
+          >
+            Crear usuario
+          </button>
+        </td>
+      `;
 
       estudiantesSinCuentaTableBody.appendChild(fila);
     });
@@ -876,7 +1089,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     if (!estudiante) {
-      alert("No se encontró el estudiante.");
+      mostrarError(
+        "Estudiante no encontrado",
+        "No fue posible encontrar el estudiante seleccionado.",
+      );
+
       return;
     }
 
@@ -884,17 +1101,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     modalEstudianteNombre.textContent = nombreCompletoEstudiante(estudiante);
 
-    modalEstudianteDocumento.textContent = `Documento: ${
-      estudiante.documento || "-"
-    }`;
+    modalEstudianteDocumento.textContent = `Documento: ${estudiante.documento || "-"}`;
 
     modalEstudianteCorreo.textContent = `Correo: ${estudiante.correo || "-"}`;
 
     modalUsername.value = "";
+
     modalPassword.value = "";
+
     modalGenero.value = "";
 
     crearUsuarioMessage.textContent = "";
+
     crearUsuarioMessage.hidden = true;
 
     crearUsuarioModal.hidden = false;
@@ -916,6 +1134,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     modalEstudianteId.value = "";
 
     crearUsuarioMessage.textContent = "";
+
     crearUsuarioMessage.hidden = true;
   }
 
@@ -935,41 +1154,67 @@ document.addEventListener("DOMContentLoaded", async function () {
     const nuevoGenero = modalGenero.value;
 
     if (!estudianteId) {
-      mostrarMensajeModal("No se ha seleccionado un estudiante.");
+      await mostrarError(
+        "Datos incompletos",
+        "No se ha seleccionado un estudiante.",
+      );
+
       return;
     }
 
     if (nuevoUsername.length < 4 || nuevoUsername.length > 30) {
-      mostrarMensajeModal("El usuario debe tener entre 4 y 30 caracteres.");
+      await mostrarError(
+        "Usuario inválido",
+        "El usuario debe tener entre 4 y 30 caracteres.",
+      );
 
       modalUsername.focus();
+
       return;
     }
 
     if (!/^[a-zA-Z0-9._-]+$/.test(nuevoUsername)) {
-      mostrarMensajeModal(
+      await mostrarError(
+        "Usuario inválido",
         "El usuario solo puede contener letras, números, punto, guion y guion bajo.",
       );
 
       modalUsername.focus();
+
       return;
     }
 
     if (nuevaPassword.length < 8 || nuevaPassword.length > 72) {
-      mostrarMensajeModal("La contraseña debe tener entre 8 y 72 caracteres.");
+      await mostrarError(
+        "Contraseña inválida",
+        "La contraseña debe tener entre 8 y 72 caracteres.",
+      );
 
       modalPassword.focus();
+
       return;
     }
 
     if (!nuevoGenero) {
-      mostrarMensajeModal("Selecciona el género.");
+      await mostrarError("Datos incompletos", "Selecciona el género.");
 
       modalGenero.focus();
+
+      return;
+    }
+
+    const confirmar = await mostrarConfirmacion(
+      "Confirmar creación",
+      `¿Estás seguro de que deseas crear la cuenta "${nuevoUsername}" para este estudiante?`,
+      "Crear usuario",
+    );
+
+    if (!confirmar) {
       return;
     }
 
     crearUsuarioSubmit.disabled = true;
+
     crearUsuarioSubmit.textContent = "Creando...";
 
     try {
@@ -991,7 +1236,22 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
 
       if (response.status === 403) {
-        mostrarMensajeModal("No tienes permisos para crear esta cuenta.");
+        await mostrarError(
+          "Acceso denegado",
+          "No tienes permisos para crear esta cuenta.",
+        );
+
+        return;
+      }
+
+      if (response.status === 409) {
+        const mensaje = await obtenerMensajeError(
+          response,
+          "Los datos proporcionados ya están registrados.",
+        );
+
+        await mostrarError("No se pudo crear la cuenta", mensaje);
+
         return;
       }
 
@@ -1001,7 +1261,8 @@ document.addEventListener("DOMContentLoaded", async function () {
           "No se pudo crear la cuenta.",
         );
 
-        mostrarMensajeModal(mensaje);
+        await mostrarError("No se pudo crear la cuenta", mensaje);
+
         return;
       }
 
@@ -1010,10 +1271,18 @@ document.addEventListener("DOMContentLoaded", async function () {
       cerrarModalCrearUsuario();
 
       await cargarDatos();
+
+      await mostrarExito(
+        "Usuario creado",
+        `La cuenta "${nuevoUsername}" fue creada correctamente.`,
+      );
     } catch (error) {
       console.error("Error creando cuenta:", error);
 
-      mostrarMensajeModal("No se pudo conectar con el servidor.");
+      await mostrarError(
+        "Error de conexión",
+        "No se pudo conectar con el servidor.",
+      );
     } finally {
       crearUsuarioSubmit.disabled = false;
 
@@ -1059,9 +1328,13 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
 
       if (response.status === 403) {
-        alert("No tienes permisos para cambiar el estado.");
+        await mostrarError(
+          "Acceso denegado",
+          "No tienes permisos para cambiar el estado.",
+        );
 
         boton.disabled = false;
+
         return;
       }
 
@@ -1071,9 +1344,10 @@ document.addEventListener("DOMContentLoaded", async function () {
           "No se pudo cambiar el estado del usuario.",
         );
 
-        alert(mensaje);
+        await mostrarError("No se pudo cambiar el estado", mensaje);
 
         boton.disabled = false;
+
         return;
       }
 
@@ -1082,11 +1356,22 @@ document.addEventListener("DOMContentLoaded", async function () {
       await cargarUsuarios();
 
       renderizarUsuarios();
+
       renderizarEstudiantesSinCuenta();
+
+      await mostrarExito(
+        "Estado actualizado",
+        `El usuario fue ${
+          nuevoEstado === "ACTIVO" ? "activado" : "desactivado"
+        } correctamente.`,
+      );
     } catch (error) {
       console.error("Error cambiando estado:", error);
 
-      alert("No se pudo conectar con el servidor.");
+      await mostrarError(
+        "Error de conexión",
+        "No se pudo conectar con el servidor.",
+      );
 
       boton.disabled = false;
     }
@@ -1108,11 +1393,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     if (!usuario) {
-      alert("No se encontró el usuario.");
+      mostrarError(
+        "Usuario no encontrado",
+        "No fue posible encontrar el usuario seleccionado.",
+      );
+
       return;
     }
 
     editarUsuarioMessage.hidden = true;
+
     editarUsuarioMessage.textContent = "";
 
     cargarDatosEditarUsuario(usuario);
@@ -1171,6 +1461,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     editarRol.value = ROLES_VALIDOS.includes(usuario.rol) ? usuario.rol : "";
 
     editarPassword.value = "";
+
     editarPasswordConfirmacion.value = "";
 
     editarNombre.value = usuario.nombre || "";
@@ -1263,6 +1554,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         mostrarMensajeEditar("La foto debe ser JPG, PNG o WEBP.");
 
         editarFotoInput.value = "";
+
         editarFotoSeleccionada = null;
 
         return;
@@ -1272,6 +1564,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         mostrarMensajeEditar("La foto no puede superar los 5 MB.");
 
         editarFotoInput.value = "";
+
         editarFotoSeleccionada = null;
 
         return;
@@ -1731,7 +2024,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     const usuarioId = Number(editarUsuarioId.value);
 
     if (!usuarioId) {
-      mostrarMensajeEditar("No se encontró el usuario.");
+      await mostrarError(
+        "Usuario no encontrado",
+        "No se encontró el usuario que deseas modificar.",
+      );
 
       return;
     }
@@ -1765,6 +2061,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // =====================================================
 
     editarUsuarioMessage.hidden = true;
+
     editarUsuarioMessage.textContent = "";
 
     // =====================================================
@@ -1946,6 +2243,20 @@ document.addEventListener("DOMContentLoaded", async function () {
     const telefonoCompleto = telefono ? editarCodigoPais.value + telefono : "";
 
     // =====================================================
+    // CONFIRMAR CAMBIOS
+    // =====================================================
+
+    const confirmar = await mostrarConfirmacion(
+      "Confirmar cambios",
+      "¿Estás seguro de que deseas guardar los cambios realizados en este usuario?",
+      "Guardar cambios",
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    // =====================================================
     // FORMDATA
     // =====================================================
 
@@ -1971,7 +2282,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     formData.append("correo", correo);
 
-    // Solo mandar contraseña si realmente se quiere cambiar.
+    // Solo mandar contraseña
+    // si realmente se quiere cambiar.
 
     if (passwordEditado) {
       formData.append("password", passwordEditado);
@@ -2004,7 +2316,10 @@ document.addEventListener("DOMContentLoaded", async function () {
       // ===================================================
 
       if (response.status === 403) {
-        mostrarMensajeEditar("No tienes permisos para editar este usuario.");
+        await mostrarError(
+          "Acceso denegado",
+          "No tienes permisos para editar este usuario.",
+        );
 
         return;
       }
@@ -2019,7 +2334,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           "Ya existe un usuario con alguno de los datos proporcionados.",
         );
 
-        mostrarMensajeEditar(mensaje);
+        await mostrarError("No se pudieron guardar los cambios", mensaje);
 
         return;
       }
@@ -2034,7 +2349,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           "No se pudieron guardar los cambios.",
         );
 
-        mostrarMensajeEditar(mensaje);
+        await mostrarError("No se pudieron guardar los cambios", mensaje);
 
         return;
       }
@@ -2048,10 +2363,18 @@ document.addEventListener("DOMContentLoaded", async function () {
       cerrarModalEditarUsuario();
 
       await cargarDatos();
+
+      await mostrarExito(
+        "Usuario actualizado",
+        "Los cambios del usuario se guardaron correctamente.",
+      );
     } catch (error) {
       console.error("Error actualizando usuario:", error);
 
-      mostrarMensajeEditar("No se pudo conectar con el servidor.");
+      await mostrarError(
+        "Error de conexión",
+        "No se pudo conectar con el servidor.",
+      );
     } finally {
       editarUsuarioSubmit.disabled = false;
 
@@ -2079,6 +2402,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     editarUsuarioForm.reset();
 
     editarUsuarioId.value = "";
+
     editarFoto.value = "";
 
     editarFotoSeleccionada = null;
@@ -2110,6 +2434,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     actualizarReglasDocumentoEditar();
+
     actualizarReglasTelefonoEditar();
   }
 
@@ -2127,13 +2452,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     if (!usuario) {
-      alert("No se encontró el usuario.");
+      await mostrarError(
+        "Usuario no encontrado",
+        "No fue posible encontrar el usuario seleccionado.",
+      );
 
       return;
     }
 
-    const confirmar = confirm(
-      `¿Estás seguro de eliminar el usuario "${usuario.username}"?`,
+    const confirmar = await mostrarConfirmacion(
+      "Eliminar usuario",
+      `¿Estás seguro de eliminar el usuario "${usuario.username}"?\n\nEsta acción no se puede deshacer.`,
+      "Eliminar",
     );
 
     if (!confirmar) {
@@ -2152,7 +2482,10 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
 
       if (response.status === 403) {
-        alert("No tienes permisos para eliminar usuarios.");
+        await mostrarError(
+          "Acceso denegado",
+          "No tienes permisos para eliminar usuarios.",
+        );
 
         boton.disabled = false;
 
@@ -2165,7 +2498,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           "No se puede eliminar el usuario porque tiene información relacionada.",
         );
 
-        alert(mensaje);
+        await mostrarError("No se pudo eliminar el usuario", mensaje);
 
         boton.disabled = false;
 
@@ -2178,7 +2511,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           "No se pudo eliminar el usuario.",
         );
 
-        alert(mensaje);
+        await mostrarError("No se pudo eliminar el usuario", mensaje);
 
         boton.disabled = false;
 
@@ -2188,10 +2521,18 @@ document.addEventListener("DOMContentLoaded", async function () {
       await leerJsonSeguro(response);
 
       await cargarDatos();
+
+      await mostrarExito(
+        "Usuario eliminado",
+        `El usuario "${usuario.username}" fue eliminado correctamente.`,
+      );
     } catch (error) {
       console.error("Error eliminando usuario:", error);
 
-      alert("No se pudo conectar con el servidor.");
+      await mostrarError(
+        "Error de conexión",
+        "No se pudo conectar con el servidor.",
+      );
 
       boton.disabled = false;
     }
@@ -2267,9 +2608,17 @@ document.addEventListener("DOMContentLoaded", async function () {
         alCrearUsuario: async function (usuario) {
           console.log("Usuario creado desde modal:", usuario);
 
+          const usernameCreado =
+            usuario && usuario.username ? usuario.username : "El usuario";
+
           cerrarModalRegistrarUsuario();
 
           await cargarDatos();
+
+          await mostrarExito(
+            "Usuario registrado",
+            `${usernameCreado} fue registrado correctamente.`,
+          );
         },
       },
     );
@@ -2518,13 +2867,22 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
+    // Primero cerrar el modal de alerta.
+    if (sistemaAlertModal && !sistemaAlertModal.hidden) {
+      cerrarModalSistema(false);
+
+      return;
+    }
+
     if (editarUsuarioModal && !editarUsuarioModal.hidden) {
       cerrarModalEditarUsuario();
+
       return;
     }
 
     if (registrarUsuarioModal && !registrarUsuarioModal.hidden) {
       cerrarModalRegistrarUsuario();
+
       return;
     }
 

@@ -1,3 +1,4 @@
+
 package com.kihon.kihon.repository;
 
 import com.kihon.kihon.model.Apoderado;
@@ -10,6 +11,21 @@ import java.util.Optional;
 public interface ApoderadoRepository
                 extends JpaRepository<Apoderado, Long> {
 
+        /*
+         * =========================================================
+         * BUSCAR APODERADO POR PERSONA
+         * =========================================================
+         */
+
         Optional<Apoderado> findByPersona(
+                        Persona persona);
+
+        /*
+         * =========================================================
+         * VERIFICAR SI EXISTE UN APODERADO POR PERSONA
+         * =========================================================
+         */
+
+        boolean existsByPersona(
                         Persona persona);
 }
