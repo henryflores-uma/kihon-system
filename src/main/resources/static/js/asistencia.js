@@ -1,704 +1,1099 @@
 document.addEventListener("DOMContentLoaded", function () {
+  /*
+   * =========================================================
+   * AUTENTICACIÓN
+   * =========================================================
+   */
 
-    /*
-     * AUTENTICACIÓN
-     */
+  const auth = sessionStorage.getItem("kihonAuth");
 
-    const auth = sessionStorage.getItem("kihonAuth");
-    const username = sessionStorage.getItem("kihonUsername");
+  if (!auth) {
+    window.location.href = "/login";
 
+    return;
+  }
 
-    /*
-     * ELEMENTOS DEL DOM
-     */
+  /*
+   * =========================================================
+   * ELEMENTOS DEL DOM
+   * =========================================================
+   */
 
-    const usernameDisplay =
-        document.getElementById("usernameDisplay");
+  const fechaInput = document.getElementById("fecha");
 
-    const attendanceForm =
-        document.getElementById("attendanceForm");
+  const grupoSelect = document.getElementById("grupoId");
 
-    const attendanceMessage =
-        document.getElementById("attendanceMessage");
+  const grupoInfo = document.getElementById("grupoInfo");
 
-    const studentSelect =
-        document.getElementById("estudianteId");
+  const grupoInfoNombre = document.getElementById("grupoInfoNombre");
 
-    const groupSelect =
-        document.getElementById("grupoId");
+  const grupoInfoHorario = document.getElementById("grupoInfoHorario");
 
-    const stateSelect =
-        document.getElementById("estado");
+  const grupoInfoSensei = document.getElementById("grupoInfoSensei");
 
-    const timeInput =
-        document.getElementById("horaLlegada");
+  const grupoInfoCantidad = document.getElementById("grupoInfoCantidad");
 
-    const attendanceList =
-        document.getElementById("attendanceList");
+  const attendanceRegister = document.getElementById("attendanceRegister");
 
-    const attendanceCount =
-        document.getElementById("attendanceCount");
+  const saveAttendanceButton = document.getElementById("saveAttendanceButton");
 
+  const attendanceMessage = document.getElementById("attendanceMessage");
 
-    /*
-     * VERIFICAR SESIÓN
-     */
+  const fechaConsulta = document.getElementById("fechaConsulta");
 
-    if (!auth || !username) {
+  const grupoConsulta = document.getElementById("grupoConsulta");
 
-        window.location.href = "/login";
+  const estudianteConsulta = document.getElementById("estudianteConsulta");
 
-        return;
+  const attendanceList = document.getElementById("attendanceList");
+
+  const attendanceCount = document.getElementById("attendanceCount");
+
+  /*
+   * =========================================================
+   * ESTADO
+   * =========================================================
+   */
+
+  let horariosDelDia = [];
+
+  let estudiantesGrupo = [];
+
+  let asistenciasGrupo = [];
+
+  let asistenciasConsulta = [];
+
+  /*
+   * =========================================================
+   * FECHA LOCAL
+   * =========================================================
+   */
+
+  function obtenerFechaLocal() {
+    const ahora = new Date();
+
+    const year = ahora.getFullYear();
+
+    const month = String(ahora.getMonth() + 1).padStart(2, "0");
+
+    const day = String(ahora.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  }
+
+  /*
+   * =========================================================
+   * DÍA DE LA SEMANA
+   * =========================================================
+   */
+
+  function obtenerDiaSemana(fecha) {
+    const partes = fecha.split("-");
+
+    const fechaLocal = new Date(
+      Number(partes[0]),
+      Number(partes[1]) - 1,
+      Number(partes[2]),
+    );
+
+    const dias = [
+      "DOMINGO",
+      "LUNES",
+      "MARTES",
+      "MIERCOLES",
+      "JUEVES",
+      "VIERNES",
+      "SABADO",
+    ];
+
+    return dias[fechaLocal.getDay()];
+  }
+
+  /*
+   * =========================================================
+   * AUTORIZACIÓN
+   * =========================================================
+   */
+
+  function verificarAutorizacion(response) {
+    if (response.status === 401) {
+      sessionStorage.clear();
+
+      window.location.href = "/login";
+
+      return false;
     }
 
+    return true;
+  }
 
-    usernameDisplay.textContent = username;
+  /*
+   * =========================================================
+   * ERROR DEL BACKEND
+   * =========================================================
+   */
 
+  async function obtenerMensajeError(response, mensajePorDefecto) {
+    try {
+      const data = await response.json();
 
-    /*
-     * FECHA ACTUAL
-     */
+      return data.mensaje || data.message || mensajePorDefecto;
+    } catch (error) {
+      return mensajePorDefecto;
+    }
+  }
 
-    const today =
-        new Date().toISOString().split("T")[0];
+  /*
+   * =========================================================
+   * MENSAJES
+   * =========================================================
+   */
 
-    document.getElementById("fechaConsulta").value =
-        today;
+  function mostrarMensaje(mensaje, tipo) {
+    attendanceMessage.textContent = mensaje;
 
+    attendanceMessage.hidden = false;
 
-    /*
-     * MOSTRAR MENSAJE
-     */
+    attendanceMessage.className =
+      "asistencia-message " +
+      (tipo === "success"
+        ? "asistencia-message--success"
+        : "asistencia-message--error");
+  }
 
-    function mostrarMensaje(mensaje, tipo) {
+  function ocultarMensaje() {
+    attendanceMessage.hidden = true;
 
-        attendanceMessage.textContent =
-            mensaje;
+    attendanceMessage.textContent = "";
+  }
 
-        attendanceMessage.hidden =
-            false;
+  /*
+   * =========================================================
+   * FORMATO DE HORA
+   * =========================================================
+   */
 
-        if (tipo === "success") {
-
-            attendanceMessage.className =
-                "asistencia-message asistencia-message--success";
-
-        } else {
-
-            attendanceMessage.className =
-                "asistencia-message asistencia-message--error";
-        }
+  function formatearHora(hora) {
+    if (!hora) {
+      return "-";
     }
 
+    return hora.substring(0, 5);
+  }
 
-    /*
-     * LIMPIAR MENSAJE
-     */
+  /*
+   * =========================================================
+   * CARGAR GRUPOS DEL DÍA
+   * =========================================================
+   */
 
-    function ocultarMensaje() {
+  async function cargarGruposDelDia() {
+    const fecha = fechaInput.value;
 
-        attendanceMessage.hidden =
-            true;
+    grupoSelect.innerHTML = `
+            <option value="">
+                Cargando grupos...
+            </option>
+        `;
 
-        attendanceMessage.textContent =
-            "";
-    }
+    grupoSelect.disabled = true;
 
+    limpiarEstudiantes();
 
-    /*
-     * MANEJAR RESPUESTAS DE AUTENTICACIÓN
-     */
-
-    function verificarAutorizacion(response) {
-
-        if (response.status === 401) {
-
-            sessionStorage.clear();
-
-            window.location.href =
-                "/login";
-
-            return false;
-        }
-
-        return true;
-    }
-
-
-    /*
-     * CARGAR ESTUDIANTES
-     */
-
-    async function cargarEstudiantes() {
-
-        try {
-
-            const response =
-                await fetch(
-                    "/api/estudiantes?estado=ACTIVO",
-                    {
-                        method: "GET",
-
-                        headers: {
-                            "Authorization":
-                                "Basic " + auth
-                        }
-                    }
-                );
-
-
-            if (!verificarAutorizacion(response)) {
-                return;
-            }
-
-
-            if (response.status === 403) {
-
-                throw new Error(
-                    "No tienes permisos para consultar estudiantes."
-                );
-            }
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "No se pudieron cargar los estudiantes."
-                );
-            }
-
-
-            const estudiantes =
-                await response.json();
-
-
-            studentSelect.innerHTML = `
+    if (!fecha) {
+      grupoSelect.innerHTML = `
                 <option value="">
-                    Selecciona un estudiante
+                    Selecciona una fecha primero
                 </option>
             `;
 
-
-            estudiantes.forEach(estudiante => {
-
-                const option =
-                    document.createElement("option");
-
-                option.value =
-                    estudiante.id;
-
-                option.textContent =
-                    `${estudiante.nombre} ${estudiante.apellido}`;
-
-                studentSelect.appendChild(
-                    option
-                );
-
-            });
-
-
-        } catch (error) {
-
-            console.error(
-                "Error cargando estudiantes:",
-                error
-            );
-
-            mostrarMensaje(
-                error.message,
-                "error"
-            );
-        }
+      return;
     }
 
+    const diaSemana = obtenerDiaSemana(fecha);
 
-    /*
-     * CARGAR GRUPOS
-     */
+    try {
+      const response = await fetch(`/api/grupo-horarios/dia/${diaSemana}`, {
+        method: "GET",
 
-    async function cargarGrupos() {
+        headers: {
+          Authorization: "Basic " + auth,
+        },
+      });
 
-        try {
+      if (!verificarAutorizacion(response)) {
+        return;
+      }
 
-            const response =
-                await fetch(
-                    "/api/grupos?estado=ACTIVO",
-                    {
-                        method: "GET",
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para consultar los horarios.");
+      }
 
-                        headers: {
-                            "Authorization":
-                                "Basic " + auth
-                        }
-                    }
-                );
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudieron obtener los grupos del día.",
+          ),
+        );
+      }
 
+      horariosDelDia = await response.json();
 
-            if (!verificarAutorizacion(response)) {
-                return;
-            }
-
-
-            if (response.status === 403) {
-
-                throw new Error(
-                    "No tienes permisos para consultar grupos."
-                );
-            }
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "No se pudieron cargar los grupos."
-                );
-            }
-
-
-            const grupos =
-                await response.json();
-
-
-            groupSelect.innerHTML = `
+      grupoSelect.innerHTML = `
                 <option value="">
                     Selecciona un grupo
                 </option>
             `;
 
+      /*
+       * Evitar grupos repetidos.
+       */
 
-            grupos.forEach(grupo => {
+      const gruposMostrados = new Set();
 
-                const option =
-                    document.createElement("option");
-
-                option.value =
-                    grupo.id;
-
-                option.textContent =
-                    `${grupo.nombre} (${grupo.horaInicio.substring(0, 5)} - ${grupo.horaFin.substring(0, 5)})`;
-
-                groupSelect.appendChild(
-                    option
-                );
-
-            });
-
-
-        } catch (error) {
-
-            console.error(
-                "Error cargando grupos:",
-                error
-            );
-
-            mostrarMensaje(
-                error.message,
-                "error"
-            );
+      horariosDelDia.forEach((horario) => {
+        if (gruposMostrados.has(horario.grupoId)) {
+          return;
         }
+
+        gruposMostrados.add(horario.grupoId);
+
+        const option = document.createElement("option");
+
+        option.value = horario.grupoId;
+
+        option.textContent = `${horario.grupoNombre} (${formatearHora(horario.horaInicio)} - ${formatearHora(horario.horaFin)})`;
+
+        grupoSelect.appendChild(option);
+      });
+
+      if (horariosDelDia.length === 0) {
+        grupoSelect.innerHTML = `
+                    <option value="">
+                        No hay grupos este día
+                    </option>
+                `;
+      }
+
+      grupoSelect.disabled = horariosDelDia.length === 0;
+    } catch (error) {
+      console.error("Error cargando grupos del día:", error);
+
+      grupoSelect.innerHTML = `
+                <option value="">
+                    Error al cargar grupos
+                </option>
+            `;
+
+      mostrarMensaje(error.message, "error");
+    }
+  }
+
+  /*
+   * =========================================================
+   * LIMPIAR ESTUDIANTES
+   * =========================================================
+   */
+
+  function limpiarEstudiantes() {
+    estudiantesGrupo = [];
+
+    asistenciasGrupo = [];
+
+    grupoInfo.hidden = true;
+
+    saveAttendanceButton.disabled = true;
+
+    attendanceRegister.innerHTML = `
+            <div class="asistencia-empty">
+
+                Selecciona una fecha y un grupo
+                para mostrar los estudiantes.
+
+            </div>
+        `;
+  }
+
+  /*
+   * =========================================================
+   * CARGAR ESTUDIANTES DEL GRUPO
+   * =========================================================
+   */
+
+  async function cargarEstudiantesGrupo() {
+    const grupoId = grupoSelect.value;
+
+    const fecha = fechaInput.value;
+
+    limpiarEstudiantes();
+
+    if (!grupoId || !fecha) {
+      return;
     }
 
+    ocultarMensaje();
 
-    /*
-     * CAMBIAR HORA SEGÚN ESTADO
-     */
+    try {
+      /*
+       * BUSCAR INFORMACIÓN DEL HORARIO
+       */
 
-    function actualizarCampoHora() {
+      const horario = horariosDelDia.find(
+        (item) => Number(item.grupoId) === Number(grupoId),
+      );
 
-        if (
-            stateSelect.value === "AUSENTE"
-        ) {
+      if (horario) {
+        grupoInfoNombre.textContent = horario.grupoNombre;
 
-            timeInput.value = "";
+        grupoInfoHorario.textContent = `${formatearHora(horario.horaInicio)} - ${formatearHora(horario.horaFin)}`;
 
-            timeInput.disabled = true;
+        grupoInfoSensei.textContent = horario.senseiNombre || "-";
+      }
 
-            timeInput.required = false;
+      /*
+       * ESTUDIANTES
+       */
 
-        } else {
+      const estudiantesResponse = await fetch(
+        `/api/estudiantes-grupos/grupo/${grupoId}`,
+        {
+          method: "GET",
 
-            timeInput.disabled = false;
+          headers: {
+            Authorization: "Basic " + auth,
+          },
+        },
+      );
 
-            timeInput.required = true;
-        }
+      if (!verificarAutorizacion(estudiantesResponse)) {
+        return;
+      }
+
+      if (estudiantesResponse.status === 403) {
+        throw new Error(
+          "No tienes permisos para consultar los estudiantes del grupo.",
+        );
+      }
+
+      if (!estudiantesResponse.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            estudiantesResponse,
+            "No se pudieron obtener los estudiantes del grupo.",
+          ),
+        );
+      }
+
+      const asignaciones = await estudiantesResponse.json();
+
+      estudiantesGrupo = asignaciones.filter(
+        (asignacion) => String(asignacion.estado).toUpperCase() === "ACTIVO",
+      );
+
+      /*
+       * ASISTENCIAS EXISTENTES
+       */
+
+      const asistenciasResponse = await fetch(
+        `/api/asistencias/grupo/${grupoId}/fecha/${fecha}`,
+        {
+          method: "GET",
+
+          headers: {
+            Authorization: "Basic " + auth,
+          },
+        },
+      );
+
+      if (!verificarAutorizacion(asistenciasResponse)) {
+        return;
+      }
+
+      if (asistenciasResponse.status === 403) {
+        throw new Error("No tienes permisos para consultar las asistencias.");
+      }
+
+      if (!asistenciasResponse.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            asistenciasResponse,
+            "No se pudieron obtener las asistencias del grupo.",
+          ),
+        );
+      }
+
+      asistenciasGrupo = await asistenciasResponse.json();
+
+      /*
+       * INFORMACIÓN DEL GRUPO
+       */
+
+      grupoInfoCantidad.textContent = estudiantesGrupo.length;
+
+      grupoInfo.hidden = false;
+
+      /*
+       * RENDERIZAR
+       */
+
+      renderizarEstudiantes();
+    } catch (error) {
+      console.error("Error cargando estudiantes:", error);
+
+      attendanceRegister.innerHTML = `
+                <div class="asistencia-empty">
+                    ${error.message}
+                </div>
+            `;
+    }
+  }
+
+  /*
+   * =========================================================
+   * BUSCAR ASISTENCIA EXISTENTE
+   * =========================================================
+   */
+
+  function buscarAsistencia(estudianteId) {
+    return asistenciasGrupo.find(
+      (asistencia) => Number(asistencia.estudianteId) === Number(estudianteId),
+    );
+  }
+
+  /*
+   * =========================================================
+   * RENDERIZAR ESTUDIANTES
+   * =========================================================
+   */
+
+  function renderizarEstudiantes() {
+    if (estudiantesGrupo.length === 0) {
+      attendanceRegister.innerHTML = `
+                <div class="asistencia-empty">
+
+                    No hay estudiantes activos
+                    en este grupo.
+
+                </div>
+            `;
+
+      saveAttendanceButton.disabled = true;
+
+      return;
     }
 
+    attendanceRegister.innerHTML = `
 
-    stateSelect.addEventListener(
-        "change",
-        actualizarCampoHora
-    );
+            <div class="asistencia-register-header">
 
+                <div>
 
-    /*
-     * REGISTRAR ASISTENCIA
-     */
+                    <strong>
+                        Estudiantes del grupo
+                    </strong>
 
-    attendanceForm.addEventListener(
-        "submit",
-        async function (event) {
-
-            event.preventDefault();
-
-            ocultarMensaje();
-
-
-            const asistencia = {
-
-                estudianteId:
-                    Number(
-                        studentSelect.value
-                    ),
-
-                grupoId:
-                    Number(
-                        groupSelect.value
-                    ),
-
-                fecha:
-                    document
-                        .getElementById("fecha")
-                        .value,
-
-                horaLlegada:
-                    timeInput.value || null,
-
-                estado:
-                    stateSelect.value,
-
-                observacion:
-                    document
-                        .getElementById("observacion")
-                        .value
-                        .trim()
-            };
-
-
-            /*
-             * VALIDACIÓN BÁSICA
-             */
-
-            if (
-                !asistencia.estudianteId ||
-                !asistencia.grupoId ||
-                !asistencia.fecha ||
-                !asistencia.estado
-            ) {
-
-                mostrarMensaje(
-                    "Completa todos los campos obligatorios.",
-                    "error"
-                );
-
-                return;
-            }
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        "/api/asistencias",
-                        {
-                            method: "POST",
-
-                            headers: {
-
-                                "Authorization":
-                                    "Basic " + auth,
-
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body:
-                                JSON.stringify(asistencia)
-                        }
-                    );
-
-
-                /*
-                 * AUTENTICACIÓN
-                 */
-
-                if (
-                    !verificarAutorizacion(
-                        response
-                    )
-                ) {
-
-                    return;
-                }
-
-
-                /*
-                 * PERMISOS
-                 */
-
-                if (response.status === 403) {
-
-                    throw new Error(
-                        "No tienes permisos para registrar asistencias."
-                    );
-                }
-
-
-                /*
-                 * ERROR DEL BACKEND
-                 */
-
-                if (!response.ok) {
-
-                    const errorData =
-                        await response.json();
-
-                    throw new Error(
-                        errorData.mensaje ||
-                        "No se pudo registrar la asistencia."
-                    );
-                }
-
-
-                const nuevaAsistencia =
-                    await response.json();
-
-
-                console.log(
-                    "Asistencia registrada:",
-                    nuevaAsistencia
-                );
-
-
-                /*
-                 * MENSAJE
-                 */
-
-                mostrarMensaje(
-                    "Asistencia registrada correctamente.",
-                    "success"
-                );
-
-
-                /*
-                 * LIMPIAR CAMPOS
-                 */
-
-                studentSelect.value = "";
-
-                groupSelect.value = "";
-
-                stateSelect.value =
-                    "PRESENTE";
-
-                timeInput.disabled =
-                    false;
-
-                timeInput.required =
-                    true;
-
-                timeInput.value = "";
-
-                document.getElementById(
-                    "observacion"
-                ).value = "";
-
-
-                /*
-                 * ACTUALIZAR LISTA
-                 */
-
-                await cargarAsistencias();
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error registrando asistencia:",
-                    error
-                );
-
-
-                mostrarMensaje(
-                    error.message,
-                    "error"
-                );
-            }
-
-        }
-    );
-
-
-    /*
-     * CARGAR ASISTENCIAS DEL DÍA
-     */
-
-    async function cargarAsistencias() {
-
-        try {
-
-            const fecha =
-                document
-                    .getElementById("fechaConsulta")
-                    .value;
-
-
-            if (!fecha) {
-                return;
-            }
-
-
-            attendanceList.innerHTML = `
-
-                <div class="asistencia-loading">
-
-                    Cargando asistencias...
+                    <span>
+                        Selecciona el estado de cada estudiante.
+                    </span>
 
                 </div>
 
+            </div>
+
+
+            <div class="asistencia-student-list">
+
+                ${estudiantesGrupo
+                  .map((asignacion) => {
+                    const asistencia = buscarAsistencia(
+                      asignacion.estudianteId,
+                    );
+
+                    const estado = asistencia ? asistencia.estado : "AUSENTE";
+
+                    const hora =
+                      asistencia && asistencia.horaLlegada
+                        ? asistencia.horaLlegada.substring(0, 5)
+                        : "";
+
+                    const observacion =
+                      asistencia && asistencia.observacion
+                        ? asistencia.observacion
+                        : "";
+
+                    return `
+
+                            <div
+                                class="asistencia-student-row"
+                                data-estudiante-id="${asignacion.estudianteId}"
+                                data-asistencia-id="${asistencia ? asistencia.id : ""}"
+                            >
+
+                                <div class="asistencia-student-info">
+
+                                    <strong>
+                                        ${asignacion.estudianteNombre}
+                                    </strong>
+
+                                    <span>
+                                        Estudiante
+                                    </span>
+
+                                </div>
+
+
+                                <div class="asistencia-state-buttons">
+
+                                    <button
+                                        type="button"
+                                        class="asistencia-state-button asistencia-state-button--presente ${estado === "PRESENTE" ? "is-active" : ""}"
+                                        data-estado="PRESENTE"
+                                    >
+                                        PRESENTE
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="asistencia-state-button asistencia-state-button--tardanza ${estado === "TARDANZA" ? "is-active" : ""}"
+                                        data-estado="TARDANZA"
+                                    >
+                                        TARDANZA
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="asistencia-state-button asistencia-state-button--ausente ${estado === "AUSENTE" ? "is-active" : ""}"
+                                        data-estado="AUSENTE"
+                                    >
+                                        AUSENTE
+                                    </button>
+
+                                </div>
+
+
+                                <div class="asistencia-student-fields">
+
+                                    <div class="form-group">
+
+                                        <label class="form-label">
+                                            Hora
+                                        </label>
+
+                                        <input
+                                            type="time"
+                                            class="form-input asistencia-hora"
+                                            value="${hora}"
+                                            ${estado === "AUSENTE" ? "disabled" : ""}
+                                        >
+
+                                    </div>
+
+
+                                    <div class="form-group">
+
+                                        <label class="form-label">
+                                            Observación
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            class="form-input asistencia-observacion"
+                                            value="${observacion}"
+                                            placeholder="Opcional"
+                                        >
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        `;
+                  })
+                  .join("")}
+
+            </div>
+        `;
+
+    configurarBotonesEstado();
+
+    saveAttendanceButton.disabled = false;
+  }
+
+  /*
+   * =========================================================
+   * BOTONES DE ESTADO
+   * =========================================================
+   */
+
+  function configurarBotonesEstado() {
+    const botones = attendanceRegister.querySelectorAll(
+      ".asistencia-state-button",
+    );
+
+    botones.forEach((boton) => {
+      boton.addEventListener("click", function () {
+        const fila = boton.closest(".asistencia-student-row");
+
+        const estado = boton.dataset.estado;
+
+        fila
+          .querySelectorAll(".asistencia-state-button")
+          .forEach((otroBoton) => {
+            otroBoton.classList.remove("is-active");
+          });
+
+        boton.classList.add("is-active");
+
+        const horaInput = fila.querySelector(".asistencia-hora");
+
+        if (estado === "AUSENTE") {
+          horaInput.value = "";
+
+          horaInput.disabled = true;
+
+          horaInput.required = false;
+        } else {
+          horaInput.disabled = false;
+
+          horaInput.required = true;
+
+          /*
+           * Si no existe una hora,
+           * colocar la hora actual.
+           */
+
+          if (!horaInput.value) {
+            const ahora = new Date();
+
+            const horas = String(ahora.getHours()).padStart(2, "0");
+
+            const minutos = String(ahora.getMinutes()).padStart(2, "0");
+
+            horaInput.value = `${horas}:${minutos}`;
+          }
+        }
+      });
+    });
+  }
+
+  /*
+   * =========================================================
+   * OBTENER ESTADO DE UNA FILA
+   * =========================================================
+   */
+
+  function obtenerDatosFila(fila) {
+    const estudianteId = Number(fila.dataset.estudianteId);
+
+    const asistenciaId = fila.dataset.asistenciaId
+      ? Number(fila.dataset.asistenciaId)
+      : null;
+
+    const botonActivo = fila.querySelector(
+      ".asistencia-state-button.is-active",
+    );
+
+    const estado = botonActivo ? botonActivo.dataset.estado : "AUSENTE";
+
+    const horaInput = fila.querySelector(".asistencia-hora");
+
+    const observacionInput = fila.querySelector(".asistencia-observacion");
+
+    return {
+      asistenciaId,
+
+      estudianteId,
+
+      grupoId: Number(grupoSelect.value),
+
+      fecha: fechaInput.value,
+
+      horaLlegada: estado === "AUSENTE" ? null : horaInput.value || null,
+
+      estado,
+
+      observacion: observacionInput.value.trim() || null,
+    };
+  }
+
+  /*
+   * =========================================================
+   * GUARDAR ASISTENCIAS
+   * =========================================================
+   */
+
+  async function guardarAsistencias() {
+    const filas = attendanceRegister.querySelectorAll(
+      ".asistencia-student-row",
+    );
+
+    if (filas.length === 0) {
+      mostrarMensaje("No hay estudiantes para registrar.", "error");
+
+      return;
+    }
+
+    const asistencias = Array.from(filas).map(obtenerDatosFila);
+
+    /*
+     * VALIDAR HORAS
+     */
+
+    for (const asistencia of asistencias) {
+      if (
+        (asistencia.estado === "PRESENTE" ||
+          asistencia.estado === "TARDANZA") &&
+        !asistencia.horaLlegada
+      ) {
+        mostrarMensaje(
+          "Los estudiantes PRESENTES o con TARDANZA deben tener una hora de llegada.",
+          "error",
+        );
+
+        return;
+      }
+
+      if (asistencia.estado === "AUSENTE" && asistencia.horaLlegada) {
+        mostrarMensaje(
+          "Un estudiante AUSENTE no puede tener hora de llegada.",
+          "error",
+        );
+
+        return;
+      }
+    }
+
+    saveAttendanceButton.disabled = true;
+
+    saveAttendanceButton.textContent = "Guardando...";
+
+    ocultarMensaje();
+
+    try {
+      let registrados = 0;
+
+      let actualizados = 0;
+
+      for (const asistencia of asistencias) {
+        let response;
+
+        /*
+         * SI YA EXISTE → PUT
+         */
+
+        if (asistencia.asistenciaId) {
+          response = await fetch(
+            `/api/asistencias/${asistencia.asistenciaId}`,
+            {
+              method: "PUT",
+
+              headers: {
+                Authorization: "Basic " + auth,
+
+                "Content-Type": "application/json",
+              },
+
+              body: JSON.stringify({
+                estudianteId: asistencia.estudianteId,
+
+                grupoId: asistencia.grupoId,
+
+                fecha: asistencia.fecha,
+
+                horaLlegada: asistencia.horaLlegada,
+
+                estado: asistencia.estado,
+
+                observacion: asistencia.observacion,
+              }),
+            },
+          );
+        } else {
+          /*
+           * NUEVA → POST
+           */
+
+          response = await fetch("/api/asistencias", {
+            method: "POST",
+
+            headers: {
+              Authorization: "Basic " + auth,
+
+              "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+              estudianteId: asistencia.estudianteId,
+
+              grupoId: asistencia.grupoId,
+
+              fecha: asistencia.fecha,
+
+              horaLlegada: asistencia.horaLlegada,
+
+              estado: asistencia.estado,
+
+              observacion: asistencia.observacion,
+            }),
+          });
+        }
+
+        if (!verificarAutorizacion(response)) {
+          return;
+        }
+
+        if (response.status === 403) {
+          throw new Error("No tienes permisos para modificar las asistencias.");
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            await obtenerMensajeError(
+              response,
+              "No se pudo guardar una de las asistencias.",
+            ),
+          );
+        }
+
+        if (asistencia.asistenciaId) {
+          actualizados++;
+        } else {
+          registrados++;
+        }
+      }
+
+      mostrarMensaje(
+        `Asistencia guardada correctamente. ${registrados} registrada(s) y ${actualizados} actualizada(s).`,
+        "success",
+      );
+
+      /*
+       * RECARGAR DATOS DEL GRUPO
+       */
+
+      await cargarEstudiantesGrupo();
+
+      /*
+       * ACTUALIZAR CONSULTA
+       */
+
+      await cargarAsistenciasConsulta();
+    } catch (error) {
+      console.error("Error guardando asistencias:", error);
+
+      mostrarMensaje(error.message, "error");
+    } finally {
+      saveAttendanceButton.disabled = false;
+
+      saveAttendanceButton.textContent = "Guardar asistencia";
+    }
+  }
+
+  /*
+   * =========================================================
+   * CARGAR GRUPOS PARA CONSULTA
+   * =========================================================
+   */
+
+  async function cargarGruposConsulta() {
+    try {
+      const response = await fetch("/api/grupos?estado=ACTIVO", {
+        method: "GET",
+
+        headers: {
+          Authorization: "Basic " + auth,
+        },
+      });
+
+      if (!verificarAutorizacion(response)) {
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudieron cargar los grupos.",
+          ),
+        );
+      }
+
+      const grupos = await response.json();
+
+      grupoConsulta.innerHTML = `
+                <option value="">
+                    Todos los grupos
+                </option>
             `;
 
+      grupos.forEach((grupo) => {
+        const option = document.createElement("option");
 
-            const response =
-                await fetch(
-                    `/api/asistencias/fecha/${fecha}`,
-                    {
-                        method: "GET",
+        option.value = grupo.id;
 
-                        headers: {
-                            "Authorization":
-                                "Basic " + auth
-                        }
-                    }
-                );
+        option.textContent = grupo.nombre;
 
+        grupoConsulta.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Error cargando grupos de consulta:", error);
+    }
+  }
 
-            /*
-             * AUTENTICACIÓN
-             */
+  /*
+   * =========================================================
+   * CARGAR ESTUDIANTES PARA CONSULTA
+   * =========================================================
+   */
 
-            if (
-                !verificarAutorizacion(
-                    response
-                )
-            ) {
+  async function cargarEstudiantesConsulta() {
+    try {
+      const response = await fetch("/api/estudiantes?estado=ACTIVO", {
+        method: "GET",
 
-                return;
-            }
+        headers: {
+          Authorization: "Basic " + auth,
+        },
+      });
 
+      if (!verificarAutorizacion(response)) {
+        return;
+      }
 
-            if (response.status === 403) {
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudieron cargar los estudiantes.",
+          ),
+        );
+      }
 
-                throw new Error(
-                    "No tienes permisos para consultar asistencias."
-                );
-            }
+      const estudiantes = await response.json();
 
+      estudianteConsulta.innerHTML = `
+                <option value="">
+                    Todos los estudiantes
+                </option>
+            `;
 
-            if (!response.ok) {
+      estudiantes.forEach((estudiante) => {
+        const option = document.createElement("option");
 
-                throw new Error(
-                    "No se pudieron obtener las asistencias."
-                );
-            }
+        option.value = estudiante.id;
 
+        option.textContent = `${estudiante.nombre} ${estudiante.apellido}`;
 
-            const asistencias =
-                await response.json();
+        estudianteConsulta.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Error cargando estudiantes de consulta:", error);
+    }
+  }
 
+  /*
+   * =========================================================
+   * CARGAR ASISTENCIAS PARA CONSULTA
+   * =========================================================
+   */
 
-            /*
-             * CONTADOR
-             */
+  async function cargarAsistenciasConsulta() {
+    const fecha = fechaConsulta.value;
 
-            attendanceCount.textContent =
-                `${asistencias.length} asistencia${asistencias.length !== 1 ? "s" : ""}`;
+    if (!fecha) {
+      attendanceList.innerHTML = `
+                <div class="asistencia-empty">
+                    Selecciona una fecha para consultar.
+                </div>
+            `;
 
+      attendanceCount.textContent = "0 asistencias";
 
-            /*
-             * SIN REGISTROS
-             */
+      return;
+    }
 
-            if (asistencias.length === 0) {
+    attendanceList.innerHTML = `
+            <div class="asistencia-loading">
+                Cargando asistencias...
+            </div>
+        `;
 
-                attendanceList.innerHTML = `
+    try {
+      const response = await fetch(`/api/asistencias/fecha/${fecha}`, {
+        method: "GET",
 
+        headers: {
+          Authorization: "Basic " + auth,
+        },
+      });
+
+      if (!verificarAutorizacion(response)) {
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para consultar asistencias.");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudieron obtener las asistencias.",
+          ),
+        );
+      }
+
+      asistenciasConsulta = await response.json();
+
+      /*
+       * FILTRO POR GRUPO
+       */
+
+      const grupoId = grupoConsulta.value ? Number(grupoConsulta.value) : null;
+
+      /*
+       * FILTRO POR ESTUDIANTE
+       */
+
+      const estudianteId = estudianteConsulta.value
+        ? Number(estudianteConsulta.value)
+        : null;
+
+      let resultados = asistenciasConsulta.filter((asistencia) => {
+        if (grupoId && Number(asistencia.grupoId) !== grupoId) {
+          return false;
+        }
+
+        if (estudianteId && Number(asistencia.estudianteId) !== estudianteId) {
+          return false;
+        }
+
+        return true;
+      });
+
+      attendanceCount.textContent = `${resultados.length} asistencia${resultados.length !== 1 ? "s" : ""}`;
+
+      if (resultados.length === 0) {
+        attendanceList.innerHTML = `
                     <div class="asistencia-empty">
-
-                        No hay asistencias registradas
-                        para esta fecha.
-
+                        No hay asistencias que coincidan
+                        con los filtros seleccionados.
                     </div>
-
                 `;
 
-                return;
-            }
+        return;
+      }
 
+      /*
+       * TABLA
+       */
 
-            /*
-             * OBTENER NOMBRES
-             *
-             * El endpoint de asistencia devuelve
-             * los IDs relacionados.
-             */
-
-            const estudiantesResponse =
-                await fetch(
-                    "/api/estudiantes",
-                    {
-                        method: "GET",
-
-                        headers: {
-                            "Authorization":
-                                "Basic " + auth
-                        }
-                    }
-                );
-
-
-            if (!estudiantesResponse.ok) {
-
-                throw new Error(
-                    "No se pudieron obtener los estudiantes."
-                );
-            }
-
-
-            const estudiantes =
-                await estudiantesResponse.json();
-
-
-            const gruposResponse =
-                await fetch(
-                    "/api/grupos",
-                    {
-                        method: "GET",
-
-                        headers: {
-                            "Authorization":
-                                "Basic " + auth
-                        }
-                    }
-                );
-
-
-            if (!gruposResponse.ok) {
-
-                throw new Error(
-                    "No se pudieron obtener los grupos."
-                );
-            }
-
-
-            const grupos =
-                await gruposResponse.json();
-
-
-            /*
-             * TABLA
-             */
-
-            attendanceList.innerHTML = `
+      attendanceList.innerHTML = `
 
                 <table class="asistencia-table">
 
@@ -730,6 +1125,10 @@ document.addEventListener("DOMContentLoaded", function () {
                                 Observación
                             </th>
 
+                            <th>
+                                Acción
+                            </th>
+
                         </tr>
 
                     </thead>
@@ -737,87 +1136,79 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     <tbody>
 
-                        ${asistencias.map(asistencia => {
+                        ${resultados
+                          .map((asistencia) => {
+                            return `
 
-                const estudiante =
-                    estudiantes.find(
-                        estudiante =>
-                            estudiante.id ===
-                            asistencia.estudianteId
-                    );
+                                    <tr
+                                        data-consulta-id="${asistencia.id}"
+                                    >
 
-
-                const grupo =
-                    grupos.find(
-                        grupo =>
-                            grupo.id ===
-                            asistencia.grupoId
-                    );
+                                        <td>
+                                            ${asistencia.estudianteNombre}
+                                        </td>
 
 
-                return `
-
-                                <tr>
-
-                                    <td>
-
-                                        ${estudiante
-                        ? `${estudiante.nombre} ${estudiante.apellido}`
-                        : `ID ${asistencia.estudianteId}`}
-
-                                    </td>
+                                        <td>
+                                            ${asistencia.grupoNombre}
+                                        </td>
 
 
-                                    <td>
-
-                                        ${grupo
-                        ? grupo.nombre
-                        : `ID ${asistencia.grupoId}`}
-
-                                    </td>
+                                        <td>
+                                            ${asistencia.fecha}
+                                        </td>
 
 
-                                    <td>
-
-                                        ${asistencia.fecha}
-
-                                    </td>
-
-
-                                    <td>
-
-                                        ${asistencia.horaLlegada
-                        ? asistencia.horaLlegada.substring(0, 5)
-                        : "-"}
-
-                                    </td>
+                                        <td>
+                                            ${
+                                              asistencia.horaLlegada
+                                                ? asistencia.horaLlegada.substring(
+                                                    0,
+                                                    5,
+                                                  )
+                                                : "-"
+                                            }
+                                        </td>
 
 
-                                    <td>
+                                        <td>
 
-                                        <span class="
-                                            asistencia-estado
-                                            asistencia-estado--${asistencia.estado.toLowerCase()}
-                                        ">
+                                            <span class="
+                                                asistencia-estado
+                                                asistencia-estado--${String(
+                                                  asistencia.estado,
+                                                ).toLowerCase()}
+                                            ">
 
-                                            ${asistencia.estado}
+                                                ${asistencia.estado}
 
-                                        </span>
+                                            </span>
 
-                                    </td>
+                                        </td>
 
 
-                                    <td>
+                                        <td>
+                                            ${asistencia.observacion || "-"}
+                                        </td>
 
-                                        ${asistencia.observacion || "-"}
 
-                                    </td>
+                                        <td>
 
-                                </tr>
+                                            <button
+                                                type="button"
+                                                class="btn btn--secondary asistencia-edit-button"
+                                                data-id="${asistencia.id}"
+                                            >
+                                                Editar
+                                            </button>
 
-                            `;
+                                        </td>
 
-            }).join("")}
+                                    </tr>
+
+                                `;
+                          })
+                          .join("")}
 
                     </tbody>
 
@@ -825,50 +1216,320 @@ document.addEventListener("DOMContentLoaded", function () {
 
             `;
 
+      configurarBotonesEdicion();
+    } catch (error) {
+      console.error("Error cargando asistencias:", error);
 
-        } catch (error) {
-
-            console.error(
-                "Error cargando asistencias:",
-                error
-            );
-
-
-            attendanceList.innerHTML = `
-
+      attendanceList.innerHTML = `
                 <div class="asistencia-empty">
-
                     ${error.message}
+                </div>
+            `;
+    }
+  }
+
+  /*
+   * =========================================================
+   * EDITAR ASISTENCIA DESDE CONSULTA
+   * =========================================================
+   */
+
+  function configurarBotonesEdicion() {
+    const botones = document.querySelectorAll(".asistencia-edit-button");
+
+    botones.forEach((boton) => {
+      boton.addEventListener("click", function () {
+        const id = Number(boton.dataset.id);
+
+        const asistencia = asistenciasConsulta.find(
+          (item) => Number(item.id) === id,
+        );
+
+        if (!asistencia) {
+          return;
+        }
+
+        abrirEditorConsulta(asistencia);
+      });
+    });
+  }
+
+  /*
+   * =========================================================
+   * EDITOR DE CONSULTA
+   * =========================================================
+   */
+
+  function abrirEditorConsulta(asistencia) {
+    const fila = document.querySelector(
+      `tr[data-consulta-id="${asistencia.id}"]`,
+    );
+
+    if (!fila) {
+      return;
+    }
+
+    fila.innerHTML = `
+
+            <td>
+                ${asistencia.estudianteNombre}
+            </td>
+
+
+            <td>
+                ${asistencia.grupoNombre}
+            </td>
+
+
+            <td>
+                ${asistencia.fecha}
+            </td>
+
+
+            <td>
+
+                <input
+                    type="time"
+                    class="form-input asistencia-edit-hora"
+                    value="${
+                      asistencia.horaLlegada
+                        ? asistencia.horaLlegada.substring(0, 5)
+                        : ""
+                    }"
+                >
+
+            </td>
+
+
+            <td>
+
+                <select
+                    class="form-select asistencia-edit-estado"
+                >
+
+                    <option
+                        value="PRESENTE"
+                        ${asistencia.estado === "PRESENTE" ? "selected" : ""}
+                    >
+                        PRESENTE
+                    </option>
+
+                    <option
+                        value="TARDANZA"
+                        ${asistencia.estado === "TARDANZA" ? "selected" : ""}
+                    >
+                        TARDANZA
+                    </option>
+
+                    <option
+                        value="AUSENTE"
+                        ${asistencia.estado === "AUSENTE" ? "selected" : ""}
+                    >
+                        AUSENTE
+                    </option>
+
+                </select>
+
+            </td>
+
+
+            <td>
+
+                <input
+                    type="text"
+                    class="form-input asistencia-edit-observacion"
+                    value="${asistencia.observacion || ""}"
+                    placeholder="Opcional"
+                >
+
+            </td>
+
+
+            <td>
+
+                <div class="asistencia-edit-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn--primary asistencia-save-edit"
+                    >
+                        Guardar
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn--secondary asistencia-cancel-edit"
+                    >
+                        Cancelar
+                    </button>
 
                 </div>
 
-            `;
-        }
+            </td>
+
+        `;
+
+    const estadoSelect = fila.querySelector(".asistencia-edit-estado");
+
+    const horaInput = fila.querySelector(".asistencia-edit-hora");
+
+    function actualizarHoraEdicion() {
+      if (estadoSelect.value === "AUSENTE") {
+        horaInput.value = "";
+
+        horaInput.disabled = true;
+      } else {
+        horaInput.disabled = false;
+      }
     }
 
+    estadoSelect.addEventListener("change", actualizarHoraEdicion);
 
-    /*
-     * CAMBIAR FECHA
-     */
+    actualizarHoraEdicion();
 
-    document
-        .getElementById("fechaConsulta")
-        .addEventListener(
-            "change",
-            cargarAsistencias
+    fila
+      .querySelector(".asistencia-save-edit")
+      .addEventListener("click", function () {
+        guardarEdicionConsulta(asistencia, fila);
+      });
+
+    fila
+      .querySelector(".asistencia-cancel-edit")
+      .addEventListener("click", function () {
+        cargarAsistenciasConsulta();
+      });
+  }
+
+  /*
+   * =========================================================
+   * GUARDAR EDICIÓN
+   * =========================================================
+   */
+
+  async function guardarEdicionConsulta(asistencia, fila) {
+    const estadoSelect = fila.querySelector(".asistencia-edit-estado");
+
+    const horaInput = fila.querySelector(".asistencia-edit-hora");
+
+    const observacionInput = fila.querySelector(".asistencia-edit-observacion");
+
+    const estado = estadoSelect.value;
+
+    const horaLlegada = estado === "AUSENTE" ? null : horaInput.value || null;
+
+    if ((estado === "PRESENTE" || estado === "TARDANZA") && !horaLlegada) {
+      alert("Los estados PRESENTE y TARDANZA requieren hora de llegada.");
+
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/asistencias/${asistencia.id}`, {
+        method: "PUT",
+
+        headers: {
+          Authorization: "Basic " + auth,
+
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          estudianteId: asistencia.estudianteId,
+
+          grupoId: asistencia.grupoId,
+
+          fecha: asistencia.fecha,
+
+          horaLlegada,
+
+          estado,
+
+          observacion: observacionInput.value.trim() || null,
+        }),
+      });
+
+      if (!verificarAutorizacion(response)) {
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para modificar asistencias.");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudo actualizar la asistencia.",
+          ),
         );
+      }
 
+      await cargarAsistenciasConsulta();
 
-    /*
-     * CARGA INICIAL
-     */
+      /*
+       * Si estamos editando la misma fecha
+       * del registro actual, también actualizamos
+       * la vista de registro.
+       */
 
-    cargarEstudiantes();
+      if (
+        fechaInput.value === asistencia.fecha &&
+        String(grupoSelect.value) === String(asistencia.grupoId)
+      ) {
+        await cargarEstudiantesGrupo();
+      }
+    } catch (error) {
+      console.error("Error actualizando asistencia:", error);
 
-    cargarGrupos();
+      alert(error.message);
+    }
+  }
 
-    cargarAsistencias();
+  /*
+   * =========================================================
+   * EVENTOS
+   * =========================================================
+   */
 
-    actualizarCampoHora();
+  fechaInput.addEventListener("change", async function () {
+    ocultarMensaje();
 
+    await cargarGruposDelDia();
+  });
+
+  grupoSelect.addEventListener("change", cargarEstudiantesGrupo);
+
+  saveAttendanceButton.addEventListener("click", guardarAsistencias);
+
+  fechaConsulta.addEventListener("change", cargarAsistenciasConsulta);
+
+  grupoConsulta.addEventListener("change", cargarAsistenciasConsulta);
+
+  estudianteConsulta.addEventListener("change", cargarAsistenciasConsulta);
+
+  /*
+   * =========================================================
+   * INICIALIZACIÓN
+   * =========================================================
+   */
+
+  const fechaActual = obtenerFechaLocal();
+
+  fechaInput.value = fechaActual;
+
+  fechaConsulta.value = fechaActual;
+
+  /*
+   * CARGAR DATOS INICIALES
+   */
+
+  cargarGruposDelDia();
+
+  cargarGruposConsulta();
+
+  cargarEstudiantesConsulta();
+
+  cargarAsistenciasConsulta();
 });

@@ -3,7 +3,7 @@ package com.kihon.kihon.dto;
 public class CambiarPasswordRequest {
 
     private String passwordActual;
-    private String nuevaPassword;
+    private String passwordNueva;
 
     public CambiarPasswordRequest() {
     }
@@ -16,11 +16,11 @@ public class CambiarPasswordRequest {
         this.passwordActual = passwordActual;
     }
 
-    public String getNuevaPassword() {
-        return nuevaPassword;
+    public String getPasswordNueva() {
+        return passwordNueva;
     }
 
-    public void setNuevaPassword(String nuevaPassword) {
-        this.nuevaPassword = nuevaPassword;
+    public void setPasswordNueva(String passwordNueva) {
+        this.passwordNueva = passwordNueva;
     }
 }

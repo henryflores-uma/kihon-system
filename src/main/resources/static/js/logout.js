@@ -1,21 +1,67 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    const logoutButton =
-        document.getElementById("logoutButton");
+    // ==========================================
+    // BOTONES DE CERRAR SESIÓN
+    // ==========================================
 
-    if (!logoutButton) {
+    const logoutButtons = document.querySelectorAll(
+        "#logoutButton, #topbarLogoutButton"
+    );
+
+
+    if (!logoutButtons.length) {
         return;
     }
 
-    logoutButton.addEventListener("click", function (event) {
+
+    // ==========================================
+    // FUNCIÓN DE CERRAR SESIÓN
+    // ==========================================
+
+    function cerrarSesion(event) {
 
         event.preventDefault();
 
-        sessionStorage.removeItem("kihonAuth");
-        sessionStorage.removeItem("kihonUsername");
-        sessionStorage.removeItem("kihonRol");
 
-        window.location.href = "/login";
-    });
+        // --------------------------------------
+        // LIMPIAR SESIÓN
+        // --------------------------------------
 
-}); 
+        sessionStorage.removeItem(
+            "kihonAuth"
+        );
+
+        sessionStorage.removeItem(
+            "kihonUsername"
+        );
+
+        sessionStorage.removeItem(
+            "kihonRol"
+        );
+
+
+        // --------------------------------------
+        // REDIRIGIR AL LOGIN
+        // --------------------------------------
+
+        window.location.href =
+            "/login";
+    }
+
+
+    // ==========================================
+    // ASIGNAR EVENTO A TODOS LOS BOTONES
+    // ==========================================
+
+    logoutButtons.forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                cerrarSesion
+            );
+
+        }
+    );
+
+});

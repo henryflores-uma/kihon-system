@@ -66,15 +66,25 @@ public class EstudianteGrupoController {
          * ================================
          * CAMBIAR GRUPO
          * =================================
+         *
+         * Se cambia una asignación específica.
+         *
+         * Ejemplo:
+         *
+         * asignación 2 → Karate Inicial
+         * asignación 3 → Karate Básico
+         *
+         * Si se cambia la asignación 2,
+         * la asignación 3 permanece intacta.
          */
 
-        @PatchMapping("/estudiante/{estudianteId}/grupo/{nuevoGrupoId}")
+        @PatchMapping("/asignacion/{asignacionId}/grupo/{nuevoGrupoId}")
         public ResponseEntity<EstudianteGrupoResponse> cambiarGrupo(
-                        @PathVariable Long estudianteId,
+                        @PathVariable Long asignacionId,
                         @PathVariable Long nuevoGrupoId) {
 
                 EstudianteGrupo estudianteGrupo = estudianteGrupoService.cambiarGrupo(
-                                estudianteId,
+                                asignacionId,
                                 nuevoGrupoId);
 
                 EstudianteGrupoResponse response = convertirAResponse(estudianteGrupo);
@@ -159,6 +169,7 @@ public class EstudianteGrupoController {
 
                                 estudianteGrupo
                                                 .getEstudiante()
+                                                .getPersona()
                                                 .getNombre(),
 
                                 estudianteGrupo

@@ -7,6 +7,8 @@ import com.kihon.kihon.dto.GrupoEstudianteResponse;
 import com.kihon.kihon.model.Asistencia;
 import com.kihon.kihon.model.Estudiante;
 import com.kihon.kihon.model.EstudianteGrupo;
+import com.kihon.kihon.model.GrupoHorario;
+import com.kihon.kihon.repository.GrupoHorarioRepository;
 import com.kihon.kihon.service.EstudiantePortalService;
 
 import org.springframework.http.ResponseEntity;
@@ -14,29 +16,47 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/estudiante")
 public class EstudiantePortalController {
 
         private final EstudiantePortalService estudiantePortalService;
+        private final GrupoHorarioRepository grupoHorarioRepository;
 
         public EstudiantePortalController(
-                        EstudiantePortalService estudiantePortalService) {
+                        EstudiantePortalService estudiantePortalService,
+                        GrupoHorarioRepository grupoHorarioRepository) {
 
                 this.estudiantePortalService = estudiantePortalService;
+                this.grupoHorarioRepository = grupoHorarioRepository;
         }
 
-        @GetMapping("/api/estudiante")
-        public Estudiante estudiante(Authentication authentication) {
+        /*
+         * =========================================================
+         * PERFIL DEL ESTUDIANTE
+         * =========================================================
+         */
+
+        @GetMapping
+        public Estudiante estudiante(
+                        Authentication authentication) {
 
                 return estudiantePortalService.obtenerEstudianteAutenticado(
                                 authentication.getName());
         }
 
-        @GetMapping("/api/estudiante/asistencias")
+        /*
+         * =========================================================
+         * ASISTENCIAS
+         * =========================================================
+         */
+
+        @GetMapping("/asistencias")
         public List<AsistenciaResponse> listarMisAsistencias(
                         Authentication authentication) {
 
@@ -47,7 +67,13 @@ public class EstudiantePortalController {
                                 .toList();
         }
 
-        @GetMapping("/api/estudiante/grupos")
+        /*
+         * =========================================================
+         * GRUPOS
+         * =========================================================
+         */
+
+        @GetMapping("/grupos")
         public List<GrupoEstudianteResponse> listarMisGrupos(
                         Authentication authentication) {
 
@@ -58,24 +84,64 @@ public class EstudiantePortalController {
                                 .toList();
         }
 
+        /*
+         * =========================================================
+         * CONVERTIR GRUPO A RESPONSE
+         * =========================================================
+         */
+
         private GrupoEstudianteResponse convertirGrupoAResponse(
                         EstudianteGrupo estudianteGrupo) {
 
+                Long grupoId = estudianteGrupo.getGrupo().getId();
+
+                List<GrupoEstudianteResponse.HorarioResponse> horarios = grupoHorarioRepository
+                                .findByGrupoId(grupoId)
+                                .stream()
+                                .map(this::convertirHorarioAResponse)
+                                .toList();
+
                 return new GrupoEstudianteResponse(
-                                estudianteGrupo.getGrupo().getId(),
+                                grupoId,
                                 estudianteGrupo.getGrupo().getNombre(),
                                 estudianteGrupo.getGrupo().getDescripcion(),
-                                estudianteGrupo.getGrupo().getHoraInicio(),
-                                estudianteGrupo.getGrupo().getHoraFin(),
+                                horarios,
                                 estudianteGrupo.getGrupo().getEstado());
         }
+
+        /*
+         * =========================================================
+         * CONVERTIR HORARIO A RESPONSE
+         * =========================================================
+         */
+
+        private GrupoEstudianteResponse.HorarioResponse convertirHorarioAResponse(
+                        GrupoHorario horario) {
+
+                return new GrupoEstudianteResponse.HorarioResponse(
+                                horario.getDiaSemana(),
+                                horario.getHoraInicio(),
+                                horario.getHoraFin());
+        }
+
+        /*
+         * =========================================================
+         * CONVERTIR ASISTENCIA A RESPONSE
+         * =========================================================
+         */
 
         private AsistenciaResponse convertirAResponse(
                         Asistencia asistencia) {
 
-                String estudianteNombre = asistencia.getEstudiante().getNombre()
+                String estudianteNombre = asistencia
+                                .getEstudiante()
+                                .getPersona()
+                                .getNombre()
                                 + " "
-                                + asistencia.getEstudiante().getApellido();
+                                + asistencia
+                                                .getEstudiante()
+                                                .getPersona()
+                                                .getApellido();
 
                 return new AsistenciaResponse(
                                 asistencia.getId(),
@@ -89,7 +155,13 @@ public class EstudiantePortalController {
                                 asistencia.getObservacion());
         }
 
-        @PutMapping("/api/estudiante/perfil")
+        /*
+         * =========================================================
+         * ACTUALIZAR PERFIL DEL ESTUDIANTE
+         * =========================================================
+         */
+
+        @PutMapping("/perfil")
         public Estudiante actualizarPerfil(
                         Authentication authentication,
                         @RequestBody EstudiantePerfilRequest request) {
@@ -104,7 +176,13 @@ public class EstudiantePortalController {
                                 request.getFoto());
         }
 
-        @PutMapping("/api/estudiante/password")
+        /*
+         * =========================================================
+         * CAMBIAR CONTRASEÑA DEL ESTUDIANTE
+         * =========================================================
+         */
+
+        @PutMapping("/password")
         public ResponseEntity<String> cambiarPassword(
                         Authentication authentication,
                         @RequestBody CambiarPasswordRequest request) {
@@ -112,7 +190,7 @@ public class EstudiantePortalController {
                 estudiantePortalService.cambiarPassword(
                                 authentication.getName(),
                                 request.getPasswordActual(),
-                                request.getNuevaPassword());
+                                request.getPasswordNueva());
 
                 return ResponseEntity.ok(
                                 "Contraseña actualizada correctamente");

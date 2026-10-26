@@ -1,145 +1,700 @@
+// ==========================================
+// PÁGINA DE GRUPOS
+// ==========================================
+
 .grupos-page {
     width: 100%;
 }
+
+
+// ==========================================
+// HEADER
+// ==========================================
 
 .grupos-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 1rem;
 
-    margin-bottom: 2rem;
-
-    h1 {
-        margin-bottom: 0.35rem;
-        font-size: 2rem;
-    }
-
-    p {
-        color: $color-gray-600;
-    }
+    margin-bottom: 1.25rem;
 }
+
+
+.grupos-header__content {
+    max-width: 800px;
+}
+
+
+.grupos-header h1 {
+    margin: 0;
+
+    color: $color-black;
+
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+
+.grupos-header p {
+    margin: 0.4rem 0 0;
+
+    color: $color-gray-600;
+
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+
+// ==========================================
+// ACCIONES DE LA PÁGINA
+// ==========================================
+
+.grupos-page-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    width: 100%;
+
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+
+    border-bottom: 1px solid $color-gray-200;
+}
+
+
+.grupos-page-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.5rem;
+
+    min-width: 170px;
+}
+
+
+.grupos-page-actions .btn span {
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+
+// ==========================================
+// TARJETAS DE FORMULARIO
+// ==========================================
 
 .grupos-form-card {
     margin-bottom: 2rem;
+
+    padding: 1.75rem;
+
+    border: 1px solid $color-gray-200;
+
+    box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.05);
 }
+
+
+// ==========================================
+// HEADER DEL FORMULARIO
+// ==========================================
 
 .grupos-form-header {
     margin-bottom: 1.5rem;
 
+    padding-bottom: 1rem;
+
+    border-bottom: 1px solid $color-gray-200;
+
+
     h2 {
-        margin-bottom: 0.35rem;
+        margin: 0;
+
+        color: $color-black;
+
+        font-size: 1.15rem;
+        font-weight: 700;
     }
 
+
     p {
+        margin: 0.35rem 0 0;
+
         color: $color-gray-600;
-        font-size: 0.9rem;
+
+        font-size: 0.85rem;
+    }
+
+
+    &__kicker {
+        display: block;
+
+        margin-bottom: 0.35rem;
+
+        color: $color-red;
+
+        font-size: 0.7rem;
+        font-weight: 700;
+
+        letter-spacing: 0.12em;
     }
 }
+
+
+// ==========================================
+// FORMULARIO
+// ==========================================
 
 .grupos-form {
     display: flex;
     flex-direction: column;
+
+    gap: 1.5rem;
 }
+
+
+.grupos-form .grid {
+    row-gap: 1.25rem;
+}
+
+
+// ==========================================
+// CAMPOS COMPLETOS
+// ==========================================
 
 .grupos-form-full {
     grid-column: 1 / -1;
 }
 
-.grupos-form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
+
+// ==========================================
+// INPUTS
+// ==========================================
+
+.grupos-form {
+
+    .form-input,
+    .form-textarea {
+        width: 100%;
+
+        background-color: $color-white;
+
+        border: 1px solid $color-gray-200;
+        border-radius: 7px;
+
+        color: $color-black;
+
+        font-family: $font-family-base;
+
+        outline: none;
+
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+
+    .form-input {
+        min-height: 42px;
+
+        padding: 0.65rem 0.8rem;
+    }
+
+
+    .form-textarea {
+        min-height: 100px;
+
+        padding: 0.75rem 0.8rem;
+
+        resize: vertical;
+    }
+
+
+    .form-input:focus,
+    .form-textarea:focus {
+        border-color: $color-red;
+
+        box-shadow:
+            0 0 0 3px rgba(255, 36, 0, 0.08);
+    }
+}
+
+
+// ==========================================
+// DÍAS DE ENTRENAMIENTO
+// ==========================================
+
+.grupos-dias {
+    display: grid;
+
+    grid-template-columns:
+        repeat(7, minmax(0, 1fr));
+
+    gap: 0.6rem;
 
     margin-top: 0.5rem;
 }
 
+
+.grupo-dia-option {
+    position: relative;
+
+    cursor: pointer;
+
+
+    input {
+        position: absolute;
+
+        opacity: 0;
+
+        pointer-events: none;
+    }
+
+
+    span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        min-height: 42px;
+
+        padding: 0.5rem;
+
+        border: 1px solid $color-gray-200;
+        border-radius: 7px;
+
+        background-color: $color-white;
+
+        color: $color-gray-600;
+
+        font-size: 0.8rem;
+        font-weight: 600;
+
+        text-align: center;
+
+        transition:
+            background-color 0.2s ease,
+            color 0.2s ease,
+            border-color 0.2s ease,
+            transform 0.2s ease;
+    }
+
+
+    &:hover span {
+        border-color: $color-red;
+
+        color: $color-black;
+    }
+
+
+    input:checked+span {
+        background-color: $color-red;
+
+        border-color: $color-red;
+
+        color: $color-white;
+
+        box-shadow:
+            0 3px 8px rgba(255, 36, 0, 0.18);
+    }
+}
+
+
+// ==========================================
+// INFORMACIÓN DE HORARIO
+// ==========================================
+
+.grupos-horario-info {
+    display: flex;
+    align-items: center;
+
+    gap: 0.75rem;
+
+    padding: 0.85rem 1rem;
+
+    border-left: 3px solid $color-yellow;
+
+    border-radius: 5px;
+
+    background-color: $color-gray-100;
+
+
+    p {
+        margin: 0;
+
+        color: $color-gray-600;
+
+        font-size: 0.8rem;
+        line-height: 1.5;
+    }
+}
+
+
+// ==========================================
+// MENSAJES
+// ==========================================
+
 .grupos-message {
     margin-bottom: 1rem;
 
-    padding: 0.75rem 1rem;
+    padding: 0.8rem 1rem;
 
-    border-radius: 6px;
+    border-radius: 7px;
 
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+
 
     &:empty {
         display: none;
     }
 }
 
+
 .grupos-message--success {
     background-color: #e8f5e9;
+
     color: #2e7d32;
 }
 
+
 .grupos-message--error {
     background-color: #ffebee;
+
     color: $color-red;
 }
 
-.grupos-list-card {
-    overflow: hidden;
+
+// ==========================================
+// ACCIONES DEL FORMULARIO
+// ==========================================
+
+.grupos-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 0.75rem;
+
+    padding-top: 0.5rem;
+
+    border-top: 1px solid $color-gray-200;
 }
+
+
+// ==========================================
+// SECCIÓN DE HORARIOS
+// ==========================================
+
+.grupos-horarios-section {
+    margin-top: 0.5rem;
+
+    padding-top: 1.5rem;
+
+    border-top: 1px solid $color-gray-200;
+}
+
+
+.grupos-horarios-section .grupos-form-header {
+    border-bottom: none;
+
+    padding-bottom: 0;
+}
+
+
+// ==========================================
+// LISTA DE HORARIOS
+// ==========================================
+
+.grupos-horarios-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.65rem;
+
+    margin-bottom: 1.25rem;
+}
+
+
+.grupo-horario-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 1rem;
+
+    padding: 0.9rem 1rem;
+
+    border: 1px solid $color-gray-200;
+    border-radius: 8px;
+
+    background-color: $color-gray-100;
+
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+
+
+    &:hover {
+        border-color: $color-yellow;
+
+        background-color: $color-white;
+    }
+}
+
+
+.grupo-horario-info {
+    display: flex;
+    align-items: center;
+
+    gap: 1rem;
+
+
+    strong {
+        min-width: 100px;
+
+        color: $color-black;
+
+        font-size: 0.9rem;
+    }
+
+
+    span {
+        color: $color-gray-600;
+
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+}
+
+
+// ==========================================
+// FORMULARIO DE HORARIOS
+// ==========================================
+
+.grupos-horario-form {
+    display: grid;
+
+    grid-template-columns:
+        1.2fr 1fr 1fr auto;
+
+    align-items: end;
+
+    gap: 1rem;
+
+    padding: 1rem;
+
+    border: 1px solid $color-gray-200;
+
+    border-radius: 8px;
+
+    background-color: $color-gray-100;
+}
+
+
+.grupos-horario-action {
+    display: flex;
+    align-items: flex-end;
+}
+
+
+// ==========================================
+// LISTA DE GRUPOS
+// ==========================================
+
+.grupos-list-card {
+    width: 100%;
+
+    overflow: hidden;
+
+    margin-bottom: 2rem;
+
+    padding: 0;
+}
+
+
+// ==========================================
+// CABECERA DE LA LISTA
+// ==========================================
 
 .grupos-list-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    margin-bottom: 1.5rem;
+    gap: 1.5rem;
 
-    h2 {
-        margin: 0;
-    }
+    margin: 0;
 
-    span {
-        color: $color-gray-600;
-        font-size: 0.9rem;
-    }
+    padding: 1.25rem 1.75rem 1.15rem;
+
+    border-bottom: 1px solid $color-gray-200;
+
+    background-color: $color-white;
 }
+
+
+// ==========================================
+// CONTENIDO DE LA CABECERA
+// ==========================================
+
+.grupos-list-header>div:first-child {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.2rem;
+}
+
+
+.grupos-list-header .grupos-form-header__kicker {
+    display: block;
+
+    margin: 0 0 0.15rem;
+
+    color: $color-red;
+
+    font-size: 0.7rem;
+    font-weight: 700;
+
+    letter-spacing: 0.12em;
+}
+
+
+.grupos-list-header h2 {
+    margin: 0;
+
+    color: $color-black;
+
+    font-size: 1.35rem;
+    font-weight: 700;
+
+    line-height: 1.25;
+}
+
+
+.grupos-list-header p {
+    margin: 0.15rem 0 0;
+
+    color: $color-gray-600;
+
+    font-size: 0.85rem;
+
+    line-height: 1.4;
+}
+
+
+// ==========================================
+// CONTADOR DE GRUPOS
+// ==========================================
+
+.grupos-list-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    min-height: 32px;
+
+    padding: 0.45rem 0.8rem;
+
+    border-radius: 20px;
+
+    background-color: $color-gray-100;
+
+    color: $color-gray-600;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+// ==========================================
+// MENSAJE DE LA LISTA
+// ==========================================
+
+.grupos-list-card>.grupos-message {
+    margin: 0;
+}
+
+
+.grupos-list-card>.grupos-message:empty {
+    display: none;
+}
+
+
+// ==========================================
+// TABLA
+// ==========================================
 
 .grupos-table-wrapper {
     width: 100%;
+
     overflow-x: auto;
+
+    border-top: none;
 }
+
 
 .grupos-table {
     width: 100%;
-    border-collapse: collapse;
+
+    min-width: 1050px;
+
+    border-collapse: separate;
+    border-spacing: 0;
+
 
     th,
     td {
-        padding: 1rem;
-
-        text-align: left;
+        padding: 1rem 1.1rem;
 
         border-bottom: 1px solid $color-gray-200;
+
+        text-align: left;
+        vertical-align: middle;
     }
+
 
     th {
         background-color: $color-black;
+
         color: $color-white;
 
-        font-size: 0.8rem;
-        font-weight: 600;
+        font-size: 0.72rem;
+        font-weight: 700;
+
         text-transform: uppercase;
+
+        letter-spacing: 0.04em;
+
         white-space: nowrap;
     }
 
+
     td {
         background-color: $color-white;
+
         color: $color-gray-900;
 
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 
+
     tbody tr {
-        transition: background-color 0.2s ease;
+        transition:
+            background-color 0.2s ease;
+
 
         &:hover td {
             background-color: $color-gray-100;
         }
+
 
         &:last-child td {
             border-bottom: none;
@@ -147,124 +702,998 @@
     }
 }
 
+
+// ==========================================
+// INFORMACIÓN DEL GRUPO
+// ==========================================
+
 .grupo-info {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+
+    gap: 0.3rem;
+
+    min-width: 170px;
 }
 
+
 .grupo-nombre {
+    color: $color-black;
+
     font-weight: 700;
 }
 
+
 .grupo-descripcion {
-    max-width: 220px;
+    max-width: 230px;
+
+    overflow: hidden;
 
     color: $color-gray-600;
 
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 
     line-height: 1.4;
-}
 
-.grupo-horario {
-    font-weight: 600;
+    text-overflow: ellipsis;
+
     white-space: nowrap;
 }
 
-.grupo-capacidad,
-.grupo-inscritos,
-.grupo-cupos {
+
+// ==========================================
+// SENSEI
+// ==========================================
+
+.grupo-sensei {
+    display: inline-flex;
+    align-items: center;
+
+    min-width: 130px;
+
+    color: $color-gray-900;
+
     font-weight: 600;
+
+    white-space: nowrap;
 }
 
-.grupo-cupos {
-    color: #2e7d32;
+
+// ==========================================
+// DÍAS
+// ==========================================
+
+.grupo-dias {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 0.35rem 0.55rem;
+
+    border-radius: 5px;
+
+    background-color: $color-gray-100;
+
+    color: $color-gray-900;
+
+    font-size: 0.75rem;
+    font-weight: 700;
+
+    white-space: nowrap;
 }
+
+
+// ==========================================
+// HORARIO
+// ==========================================
+
+.grupo-horario {
+    min-width: 190px;
+
+    color: $color-gray-900;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+
+    line-height: 1.6;
+
+    white-space: nowrap;
+}
+
+
+// ==========================================
+// CAPACIDAD / INSCRITOS
+// ==========================================
+
+.grupo-capacidad,
+.grupo-inscritos {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 34px;
+    min-height: 30px;
+
+    padding: 0.25rem 0.5rem;
+
+    border-radius: 6px;
+
+    background-color: $color-gray-100;
+
+    color: $color-black;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+
+// ==========================================
+// CUPOS
+// ==========================================
+
+.grupo-cupos {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 34px;
+    min-height: 30px;
+
+    padding: 0.25rem 0.5rem;
+
+    border-radius: 6px;
+
+    background-color: #e8f5e9;
+
+    color: #2e7d32;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
 
 .grupo-cupos--lleno {
+    background-color: #ffebee;
+
     color: $color-red;
 }
+
+
+// ==========================================
+// ESTADO
+// ==========================================
 
 .grupo-estado {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
 
-    padding: 0.35rem 0.7rem;
+    min-width: 72px;
 
-    border-radius: 20px;
+    padding: 0.35rem 0.65rem;
 
-    font-size: 0.75rem;
+    border-radius: 999px;
+
+    font-size: 0.7rem;
     font-weight: 700;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
 }
+
 
 .grupo-estado--activo {
     background-color: #e8f5e9;
+
     color: #2e7d32;
 }
 
+
 .grupo-estado--inactivo {
-    background-color: #eeeeee;
+    background-color: $color-gray-100;
+
     color: $color-gray-600;
 }
 
+
+// ==========================================
+// ACCIONES
+// ==========================================
+
 .grupo-acciones {
     display: flex;
-    gap: 0.5rem;
+    align-items: center;
+
+    gap: 0.4rem;
+
     flex-wrap: wrap;
 
+    min-width: 210px;
+
+
     .btn {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.8rem;
+        min-height: 34px;
+
+        padding: 0.45rem 0.65rem;
+
+        font-size: 0.72rem;
     }
 }
+
+
+// ==========================================
+// ESTADOS VACÍOS / CARGANDO
+// ==========================================
 
 .grupos-empty {
     padding: 3rem 1rem;
 
+    color: $color-gray-600;
+
     text-align: center;
 
-    color: $color-gray-600;
+    font-size: 0.85rem;
 }
+
 
 .grupos-loading {
-    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 180px;
+
+    padding: 3rem 1rem;
+
+    color: $color-gray-600;
 
     text-align: center;
 
-    color: $color-gray-600;
+    font-size: 0.85rem;
 }
+
+
+// ==========================================
+// RESPONSIVE - 1000px
+// ==========================================
 
 @media (max-width: 1000px) {
 
+    .grupos-dias {
+        grid-template-columns:
+            repeat(4, 1fr);
+    }
+
+
+    .grupos-horario-form {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+
+    .grupos-horario-action {
+        grid-column: 1 / -1;
+
+        justify-content: flex-end;
+    }
+
+
     .grupos-table {
-        min-width: 950px;
+        min-width: 1100px;
     }
 }
+
+
+// ==========================================
+// RESPONSIVE - 800px
+// ==========================================
 
 @media (max-width: 800px) {
 
     .grupos-header {
         flex-direction: column;
+
         align-items: flex-start;
+
+        margin-bottom: 1rem;
     }
 
-    .grupos-form-actions {
-        justify-content: stretch;
 
-        .btn {
-            flex: 1;
-        }
+    .grupos-page-actions {
+        justify-content: flex-start;
+
+        margin-bottom: 2rem;
+
+        padding-bottom: 1.25rem;
+    }
+
+
+    .grupos-page-actions .btn {
+        min-width: 160px;
+    }
+
+
+    .grupos-list-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 0.75rem;
+
+        padding: 1.25rem;
+    }
+
+
+    .grupos-list-count {
+        align-self: flex-start;
+    }
+
+
+    .grupos-form-card {
+        padding: 1.25rem;
+    }
+
+
+    .grupos-dias {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+
+    .grupo-horario-item {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+
+    .grupo-horario-info {
+        width: 100%;
+
+        justify-content: space-between;
+    }
+
+
+    .grupo-horario-item .btn {
+        width: 100%;
     }
 }
 
-@media (max-width: 500px) {
 
-    .grupos-form-actions {
+// ==========================================
+// RESPONSIVE - 600px
+// ==========================================
+
+@media (max-width: 600px) {
+
+    .grupos-list-header {
+        align-items: flex-start;
+
         flex-direction: column;
+
+        gap: 0.6rem;
+
+        margin-bottom: 0;
+
+        padding: 1rem;
+    }
+
+
+    .grupos-list-header h2 {
+        font-size: 1.2rem;
+    }
+
+
+    .grupos-list-header p {
+        font-size: 0.8rem;
+    }
+
+
+    .grupos-horario-form {
+        grid-template-columns: 1fr;
+    }
+
+
+    .grupos-horario-action {
+        grid-column: auto;
+
+        justify-content: stretch;
+
 
         .btn {
             width: 100%;
         }
+    }
+
+
+    .grupos-form-actions {
+        flex-direction: column;
+
+
+        .btn {
+            width: 100%;
+        }
+    }
+}
+
+
+// ==========================================
+// RESPONSIVE - 500px
+// ==========================================
+
+@media (max-width: 500px) {
+
+    .grupos-page-actions {
+        justify-content: stretch;
+    }
+
+
+    .grupos-page-actions .btn {
+        width: 100%;
+    }
+}
+
+
+/* ==========================================
+   MODAL - REGISTRAR GRUPO
+   ========================================== */
+
+.grupo-modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 1.5rem;
+}
+
+
+.grupo-modal[hidden] {
+    display: none;
+}
+
+
+// ==========================================
+// OVERLAY
+// ==========================================
+
+.grupo-modal__overlay {
+    position: absolute;
+    inset: 0;
+
+    background-color: rgba(0, 0, 0, 0.65);
+
+    backdrop-filter: blur(4px);
+}
+
+
+// ==========================================
+// CONTENIDO
+// ==========================================
+
+.grupo-modal__content {
+    position: relative;
+
+    z-index: 1;
+
+    width: 100%;
+    max-width: 850px;
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background-color: $color-white;
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.3);
+
+    animation:
+        grupoModalEntrada 0.25s ease;
+}
+
+
+// ==========================================
+// HEADER DEL MODAL
+// ==========================================
+
+.grupo-modal__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 1.5rem;
+
+    padding: 1.5rem 1.75rem;
+
+    border-bottom: 1px solid $color-gray-200;
+
+    background-color: $color-white;
+}
+
+
+.grupo-modal__kicker {
+    display: block;
+
+    margin-bottom: 0.35rem;
+
+    color: $color-red;
+
+    font-size: 0.7rem;
+    font-weight: 700;
+
+    letter-spacing: 0.12em;
+}
+
+
+.grupo-modal__header h2 {
+    margin: 0 0 0.4rem;
+
+    color: $color-gray-900;
+
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+
+.grupo-modal__header p {
+    margin: 0;
+
+    color: $color-gray-600;
+
+    font-size: 0.9rem;
+
+    line-height: 1.5;
+}
+
+
+// ==========================================
+// BOTÓN CERRAR
+// ==========================================
+
+.grupo-modal__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 38px;
+    height: 38px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 8px;
+
+    background-color: transparent;
+
+    color: $color-gray-600;
+
+    font-size: 1.8rem;
+    font-weight: 400;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.grupo-modal__close:hover {
+    background-color: $color-gray-100;
+
+    color: $color-black;
+
+    transform: rotate(90deg);
+}
+
+
+// ==========================================
+// FORMULARIO DEL MODAL
+// ==========================================
+
+.grupo-modal .grupos-form {
+    padding: 1.75rem;
+}
+
+
+// ==========================================
+// CAMPOS DEL MODAL
+// ==========================================
+
+.grupo-modal .form-group {
+    margin-bottom: 1.25rem;
+}
+
+
+.grupo-modal label {
+    display: block;
+
+    margin-bottom: 0.45rem;
+
+    color: $color-gray-900;
+
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+
+.grupo-modal input[type="text"],
+.grupo-modal input[type="number"],
+.grupo-modal input[type="time"],
+.grupo-modal select,
+.grupo-modal textarea {
+    width: 100%;
+
+    padding: 0.75rem 0.85rem;
+
+    border: 1px solid $color-gray-200;
+    border-radius: 7px;
+
+    background-color: $color-white;
+
+    color: $color-gray-900;
+
+    font-family: $font-family-base;
+    font-size: 0.9rem;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.grupo-modal input[type="text"]:focus,
+.grupo-modal input[type="number"]:focus,
+.grupo-modal input[type="time"]:focus,
+.grupo-modal select:focus,
+.grupo-modal textarea:focus {
+    border-color: $color-red;
+
+    box-shadow:
+        0 0 0 3px rgba(255, 36, 0, 0.1);
+}
+
+
+.grupo-modal textarea {
+    min-height: 100px;
+
+    resize: vertical;
+}
+
+
+// ==========================================
+// DÍAS DEL MODAL
+// ==========================================
+
+.grupo-modal .grupos-dias {
+    display: grid;
+
+    grid-template-columns:
+        repeat(7, minmax(0, 1fr));
+
+    gap: 0.6rem;
+
+    margin-top: 0.5rem;
+}
+
+
+.grupo-modal .grupo-dia-option {
+    position: relative;
+
+    margin: 0;
+
+    cursor: pointer;
+}
+
+
+.grupo-modal .grupo-dia-option input {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+.grupo-modal .grupo-dia-option span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 44px;
+
+    padding: 0.5rem;
+
+    border: 1px solid $color-gray-200;
+    border-radius: 8px;
+
+    background-color: $color-gray-100;
+
+    color: $color-gray-900;
+
+    font-size: 0.8rem;
+    font-weight: 700;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.grupo-modal .grupo-dia-option:hover span {
+    border-color: $color-red;
+
+    transform: translateY(-1px);
+}
+
+
+.grupo-modal .grupo-dia-option input:checked+span {
+    border-color: $color-red;
+
+    background-color: $color-red;
+
+    color: $color-white;
+}
+
+
+.grupo-modal .grupo-dia-option input:focus-visible+span {
+    box-shadow:
+        0 0 0 3px rgba(255, 36, 0, 0.15);
+}
+
+
+// ==========================================
+// INFORMACIÓN DEL HORARIO DEL MODAL
+// ==========================================
+
+.grupo-modal .grupos-horario-info {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 0.75rem;
+
+    margin-top: 0.25rem;
+    margin-bottom: 1.25rem;
+
+    padding: 0.85rem 1rem;
+
+    border-left: 3px solid $color-yellow;
+
+    border-radius: 0 7px 7px 0;
+
+    background-color: #fffbea;
+}
+
+
+.grupo-modal .grupos-horario-info__icon {
+    flex-shrink: 0;
+
+    font-size: 1.1rem;
+}
+
+
+.grupo-modal .grupos-horario-info strong {
+    display: block;
+
+    margin-bottom: 0.2rem;
+
+    color: $color-gray-900;
+
+    font-size: 0.82rem;
+}
+
+
+.grupo-modal .grupos-horario-info p {
+    margin: 0;
+
+    color: $color-gray-600;
+
+    font-size: 0.78rem;
+
+    line-height: 1.5;
+}
+
+
+// ==========================================
+// MENSAJES DEL MODAL
+// ==========================================
+
+.grupo-modal .grupos-message {
+    margin-bottom: 1rem;
+
+    padding: 0.75rem 1rem;
+
+    border-radius: 7px;
+
+    font-size: 0.85rem;
+}
+
+
+.grupo-modal .grupos-message--success {
+    background-color: #e8f5e9;
+
+    color: #2e7d32;
+}
+
+
+.grupo-modal .grupos-message--error {
+    background-color: #ffebee;
+
+    color: $color-red;
+}
+
+
+// ==========================================
+// ACCIONES DEL MODAL
+// ==========================================
+
+.grupo-modal .grupos-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 0.75rem;
+
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+
+    border-top: 1px solid $color-gray-200;
+}
+
+
+.grupo-modal .grupos-form-actions .btn {
+    min-width: 145px;
+}
+
+
+// ==========================================
+// ANIMACIÓN DEL MODAL
+// ==========================================
+
+@keyframes grupoModalEntrada {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(20px) scale(0.98);
+    }
+
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0) scale(1);
+    }
+}
+
+
+// ==========================================
+// BLOQUEAR SCROLL
+// ==========================================
+
+body.modal-open {
+    overflow: hidden;
+}
+
+
+// ==========================================
+// RESPONSIVE DEL MODAL - 800px
+// ==========================================
+
+@media (max-width: 800px) {
+
+    .grupo-modal {
+        padding: 1rem;
+    }
+
+
+    .grupo-modal__content {
+        max-height: 94vh;
+
+        border-radius: 10px;
+    }
+
+
+    .grupo-modal__header {
+        padding: 1.25rem;
+    }
+
+
+    .grupo-modal .grupos-form {
+        padding: 1.25rem;
+    }
+
+
+    .grupo-modal .grupos-dias {
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+    }
+}
+
+
+// ==========================================
+// RESPONSIVE DEL MODAL - 500px
+// ==========================================
+
+@media (max-width: 500px) {
+
+    .grupo-modal {
+        align-items: flex-start;
+
+        padding: 0;
+    }
+
+
+    .grupo-modal__content {
+        width: 100%;
+
+        max-height: 100vh;
+        min-height: 100vh;
+
+        border-radius: 0;
+    }
+
+
+    .grupo-modal__header {
+        padding: 1rem;
+    }
+
+
+    .grupo-modal__header h2 {
+        font-size: 1.25rem;
+    }
+
+
+    .grupo-modal .grupos-form {
+        padding: 1rem;
+    }
+
+
+    .grupo-modal .grupos-dias {
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+        gap: 0.4rem;
+    }
+
+
+    .grupo-modal .grupo-dia-option span {
+        min-height: 40px;
+
+        font-size: 0.75rem;
+    }
+
+
+    .grupo-modal .grupos-form-actions {
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+    }
+
+
+    .grupo-modal .grupos-form-actions .btn {
+        width: 100%;
     }
 }

@@ -1,0 +1,591 @@
+//
+// KIHON
+// INSCRIPCIONES
+// ==========================================
+
+
+// ==========================================
+// PÁGINA
+// ==========================================
+
+.inscripciones-page {
+
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+}
+
+
+// ==========================================
+// SECCIONES
+// ==========================================
+
+.inscripciones-form-section,
+.inscripciones-list-section,
+.inscripciones-change-group {
+
+    padding: 24px;
+
+}
+
+
+// ==========================================
+// ENCABEZADO DE SECCIÓN
+// ==========================================
+
+.inscripciones-section-header {
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+
+}
+
+
+.inscripciones-section-header h2 {
+
+    margin: 0 0 6px;
+    font-size: 20px;
+    font-weight: 700;
+
+}
+
+
+.inscripciones-section-header p {
+
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.5;
+
+}
+
+
+// ==========================================
+// FORMULARIO
+// ==========================================
+
+.inscripciones-form-grid {
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+
+}
+
+
+.inscripciones-form-grid .form-group {
+
+    min-width: 0;
+
+}
+
+
+.inscripciones-page .form-group {
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+}
+
+
+.inscripciones-page .form-group label {
+
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+
+}
+
+
+.inscripciones-page .form-group select {
+
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+
+    background: var(--background-primary);
+    color: var(--text-primary);
+
+    font: inherit;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+.inscripciones-page .form-group select:focus {
+
+    outline: none;
+
+    border-color: var(--primary-color);
+
+    box-shadow:
+        0 0 0 3px color-mix(in srgb,
+            var(--primary-color) 15%,
+            transparent);
+
+}
+
+
+// ==========================================
+// INFORMACIÓN DEL GRUPO
+// ==========================================
+
+.inscripciones-group-info {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 0;
+
+    margin-top: 24px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+
+    overflow: hidden;
+
+}
+
+
+.inscripciones-group-info__item {
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    padding: 16px;
+
+    background: var(--background-secondary);
+
+    border-bottom: 1px solid var(--border-color);
+
+}
+
+
+.inscripciones-group-info__item:nth-child(odd) {
+
+    border-right: 1px solid var(--border-color);
+
+}
+
+
+.inscripciones-group-info__item strong {
+
+    font-size: 12px;
+    font-weight: 700;
+
+    color: var(--text-muted);
+
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+}
+
+
+.inscripciones-group-info__item span {
+
+    font-size: 14px;
+    color: var(--text-primary);
+
+    line-height: 1.5;
+
+}
+
+
+.inscripciones-group-info__item--full {
+
+    grid-column: 1 / -1;
+
+    border-right: none;
+
+}
+
+
+.inscripciones-group-info__item:last-child {
+
+    border-bottom: none;
+
+}
+
+
+// ==========================================
+// ACCIONES DEL FORMULARIO
+// ==========================================
+
+.inscripciones-form-actions {
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+
+    margin-top: 24px;
+
+}
+
+
+.inscripciones-form-actions .btn {
+
+    min-width: 140px;
+
+}
+
+
+// ==========================================
+// MENSAJES
+// ==========================================
+
+.inscripciones-message {
+
+    margin-top: 20px;
+    padding: 12px 14px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    line-height: 1.5;
+
+}
+
+
+.inscripciones-message[hidden] {
+
+    display: none;
+
+}
+
+
+.inscripciones-message--success {
+
+    border: 1px solid var(--success-color);
+    background: var(--success-background);
+    color: var(--success-color);
+
+}
+
+
+.inscripciones-message--error {
+
+    border: 1px solid var(--danger-color);
+    background: var(--danger-background);
+    color: var(--danger-color);
+
+}
+
+
+// ==========================================
+// LISTADO
+// ==========================================
+
+.inscripciones-list-section {
+
+    overflow: hidden;
+
+}
+
+
+.inscripciones-table-container {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+
+}
+
+
+.inscripciones-table {
+
+    width: 100%;
+    min-width: 720px;
+
+    border-collapse: collapse;
+
+}
+
+
+.inscripciones-table thead {
+
+    background: var(--background-secondary);
+
+}
+
+
+.inscripciones-table th {
+
+    padding: 14px 16px;
+
+    text-align: left;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    color: var(--text-muted);
+
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    border-bottom: 1px solid var(--border-color);
+
+    white-space: nowrap;
+
+}
+
+
+.inscripciones-table td {
+
+    padding: 14px 16px;
+
+    font-size: 14px;
+
+    color: var(--text-primary);
+
+    border-bottom: 1px solid var(--border-color);
+
+    vertical-align: middle;
+
+}
+
+
+.inscripciones-table tbody tr:last-child td {
+
+    border-bottom: none;
+
+}
+
+
+.inscripciones-table tbody tr {
+
+    transition:
+        background-color 0.2s ease;
+
+}
+
+
+.inscripciones-table tbody tr:hover {
+
+    background: var(--background-secondary);
+
+}
+
+
+// ==========================================
+// ACCIONES DE LA TABLA
+// ==========================================
+
+.inscripciones-table td:last-child {
+
+    white-space: nowrap;
+
+}
+
+
+.inscripciones-table td:last-child .btn {
+
+    margin-right: 6px;
+
+}
+
+
+.inscripciones-table td:last-child .btn:last-child {
+
+    margin-right: 0;
+
+}
+
+
+.inscripciones-table .btn {
+
+    min-height: 36px;
+    padding: 7px 12px;
+
+    font-size: 13px;
+
+}
+
+
+// ==========================================
+// CAMBIAR GRUPO
+// ==========================================
+
+.inscripciones-change-group {
+
+    border-left: 3px solid var(--primary-color);
+
+}
+
+
+.inscripciones-change-group .form-group {
+
+    max-width: 600px;
+
+}
+
+
+.inscripciones-change-group .form-group select {
+
+    width: 100%;
+    min-height: 44px;
+
+    padding: 10px 12px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+
+    background: var(--background-primary);
+    color: var(--text-primary);
+
+    font: inherit;
+
+}
+
+
+.inscripciones-change-group .form-group select:focus {
+
+    outline: none;
+
+    border-color: var(--primary-color);
+
+    box-shadow:
+        0 0 0 3px color-mix(in srgb,
+            var(--primary-color) 15%,
+            transparent);
+
+}
+
+
+// ==========================================
+// ESTADO HIDDEN
+// ==========================================
+
+.inscripciones-page [hidden] {
+
+    display: none !important;
+
+}
+
+
+// ==========================================
+// RESPONSIVE
+// ==========================================
+
+@media (max-width: 768px) {
+
+    .inscripciones-form-section,
+    .inscripciones-list-section,
+    .inscripciones-change-group {
+
+        padding: 18px;
+
+    }
+
+
+    .inscripciones-form-grid {
+
+        grid-template-columns: 1fr;
+
+        gap: 16px;
+
+    }
+
+
+    .inscripciones-group-info {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .inscripciones-group-info__item:nth-child(odd) {
+
+        border-right: none;
+
+    }
+
+
+    .inscripciones-group-info__item {
+
+        border-bottom: 1px solid var(--border-color);
+
+    }
+
+
+    .inscripciones-group-info__item--full {
+
+        grid-column: auto;
+
+    }
+
+
+    .inscripciones-form-actions {
+
+        flex-direction: column-reverse;
+        align-items: stretch;
+
+    }
+
+
+    .inscripciones-form-actions .btn {
+
+        width: 100%;
+
+    }
+
+
+    .inscripciones-section-header {
+
+        flex-direction: column;
+
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .inscripciones-page {
+
+        gap: 18px;
+
+    }
+
+
+    .inscripciones-form-section,
+    .inscripciones-list-section,
+    .inscripciones-change-group {
+
+        padding: 15px;
+
+    }
+
+
+    .inscripciones-section-header h2 {
+
+        font-size: 18px;
+
+    }
+
+
+    .inscripciones-table th,
+    .inscripciones-table td {
+
+        padding: 11px 12px;
+
+    }
+
+}

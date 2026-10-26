@@ -1,8 +1,12 @@
 package com.kihon.kihon.config;
 
+import com.kihon.kihon.model.Persona;
 import com.kihon.kihon.model.Rol;
+import com.kihon.kihon.model.TipoDocumento;
 import com.kihon.kihon.model.Usuario;
+import com.kihon.kihon.repository.PersonaRepository;
 import com.kihon.kihon.repository.RolRepository;
+import com.kihon.kihon.repository.TipoDocumentoRepository;
 import com.kihon.kihon.repository.UsuarioRepository;
 
 import org.springframework.boot.CommandLineRunner;
@@ -11,69 +15,123 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Configuration
 public class DataInitializer {
 
-    @Bean
-    CommandLineRunner inicializarDatos(
-            RolRepository rolRepository,
-            UsuarioRepository usuarioRepository,
-            PasswordEncoder passwordEncoder) {
+        @Bean
+        CommandLineRunner inicializarDatos(
+                        RolRepository rolRepository,
+                        UsuarioRepository usuarioRepository,
+                        TipoDocumentoRepository tipoDocumentoRepository,
+                        PersonaRepository personaRepository,
+                        PasswordEncoder passwordEncoder) {
 
-        return args -> {
+                return args -> {
 
-            Rol rolAdmin = rolRepository.findByNombre("ADMIN")
-                    .orElseThrow(() -> new RuntimeException(
-                            "El rol ADMIN no existe"));
+                        /*
+                         * =========================================================
+                         * INICIALIZAR ROLES
+                         * =========================================================
+                         */
 
-            boolean existeAdmin = usuarioRepository
-                    .findAll()
-                    .stream()
-                    .anyMatch(usuario -> usuario.getRol() != null
-                            && "ADMIN".equalsIgnoreCase(
-                                    usuario.getRol().getNombre()));
+                        Rol rolAdmin = rolRepository.findByNombre("ADMIN")
+                                        .orElseGet(() -> rolRepository.save(new Rol("ADMIN")));
 
-            if (!existeAdmin) {
+                        if (rolRepository.findByNombre("SECRETARIA").isEmpty()) {
+                                rolRepository.save(new Rol("SECRETARIA"));
+                        }
 
-                Usuario admin = new Usuario();
+                        if (rolRepository.findByNombre("SENSEI").isEmpty()) {
+                                rolRepository.save(new Rol("SENSEI"));
+                        }
 
-                admin.setUsername("admin");
-                admin.setPassword(
-                        passwordEncoder.encode("Admin12345"));
+                        if (rolRepository.findByNombre("ESTUDIANTE").isEmpty()) {
+                                rolRepository.save(new Rol("ESTUDIANTE"));
+                        }
 
-                admin.setNombre("Administrador");
-                admin.setApellido("Sistema");
+                        /*
+                         * =========================================================
+                         * OBTENER TIPO DE DOCUMENTO DNI
+                         * =========================================================
+                         */
 
-                admin.setTipoDocumento("DNI");
-                admin.setNumeroDocumento("00000000");
+                        TipoDocumento tipoDocumentoDni = tipoDocumentoRepository
+                                        .findByNombre("DNI")
+                                        .orElseThrow(() -> new RuntimeException(
+                                                        "El tipo de documento DNI no existe"));
 
-                admin.setTelefono("+51900000000");
+                        /*
+                         * =========================================================
+                         * VERIFICAR SI YA EXISTE UN ADMINISTRADOR
+                         * =========================================================
+                         */
 
-                admin.setFechaNacimiento(
-                        LocalDate.of(1990, 1, 1));
+                        boolean existeAdmin = usuarioRepository
+                                        .findAll()
+                                        .stream()
+                                        .anyMatch(usuario -> usuario.getRol() != null
+                                                        && "ADMIN".equalsIgnoreCase(
+                                                                        usuario.getRol().getNombre()));
 
-                admin.setGenero("NO_ESPECIFICADO");
+                        /*
+                         * =========================================================
+                         * CREAR ADMINISTRADOR INICIAL
+                         * =========================================================
+                         */
 
-                admin.setCorreo("admin@kihon.com");
+                        if (!existeAdmin) {
 
-                admin.setEstado("ACTIVO");
+                                /*
+                                 * -----------------------------------------------------
+                                 * CREAR PERSONA DEL ADMINISTRADOR
+                                 * -----------------------------------------------------
+                                 */
 
-                admin.setRol(rolAdmin);
+                                Persona personaAdmin = new Persona();
 
-                usuarioRepository.save(admin);
+                                personaAdmin.setNombre("Administrador");
+                                personaAdmin.setApellido("Sistema");
+                                personaAdmin.setTipoDocumento(tipoDocumentoDni);
+                                personaAdmin.setNumeroDocumento("00000000");
+                                personaAdmin.setTelefono("+51900000000");
+                                personaAdmin.setFechaNacimiento(
+                                                LocalDate.of(1990, 1, 1));
+                                personaAdmin.setGenero("NO_ESPECIFICADO");
+                                personaAdmin.setCorreo("admin@kihon.com");
 
-                System.out.println(
-                        "========================================");
-                System.out.println(
-                        "USUARIO ADMIN CREADO");
-                System.out.println(
-                        "Usuario: admin");
-                System.out.println(
-                        "Contraseña: Admin12345");
-                System.out.println(
-                        "========================================");
-            }
-        };
-    }
+                                personaAdmin = personaRepository.save(personaAdmin);
+
+                                /*
+                                 * -----------------------------------------------------
+                                 * CREAR USUARIO ADMINISTRADOR
+                                 * -----------------------------------------------------
+                                 */
+
+                                Usuario admin = new Usuario();
+
+                                admin.setPersona(personaAdmin);
+                                admin.setUsername("admin");
+                                admin.setPassword(
+                                                passwordEncoder.encode("Admin12345"));
+                                admin.setEstado("ACTIVO");
+                                admin.setFechaRegistro(LocalDateTime.now());
+                                admin.setRol(rolAdmin);
+
+                                usuarioRepository.save(admin);
+
+                                System.out.println(
+                                                "========================================");
+                                System.out.println(
+                                                "USUARIO ADMIN CREADO");
+                                System.out.println(
+                                                "Usuario: admin");
+                                System.out.println(
+                                                "Contraseña: Admin12345");
+                                System.out.println(
+                                                "========================================");
+                        }
+                };
+        }
 }

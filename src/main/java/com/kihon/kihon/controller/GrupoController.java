@@ -16,7 +16,9 @@ public class GrupoController {
 
         private final GrupoService grupoService;
 
-        public GrupoController(GrupoService grupoService) {
+        public GrupoController(
+                        GrupoService grupoService) {
+
                 this.grupoService = grupoService;
         }
 
@@ -27,9 +29,9 @@ public class GrupoController {
                 Grupo grupo = grupoService.crearGrupo(
                                 request.getNombre(),
                                 request.getDescripcion(),
-                                request.getHoraInicio(),
-                                request.getHoraFin(),
-                                request.getCapacidad());
+                                request.getCapacidad(),
+                                request.getSenseiId(),
+                                request.getFrecuenciaId());
 
                 GrupoResponse response = convertirAResponse(grupo);
 
@@ -45,8 +47,11 @@ public class GrupoController {
                 List<Grupo> grupos;
 
                 if (estado == null || estado.isBlank()) {
+
                         grupos = grupoService.listarGrupos();
+
                 } else {
+
                         grupos = grupoService.listarPorEstado(
                                         estado.toUpperCase());
                 }
@@ -78,9 +83,9 @@ public class GrupoController {
                                 id,
                                 request.getNombre(),
                                 request.getDescripcion(),
-                                request.getHoraInicio(),
-                                request.getHoraFin(),
-                                request.getCapacidad());
+                                request.getCapacidad(),
+                                request.getSenseiId(),
+                                request.getFrecuenciaId());
 
                 return ResponseEntity.ok(
                                 convertirAResponse(grupo));
@@ -99,22 +104,62 @@ public class GrupoController {
                                 convertirAResponse(grupo));
         }
 
-        private GrupoResponse convertirAResponse(Grupo grupo) {
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> eliminarGrupo(
+                        @PathVariable Long id) {
+
+                grupoService.eliminarGrupo(id);
+
+                return ResponseEntity
+                                .noContent()
+                                .build();
+        }
+
+        private GrupoResponse convertirAResponse(
+                        Grupo grupo) {
 
                 long estudiantesActivos = grupoService
-                                .contarEstudiantesActivos(grupo.getId());
+                                .contarEstudiantesActivos(
+                                                grupo.getId());
 
-                long cuposDisponibles = grupo.getCapacidad() - estudiantesActivos;
+                long cuposDisponibles = grupo.getCapacidad()
+                                - estudiantesActivos;
+
+                String senseiNombre = null;
+
+                if (grupo.getSensei() != null
+                                && grupo.getSensei().getPersona() != null) {
+
+                        senseiNombre = grupo.getSensei()
+                                        .getPersona()
+                                        .getNombre()
+                                        + " "
+                                        + grupo.getSensei()
+                                                        .getPersona()
+                                                        .getApellido();
+                }
 
                 return new GrupoResponse(
                                 grupo.getId(),
                                 grupo.getNombre(),
                                 grupo.getDescripcion(),
-                                grupo.getHoraInicio(),
-                                grupo.getHoraFin(),
                                 grupo.getCapacidad(),
                                 estudiantesActivos,
                                 cuposDisponibles,
-                                grupo.getEstado());
+                                grupo.getEstado(),
+                                grupo.getSensei() != null
+                                                ? grupo.getSensei().getId()
+                                                : null,
+                                senseiNombre,
+                                grupo.getFrecuencia() != null
+                                                ? grupo.getFrecuencia().getId()
+                                                : null,
+                                grupo.getFrecuencia() != null
+                                                ? grupo.getFrecuencia().getNombre()
+                                                : null,
+                                grupo.getFrecuencia() != null
+                                                ? grupo.getFrecuencia()
+                                                                .getFrecuenciaSemanal()
+                                                : null);
         }
 }
