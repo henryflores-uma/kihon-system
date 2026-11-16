@@ -1,444 +1,830 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+  <meta charset="UTF-8" />
 
-    <title>Kihon | Inscripciones</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="stylesheet" href="/css/main.css" />
-  </head>
+  <title>Kihon | Inscripciones</title>
 
-  <body>
-    <main class="app-layout">
-      <!-- ==========================================
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+
+<body>
+  <main class="app-layout">
+    <!-- ==========================================
            SIDEBAR
            ========================================== -->
 
-      <aside class="sidebar" id="sidebarMenu">
-        <div class="sidebar__logo">KIHON</div>
+    <aside class="sidebar" id="sidebarMenu">
+      <div class="sidebar__logo">KIHON</div>
 
-        <nav class="sidebar__nav">
-          <!-- DASHBOARD -->
+      <nav class="sidebar__nav">
+        <!-- DASHBOARD -->
 
-          <a href="/admin/admin" class="sidebar__link"> Dashboard </a>
+        <a href="/admin/admin" class="sidebar__link"> Dashboard </a>
 
-          <!-- ======================================
+        <!-- ======================================
                GESTIÓN
                ====================================== -->
 
-          <div class="sidebar__accordion">
-            <button
-              type="button"
-              class="sidebar__accordion-button"
-              data-target="sidebarGestion"
-              aria-expanded="true"
-            >
-              <span>Gestión</span>
+        <div class="sidebar__accordion">
+          <button type="button" class="sidebar__accordion-button" data-target="sidebarGestion" aria-expanded="true">
+            <span>Gestión</span>
 
-              <span class="sidebar__accordion-arrow">▼</span>
-            </button>
-
-            <div class="sidebar__submenu" id="sidebarGestion">
-              <a href="/admin/estudiantes" class="sidebar__link">
-                Estudiantes
-              </a>
-
-              <a href="/admin/grupos" class="sidebar__link"> Grupos </a>
-
-              <a
-                href="/admin/inscripciones"
-                class="sidebar__link sidebar__link--active"
-              >
-                Inscripciones
-              </a>
-            </div>
-          </div>
-
-          <!-- ======================================
-               CONTROL
-               ====================================== -->
-
-          <div class="sidebar__accordion">
-            <button
-              type="button"
-              class="sidebar__accordion-button"
-              data-target="sidebarControl"
-              aria-expanded="false"
-            >
-              <span>Control</span>
-
-              <span class="sidebar__accordion-arrow">▶</span>
-            </button>
-
-            <div class="sidebar__submenu" id="sidebarControl" hidden>
-              <a href="/admin/asistencia" class="sidebar__link"> Asistencia </a>
-
-              <a href="/admin/horario" class="sidebar__link"> Horario </a>
-            </div>
-          </div>
-
-          <!-- ======================================
-               ADMINISTRACIÓN
-               ====================================== -->
-
-          <div class="sidebar__accordion">
-            <button
-              type="button"
-              class="sidebar__accordion-button"
-              data-target="sidebarAdministracion"
-              aria-expanded="false"
-            >
-              <span>Administración</span>
-
-              <span class="sidebar__accordion-arrow">▶</span>
-            </button>
-
-            <div class="sidebar__submenu" id="sidebarAdministracion" hidden>
-              <a href="/admin/reportes" class="sidebar__link"> Reportes </a>
-
-              <a href="/admin/usuarios" class="sidebar__link"> Usuarios </a>
-            </div>
-          </div>
-        </nav>
-      </aside>
-
-      <!-- ==========================================
-           OVERLAY MENÚ MÓVIL
-           ========================================== -->
-
-      <div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden></div>
-
-      <!-- ==========================================
-           CONTENIDO PRINCIPAL
-           ========================================== -->
-
-      <section class="main-content">
-        <!-- ======================================
-             NAVEGACIÓN MÓVIL
-             ====================================== -->
-
-        <div class="mobile-nav">
-          <button
-            type="button"
-            class="mobile-menu-button"
-            id="mobileMenuButton"
-            aria-label="Abrir menú"
-            aria-expanded="false"
-            aria-controls="sidebarMenu"
-          >
-            <span id="mobileMenuIcon">☰</span>
+            <span class="sidebar__accordion-arrow">▼</span>
           </button>
 
-          <div class="mobile-nav__logo">KIHON</div>
+          <div class="sidebar__submenu" id="sidebarGestion">
+            <a href="/admin/estudiantes" class="sidebar__link">
+              Estudiantes
+            </a>
+
+            <a href="/admin/grupos" class="sidebar__link"> Grupos </a>
+
+            <a href="/admin/inscripciones" class="sidebar__link sidebar__link--active">
+              Inscripciones
+            </a>
+          </div>
         </div>
 
         <!-- ======================================
+               CONTROL
+               ====================================== -->
+
+        <div class="sidebar__accordion">
+          <button type="button" class="sidebar__accordion-button" data-target="sidebarControl" aria-expanded="false">
+            <span>Control</span>
+
+            <span class="sidebar__accordion-arrow">▶</span>
+          </button>
+
+          <div class="sidebar__submenu" id="sidebarControl" hidden>
+            <a href="/admin/asistencia" class="sidebar__link"> Asistencia </a>
+
+            <a href="/admin/horario" class="sidebar__link"> Horario </a>
+          </div>
+        </div>
+
+        <!-- ======================================
+               ADMINISTRACIÓN
+               ====================================== -->
+
+        <div class="sidebar__accordion">
+          <button type="button" class="sidebar__accordion-button" data-target="sidebarAdministracion"
+            aria-expanded="false">
+            <span>Administración</span>
+
+            <span class="sidebar__accordion-arrow">▶</span>
+          </button>
+
+          <div class="sidebar__submenu" id="sidebarAdministracion" hidden>
+            <a href="/admin/reportes" class="sidebar__link"> Reportes </a>
+
+            <a href="/admin/usuarios" class="sidebar__link"> Usuarios </a>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- ==========================================
+           OVERLAY MENÚ MÓVIL
+           ========================================== -->
+
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden></div>
+
+    <!-- ==========================================
+           CONTENIDO PRINCIPAL
+           ========================================== -->
+
+    <section class="main-content">
+      <!-- ======================================
+             NAVEGACIÓN MÓVIL
+             ====================================== -->
+
+      <div class="mobile-nav">
+        <button type="button" class="mobile-menu-button" id="mobileMenuButton" aria-label="Abrir menú"
+          aria-expanded="false" aria-controls="sidebarMenu">
+          <span id="mobileMenuIcon">☰</span>
+        </button>
+
+        <div class="mobile-nav__logo">KIHON</div>
+      </div>
+
+      <!-- ======================================
              TOPBAR
              ====================================== -->
 
-        <header class="topbar">
-          <div class="topbar__role">
-            <span class="topbar__role-label"> Rol </span>
+      <header class="topbar">
+        <div class="topbar__role">
+          <span class="topbar__role-label"> Rol </span>
 
-            <strong id="roleDisplay"> Administrador </strong>
-          </div>
+          <strong id="roleDisplay"> Administrador </strong>
+        </div>
 
-          <div class="topbar__actions">
-            <!-- NOTIFICACIONES -->
+        <div class="topbar__actions">
+          <!-- NOTIFICACIONES -->
 
-            <button
-              type="button"
-              class="topbar__notification"
-              id="notificationButton"
-              aria-label="Notificaciones"
-            >
-              <span class="topbar__notification-icon"> 🔔 </span>
+          <button type="button" class="topbar__notification" id="notificationButton" aria-label="Notificaciones">
+            <span class="topbar__notification-icon"> 🔔 </span>
 
-              <span
-                id="notificationCount"
-                class="topbar__notification-count"
-                hidden
-              >
-                0
-              </span>
+            <span id="notificationCount" class="topbar__notification-count" hidden>
+              0
+            </span>
+          </button>
+
+          <!-- PERFIL -->
+
+          <div class="topbar__profile" id="profileMenuContainer">
+            <button type="button" class="topbar__profile-button" id="profileMenuButton" aria-expanded="false">
+              <div class="topbar__avatar" id="userProfileAvatar">
+                <span id="userAvatarInitial"> U </span>
+              </div>
+
+              <div class="topbar__profile-info">
+                <strong id="usernameDisplay"> Usuario </strong>
+
+                <span id="profileRoleDisplay"> Administrador </span>
+              </div>
+
+              <span class="topbar__profile-arrow"> ▼ </span>
             </button>
 
-            <!-- PERFIL -->
+            <div class="topbar__profile-menu" id="profileMenu" hidden>
+              <a href="/admin/perfil" class="topbar__profile-menu-item">
+                Editar perfil
+              </a>
 
-            <div class="topbar__profile" id="profileMenuContainer">
-              <button
-                type="button"
-                class="topbar__profile-button"
-                id="profileMenuButton"
-                aria-expanded="false"
-              >
-                <div class="topbar__avatar" id="userProfileAvatar">
-                  <span id="userAvatarInitial"> U </span>
-                </div>
-
-                <div class="topbar__profile-info">
-                  <strong id="usernameDisplay"> Usuario </strong>
-
-                  <span id="profileRoleDisplay"> Administrador </span>
-                </div>
-
-                <span class="topbar__profile-arrow"> ▼ </span>
+              <button type="button" id="topbarLogoutButton"
+                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+                Cerrar sesión
               </button>
-
-              <div class="topbar__profile-menu" id="profileMenu" hidden>
-                <a href="/admin/perfil" class="topbar__profile-menu-item">
-                  Editar perfil
-                </a>
-
-                <button
-                  type="button"
-                  id="topbarLogoutButton"
-                  class="topbar__profile-menu-item topbar__profile-menu-item--danger"
-                >
-                  Cerrar sesión
-                </button>
-              </div>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <!-- ======================================
+      <!-- ======================================
              CONTENIDO DE INSCRIPCIONES
              ====================================== -->
 
-        <div class="container inscripciones-page">
-          <!-- ======================================
-               ENCABEZADO
-               ====================================== -->
 
-          <section class="dashboard-header">
-            <div>
-              <span class="section-kicker"> Administración </span>
+      <div class="container inscripciones-page">
 
-              <h1>Inscripciones</h1>
+        <!-- ==========================================
+       ENCABEZADO PRINCIPAL
+       ========================================== -->
 
-              <p>Asigna estudiantes a grupos y administra sus inscripciones.</p>
-            </div>
-          </section>
+        <section class="dashboard-header inscripciones-header">
+          <div>
+            <span class="section-kicker">Administración</span>
+            <h1>Inscripciones</h1>
+            <p>Gestiona la asignación de estudiantes a uno o varios grupos.</p>
+          </div>
 
-          <!-- ======================================
-               FORMULARIO DE INSCRIPCIÓN
-               ====================================== -->
+          <button type="button" id="newInscripcionButton" class="btn btn--primary">
+            + Nueva inscripción
+          </button>
+        </section>
 
-          <section class="card inscripciones-form-section">
-            <div class="inscripciones-section-header">
-              <div>
-                <h2>Nueva inscripción</h2>
 
-                <p>Selecciona un estudiante y un grupo disponible.</p>
-              </div>
-            </div>
+        <!-- ==========================================
+       NAVEGACIÓN POR PESTAÑAS
+       ========================================== -->
 
-            <form id="inscripcionForm">
-              <div class="inscripciones-form-grid">
-                <!-- ESTUDIANTE -->
+        <nav class="inscripciones-tabs" aria-label="Secciones de inscripciones">
 
-                <div class="form-group">
-                  <label for="studentSelect"> Estudiante </label>
+          <button type="button" class="inscripciones-tab inscripciones-tab--active" data-tab="listado"
+            aria-selected="true">
+            Listado general
+          </button>
 
-                  <select id="studentSelect" name="estudianteId" required>
-                    <option value="">Seleccionar estudiante</option>
-                  </select>
-                </div>
+          <button type="button" class="inscripciones-tab" data-tab="grupos" aria-selected="false">
+            Inscritos por grupo
+          </button>
 
-                <!-- GRUPO -->
+        </nav>
 
-                <div class="form-group">
-                  <label for="groupSelect"> Grupo </label>
 
-                  <select id="groupSelect" name="grupoId" required>
-                    <option value="">Seleccionar grupo</option>
-                  </select>
-                </div>
-              </div>
+        <!-- ==========================================
+       VISTA 1: LISTADO GENERAL
+       ========================================== -->
 
-              <!-- ==================================
-                   INFORMACIÓN DEL GRUPO
-                   ================================== -->
+        <section id="listadoView" class="inscripciones-view">
 
-              <div id="groupInfo" class="inscripciones-group-info" hidden>
-                <div class="inscripciones-group-info__item">
-                  <strong>Grupo</strong>
+          <!-- ESTADÍSTICAS -->
 
-                  <span id="groupInfoName"> - </span>
-                </div>
+          <div class="inscripciones-stats">
 
-                <div class="inscripciones-group-info__item">
-                  <strong>Sensei</strong>
+            <article class="card inscripciones-stat-card">
+              <span>Estudiantes únicos</span>
+              <strong id="totalEstudiantesInscritos">0</strong>
+              <small>Estudiantes con inscripción</small>
+            </article>
 
-                  <span id="groupInfoSensei"> - </span>
-                </div>
+            <article class="card inscripciones-stat-card">
+              <span>Asignaciones a grupos</span>
+              <strong id="totalAsignaciones">0</strong>
+              <small>Total de grupos asignados</small>
+            </article>
 
-                <div class="inscripciones-group-info__item">
-                  <strong>Horario</strong>
+            <article class="card inscripciones-stat-card">
+              <span>Grupos con inscripciones</span>
+              <strong id="totalGruposInscritos">0</strong>
+              <small id="totalCuposDisponibles">0 cupos disponibles</small>
+            </article>
 
-                  <span id="groupInfoSchedule"> - </span>
-                </div>
+          </div>
 
-                <div class="inscripciones-group-info__item">
-                  <strong>Capacidad</strong>
 
-                  <span id="groupInfoCapacity"> - </span>
-                </div>
-
-                <div class="inscripciones-group-info__item">
-                  <strong>Disponibles</strong>
-
-                  <span id="groupInfoAvailable"> - </span>
-                </div>
-
-                <div
-                  class="inscripciones-group-info__item inscripciones-group-info__item--full"
-                >
-                  <strong>Descripción</strong>
-
-                  <span id="groupInfoDescription"> - </span>
-                </div>
-              </div>
-
-              <!-- ==================================
-                   MENSAJE
-                   ================================== -->
-
-              <div
-                id="inscripcionFormMessage"
-                class="inscripciones-message"
-                hidden
-              ></div>
-
-              <!-- ==================================
-                   ACCIONES
-                   ================================== -->
-
-              <div class="inscripciones-form-actions">
-                <button type="submit" class="btn btn--primary">
-                  Inscribir estudiante
-                </button>
-
-                <button
-                  type="button"
-                  id="clearFormButton"
-                  class="btn btn--outline"
-                >
-                  Limpiar
-                </button>
-              </div>
-            </form>
-          </section>
-
-          <!-- ======================================
-               LISTADO DE INSCRIPCIONES
-               ====================================== -->
+          <!-- FILTROS -->
 
           <section class="card inscripciones-list-section">
+
             <div class="inscripciones-section-header">
               <div>
-                <h2>Inscripciones registradas</h2>
-
-                <p>
-                  Consulta y administra las asignaciones de estudiantes a
-                  grupos.
-                </p>
+                <h2>Listado de inscripciones</h2>
+                <p>Consulta y administra las asignaciones de estudiantes.</p>
               </div>
             </div>
 
-            <div
-              id="inscripcionesMessage"
-              class="inscripciones-message"
-              hidden
-            ></div>
+            <div class="inscripciones-filters">
+
+              <div class="form-group inscripciones-search">
+                <label for="searchInscripciones">Buscar estudiante</label>
+                <input type="search" id="searchInscripciones" placeholder="Buscar por nombre o DNI...">
+              </div>
+
+              <div class="form-group">
+                <label for="filterGrupo">Grupo</label>
+                <select id="filterGrupo">
+                  <option value="">Todos los grupos</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="filterEstado">Estado</label>
+                <select id="filterEstado">
+                  <option value="">Todos los estados</option>
+                  <option value="ACTIVO">Activo</option>
+                  <option value="INACTIVO">Inactivo</option>
+                </select>
+              </div>
+
+              <span id="inscripcionesCounter">0 estudiantes</span>
+
+            </div>
+
+
+            <!-- TABLA -->
+
+            <div id="inscripcionesMessage" class="inscripciones-message" hidden></div>
 
             <div class="inscripciones-table-container">
+
               <table class="inscripciones-table">
+
                 <thead>
                   <tr>
                     <th>Estudiante</th>
-
-                    <th>Grupo</th>
-
+                    <th>DNI</th>
+                    <th>Grupos asignados</th>
+                    <th>Inscripción</th>
                     <th>Estado</th>
-
                     <th>Acciones</th>
                   </tr>
                 </thead>
 
                 <tbody id="inscripcionesTableBody">
                   <tr>
-                    <td colspan="4">Cargando inscripciones...</td>
+                    <td colspan="6">Cargando inscripciones...</td>
                   </tr>
                 </tbody>
+
               </table>
+
             </div>
+
+
+            <!-- PAGINACIÓN -->
+
+            <div class="inscripciones-pagination" id="inscripcionesPagination">
+              <button type="button" id="previousInscripcionesPage" disabled>
+                Anterior
+              </button>
+
+              <span id="inscripcionesPageInfo">Página 1</span>
+
+              <button type="button" id="nextInscripcionesPage" disabled>
+                Siguiente
+              </button>
+            </div>
+
           </section>
 
-          <!-- ======================================
-               CAMBIAR GRUPO
-               ====================================== -->
+        </section>
 
-          <section
-            id="changeGroupSection"
-            class="card inscripciones-change-group"
-            hidden
-          >
-            <div class="inscripciones-section-header">
-              <div>
-                <h2>Cambiar grupo</h2>
 
-                <p id="changeGroupStudent">
-                  Selecciona un nuevo grupo para el estudiante.
+        <!-- ==========================================
+       VISTA 2: INSCRITOS POR GRUPO
+       ========================================== -->
+
+        <section id="gruposView" class="inscripciones-view" hidden>
+
+          <div class="inscripciones-section-header">
+            <div>
+              <h2>Inscritos por grupo</h2>
+              <p>Consulta los estudiantes y la disponibilidad de cada grupo.</p>
+            </div>
+
+            <button type="button" id="newInscripcionFromGroupButton" class="btn btn--primary">
+              + Inscribir estudiante
+            </button>
+          </div>
+
+
+          <div class="inscripciones-groups-layout">
+
+            <!-- SELECTOR DE GRUPOS -->
+
+            <aside class="card inscripciones-groups-sidebar">
+
+              <div class="inscripciones-section-header">
+                <h3>Grupos disponibles</h3>
+              </div>
+
+              <div id="inscripcionesGroupsList" class="inscripciones-groups-list">
+
+                <p>Cargando grupos...</p>
+
+              </div>
+
+            </aside>
+
+
+            <!-- DETALLE DEL GRUPO -->
+
+            <section class="inscripciones-group-detail">
+
+              <article class="card inscripciones-group-header" id="selectedGroupInfo">
+
+                <div class="inscripciones-group-header__top">
+                  <div>
+                    <span class="section-kicker">Grupo seleccionado</span>
+                    <h2 id="selectedGroupName">Selecciona un grupo</h2>
+                    <p id="selectedGroupSchedule">-</p>
+                  </div>
+
+                  <span id="selectedGroupAvailability">-</span>
+                </div>
+
+                <div class="inscripciones-group-metadata">
+                  <span id="selectedGroupSensei">Sensei: -</span>
+                </div>
+
+                <div class="inscripciones-capacity">
+                  <div class="inscripciones-capacity__labels">
+                    <span>Ocupación del grupo</span>
+                    <strong id="selectedGroupCapacity">0/0</strong>
+                  </div>
+
+                  <div class="inscripciones-capacity__bar">
+                    <div id="selectedGroupCapacityBar"></div>
+                  </div>
+                </div>
+
+              </article>
+
+
+              <!-- FILTROS INTERNOS -->
+
+              <article class="card inscripciones-group-students">
+
+                <div class="inscripciones-filters">
+
+                  <div class="form-group inscripciones-search">
+                    <label for="searchGroupStudents">Buscar estudiante</label>
+                    <input type="search" id="searchGroupStudents" placeholder="Nombre o DNI...">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="filterGroupStudentStatus">Estado</label>
+                    <select id="filterGroupStudentStatus">
+                      <option value="">Todos los estados</option>
+                      <option value="ACTIVO">Activo</option>
+                      <option value="INACTIVO">Inactivo</option>
+                    </select>
+                  </div>
+
+                </div>
+
+
+                <!-- TABLA DE ESTUDIANTES -->
+
+                <div class="inscripciones-table-container">
+
+                  <table class="inscripciones-table">
+
+                    <thead>
+                      <tr>
+                        <th>Estudiante</th>
+                        <th>Edad</th>
+                        <th>Cinturón</th>
+                        <th>Inscripción</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+
+                    <tbody id="groupStudentsTableBody">
+                      <tr>
+                        <td colspan="5">Selecciona un grupo para consultar sus estudiantes.</td>
+                      </tr>
+                    </tbody>
+
+                  </table>
+
+                </div>
+
+                <div class="inscripciones-pagination" id="groupStudentsPagination">
+                  <button type="button" id="previousGroupStudentsPage" disabled>
+                    Anterior
+                  </button>
+
+                  <span id="groupStudentsPageInfo">Página 1</span>
+
+                  <button type="button" id="nextGroupStudentsPage" disabled>
+                    Siguiente
+                  </button>
+                </div>
+
+                <p class="inscripciones-group-note">
+                  Las inscripciones inactivas se conservan en el historial,
+                  pero no se contabilizan como ocupación activa.
                 </p>
+
+              </article>
+
+            </section>
+
+          </div>
+
+        </section>
+
+
+        <!-- ==========================================
+       VISTA 3: NUEVA INSCRIPCIÓN
+       ========================================== -->
+
+        <section id="nuevaInscripcionView" class="inscripciones-view" hidden>
+
+          <div class="inscripciones-section-header">
+            <div>
+              <span class="section-kicker">Gestión de estudiantes</span>
+              <h2>Nueva inscripción</h2>
+              <p>Selecciona un estudiante existente y asígnale sus grupos.</p>
+            </div>
+          </div>
+
+
+          <form id="inscripcionForm">
+
+            <div class="inscripciones-form-layout">
+
+              <!-- COLUMNA IZQUIERDA -->
+
+              <div class="inscripciones-form-main">
+
+                <!-- SELECCIÓN DEL ESTUDIANTE -->
+
+                <article class="card inscripciones-form-card">
+
+                  <div class="inscripciones-section-header">
+                    <h3>1. Selecciona un estudiante</h3>
+                  </div>
+
+                  <div class="form-group inscripciones-student-search">
+                    <label for="studentSearch">Buscar estudiante</label>
+
+                    <input type="search" id="studentSearch" placeholder="Escribe un nombre o DNI..." autocomplete="off"
+                      required>
+
+                    <div id="studentSearchResults" class="inscripciones-student-search__results" hidden></div>
+
+                    <small id="studentSearchMessage">
+                      Busca por nombre completo o número de documento.
+                    </small>
+                  </div>
+                </article>
+
+
+                <!-- SELECCIÓN DE GRUPOS -->
+
+                <article class="card inscripciones-form-card">
+
+                  <div class="inscripciones-section-header">
+                    <div>
+                      <h3>2. Selecciona los grupos</h3>
+                      <p>Marca todas las opciones que correspondan.</p>
+                    </div>
+                  </div>
+
+                  <div id="inscripcionGroupsList" class="inscripciones-select-groups">
+
+                    <p>Selecciona un estudiante para consultar los grupos disponibles.</p>
+
+                  </div>
+
+                </article>
+
               </div>
+
+
+              <!-- COLUMNA DERECHA -->
+
+              <aside class="inscripciones-form-sidebar">
+
+                <!-- PERFIL DEL ESTUDIANTE -->
+
+                <article class="card inscripciones-student-profile" id="selectedStudentInfo" hidden>
+
+                  <div class="inscripciones-student-profile__header">
+
+                    <div class="inscripciones-student-avatar" id="studentAvatar">
+                      --
+                    </div>
+
+                    <div>
+                      <h3 id="studentInfoName">Estudiante</h3>
+                      <span id="studentInfoDni">DNI: -</span>
+                    </div>
+
+                  </div>
+
+                  <div class="inscripciones-student-details">
+
+                    <div>
+                      <span>Edad</span>
+                      <strong id="studentInfoAge">-</strong>
+                    </div>
+
+                    <div>
+                      <span>Cinturón</span>
+                      <strong id="studentInfoBelt">-</strong>
+                    </div>
+
+                    <div>
+                      <span>Apoderado</span>
+                      <strong id="studentInfoGuardian">-</strong>
+                    </div>
+
+                    <div>
+                      <span>Contacto</span>
+                      <strong id="studentInfoPhone">-</strong>
+                    </div>
+
+                  </div>
+
+                </article>
+
+
+                <!-- RESUMEN DE INSCRIPCIÓN -->
+
+                <article class="card inscripciones-summary-card">
+
+                  <div class="inscripciones-section-header">
+                    <h3>Resumen de inscripción</h3>
+                  </div>
+
+                  <div class="inscripciones-summary-count">
+                    <strong id="selectedGroupsCount">0</strong>
+                    <span>Grupos seleccionados</span>
+                  </div>
+
+                  <div id="selectedGroupsSummary" class="inscripciones-summary-list">
+                    <p>Aún no has seleccionado grupos.</p>
+                  </div>
+
+                  <div class="inscripciones-summary-date">
+                    <span>Fecha de inscripción</span>
+                    <strong id="inscripcionCurrentDate">-</strong>
+                  </div>
+
+                  <div class="inscripciones-summary-note">
+                    La inscripción ocupará un cupo en cada grupo seleccionado.
+                  </div>
+
+                </article>
+
+              </aside>
+
             </div>
 
-            <form id="changeGroupForm">
-              <input type="hidden" id="changeStudentId" />
 
-              <div class="form-group">
-                <label for="newGroupSelect"> Nuevo grupo </label>
+            <!-- MENSAJES -->
 
-                <select id="newGroupSelect" required>
-                  <option value="">Seleccionar grupo</option>
-                </select>
-              </div>
+            <div id="inscripcionFormMessage" class="inscripciones-message" hidden></div>
 
-              <div
-                id="changeGroupMessage"
-                class="inscripciones-message"
-                hidden
-              ></div>
 
-              <div class="inscripciones-form-actions">
-                <button type="submit" class="btn btn--primary">
-                  Cambiar grupo
-                </button>
+            <!-- ACCIONES -->
 
-                <button
-                  type="button"
-                  id="cancelChangeGroupButton"
-                  class="btn btn--outline"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          </section>
+            <div class="inscripciones-form-actions">
+
+              <button type="button" id="cancelInscripcionButton" class="btn btn--outline">
+                Cancelar
+              </button>
+
+              <button type="submit" id="confirmInscripcionButton" class="btn btn--primary">
+                Confirmar inscripción
+              </button>
+
+            </div>
+
+          </form>
+
+        </section>
+
+
+        <!-- ==========================================
+       VISTA 4: EDITAR INSCRIPCIÓN
+       ========================================== -->
+
+        <section id="editarInscripcionView" class="inscripciones-view" hidden>
+
+          <div class="inscripciones-section-header">
+            <div>
+              <span class="section-kicker">Gestión de estudiantes</span>
+              <h2>Editar inscripción</h2>
+              <p>Añade o retira grupos sin modificar la ficha del estudiante.</p>
+            </div>
+          </div>
+
+
+          <div class="inscripciones-form-layout">
+
+            <!-- COLUMNA IZQUIERDA -->
+
+            <div class="inscripciones-form-main">
+
+              <article class="card inscripciones-student-profile" id="editStudentInfo">
+
+                <div class="inscripciones-student-profile__header">
+
+                  <div class="inscripciones-student-avatar" id="editStudentAvatar">
+                    --
+                  </div>
+
+                  <div>
+                    <h3 id="editStudentName">Estudiante</h3>
+                    <span id="editStudentDni">DNI: -</span>
+                  </div>
+
+                </div>
+
+                <div class="inscripciones-student-details">
+                  <div>
+                    <span>Edad</span>
+                    <strong id="editStudentAge">-</strong>
+                  </div>
+
+                  <div>
+                    <span>Cinturón</span>
+                    <strong id="editStudentBelt">-</strong>
+                  </div>
+                </div>
+
+              </article>
+
+
+              <!-- GRUPOS ACTUALES -->
+
+              <article class="card inscripciones-form-card">
+
+                <div class="inscripciones-section-header">
+                  <h3>Grupos actuales</h3>
+                </div>
+
+                <div id="currentStudentGroups">
+                  <p>Cargando grupos actuales...</p>
+                </div>
+
+              </article>
+
+
+              <!-- AÑADIR GRUPOS -->
+
+              <article class="card inscripciones-form-card">
+
+                <div class="inscripciones-section-header">
+                  <h3>Propuesta sin guardar</h3>
+                  <p>Selecciona los grupos adicionales que deseas asignar.</p>
+                </div>
+
+                <div id="newStudentGroups">
+                  <p>Cargando grupos disponibles...</p>
+                </div>
+
+              </article>
+
+            </div>
+
+
+            <!-- COLUMNA DERECHA -->
+
+            <aside class="inscripciones-form-sidebar">
+
+              <article class="card inscripciones-summary-card">
+
+                <div class="inscripciones-section-header">
+                  <h3>Resumen de cambios</h3>
+                </div>
+
+                <div id="editGroupsSummary">
+                  <p>Sin cambios pendientes.</p>
+                </div>
+
+                <div class="inscripciones-summary-note">
+                  Los cambios de capacidad se aplicarán al confirmar la operación.
+                </div>
+
+              </article>
+
+            </aside>
+
+          </div>
+
+
+          <!-- ACCIONES -->
+
+          <div class="inscripciones-form-actions">
+
+            <button type="button" id="cancelEditInscripcionButton" class="btn btn--outline">
+              Cancelar
+            </button>
+
+            <button type="button" id="saveEditInscripcionButton" class="btn btn--primary">
+              Guardar cambios
+            </button>
+
+          </div>
+
+        </section>
+
+
+        <!-- ==========================================
+       MODAL: RETIRAR DE UN GRUPO
+       ========================================== -->
+
+        <div id="removeInscripcionModal" class="inscripciones-modal" hidden>
+
+          <div class="inscripciones-modal__overlay" data-close-modal></div>
+
+          <div class="inscripciones-modal__content" role="dialog" aria-modal="true"
+            aria-labelledby="removeInscripcionTitle">
+
+            <div class="inscripciones-modal__icon">
+              !
+            </div>
+
+            <h2 id="removeInscripcionTitle">¿Retirar inscripción?</h2>
+
+            <p id="removeInscripcionMessage">
+              Confirma si deseas retirar al estudiante de este grupo.
+            </p>
+
+            <div class="inscripciones-modal__notice">
+              Conservará su inscripción en sus otros grupos y su ficha de estudiante,
+              asistencia, progreso y pagos.
+            </div>
+
+            <div class="inscripciones-modal__actions">
+
+              <button type="button" id="cancelRemoveInscripcionButton" class="btn btn--outline">
+                Mantener inscripción
+              </button>
+
+              <button type="button" id="confirmRemoveInscripcionButton" class="btn btn--danger">
+                Retirar de este grupo
+              </button>
+
+            </div>
+
+          </div>
+
         </div>
-      </section>
-    </main>
 
-    <!-- ==========================================
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ==========================================
          JAVASCRIPT
          ========================================== -->
 
-    <script src="/js/topbar.js"></script>
-    <script src="/js/nav-acordeon.js"></script>
-    <script src="/js/inscripciones.js"></script>
-  </body>
+  <script src="/js/topbar.js"></script>
+  <script src="/js/nav-acordeon.js"></script>
+  <script src="/js/inscripciones.js"></script>
+</body>
+
 </html>
