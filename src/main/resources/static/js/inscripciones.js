@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", () => {
 
     // ==========================================
@@ -222,11 +221,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!fecha) return "No disponible";
 
-        const valor = new Date(`${fecha}T00:00:00`);
+        // Spring Boot puede devolver LocalDate o LocalDateTime.
+        // Tomamos YYYY-MM-DD directamente para evitar desfases de zona horaria.
+        const fechaTexto = String(fecha).trim();
+        const coincidencia = fechaTexto.match(/^(\d{4})-(\d{2})-(\d{2})/);
 
-        if (Number.isNaN(valor.getTime())) return "No disponible";
+        if (!coincidencia) return "No disponible";
 
-        return valor.toLocaleDateString("es-PE");
+        const anio = Number(coincidencia[1]);
+        const mes = Number(coincidencia[2]);
+        const dia = Number(coincidencia[3]);
+
+        const valor = new Date(anio, mes - 1, dia);
+
+        if (
+            Number.isNaN(valor.getTime()) ||
+            valor.getFullYear() !== anio ||
+            valor.getMonth() !== mes - 1 ||
+            valor.getDate() !== dia
+        ) {
+            return "No disponible";
+        }
+
+        return valor.toLocaleDateString("es-PE", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+        });
 
     }
 
@@ -376,9 +397,7 @@ document.addEventListener("DOMContentLoaded", () => {
         cargarFiltroGrupos();
 
         await cargarHorarios();
-
     }
-
 
     async function cargarHorarios() {
 
@@ -647,6 +666,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 (item) => item.estado
             );
 
+            const fechasInscripcion = registro.asignacionesVisibles
+                .map((item) => item.fechaInscripcion)
+                .filter(Boolean)
+                .sort((a, b) => String(a).localeCompare(String(b)));
+
+            // La tabla agrupa varios grupos por estudiante: se muestra
+            // la fecha más antigua entre las asignaciones visibles.
+            const fechaInscripcion = fechasInscripcion.length > 0
+                ? formatearFecha(fechasInscripcion[0])
+                : "No disponible";
+
             const estadoGeneral = estados.every(
                 (estado) => estado === "ACTIVO"
             )
@@ -671,7 +701,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     </td>
 
-                    <td>No disponible</td>
+                    <td>${escaparHTML(fechaInscripcion)}</td>
 
                     <td>${estadoGeneral}</td>
 
@@ -746,6 +776,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         }).slice(0, 8);
 
+
     }
 
 
@@ -799,7 +830,6 @@ document.addEventListener("DOMContentLoaded", () => {
         contenedor.hidden = false;
 
     }
-
 
     async function seleccionarEstudiante(estudianteId) {
 
@@ -1152,7 +1182,6 @@ document.addEventListener("DOMContentLoaded", () => {
         await cargarGruposDisponibles(estudiante.id);
 
     }
-
 
     // ==========================================
     // NUEVA INSCRIPCIÓN: GRUPOS DISPONIBLES
@@ -1574,7 +1603,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
-
     // ==========================================
     // INSCRITOS POR GRUPO
     // ==========================================
@@ -1917,6 +1945,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         estudianteEdicion = estudiante;
 
+        ocultarNotificacionEdicion();
+
         gruposEdicionSeleccionados.clear();
 
         elementos.editStudentName.textContent =
@@ -1986,7 +2016,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
     }
-
 
     function renderizarGruposEdicion() {
 
@@ -2123,6 +2152,148 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
+    function obtenerNotificacionEdicion() {
+
+        let notificacion = document.getElementById("editGroupsNotification");
+
+        if (!notificacion) {
+
+            notificacion = document.createElement("div");
+            notificacion.id = "editGroupsNotification";
+            notificacion.className = "inscripciones-message";
+            notificacion.hidden = true;
+            notificacion.setAttribute("role", "alert");
+            notificacion.setAttribute("aria-live", "polite");
+
+            elementos.editGroupsSummary.parentElement.insertBefore(
+                notificacion,
+                elementos.editGroupsSummary
+            );
+
+        }
+
+        return notificacion;
+
+    }
+
+
+    function mostrarNotificacionEdicion(mensaje, tipo = "error") {
+
+        const notificacion = obtenerNotificacionEdicion();
+        notificacion.textContent = mensaje;
+        notificacion.className = `inscripciones-message inscripciones-message--${tipo}`;
+        notificacion.hidden = false;
+
+    }
+
+
+    function ocultarNotificacionEdicion() {
+
+        const notificacion = document.getElementById("editGroupsNotification");
+
+        if (!notificacion) return;
+
+        notificacion.textContent = "";
+        notificacion.hidden = true;
+        notificacion.className = "inscripciones-message";
+
+    }
+
+
+    function validarHorarioCompletoGrupo(grupoId) {
+
+        const grupo = obtenerGrupo(grupoId);
+        const horarios = horariosPorGrupo[grupoId] || [];
+
+        if (!grupo) {
+            return { valido: false, mensaje: "El grupo seleccionado no existe." };
+        }
+
+        if (horarios.length === 0) {
+            return {
+                valido: false,
+                mensaje: `No se puede seleccionar ${grupo.nombre}: no tiene horarios registrados.`,
+            };
+        }
+
+        for (const horario of horarios) {
+
+            const dia = normalizarDia(horario.diaSemana);
+            const inicio = convertirHoraAMinutos(horario.horaInicio);
+            const fin = convertirHoraAMinutos(horario.horaFin);
+
+            if (!dia || inicio === null || fin === null || inicio >= fin) {
+                return {
+                    valido: false,
+                    mensaje: `No se puede validar el horario de ${grupo.nombre}. Revisa el día y las horas registrados.`,
+                };
+            }
+
+        }
+
+        return { valido: true };
+
+    }
+
+
+    function validarSeleccionGrupoEdicion(grupoId) {
+
+        const grupo = obtenerGrupo(grupoId);
+
+        const validacionHorario = validarHorarioCompletoGrupo(grupoId);
+
+        if (!validacionHorario.valido) return validacionHorario;
+
+        const yaEstabaActivo = asignacionesEdicion.some(
+            (item) =>
+                Number(item.grupoId) === Number(grupoId) &&
+                item.estado === "ACTIVO"
+        );
+
+        if (
+            !yaEstabaActivo &&
+            Number(grupo.cuposDisponibles) <= 0
+        ) {
+            return {
+                valido: false,
+                mensaje: `${grupo.nombre} no tiene cupos disponibles. No se puede agregar al estudiante.`,
+            };
+        }
+
+        for (const seleccionadoId of gruposEdicionSeleccionados) {
+
+            if (Number(seleccionadoId) === Number(grupoId)) continue;
+
+            const validacionSeleccionado = validarHorarioCompletoGrupo(seleccionadoId);
+
+            if (!validacionSeleccionado.valido) {
+                return validacionSeleccionado;
+            }
+
+            const cruce = existeCruceEntreGrupos(grupoId, seleccionadoId);
+            const grupoSeleccionado = obtenerGrupo(seleccionadoId);
+
+            if (cruce.horarioNoRegistrado) {
+                return {
+                    valido: false,
+                    mensaje: `No se puede comprobar el horario de ${grupoSeleccionado?.nombre || "el otro grupo"}.`,
+                };
+            }
+
+            if (cruce.existe) {
+                return {
+                    valido: false,
+                    mensaje: `No se puede seleccionar ${grupo.nombre}: su horario se cruza con ${grupoSeleccionado?.nombre || "otro grupo"} el ${cruce.dia}.`,
+                };
+            }
+
+        }
+
+        return { valido: true };
+
+    }
+
+
     function actualizarResumenEdicion() {
 
         const seleccionados = grupos.filter(
@@ -2160,15 +2331,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let i = 0; i < ids.length; i++) {
 
-            const horariosA = horariosPorGrupo[ids[i]] || [];
+            const validacionHorario = validarHorarioCompletoGrupo(ids[i]);
 
-            if (horariosA.length === 0) {
-
-                return {
-                    valido: false,
-                    mensaje: `El grupo ${obtenerGrupo(ids[i])?.nombre || ""} no tiene horarios registrados.`,
-                };
-
+            if (!validacionHorario.valido) {
+                return validacionHorario;
             }
 
             for (let j = i + 1; j < ids.length; j++) {
@@ -2211,13 +2377,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!estudianteEdicion) return;
 
+        ocultarNotificacionEdicion();
+
         const validacion = validarCrucesEdicion();
 
         if (!validacion.valido) {
 
-            elementos.editGroupsSummary.innerHTML = `
-                <p>${escaparHTML(validacion.mensaje)}</p>
-            `;
+            mostrarNotificacionEdicion(validacion.mensaje);
 
             return;
 
@@ -2334,9 +2500,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (errores.length > 0) {
 
-                elementos.editGroupsSummary.innerHTML = `
-                    <p>${escaparHTML(errores.join(" "))}</p>
-                `;
+                mostrarNotificacionEdicion(
+                    `No se pudieron completar todos los cambios: ${errores.join(" ")}`
+                );
 
                 return;
 
@@ -2352,9 +2518,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (error) {
 
-            elementos.editGroupsSummary.innerHTML = `
-                <p>${escaparHTML(error.message)}</p>
-            `;
+            mostrarNotificacionEdicion(error.message);
 
         } finally {
 
@@ -2855,16 +3019,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
-
     // ==========================================
     // EVENTOS: EDICIÓN
     // ==========================================
 
-    elementos.currentStudentGroups.addEventListener("change", (event) => {
+    function manejarCambioGrupoEdicion(event) {
 
-        const checkbox = event.target.closest(
-            'input[name="editGroups"]'
-        );
+        const checkbox = event.target.closest('input[name="editGroups"]');
 
         if (!checkbox) return;
 
@@ -2872,42 +3033,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (checkbox.checked) {
 
+            const validacion = validarSeleccionGrupoEdicion(grupoId);
+
+            if (!validacion.valido) {
+
+                checkbox.checked = false;
+                gruposEdicionSeleccionados.delete(grupoId);
+                mostrarNotificacionEdicion(validacion.mensaje);
+                actualizarResumenEdicion();
+                return;
+
+            }
+
             gruposEdicionSeleccionados.add(grupoId);
+            ocultarNotificacionEdicion();
 
         } else {
 
             gruposEdicionSeleccionados.delete(grupoId);
+            ocultarNotificacionEdicion();
 
         }
 
         actualizarResumenEdicion();
 
-    });
+    }
 
 
-    elementos.newStudentGroups.addEventListener("change", (event) => {
+    elementos.currentStudentGroups.addEventListener(
+        "change",
+        manejarCambioGrupoEdicion
+    );
 
-        const checkbox = event.target.closest(
-            'input[name="editGroups"]'
-        );
 
-        if (!checkbox) return;
-
-        const grupoId = Number(checkbox.value);
-
-        if (checkbox.checked) {
-
-            gruposEdicionSeleccionados.add(grupoId);
-
-        } else {
-
-            gruposEdicionSeleccionados.delete(grupoId);
-
-        }
-
-        actualizarResumenEdicion();
-
-    });
+    elementos.newStudentGroups.addEventListener(
+        "change",
+        manejarCambioGrupoEdicion
+    );
 
 
     elementos.cancelEditButton.addEventListener("click", () => {
@@ -2915,6 +3077,8 @@ document.addEventListener("DOMContentLoaded", () => {
         estudianteEdicion = null;
 
         gruposEdicionSeleccionados.clear();
+
+        ocultarNotificacionEdicion();
 
         mostrarVista("listado");
 
