@@ -8506,4 +8506,163 @@ body:has(#crearUsuarioModal:not([hidden]),
   border-color: #bfdbfe;
 }
 
+.secretaria-layout .secretaria-header {
+  align-items: center;
+}
+
+.secretaria-date {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+.secretaria-date span {
+  color: #666666;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.secretaria-date strong {
+  color: #000000;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.secretaria-nav__label {
+  display: block;
+  margin: 1.25rem 0 0.35rem;
+  padding: 0 1rem;
+  color: #666666;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.secretaria-section {
+  min-width: 0;
+}
+
+.secretaria-kpis {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.secretaria-kpi--attendance {
+  border-top: 3px solid #1a1a1a;
+}
+.secretaria-kpi--attendance .dashboard-kpi__icon {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.secretaria-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.secretaria-actions .dashboard-card {
+  min-height: 125px;
+}
+
+.secretaria-status-message {
+  margin-bottom: 1.5rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e5e5e5;
+  border-left: 4px solid #ff2400;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #000000;
+  font-size: 0.875rem;
+}
+.secretaria-status-message[hidden] {
+  display: none;
+}
+.secretaria-status-message--error {
+  border-left-color: #ff2400;
+}
+.secretaria-status-message--success {
+  border-left-color: #16803C;
+}
+.secretaria-status-message--info {
+  border-left-color: #ffd700;
+}
+
+.secretaria-session {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.secretaria-session h2 {
+  margin: 0;
+}
+.secretaria-session p {
+  max-width: 650px;
+}
+.secretaria-session__user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+.secretaria-session__user > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.secretaria-session__user strong {
+  color: #000000;
+  font-size: 0.9rem;
+}
+.secretaria-session__user span {
+  color: #666666;
+  font-size: 0.75rem;
+}
+.secretaria-session__avatar {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: #ff2400;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+  .secretaria-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 800px) {
+  .secretaria-session {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+@media (max-width: 600px) {
+  .secretaria-header {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+  .secretaria-date {
+    width: 100%;
+  }
+  .secretaria-kpis {
+    grid-template-columns: 1fr;
+  }
+  .secretaria-actions {
+    grid-template-columns: 1fr;
+  }
+  .secretaria-session__user {
+    width: 100%;
+  }
+}
+
 /*# sourceMappingURL=main.css.map */

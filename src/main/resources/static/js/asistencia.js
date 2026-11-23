@@ -5,12 +5,84 @@ document.addEventListener("DOMContentLoaded", function () {
    * =========================================================
    */
 
-  const auth = sessionStorage.getItem("kihonAuth");
+  const username = sessionStorage.getItem("kihonUsername");
+  const rol = sessionStorage.getItem("kihonRol");
 
-  if (!auth) {
-    window.location.href = "/login";
-
+  if (!username || !rol || !["ADMIN", "SECRETARIA", "SENSEI"].includes(rol)) {
+    window.location.replace("/login");
     return;
+  }
+
+  /*
+   * =========================================================
+   * TOKEN CSRF
+   * =========================================================
+   */
+
+  async function obtenerTokenCSRF() {
+    const response = await fetch("/api/auth/csrf", {
+      method: "GET",
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudo obtener el token CSRF.");
+    }
+
+    const data = await response.json();
+
+    return data.token;
+  }
+
+  /*
+   * =========================================================
+   * SOLICITUDES HTTP
+   * =========================================================
+   */
+
+  async function solicitar(url, opciones = {}) {
+    const metodo = (opciones.method || "GET").toUpperCase();
+
+    const encabezados = new Headers(opciones.headers || {});
+
+    encabezados.set("Accept", "application/json");
+
+    /*
+     * Las solicitudes que modifican información
+     * necesitan el token CSRF.
+     */
+
+    if (!["GET", "HEAD", "OPTIONS"].includes(metodo)) {
+      const csrfToken = await obtenerTokenCSRF();
+
+      encabezados.set("X-CSRF-TOKEN", csrfToken);
+    }
+
+    const response = await fetch(url, {
+      ...opciones,
+      method: metodo,
+      credentials: "same-origin",
+      headers: encabezados,
+    });
+
+    /*
+     * SESIÓN EXPIRADA
+     */
+
+    if (response.status === 401) {
+      sessionStorage.removeItem("kihonUsername");
+      sessionStorage.removeItem("kihonRol");
+      sessionStorage.removeItem("kihonAuth");
+
+      window.location.replace("/login");
+
+      throw new Error("La sesión ha expirado.");
+    }
+
+    return response;
   }
 
   /*
@@ -46,8 +118,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const estudianteConsulta = document.getElementById("estudianteConsulta");
 
   const attendanceList = document.getElementById("attendanceList");
-
-  const attendanceCount = document.getElementById("attendanceCount");
 
   /*
    * =========================================================
@@ -117,9 +187,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function verificarAutorizacion(response) {
     if (response.status === 401) {
-      sessionStorage.clear();
+      sessionStorage.removeItem("kihonUsername");
+      sessionStorage.removeItem("kihonRol");
+      sessionStorage.removeItem("kihonAuth");
 
-      window.location.href = "/login";
+      window.location.replace("/login");
 
       return false;
     }
@@ -213,13 +285,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const diaSemana = obtenerDiaSemana(fecha);
 
     try {
-      const response = await fetch(`/api/grupo-horarios/dia/${diaSemana}`, {
-        method: "GET",
-
-        headers: {
-          Authorization: "Basic " + auth,
+      const response = await solicitar(
+        `/api/grupo-horarios/dia/${diaSemana}`,
+        {
+          method: "GET",
         },
-      });
+      );
 
       if (!verificarAutorizacion(response)) {
         return;
@@ -355,14 +426,10 @@ document.addEventListener("DOMContentLoaded", function () {
        * ESTUDIANTES
        */
 
-      const estudiantesResponse = await fetch(
+      const estudiantesResponse = await solicitar(
         `/api/estudiantes-grupos/grupo/${grupoId}`,
         {
           method: "GET",
-
-          headers: {
-            Authorization: "Basic " + auth,
-          },
         },
       );
 
@@ -395,14 +462,10 @@ document.addEventListener("DOMContentLoaded", function () {
        * ASISTENCIAS EXISTENTES
        */
 
-      const asistenciasResponse = await fetch(
+      const asistenciasResponse = await solicitar(
         `/api/asistencias/grupo/${grupoId}/fecha/${fecha}`,
         {
           method: "GET",
-
-          headers: {
-            Authorization: "Basic " + auth,
-          },
         },
       );
 
@@ -505,24 +568,24 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="asistencia-student-list">
 
                 ${estudiantesGrupo
-                  .map((asignacion) => {
-                    const asistencia = buscarAsistencia(
-                      asignacion.estudianteId,
-                    );
+        .map((asignacion) => {
+          const asistencia = buscarAsistencia(
+            asignacion.estudianteId,
+          );
 
-                    const estado = asistencia ? asistencia.estado : "AUSENTE";
+          const estado = asistencia ? asistencia.estado : "AUSENTE";
 
-                    const hora =
-                      asistencia && asistencia.horaLlegada
-                        ? asistencia.horaLlegada.substring(0, 5)
-                        : "";
+          const hora =
+            asistencia && asistencia.horaLlegada
+              ? asistencia.horaLlegada.substring(0, 5)
+              : "";
 
-                    const observacion =
-                      asistencia && asistencia.observacion
-                        ? asistencia.observacion
-                        : "";
+          const observacion =
+            asistencia && asistencia.observacion
+              ? asistencia.observacion
+              : "";
 
-                    return `
+          return `
 
                             <div
                                 class="asistencia-student-row"
@@ -612,8 +675,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             </div>
 
                         `;
-                  })
-                  .join("")}
+        })
+        .join("")}
 
             </div>
         `;
@@ -786,14 +849,12 @@ document.addEventListener("DOMContentLoaded", function () {
          */
 
         if (asistencia.asistenciaId) {
-          response = await fetch(
+          response = await solicitar(
             `/api/asistencias/${asistencia.asistenciaId}`,
             {
               method: "PUT",
 
               headers: {
-                Authorization: "Basic " + auth,
-
                 "Content-Type": "application/json",
               },
 
@@ -817,12 +878,10 @@ document.addEventListener("DOMContentLoaded", function () {
            * NUEVA → POST
            */
 
-          response = await fetch("/api/asistencias", {
+          response = await solicitar("/api/asistencias", {
             method: "POST",
 
             headers: {
-              Authorization: "Basic " + auth,
-
               "Content-Type": "application/json",
             },
 
@@ -901,12 +960,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function cargarGruposConsulta() {
     try {
-      const response = await fetch("/api/grupos?estado=ACTIVO", {
+      const response = await solicitar("/api/grupos?estado=ACTIVO", {
         method: "GET",
-
-        headers: {
-          Authorization: "Basic " + auth,
-        },
       });
 
       if (!verificarAutorizacion(response)) {
@@ -952,12 +1007,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function cargarEstudiantesConsulta() {
     try {
-      const response = await fetch("/api/estudiantes?estado=ACTIVO", {
+      const response = await solicitar("/api/estudiantes?estado=ACTIVO", {
         method: "GET",
-
-        headers: {
-          Authorization: "Basic " + auth,
-        },
       });
 
       if (!verificarAutorizacion(response)) {
@@ -1023,12 +1074,8 @@ document.addEventListener("DOMContentLoaded", function () {
         `;
 
     try {
-      const response = await fetch(`/api/asistencias/fecha/${fecha}`, {
+      const response = await solicitar(`/api/asistencias/fecha/${fecha}`, {
         method: "GET",
-
-        headers: {
-          Authorization: "Basic " + auth,
-        },
       });
 
       if (!verificarAutorizacion(response)) {
@@ -1137,8 +1184,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     <tbody>
 
                         ${resultados
-                          .map((asistencia) => {
-                            return `
+          .map((asistencia) => {
+            return `
 
                                     <tr
                                         data-consulta-id="${asistencia.id}"
@@ -1160,14 +1207,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                                         <td>
-                                            ${
-                                              asistencia.horaLlegada
-                                                ? asistencia.horaLlegada.substring(
-                                                    0,
-                                                    5,
-                                                  )
-                                                : "-"
-                                            }
+                                            ${asistencia.horaLlegada
+                ? asistencia.horaLlegada.substring(
+                  0,
+                  5,
+                )
+                : "-"
+              }
                                         </td>
 
 
@@ -1176,8 +1222,8 @@ document.addEventListener("DOMContentLoaded", function () {
                                             <span class="
                                                 asistencia-estado
                                                 asistencia-estado--${String(
-                                                  asistencia.estado,
-                                                ).toLowerCase()}
+                asistencia.estado,
+              ).toLowerCase()}
                                             ">
 
                                                 ${asistencia.estado}
@@ -1207,8 +1253,8 @@ document.addEventListener("DOMContentLoaded", function () {
                                     </tr>
 
                                 `;
-                          })
-                          .join("")}
+          })
+          .join("")}
 
                     </tbody>
 
@@ -1291,11 +1337,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 <input
                     type="time"
                     class="form-input asistencia-edit-hora"
-                    value="${
-                      asistencia.horaLlegada
-                        ? asistencia.horaLlegada.substring(0, 5)
-                        : ""
-                    }"
+                    value="${asistencia.horaLlegada
+        ? asistencia.horaLlegada.substring(0, 5)
+        : ""
+      }"
                 >
 
             </td>
@@ -1412,7 +1457,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const horaInput = fila.querySelector(".asistencia-edit-hora");
 
-    const observacionInput = fila.querySelector(".asistencia-edit-observacion");
+    const observacionInput = fila.querySelector(
+      ".asistencia-edit-observacion",
+    );
 
     const estado = estadoSelect.value;
 
@@ -1425,29 +1472,30 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     try {
-      const response = await fetch(`/api/asistencias/${asistencia.id}`, {
-        method: "PUT",
+      const response = await solicitar(
+        `/api/asistencias/${asistencia.id}`,
+        {
+          method: "PUT",
 
-        headers: {
-          Authorization: "Basic " + auth,
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-          "Content-Type": "application/json",
+          body: JSON.stringify({
+            estudianteId: asistencia.estudianteId,
+
+            grupoId: asistencia.grupoId,
+
+            fecha: asistencia.fecha,
+
+            horaLlegada,
+
+            estado,
+
+            observacion: observacionInput.value.trim() || null,
+          }),
         },
-
-        body: JSON.stringify({
-          estudianteId: asistencia.estudianteId,
-
-          grupoId: asistencia.grupoId,
-
-          fecha: asistencia.fecha,
-
-          horaLlegada,
-
-          estado,
-
-          observacion: observacionInput.value.trim() || null,
-        }),
-      });
+      );
 
       if (!verificarAutorizacion(response)) {
         return;

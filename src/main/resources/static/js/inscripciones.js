@@ -1,20 +1,112 @@
+
 document.addEventListener("DOMContentLoaded", () => {
 
     // ==========================================
-    // AUTENTICACIÓN
+    // AUTENTICACIÓN Y SESIÓN
     // ==========================================
 
-    const auth = sessionStorage.getItem("kihonAuth");
+    const username = sessionStorage.getItem("kihonUsername");
     const rol = sessionStorage.getItem("kihonRol");
 
-    if (!auth || !rol || !["ADMIN", "SECRETARIA"].includes(rol)) {
-        window.location.href = "/login";
+    if (!username || !rol || !["ADMIN", "SECRETARIA"].includes(rol)) {
+        window.location.replace("/login");
         return;
     }
 
-    const headers = {
-        Authorization: `Basic ${auth}`,
-    };
+    // ==========================================
+    // CSRF Y PETICIONES API
+    // ==========================================
+
+    async function obtenerTokenCSRF() {
+
+        const response = await window.fetch("/api/auth/csrf", {
+            method: "GET",
+            credentials: "same-origin",
+            headers: {
+                Accept: "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("No se pudo obtener el token CSRF.");
+        }
+
+        const data = await response.json();
+
+        return data.token;
+
+    }
+
+
+    async function solicitar(url, opciones = {}) {
+
+        const metodo = (opciones.method || "GET").toUpperCase();
+
+        const headersPeticion = new Headers(opciones.headers || {});
+
+        headersPeticion.delete("Authorization");
+
+        headersPeticion.set("Accept", "application/json");
+
+        if (!["GET", "HEAD", "OPTIONS", "TRACE"].includes(metodo)) {
+
+            const csrfToken = await obtenerTokenCSRF();
+
+            headersPeticion.set("X-CSRF-TOKEN", csrfToken);
+
+        }
+
+        const response = await window.fetch(url, {
+            ...opciones,
+            method: metodo,
+            credentials: "same-origin",
+            headers: headersPeticion
+        });
+
+        if (response.status === 401 || response.status === 403) {
+
+            sessionStorage.removeItem("kihonUsername");
+            sessionStorage.removeItem("kihonRol");
+            sessionStorage.removeItem("kihonAuth");
+
+            window.location.replace("/login");
+
+            throw new Error(
+                response.status === 401
+                    ? "La sesión ha expirado."
+                    : "No tienes autorización para realizar esta operación."
+            );
+
+        }
+
+        const texto = await response.text();
+
+        let data = null;
+
+        if (texto) {
+
+            try {
+                data = JSON.parse(texto);
+            } catch {
+                data = texto;
+            }
+
+        }
+
+        if (!response.ok) {
+
+            const mensaje =
+                typeof data === "string"
+                    ? data
+                    : data?.message || data?.error || "Ocurrió un error.";
+
+            throw new Error(mensaje);
+
+        }
+
+        return data;
+
+    }
 
 
     // ==========================================
@@ -313,62 +405,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return estudiantes.find(
             (estudiante) => Number(estudiante.id) === Number(estudianteId)
         );
-
-    }
-
-
-    // ==========================================
-    // PETICIONES API
-    // ==========================================
-
-    async function solicitar(url, opciones = {}) {
-
-        const response = await fetch(url, {
-            ...opciones,
-
-            headers: {
-                ...headers,
-                ...(opciones.headers || {}),
-            },
-
-        });
-
-        if (response.status === 401) {
-
-            sessionStorage.clear();
-
-            window.location.href = "/login";
-
-            throw new Error("La sesión ha expirado.");
-
-        }
-
-        const texto = await response.text();
-
-        let data = null;
-
-        if (texto) {
-
-            try {
-                data = JSON.parse(texto);
-            } catch {
-                data = texto;
-            }
-
-        }
-
-        if (!response.ok) {
-
-            const mensaje =
-                typeof data === "string"
-                    ? data
-                    : data?.message || data?.error || "Ocurrió un error.";
-
-            throw new Error(mensaje);
-
-        }
-
-        return data;
 
     }
 
@@ -776,7 +812,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         }).slice(0, 8);
 
-
     }
 
 
@@ -830,6 +865,7 @@ document.addEventListener("DOMContentLoaded", () => {
         contenedor.hidden = false;
 
     }
+
 
     async function seleccionarEstudiante(estudianteId) {
 
@@ -1182,6 +1218,7 @@ document.addEventListener("DOMContentLoaded", () => {
         await cargarGruposDisponibles(estudiante.id);
 
     }
+
 
     // ==========================================
     // NUEVA INSCRIPCIÓN: GRUPOS DISPONIBLES
@@ -1603,6 +1640,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
+
     // ==========================================
     // INSCRITOS POR GRUPO
     // ==========================================
@@ -2016,6 +2054,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
     }
+
 
     function renderizarGruposEdicion() {
 
@@ -3018,6 +3057,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
     });
+
 
     // ==========================================
     // EVENTOS: EDICIÓN

@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
   /*
    * =========================================================
@@ -15,12 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const mobileNav = document.querySelector(".mobile-nav");
 
-  const accordionButtons = document.querySelectorAll(
-    ".sidebar__accordion-button",
-  );
-
-  const sidebarLinks = document.querySelectorAll(".sidebar__link");
-
   /*
    * =========================================================
    * VALIDACIÓN
@@ -33,114 +28,164 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /*
    * =========================================================
-   * ACORDEÓN
+   * OBTENER ELEMENTOS DINÁMICAMENTE
    * =========================================================
    */
 
-  accordionButtons.forEach(function (button) {
-    button.addEventListener("click", function () {
-      const targetId = button.getAttribute("data-target");
+  function obtenerBotonesAcordeon() {
+    return sidebar.querySelectorAll(
+      ".sidebar__accordion-button"
+    );
+  }
 
-      const target = document.getElementById(targetId);
+  function obtenerEnlacesSidebar() {
+    return sidebar.querySelectorAll(
+      ".sidebar__link"
+    );
+  }
 
-      if (!target) {
-        return;
-      }
+  // =========================================================
+  // RESTABLECER ACORDEÓN
+  // =========================================================
 
-      const isOpen = target.classList.contains("sidebar__submenu--open");
+  function cerrarAcordeon(button) {
+    const targetId = button.getAttribute("data-target");
 
-      /*
-       * ---------------------------------------------
-       * CERRAR LOS DEMÁS SUBMENÚS
-       * ---------------------------------------------
-       */
+    const target = document.getElementById(targetId);
 
-      document
-        .querySelectorAll(".sidebar__submenu--open")
-        .forEach(function (submenu) {
-          if (submenu !== target) {
-            submenu.classList.remove("sidebar__submenu--open");
+    if (target) {
+      target.classList.remove("sidebar__submenu--open");
+      target.setAttribute("hidden", "");
+    }
 
-            submenu.setAttribute("hidden", "");
-          }
-        });
+    button.classList.remove("sidebar__accordion-button--open");
+    button.classList.remove("sidebar__accordion-button--active");
 
-      /*
-       * ---------------------------------------------
-       * RESTABLECER BOTONES
-       * ---------------------------------------------
-       */
+    button.setAttribute("aria-expanded", "false");
 
-      accordionButtons.forEach(function (otherButton) {
-        if (otherButton !== button) {
-          otherButton.classList.remove("sidebar__accordion-button--open");
+    const arrow = button.querySelector(
+      ".sidebar__accordion-arrow"
+    );
 
-          otherButton.setAttribute("aria-expanded", "false");
+    if (arrow) {
+      arrow.textContent = "▶";
+    }
+  }
 
-          const otherArrow = otherButton.querySelector(
-            ".sidebar__accordion-arrow",
-          );
+  // =========================================================
+  // ABRIR ACORDEÓN
+  // =========================================================
 
-          if (otherArrow) {
-            otherArrow.textContent = "▶";
-          }
-        }
-      });
+  function abrirAcordeon(button) {
+    const targetId = button.getAttribute("data-target");
 
-      /*
-       * ---------------------------------------------
-       * ABRIR / CERRAR SELECCIONADO
-       * ---------------------------------------------
-       */
+    const target = document.getElementById(targetId);
 
-      if (isOpen) {
-        target.classList.remove("sidebar__submenu--open");
+    if (!target) {
+      return;
+    }
 
-        target.setAttribute("hidden", "");
+    target.classList.add("sidebar__submenu--open");
+    target.removeAttribute("hidden");
 
-        button.classList.remove("sidebar__accordion-button--open");
+    button.classList.add("sidebar__accordion-button--open");
 
-        button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-expanded", "true");
 
-        const arrow = button.querySelector(".sidebar__accordion-arrow");
+    const arrow = button.querySelector(
+      ".sidebar__accordion-arrow"
+    );
 
-        if (arrow) {
-          arrow.textContent = "▶";
-        }
-      } else {
-        target.classList.add("sidebar__submenu--open");
+    if (arrow) {
+      arrow.textContent = "▼";
+    }
+  }
 
-        target.removeAttribute("hidden");
+  // =========================================================
+  // CERRAR LOS DEMÁS ACORDEONES
+  // =========================================================
 
-        button.classList.add("sidebar__accordion-button--open");
-
-        button.setAttribute("aria-expanded", "true");
-
-        const arrow = button.querySelector(".sidebar__accordion-arrow");
-
-        if (arrow) {
-          arrow.textContent = "▼";
-        }
+  function cerrarOtrosAcordeones(buttonActual) {
+    obtenerBotonesAcordeon().forEach(function (button) {
+      if (button !== buttonActual) {
+        cerrarAcordeon(button);
       }
     });
+  }
+
+  /*
+   * =========================================================
+   * EVENTOS DE ACORDEONES
+   * =========================================================
+   *
+   * Delegación de eventos:
+   * permite trabajar con botones generados por topbar.js.
+   *
+   * =========================================================
+   */
+
+  sidebar.addEventListener("click", function (event) {
+    const button = event.target.closest(
+      ".sidebar__accordion-button"
+    );
+
+    if (!button || !sidebar.contains(button)) {
+      return;
+    }
+
+    const targetId = button.getAttribute("data-target");
+
+    const target = document.getElementById(targetId);
+
+    if (!target) {
+      return;
+    }
+
+    const estaAbierto = target.classList.contains(
+      "sidebar__submenu--open"
+    );
+
+    cerrarOtrosAcordeones(button);
+
+    if (estaAbierto) {
+      cerrarAcordeon(button);
+    } else {
+      abrirAcordeon(button);
+    }
   });
 
   /*
    * =========================================================
-   * PÁGINA ACTIVA
+   * MARCAR PÁGINA ACTIVA
    * =========================================================
    */
 
   function marcarPaginaActiva() {
     const currentPath = window.location.pathname;
 
+    const sidebarLinks = obtenerEnlacesSidebar();
+
+    const accordionButtons = obtenerBotonesAcordeon();
+
     let activeLink = null;
 
-    /*
-     * ---------------------------------------------
-     * BUSCAR COINCIDENCIA EXACTA
-     * ---------------------------------------------
-     */
+    // =====================================================
+    // LIMPIAR ESTADOS ANTERIORES
+    // =====================================================
+
+    sidebarLinks.forEach(function (link) {
+      link.classList.remove("sidebar__link--active");
+
+      link.removeAttribute("aria-current");
+    });
+
+    accordionButtons.forEach(function (button) {
+      cerrarAcordeon(button);
+    });
+
+    // =====================================================
+    // BUSCAR COINCIDENCIA EXACTA
+    // =====================================================
 
     sidebarLinks.forEach(function (link) {
       const href = link.getAttribute("href");
@@ -149,24 +194,26 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      let linkPath;
-
       try {
-        linkPath = new URL(href, window.location.origin).pathname;
-      } catch (error) {
-        return;
-      }
+        const linkPath = new URL(
+          href,
+          window.location.origin
+        ).pathname;
 
-      if (linkPath === currentPath) {
-        activeLink = link;
+        if (linkPath === currentPath) {
+          activeLink = link;
+        }
+      } catch (error) {
+        console.warn(
+          "Ruta de navegación no válida:",
+          href
+        );
       }
     });
 
-    /*
-     * ---------------------------------------------
-     * BUSCAR COINCIDENCIA POR PREFIJO
-     * ---------------------------------------------
-     */
+    // =====================================================
+    // BUSCAR COINCIDENCIA POR PREFIJO
+    // =====================================================
 
     if (!activeLink) {
       sidebarLinks.forEach(function (link) {
@@ -176,39 +223,39 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         }
 
-        let linkPath;
-
         try {
-          linkPath = new URL(href, window.location.origin).pathname;
-        } catch (error) {
-          return;
-        }
+          const linkPath = new URL(
+            href,
+            window.location.origin
+          ).pathname;
 
-        if (linkPath !== "/admin/admin" && currentPath.startsWith(linkPath)) {
-          activeLink = link;
+          if (
+            linkPath !== "/" &&
+            currentPath.startsWith(linkPath + "/")
+          ) {
+            if (
+              !activeLink ||
+              linkPath.length >
+              new URL(
+                activeLink.href,
+                window.location.origin
+              ).pathname.length
+            ) {
+              activeLink = link;
+            }
+          }
+        } catch (error) {
+          console.warn(
+            "No se pudo comparar la ruta:",
+            href
+          );
         }
       });
     }
 
-    /*
-     * ---------------------------------------------
-     * LIMPIAR ESTADOS ACTIVOS
-     * ---------------------------------------------
-     */
-
-    sidebarLinks.forEach(function (link) {
-      link.classList.remove("sidebar__link--active");
-    });
-
-    accordionButtons.forEach(function (button) {
-      button.classList.remove("sidebar__accordion-button--active");
-    });
-
-    /*
-     * ---------------------------------------------
-     * MARCAR ENLACE ACTIVO
-     * ---------------------------------------------
-     */
+    // =====================================================
+    // MARCAR ENLACE ACTIVO
+    // =====================================================
 
     if (!activeLink) {
       return;
@@ -216,42 +263,40 @@ document.addEventListener("DOMContentLoaded", function () {
 
     activeLink.classList.add("sidebar__link--active");
 
-    /*
-     * ---------------------------------------------
-     * ABRIR ACORDEÓN PADRE
-     * ---------------------------------------------
-     */
+    activeLink.setAttribute("aria-current", "page");
 
-    const parentSubmenu = activeLink.closest(".sidebar__submenu");
+    // =====================================================
+    // ABRIR ACORDEÓN PADRE
+    // =====================================================
+
+    const parentSubmenu = activeLink.closest(
+      ".sidebar__submenu"
+    );
 
     if (!parentSubmenu) {
       return;
     }
 
-    parentSubmenu.classList.add("sidebar__submenu--open");
-
-    parentSubmenu.removeAttribute("hidden");
-
-    const parentButton = document.querySelector(
-      `[data-target="${parentSubmenu.id}"]`,
+    const parentButton = sidebar.querySelector(
+      `[data-target="${parentSubmenu.id}"]`
     );
 
     if (!parentButton) {
       return;
     }
 
-    parentButton.classList.add("sidebar__accordion-button--open");
+    abrirAcordeon(parentButton);
 
-    parentButton.classList.add("sidebar__accordion-button--active");
-
-    parentButton.setAttribute("aria-expanded", "true");
-
-    const arrow = parentButton.querySelector(".sidebar__accordion-arrow");
-
-    if (arrow) {
-      arrow.textContent = "▼";
-    }
+    parentButton.classList.add(
+      "sidebar__accordion-button--active"
+    );
   }
+
+  /*
+   * =========================================================
+   * PÁGINA ACTIVA INICIAL
+   * =========================================================
+   */
 
   marcarPaginaActiva();
 
@@ -264,115 +309,99 @@ document.addEventListener("DOMContentLoaded", function () {
   function abrirMenuMovil() {
     sidebar.classList.add("sidebar--open");
 
-    /*
-     * ---------------------------------------------
-     * BOTÓN
-     * ---------------------------------------------
-     */
+    // BOTÓN
 
     if (menuButton) {
-      menuButton.setAttribute("aria-expanded", "true");
+      menuButton.setAttribute(
+        "aria-expanded",
+        "true"
+      );
 
-      menuButton.setAttribute("aria-label", "Cerrar menú");
+      menuButton.setAttribute(
+        "aria-label",
+        "Cerrar menú"
+      );
     }
 
-    /*
-     * ---------------------------------------------
-     * ICONO
-     * ---------------------------------------------
-     */
+    // ICONO
 
     if (menuIcon) {
       menuIcon.textContent = "✕";
     }
 
-    /*
-     * ---------------------------------------------
-     * OCULTAR KIHON SUPERIOR
-     * ---------------------------------------------
-     */
+    // KIHON SUPERIOR
 
     if (mobileNav) {
-      mobileNav.classList.add("mobile-nav--hidden");
+      mobileNav.classList.add(
+        "mobile-nav--hidden"
+      );
     }
 
-    /*
-     * ---------------------------------------------
-     * OVERLAY
-     * ---------------------------------------------
-     */
+    // OVERLAY
 
     if (overlay) {
       overlay.hidden = false;
 
       requestAnimationFrame(function () {
-        overlay.classList.add("mobile-menu-overlay--visible");
+        overlay.classList.add(
+          "mobile-menu-overlay--visible"
+        );
       });
     }
 
-    /*
-     * ---------------------------------------------
-     * BLOQUEAR SCROLL
-     * ---------------------------------------------
-     */
+    // BLOQUEAR SCROLL
 
-    document.body.classList.add("mobile-menu-open");
+    document.body.classList.add(
+      "mobile-menu-open"
+    );
   }
 
   function cerrarMenuMovil() {
     sidebar.classList.remove("sidebar--open");
 
-    /*
-     * ---------------------------------------------
-     * BOTÓN
-     * ---------------------------------------------
-     */
+    // BOTÓN
 
     if (menuButton) {
-      menuButton.setAttribute("aria-expanded", "false");
+      menuButton.setAttribute(
+        "aria-expanded",
+        "false"
+      );
 
-      menuButton.setAttribute("aria-label", "Abrir menú");
+      menuButton.setAttribute(
+        "aria-label",
+        "Abrir menú"
+      );
     }
 
-    /*
-     * ---------------------------------------------
-     * ICONO
-     * ---------------------------------------------
-     */
+    // ICONO
 
     if (menuIcon) {
       menuIcon.textContent = "☰";
     }
 
-    /*
-     * ---------------------------------------------
-     * MOSTRAR KIHON SUPERIOR
-     * ---------------------------------------------
-     */
+    // KIHON SUPERIOR
 
     if (mobileNav) {
-      mobileNav.classList.remove("mobile-nav--hidden");
+      mobileNav.classList.remove(
+        "mobile-nav--hidden"
+      );
     }
 
-    /*
-     * ---------------------------------------------
-     * OVERLAY
-     * ---------------------------------------------
-     */
+    // OVERLAY
 
     if (overlay) {
-      overlay.classList.remove("mobile-menu-overlay--visible");
+      overlay.classList.remove(
+        "mobile-menu-overlay--visible"
+      );
 
       overlay.hidden = true;
     }
 
-    /*
-     * ---------------------------------------------
-     * DESBLOQUEAR SCROLL
-     * ---------------------------------------------
-     */
+    // DESBLOQUEAR SCROLL
 
-    document.body.classList.remove("mobile-menu-open");
+    document.body.classList.remove(
+      "mobile-menu-open"
+    );
   }
 
   /*
@@ -383,7 +412,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (menuButton) {
     menuButton.addEventListener("click", function () {
-      const menuAbierto = sidebar.classList.contains("sidebar--open");
+      const menuAbierto = sidebar.classList.contains(
+        "sidebar--open"
+      );
 
       if (menuAbierto) {
         cerrarMenuMovil();
@@ -400,7 +431,10 @@ document.addEventListener("DOMContentLoaded", function () {
    */
 
   if (overlay) {
-    overlay.addEventListener("click", cerrarMenuMovil);
+    overlay.addEventListener(
+      "click",
+      cerrarMenuMovil
+    );
   }
 
   /*
@@ -409,10 +443,16 @@ document.addEventListener("DOMContentLoaded", function () {
    * =========================================================
    */
 
-  sidebarLinks.forEach(function (link) {
-    link.addEventListener("click", function () {
-      cerrarMenuMovil();
-    });
+  sidebar.addEventListener("click", function (event) {
+    const link = event.target.closest(
+      ".sidebar__link"
+    );
+
+    if (!link || !sidebar.contains(link)) {
+      return;
+    }
+
+    cerrarMenuMovil();
   });
 
   /*

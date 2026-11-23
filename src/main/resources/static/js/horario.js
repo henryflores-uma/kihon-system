@@ -5,9 +5,89 @@ document.addEventListener("DOMContentLoaded", async function () {
    * ==========================================
    */
 
-  const auth = sessionStorage.getItem("kihonAuth");
-
+  const username = sessionStorage.getItem("kihonUsername");
   const rol = sessionStorage.getItem("kihonRol");
+
+  const ROLES_PERMITIDOS = ["ADMIN", "SECRETARIA", "SENSEI"];
+
+  const puedeGestionarEventos = ["ADMIN", "SECRETARIA"].includes(rol);
+
+  /*
+   * ==========================================
+   * VERIFICAR SESIÓN Y ROL
+   * ==========================================
+   */
+
+  if (!username || !rol) {
+    sessionStorage.removeItem("kihonUsername");
+    sessionStorage.removeItem("kihonRol");
+    sessionStorage.removeItem("kihonAuth");
+
+    window.location.replace("/login");
+    return;
+  }
+
+  if (!ROLES_PERMITIDOS.includes(rol)) {
+    window.location.replace("/login");
+    return;
+  }
+
+  /*
+   * ==========================================
+   * SOLICITUDES HTTP
+   * ==========================================
+   */
+
+  async function obtenerTokenCSRF() {
+    const response = await fetch("/api/auth/csrf", {
+      method: "GET",
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudo obtener el token CSRF.");
+    }
+
+    const data = await response.json();
+
+    return data.token;
+  }
+
+  async function solicitar(url, opciones = {}) {
+    const metodo = (opciones.method || "GET").toUpperCase();
+
+    const encabezados = new Headers(opciones.headers || {});
+
+    encabezados.set("Accept", "application/json");
+
+    if (!["GET", "HEAD", "OPTIONS"].includes(metodo)) {
+      const csrfToken = await obtenerTokenCSRF();
+
+      encabezados.set("X-CSRF-TOKEN", csrfToken);
+    }
+
+    const response = await fetch(url, {
+      ...opciones,
+      method: metodo,
+      credentials: "same-origin",
+      headers: encabezados,
+    });
+
+    if (response.status === 401) {
+      sessionStorage.removeItem("kihonUsername");
+      sessionStorage.removeItem("kihonRol");
+      sessionStorage.removeItem("kihonAuth");
+
+      window.location.replace("/login");
+
+      throw new Error("La sesión ha expirado.");
+    }
+
+    return response;
+  }
 
   /*
    * ==========================================
@@ -16,15 +96,11 @@ document.addEventListener("DOMContentLoaded", async function () {
    */
 
   const previousWeekButton = document.getElementById("previousWeekButton");
-
   const nextWeekButton = document.getElementById("nextWeekButton");
-
   const todayButton = document.getElementById("todayButton");
 
   const weekLabel = document.getElementById("weekLabel");
-
   const scheduleCalendar = document.getElementById("scheduleCalendar");
-
   const scheduleMessage = document.getElementById("scheduleMessage");
 
   /*
@@ -46,7 +122,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   const NOMBRES_DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
   const HORA_INICIO = 8;
-
   const HORA_FIN = 21;
 
   /*
@@ -56,34 +131,118 @@ document.addEventListener("DOMContentLoaded", async function () {
    */
 
   let fechaActual = new Date();
-
   let fechaSemana = obtenerLunes(fechaActual);
 
   let horarios = [];
 
   /*
    * ==========================================
-   * VERIFICAR SESIÓN
+   * VERIFICAR ELEMENTOS DEL DOM
    * ==========================================
    */
 
-  if (!auth) {
-    window.location.href = "/login";
-
+  if (
+    !previousWeekButton ||
+    !nextWeekButton ||
+    !todayButton ||
+    !weekLabel ||
+    !scheduleCalendar ||
+    !scheduleMessage
+  ) {
+    console.error("No se encontraron todos los elementos del calendario.");
     return;
   }
 
   /*
    * ==========================================
-   * VERIFICAR ROL
+   * CONFIGURAR INTERFAZ SEGÚN ROL
    * ==========================================
    */
 
-  if (rol !== "ADMIN") {
-    window.location.href = "/login";
+  function configurarInterfazPorRol() {
+    const eventForm = document.getElementById("eventForm");
 
-    return;
+    const showEventFormButton = document.getElementById(
+      "showEventFormButton"
+    );
+
+    const eventDetailSection = document.getElementById(
+      "eventDetailSection"
+    );
+
+    const scheduleSectionLabel = document.getElementById(
+      "scheduleSectionLabel"
+    );
+
+    const scheduleDescription = document.getElementById(
+      "scheduleDescription"
+    );
+
+    /*
+     * ADMINISTRADOR
+     */
+
+    if (rol === "ADMIN") {
+      if (scheduleSectionLabel) {
+        scheduleSectionLabel.textContent = "Administración";
+      }
+
+      if (scheduleDescription) {
+        scheduleDescription.textContent =
+          "Consulta y administra el calendario general de la academia.";
+      }
+    }
+
+    /*
+     * SECRETARIA
+     */
+
+    if (rol === "SECRETARIA") {
+      if (scheduleSectionLabel) {
+        scheduleSectionLabel.textContent = "Control";
+      }
+
+      if (scheduleDescription) {
+        scheduleDescription.textContent =
+          "Consulta el calendario semanal de clases y eventos.";
+      }
+    }
+
+    /*
+     * SENSEI
+     */
+
+    if (rol === "SENSEI") {
+      if (scheduleSectionLabel) {
+        scheduleSectionLabel.textContent = "Mi horario";
+      }
+
+      if (scheduleDescription) {
+        scheduleDescription.textContent =
+          "Consulta el calendario semanal de clases y tus grupos asignados.";
+      }
+    }
+
+    /*
+     * PERMISOS DE EVENTOS
+     */
+
+    if (!puedeGestionarEventos) {
+      if (eventForm) {
+        eventForm.hidden = true;
+      }
+
+      if (showEventFormButton) {
+        showEventFormButton.hidden = true;
+      }
+
+      if (eventDetailSection) {
+        eventDetailSection.hidden = true;
+      }
+    }
   }
+
+  configurarInterfazPorRol();
 
   /*
    * ==========================================
@@ -91,7 +250,9 @@ document.addEventListener("DOMContentLoaded", async function () {
    * ==========================================
    */
 
-  await esperarModuloEventos();
+  if (puedeGestionarEventos) {
+    await esperarModuloEventos();
+  }
 
   /*
    * ==========================================
@@ -111,6 +272,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     },
 
     obtenerFechaISO: obtenerFechaISO,
+
+    obtenerRol: function () {
+      return rol;
+    },
   };
 
   /*
@@ -171,7 +336,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     return new Promise((resolve) => {
       if (window.KihonEventos && window.KihonEventos.ready) {
         resolve();
-
         return;
       }
 
@@ -182,7 +346,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         },
         {
           once: true,
-        },
+        }
       );
     });
   }
@@ -226,21 +390,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   async function cargarHorarios() {
     try {
-      const response = await fetch("/api/grupo-horarios", {
+      const response = await solicitar("/api/grupo-horarios", {
         method: "GET",
-
-        headers: {
-          Authorization: "Basic " + auth,
-        },
       });
-
-      if (response.status === 401) {
-        sessionStorage.clear();
-
-        window.location.href = "/login";
-
-        return;
-      }
 
       if (response.status === 403) {
         throw new Error("No tienes permisos para consultar el horario.");
@@ -251,11 +403,29 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
 
       horarios = await response.json();
+
+      if (!Array.isArray(horarios)) {
+        throw new Error("La respuesta de horarios no tiene un formato válido.");
+      }
     } catch (error) {
       console.error("Error cargando horario:", error);
 
       throw error;
     }
+  }
+
+  /*
+   * ==========================================
+   * CARGAR EVENTOS
+   * ==========================================
+   */
+
+  async function cargarEventos() {
+    if (!puedeGestionarEventos) {
+      return;
+    }
+
+    await window.KihonEventos.cargarEventos(fechaSemana);
   }
 
   /*
@@ -276,10 +446,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       await Promise.all([
         cargarHorarios(),
-        window.KihonEventos.cargarEventos(fechaSemana),
+        cargarEventos(),
       ]);
 
       renderizarCalendario();
+
     } catch (error) {
       console.error("Error cargando calendario:", error);
 
@@ -333,25 +504,26 @@ document.addEventListener("DOMContentLoaded", async function () {
     `;
 
     diasSemana.forEach((fecha, indice) => {
-      const esHoy = obtenerFechaISO(fecha) === obtenerFechaISO(new Date());
+      const esHoy =
+        obtenerFechaISO(fecha) === obtenerFechaISO(new Date());
 
       html += `
-          <div class="
-            horario-grid__header
-            horario-grid__day
-            ${esHoy ? "horario-grid__day--today" : ""}
-          ">
+        <div class="
+          horario-grid__header
+          horario-grid__day
+          ${esHoy ? "horario-grid__day--today" : ""}
+        ">
 
-            <span class="horario-day-name">
-              ${NOMBRES_DIAS[indice]}
-            </span>
+          <span class="horario-day-name">
+            ${NOMBRES_DIAS[indice]}
+          </span>
 
-            <span class="horario-day-number">
-              ${fecha.getDate()}
-            </span>
+          <span class="horario-day-number">
+            ${fecha.getDate()}
+          </span>
 
-          </div>
-        `;
+        </div>
+      `;
     });
 
     for (let hora = HORA_INICIO; hora <= HORA_FIN; hora++) {
@@ -367,7 +539,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       for (let dia = 0; dia < 7; dia++) {
         const fecha = diasSemana[dia];
 
-        const esHoy = obtenerFechaISO(fecha) === obtenerFechaISO(new Date());
+        const esHoy =
+          obtenerFechaISO(fecha) === obtenerFechaISO(new Date());
 
         html += `
           <div
@@ -386,14 +559,19 @@ document.addEventListener("DOMContentLoaded", async function () {
           html += crearBloqueClase(clase, hora);
         });
 
-        const eventosCelda = window.KihonEventos.obtenerEventosParaCelda(
-          fecha,
-          hora,
-        );
+        /*
+         * EVENTOS
+         * Solo ADMIN y SECRETARIA pueden gestionarlos.
+         */
 
-        eventosCelda.forEach((evento) => {
-          html += window.KihonEventos.crearBloqueEvento(evento, hora);
-        });
+        if (puedeGestionarEventos) {
+          const eventosCelda =
+            window.KihonEventos.obtenerEventosParaCelda(fecha, hora);
+
+          eventosCelda.forEach((evento) => {
+            html += window.KihonEventos.crearBloqueEvento(evento, hora);
+          });
+        }
 
         html += `
           </div>
@@ -415,6 +593,10 @@ document.addEventListener("DOMContentLoaded", async function () {
    */
 
   scheduleCalendar.addEventListener("click", function (event) {
+    if (!puedeGestionarEventos) {
+      return;
+    }
+
     const eventoElement = event.target.closest("[data-evento-id]");
 
     if (!eventoElement) {
@@ -438,9 +620,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         return false;
       }
 
-      const horaInicio = parseInt(horario.horaInicio.substring(0, 2), 10);
+      const horaInicio = parseInt(
+        horario.horaInicio.substring(0, 2),
+        10
+      );
 
-      const horaFin = parseInt(horario.horaFin.substring(0, 2), 10);
+      const horaFin = parseInt(
+        horario.horaFin.substring(0, 2),
+        10
+      );
 
       return hora >= horaInicio && hora < horaFin;
     });
@@ -457,7 +645,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const horaFin = clase.horaFin.substring(0, 5);
 
-    const inicioHora = parseInt(clase.horaInicio.substring(0, 2), 10);
+    const inicioHora = parseInt(
+      clase.horaInicio.substring(0, 2),
+      10
+    );
 
     if (horaActual !== inicioHora) {
       return "";
@@ -469,26 +660,36 @@ document.addEventListener("DOMContentLoaded", async function () {
         data-horario-id="${clase.id}"
       >
 
-        <strong
-          class="horario-evento__nombre"
-        >
+        <strong class="horario-evento__nombre">
           ${clase.grupoNombre}
         </strong>
 
-        <span
-          class="horario-evento__hora"
-        >
+        <span class="horario-evento__hora">
           ${horaInicio} - ${horaFin}
         </span>
 
-        <span
-          class="horario-evento__sensei"
-        >
+        <span class="horario-evento__sensei">
           ${clase.senseiNombre || "Sin Sensei"}
         </span>
 
       </div>
     `;
+  }
+
+  /*
+   * ==========================================
+   * OCULTAR DETALLE DE EVENTO
+   * ==========================================
+   */
+
+  function ocultarDetalleEvento() {
+    if (
+      puedeGestionarEventos &&
+      window.KihonEventos &&
+      typeof window.KihonEventos.ocultarDetalle === "function"
+    ) {
+      window.KihonEventos.ocultarDetalle();
+    }
   }
 
   /*
@@ -500,7 +701,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   previousWeekButton.addEventListener("click", async function () {
     fechaSemana.setDate(fechaSemana.getDate() - 7);
 
-    window.KihonEventos.ocultarDetalle();
+    ocultarDetalleEvento();
 
     await cargarDatosCalendario();
   });
@@ -514,7 +715,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   nextWeekButton.addEventListener("click", async function () {
     fechaSemana.setDate(fechaSemana.getDate() + 7);
 
-    window.KihonEventos.ocultarDetalle();
+    ocultarDetalleEvento();
 
     await cargarDatosCalendario();
   });
@@ -530,7 +731,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     fechaSemana = obtenerLunes(fechaActual);
 
-    window.KihonEventos.ocultarDetalle();
+    ocultarDetalleEvento();
 
     await cargarDatosCalendario();
   });

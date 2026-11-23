@@ -2,12 +2,24 @@
 document.addEventListener("DOMContentLoaded", function () {
 
   // ==========================================
-  // AUTENTICACIÓN
+  // AUTENTICACIÓN Y AUTORIZACIÓN
   // ==========================================
 
-  const auth = sessionStorage.getItem("kihonAuth");
+  const username = sessionStorage.getItem("kihonUsername");
+  const rol = sessionStorage.getItem("kihonRol");
 
-  if (!auth) {
+  const rolesPermitidos = [
+    "ADMIN",
+    "SECRETARIA",
+    "SENSEI"
+  ];
+
+  if (!username || !rol) {
+    window.location.href = "/login";
+    return;
+  }
+
+  if (!rolesPermitidos.includes(rol.toUpperCase())) {
     window.location.href = "/login";
     return;
   }
@@ -141,6 +153,105 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
   ];
+
+
+  // ==========================================
+  // AUTENTICACIÓN DE SESIÓN Y CSRF
+  // ==========================================
+
+  function cerrarSesion() {
+
+    sessionStorage.removeItem("kihonUsername");
+    sessionStorage.removeItem("kihonRol");
+    sessionStorage.removeItem("kihonAuth");
+
+    window.location.href = "/login";
+
+  }
+
+
+  async function obtenerTokenCSRF() {
+
+    const response = await fetch("/api/auth/csrf", {
+
+      method: "GET",
+
+      credentials: "same-origin",
+
+      headers: {
+        Accept: "application/json"
+      }
+
+    });
+
+    if (response.status === 401) {
+      cerrarSesion();
+      throw new Error("Sesión expirada.");
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        "No se pudo obtener el token CSRF."
+      );
+
+    }
+
+    const data = await response.json();
+
+    return data.token;
+
+  }
+
+
+  async function solicitar(url, opciones = {}) {
+
+    const metodo = (opciones.method || "GET").toUpperCase();
+
+    const headers = new Headers(opciones.headers || {});
+
+    headers.delete("Authorization");
+
+    headers.set("Accept", "application/json");
+
+    const metodosSeguros = [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "TRACE"
+    ];
+
+    if (!metodosSeguros.includes(metodo)) {
+
+      const csrfToken = await obtenerTokenCSRF();
+
+      headers.set("X-CSRF-TOKEN", csrfToken);
+
+    }
+
+    const response = await fetch(url, {
+
+      ...opciones,
+
+      method: metodo,
+
+      credentials: "same-origin",
+
+      headers
+
+    });
+
+    if (response.status === 401) {
+
+      cerrarSesion();
+
+      throw new Error("Sesión expirada.");
+
+    }
+
+    return response;
+
+  }
 
 
   // ==========================================
@@ -364,19 +475,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
   // ==========================================
-  // MENSAJES DE ERROR DE AUTENTICACIÓN
-  // ==========================================
-
-  function cerrarSesion() {
-
-    sessionStorage.clear();
-
-    window.location.href = "/login";
-
-  }
-
-
-  // ==========================================
   // CARGAR ESTUDIANTES
   // ==========================================
 
@@ -386,22 +484,18 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const response = await fetch(
+    const response = await solicitar(
       "/api/estudiantes?estado=ACTIVO",
       {
-        method: "GET",
-
-        headers: {
-          Authorization: `Basic ${auth}`
-        }
+        method: "GET"
       }
     );
 
-    if (response.status === 401) {
+    if (response.status === 403) {
 
-      cerrarSesion();
-
-      throw new Error("Sesión expirada.");
+      throw new Error(
+        "No tienes permisos para consultar los estudiantes."
+      );
 
     }
 
@@ -432,22 +526,18 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const response = await fetch(
+    const response = await solicitar(
       "/api/grupos?estado=ACTIVO",
       {
-        method: "GET",
-
-        headers: {
-          Authorization: `Basic ${auth}`
-        }
+        method: "GET"
       }
     );
 
-    if (response.status === 401) {
+    if (response.status === 403) {
 
-      cerrarSesion();
-
-      throw new Error("Sesión expirada.");
+      throw new Error(
+        "No tienes permisos para consultar los grupos."
+      );
 
     }
 
@@ -486,6 +576,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     ocultarMensaje();
 
+    destruirGraficos();
+
 
     // ======================================
     // DIARIO
@@ -495,25 +587,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
       elementos.reporteFiltros.innerHTML = `
 
-                <div class="form-group">
+        <div class="form-group">
 
-                    <label
-                        for="fechaReporte"
-                        class="form-label"
-                    >
-                        Fecha
-                    </label>
+          <label
+            for="fechaReporte"
+            class="form-label"
+          >
+            Fecha
+          </label>
 
-                    <input
-                        type="date"
-                        id="fechaReporte"
-                        class="form-input"
-                        required
-                    >
+          <input
+            type="date"
+            id="fechaReporte"
+            class="form-input"
+            required
+          >
 
-                </div>
+        </div>
 
-            `;
+      `;
 
       document.getElementById(
         "fechaReporte"
@@ -530,47 +622,47 @@ document.addEventListener("DOMContentLoaded", function () {
 
       elementos.reporteFiltros.innerHTML = `
 
-                <div class="grid grid--2">
+        <div class="grid grid--2">
 
-                    <div class="form-group">
+          <div class="form-group">
 
-                        <label
-                            for="fechaInicio"
-                            class="form-label"
-                        >
-                            Fecha de inicio
-                        </label>
+            <label
+              for="fechaInicio"
+              class="form-label"
+            >
+              Fecha de inicio
+            </label>
 
-                        <input
-                            type="date"
-                            id="fechaInicio"
-                            class="form-input"
-                            required
-                        >
+            <input
+              type="date"
+              id="fechaInicio"
+              class="form-input"
+              required
+            >
 
-                    </div>
+          </div>
 
-                    <div class="form-group">
+          <div class="form-group">
 
-                        <label
-                            for="fechaFin"
-                            class="form-label"
-                        >
-                            Fecha de fin
-                        </label>
+            <label
+              for="fechaFin"
+              class="form-label"
+            >
+              Fecha de fin
+            </label>
 
-                        <input
-                            type="date"
-                            id="fechaFin"
-                            class="form-input"
-                            required
-                        >
+            <input
+              type="date"
+              id="fechaFin"
+              class="form-input"
+              required
+            >
 
-                    </div>
+          </div>
 
-                </div>
+        </div>
 
-            `;
+      `;
 
       const hoy = obtenerFechaActual();
 
@@ -595,63 +687,63 @@ document.addEventListener("DOMContentLoaded", function () {
 
       elementos.reporteFiltros.innerHTML = `
 
-                <div class="grid grid--2">
+        <div class="grid grid--2">
 
-                    <div class="form-group">
+          <div class="form-group">
 
-                        <label
-                            for="anioReporte"
-                            class="form-label"
-                        >
-                            Año
-                        </label>
+            <label
+              for="anioReporte"
+              class="form-label"
+            >
+              Año
+            </label>
 
-                        <input
-                            type="number"
-                            id="anioReporte"
-                            class="form-input"
-                            min="2000"
-                            max="2100"
-                            required
-                        >
+            <input
+              type="number"
+              id="anioReporte"
+              class="form-input"
+              min="2000"
+              max="2100"
+              required
+            >
 
-                    </div>
+          </div>
 
-                    <div class="form-group">
+          <div class="form-group">
 
-                        <label
-                            for="mesReporte"
-                            class="form-label"
-                        >
-                            Mes
-                        </label>
+            <label
+              for="mesReporte"
+              class="form-label"
+            >
+              Mes
+            </label>
 
-                        <select
-                            id="mesReporte"
-                            class="form-select"
-                            required
-                        >
+            <select
+              id="mesReporte"
+              class="form-select"
+              required
+            >
 
-                            <option value="1">Enero</option>
-                            <option value="2">Febrero</option>
-                            <option value="3">Marzo</option>
-                            <option value="4">Abril</option>
-                            <option value="5">Mayo</option>
-                            <option value="6">Junio</option>
-                            <option value="7">Julio</option>
-                            <option value="8">Agosto</option>
-                            <option value="9">Septiembre</option>
-                            <option value="10">Octubre</option>
-                            <option value="11">Noviembre</option>
-                            <option value="12">Diciembre</option>
+              <option value="1">Enero</option>
+              <option value="2">Febrero</option>
+              <option value="3">Marzo</option>
+              <option value="4">Abril</option>
+              <option value="5">Mayo</option>
+              <option value="6">Junio</option>
+              <option value="7">Julio</option>
+              <option value="8">Agosto</option>
+              <option value="9">Septiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
 
-                        </select>
+            </select>
 
-                    </div>
+          </div>
 
-                </div>
+        </div>
 
-            `;
+      `;
 
       document.getElementById(
         "anioReporte"
@@ -684,38 +776,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
       elementos.reporteFiltros.innerHTML = `
 
-                <div class="form-group">
+        <div class="form-group">
 
-                    <label
-                        for="buscarEstudiante"
-                        class="form-label"
-                    >
-                        Buscar estudiante
-                    </label>
+          <label
+            for="buscarEstudiante"
+            class="form-label"
+          >
+            Buscar estudiante
+          </label>
 
-                    <input
-                        type="text"
-                        id="buscarEstudiante"
-                        class="form-input"
-                        placeholder="Escribe el nombre del estudiante..."
-                        autocomplete="off"
-                    >
+          <input
+            type="text"
+            id="buscarEstudiante"
+            class="form-input"
+            placeholder="Escribe el nombre del estudiante..."
+            autocomplete="off"
+          >
 
-                </div>
+        </div>
 
-                <div
-                    id="estudiantesResultados"
-                    class="reporte-busqueda-resultados"
-                ></div>
+        <div
+          id="estudiantesResultados"
+          class="reporte-busqueda-resultados"
+        ></div>
 
-                <div
-                    id="estudianteSeleccionado"
-                    class="reporte-seleccion"
-                >
-                    Ningún estudiante seleccionado.
-                </div>
+        <div
+          id="estudianteSeleccionado"
+          class="reporte-seleccion"
+        >
+          Ningún estudiante seleccionado.
+        </div>
 
-            `;
+      `;
 
       const buscar = document.getElementById(
         "buscarEstudiante"
@@ -754,38 +846,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
       elementos.reporteFiltros.innerHTML = `
 
-                <div class="form-group">
+        <div class="form-group">
 
-                    <label
-                        for="buscarGrupo"
-                        class="form-label"
-                    >
-                        Buscar grupo
-                    </label>
+          <label
+            for="buscarGrupo"
+            class="form-label"
+          >
+            Buscar grupo
+          </label>
 
-                    <input
-                        type="text"
-                        id="buscarGrupo"
-                        class="form-input"
-                        placeholder="Escribe el nombre del grupo..."
-                        autocomplete="off"
-                    >
+          <input
+            type="text"
+            id="buscarGrupo"
+            class="form-input"
+            placeholder="Escribe el nombre del grupo..."
+            autocomplete="off"
+          >
 
-                </div>
+        </div>
 
-                <div
-                    id="gruposResultados"
-                    class="reporte-busqueda-resultados"
-                ></div>
+        <div
+          id="gruposResultados"
+          class="reporte-busqueda-resultados"
+        ></div>
 
-                <div
-                    id="grupoSeleccionado"
-                    class="reporte-seleccion"
-                >
-                    Ningún grupo seleccionado.
-                </div>
+        <div
+          id="grupoSeleccionado"
+          class="reporte-seleccion"
+        >
+          Ningún grupo seleccionado.
+        </div>
 
-            `;
+      `;
 
       const buscar = document.getElementById(
         "buscarGrupo"
@@ -851,13 +943,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
       resultados.innerHTML = `
 
-                <div class="reporte-busqueda-vacio">
+        <div class="reporte-busqueda-vacio">
 
-                    No se encontraron estudiantes.
+          No se encontraron estudiantes.
 
-                </div>
+        </div>
 
-            `;
+      `;
 
       return;
 
@@ -866,15 +958,15 @@ document.addEventListener("DOMContentLoaded", function () {
     resultados.innerHTML = encontrados.map(
       (estudiante) => `
 
-                <button
-                    type="button"
-                    class="reporte-busqueda-item"
-                    data-estudiante-id="${Number(estudiante.id)}"
-                >
-                    ${escaparHTML(obtenerNombreEstudiante(estudiante))}
-                </button>
+        <button
+          type="button"
+          class="reporte-busqueda-item"
+          data-estudiante-id="${Number(estudiante.id)}"
+        >
+          ${escaparHTML(obtenerNombreEstudiante(estudiante))}
+        </button>
 
-            `
+      `
     ).join("");
 
     resultados.querySelectorAll(
@@ -965,13 +1057,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
       resultados.innerHTML = `
 
-                <div class="reporte-busqueda-vacio">
+        <div class="reporte-busqueda-vacio">
 
-                    No se encontraron grupos.
+          No se encontraron grupos.
 
-                </div>
+        </div>
 
-            `;
+      `;
 
       return;
 
@@ -980,15 +1072,15 @@ document.addEventListener("DOMContentLoaded", function () {
     resultados.innerHTML = encontrados.map(
       (grupo) => `
 
-                <button
-                    type="button"
-                    class="reporte-busqueda-item"
-                    data-grupo-id="${Number(grupo.id)}"
-                >
-                    ${escaparHTML(obtenerNombreGrupo(grupo))}
-                </button>
+        <button
+          type="button"
+          class="reporte-busqueda-item"
+          data-grupo-id="${Number(grupo.id)}"
+        >
+          ${escaparHTML(obtenerNombreGrupo(grupo))}
+        </button>
 
-            `
+      `
     ).join("");
 
     resultados.querySelectorAll(
@@ -1237,23 +1329,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
 
-      const response = await fetch(url, {
-
-        method: "GET",
-
-        headers: {
-          Authorization: `Basic ${auth}`
-        }
-
+      const response = await solicitar(url, {
+        method: "GET"
       });
-
-      if (response.status === 401) {
-
-        cerrarSesion();
-
-        return;
-
-      }
 
       if (response.status === 403) {
 
@@ -1300,7 +1378,9 @@ document.addEventListener("DOMContentLoaded", function () {
       );
 
       mostrarMensaje(
-        "Error de conexión con el servidor."
+        error.message === "Sesión expirada."
+          ? error.message
+          : "Error de conexión con el servidor."
       );
 
     } finally {
@@ -1466,22 +1546,22 @@ document.addEventListener("DOMContentLoaded", function () {
     elementos.reporteResumen.innerHTML = indicadores.map(
       (indicador) => `
 
-                <article class="
-                    reporte-stat
-                    reporte-stat--${indicador.clase}
-                ">
+        <article class="
+          reporte-stat
+          reporte-stat--${indicador.clase}
+        ">
 
-                    <span class="reporte-stat__label">
-                        ${escaparHTML(indicador.etiqueta)}
-                    </span>
+          <span class="reporte-stat__label">
+            ${escaparHTML(indicador.etiqueta)}
+          </span>
 
-                    <strong class="reporte-stat__value">
-                        ${escaparHTML(indicador.valor)}
-                    </strong>
+          <strong class="reporte-stat__value">
+            ${escaparHTML(indicador.valor)}
+          </strong>
 
-                </article>
+        </article>
 
-            `
+      `
     ).join("");
 
   }
@@ -2311,14 +2391,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
       elementos.reporteDetalle.innerHTML = `
 
-                <div class="reportes-empty">
+        <div class="reportes-empty">
 
-                    No existen registros de asistencia
-                    para el periodo seleccionado.
+          No existen registros de asistencia
+          para el periodo seleccionado.
 
-                </div>
+        </div>
 
-            `;
+      `;
 
       return;
 
@@ -2336,94 +2416,94 @@ document.addEventListener("DOMContentLoaded", function () {
 
       return `
 
-                <tr>
+        <tr>
 
-                    <td>
-                        ${escaparHTML(
+          <td>
+            ${escaparHTML(
         asistencia.estudianteNombre ||
         asistencia.estudianteId ||
         "-"
       )}
-                    </td>
+          </td>
 
-                    <td>
-                        ${escaparHTML(
+          <td>
+            ${escaparHTML(
         asistencia.grupoNombre ||
         asistencia.grupoId ||
         "-"
       )}
-                    </td>
+          </td>
 
-                    <td>
-                        ${formatoFecha(asistencia.fecha)}
-                    </td>
+          <td>
+            ${formatoFecha(asistencia.fecha)}
+          </td>
 
-                    <td>
-                        ${escaparHTML(
+          <td>
+            ${escaparHTML(
         asistencia.horaLlegada || "-"
       )}
-                    </td>
+          </td>
 
-                    <td>
+          <td>
 
-                        <span class="
-                            reporte-estado
-                            reporte-estado--${estadoClase}
-                        ">
+            <span class="
+              reporte-estado
+              reporte-estado--${estadoClase}
+            ">
 
-                            ${escaparHTML(
+              ${escaparHTML(
         obtenerEtiquetaEstado(estado)
       )}
 
-                        </span>
+            </span>
 
-                    </td>
+          </td>
 
-                    <td>
-                        ${escaparHTML(
+          <td>
+            ${escaparHTML(
         asistencia.observacion || "-"
       )}
-                    </td>
+          </td>
 
-                </tr>
+        </tr>
 
-            `;
+      `;
 
     }).join("");
 
     elementos.reporteDetalle.innerHTML = `
 
-            <table class="reportes-table">
+      <table class="reportes-table">
 
-                <thead>
+        <thead>
 
-                    <tr>
+          <tr>
 
-                        <th>Estudiante</th>
+            <th>Estudiante</th>
 
-                        <th>Grupo</th>
+            <th>Grupo</th>
 
-                        <th>Fecha</th>
+            <th>Fecha</th>
 
-                        <th>Hora</th>
+            <th>Hora</th>
 
-                        <th>Estado</th>
+            <th>Estado</th>
 
-                        <th>Observación</th>
+            <th>Observación</th>
 
-                    </tr>
+          </tr>
 
-                </thead>
+        </thead>
 
-                <tbody>
+        <tbody>
 
-                    ${filas}
+          ${filas}
 
-                </tbody>
+        </tbody>
 
-            </table>
+      </table>
 
-        `;
+    `;
 
   }
 

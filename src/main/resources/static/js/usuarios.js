@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   // SESIÓN Y CONFIGURACIÓN
   // =========================================================
 
-  const auth = sessionStorage.getItem("kihonAuth");
   const username = sessionStorage.getItem("kihonUsername");
   const rol = sessionStorage.getItem("kihonRol");
 
@@ -126,7 +125,11 @@ document.addEventListener("DOMContentLoaded", async function () {
   // VALIDAR SESIÓN
   // =========================================================
 
-  if (!auth || !username || !rol) {
+  if (!username || !rol) {
+    sessionStorage.removeItem("kihonUsername");
+    sessionStorage.removeItem("kihonRol");
+    sessionStorage.removeItem("kihonAuth");
+
     window.location.href = "/login";
     return;
   }
@@ -145,23 +148,59 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   // =========================================================
-  // PETICIONES AUTENTICADAS
+  // PETICIONES AUTENTICADAS CON SESIÓN Y CSRF
   // =========================================================
 
-  async function fetchAutenticado(url, opciones = {}) {
-    const headers = {
-      ...(opciones.headers || {}),
-      Authorization: "Basic " + auth,
-    };
+  async function obtenerTokenCSRF() {
+    const response = await fetch("/api/auth/csrf", {
+      method: "GET",
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudo obtener el token CSRF.");
+    }
+
+    const data = await response.json();
+
+    return data.token;
+  }
+
+  async function solicitar(url, opciones = {}) {
+    const method = (opciones.method || "GET").toUpperCase();
+
+    const headers = new Headers(opciones.headers || {});
+
+    // No utilizar autenticación Basic.
+    headers.delete("Authorization");
+
+    headers.set("Accept", "application/json");
+
+    // Las operaciones que modifican datos requieren CSRF.
+    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+      const csrfToken = await obtenerTokenCSRF();
+
+      headers.set("X-CSRF-TOKEN", csrfToken);
+    }
 
     const response = await fetch(url, {
       ...opciones,
+      method,
+      credentials: "same-origin",
       headers,
     });
 
+    // La sesión ya no es válida.
     if (response.status === 401) {
-      sessionStorage.clear();
+      sessionStorage.removeItem("kihonUsername");
+      sessionStorage.removeItem("kihonRol");
+      sessionStorage.removeItem("kihonAuth");
+
       window.location.href = "/login";
+
       return null;
     }
 
@@ -321,12 +360,10 @@ document.addEventListener("DOMContentLoaded", async function () {
           "No se encontró correctamente el modal de alertas.",
         );
 
-        // No permitir operaciones confirmadas si falta el modal.
         resolve(false);
         return;
       }
 
-      // Evitar dejar una promesa anterior sin resolver.
       if (resolverSistemaAlertModal) {
         resolverSistemaAlertModal(false);
       }
@@ -444,7 +481,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // =========================================================
 
   async function cargarUsuarios() {
-    const response = await fetchAutenticado("/api/usuarios");
+    const response = await solicitar("/api/usuarios");
 
     if (!response) {
       return false;
@@ -478,7 +515,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // =========================================================
 
   async function cargarEstudiantes() {
-    const response = await fetchAutenticado("/api/estudiantes");
+    const response = await solicitar("/api/estudiantes");
 
     if (!response) {
       return false;
@@ -1080,7 +1117,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     try {
-      const response = await fetchAutenticado(
+      const response = await solicitar(
         "/api/usuarios/estudiante",
         {
           method: "POST",
@@ -1168,7 +1205,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     try {
       boton.disabled = true;
 
-      const response = await fetchAutenticado(
+      const response = await solicitar(
         `/api/usuarios/${usuarioId}/estado?estado=${encodeURIComponent(nuevoEstado)}`,
         { method: "PATCH" },
       );
@@ -1201,8 +1238,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       await mostrarExito(
         "Estado actualizado",
-        `El usuario fue ${nuevoEstado === "ACTIVO" ? "activado" : "desactivado"
-        } correctamente.`,
+        `El usuario fue ${nuevoEstado === "ACTIVO" ? "activado" : "desactivado"} correctamente.`,
       );
     } catch (error) {
       console.error("Error cambiando estado:", error);
@@ -1938,7 +1974,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     try {
-      const response = await fetchAutenticado(
+      const response = await solicitar(
         `/api/usuarios/${usuarioId}`,
         {
           method: "PUT",
@@ -2083,7 +2119,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       boton.disabled = true;
       boton.textContent = "Eliminando...";
 
-      const response = await fetchAutenticado(
+      const response = await solicitar(
         `/api/usuarios/${usuarioId}`,
         { method: "DELETE" },
       );

@@ -1,28 +1,5 @@
+
 document.addEventListener("DOMContentLoaded", function () {
-  // ==========================================
-  // DATOS DE SESIÓN
-  // ==========================================
-
-  const auth = sessionStorage.getItem("kihonAuth");
-
-  // ==========================================
-  // VERIFICAR SESIÓN
-  // ==========================================
-
-  /*
-   * topbar.js también valida la sesión.
-   *
-   * Aquí solamente necesitamos comprobar
-   * que exista la credencial porque este archivo
-   * la utiliza para realizar las peticiones API.
-   */
-
-  if (!auth) {
-    window.location.href = "/login";
-
-    return;
-  }
-
   // ==========================================
   // CONFIGURACIÓN GENERAL
   // ==========================================
@@ -78,52 +55,71 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ==========================================
-  // FETCH AUTENTICADO
+  // FETCH AUTENTICADO CON SESIÓN
   // ==========================================
 
   async function apiFetch(url, options = {}) {
-    const headers = {
-      ...(options.headers || {}),
+    const headers = new Headers(options.headers || {});
 
-      Authorization: "Basic " + auth,
-    };
+    headers.set("Accept", "application/json");
 
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
+    try {
+      const response = await fetch(url, {
+        ...options,
+        credentials: "same-origin",
+        headers,
+      });
 
-    // --------------------------------------
-    // SESIÓN NO AUTORIZADA
-    // --------------------------------------
+      // --------------------------------------
+      // SESIÓN NO AUTORIZADA
+      // --------------------------------------
 
-    if (response.status === 401) {
-      sessionStorage.clear();
+      if (response.status === 401) {
+        sessionStorage.removeItem("kihonUsername");
+        sessionStorage.removeItem("kihonRol");
+        sessionStorage.removeItem("kihonAuth");
 
-      window.location.href = "/login";
+        window.location.replace("/login");
 
-      return null;
+        return null;
+      }
+
+      // --------------------------------------
+      // SIN PERMISOS
+      // --------------------------------------
+
+      if (response.status === 403) {
+        console.error("No tienes permisos para acceder a:", url);
+
+        return null;
+      }
+
+      // --------------------------------------
+      // OTROS ERRORES
+      // --------------------------------------
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status} en ${url}`);
+      }
+
+      // --------------------------------------
+      // RESPUESTA SIN CONTENIDO
+      // --------------------------------------
+
+      if (response.status === 204) {
+        return null;
+      }
+
+      // --------------------------------------
+      // RESPUESTA JSON
+      // --------------------------------------
+
+      return await response.json();
+
+    } catch (error) {
+      console.error(`Error en la petición ${url}:`, error);
+      throw error;
     }
-
-    // --------------------------------------
-    // SIN PERMISOS
-    // --------------------------------------
-
-    if (response.status === 403) {
-      console.error("No tienes permisos para acceder a:", url);
-
-      return null;
-    }
-
-    // --------------------------------------
-    // OTROS ERRORES
-    // --------------------------------------
-
-    if (!response.ok) {
-      throw new Error(`Error ${response.status} en ${url}`);
-    }
-
-    return response.json();
   }
 
   // ==========================================
@@ -147,11 +143,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function formatearFecha(fecha) {
     const opciones = {
       weekday: "long",
-
       day: "numeric",
-
       month: "long",
-
       year: "numeric",
     };
 
@@ -223,6 +216,7 @@ document.addEventListener("DOMContentLoaded", function () {
       activeStudents.textContent = activos.length;
 
       return estudiantes;
+
     } catch (error) {
       console.error("Error al cargar estudiantes:", error);
 
@@ -258,10 +252,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (attendanceGroupFilter) {
         attendanceGroupFilter.innerHTML = `
-                    <option value="TODOS">
-                        Todos los grupos
-                    </option>
-                    `;
+          <option value="TODOS">
+            Todos los grupos
+          </option>
+        `;
 
         grupos.forEach((grupo) => {
           const option = document.createElement("option");
@@ -275,6 +269,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       return grupos;
+
     } catch (error) {
       console.error("Error al cargar grupos:", error);
 
@@ -339,7 +334,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
           return {
             fecha,
-
             asistencias: asistencias || [],
           };
         }),
@@ -360,7 +354,6 @@ document.addEventListener("DOMContentLoaded", function () {
           if (!gruposMap.has(asistencia.grupoId)) {
             gruposMap.set(
               asistencia.grupoId,
-
               asistencia.grupoNombre || `Grupo ${asistencia.grupoId}`,
             );
           }
@@ -398,23 +391,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const colores = [
         "#FF2400",
-
         "#FFD700",
-
         "#2563EB",
-
         "#16A34A",
-
         "#9333EA",
-
         "#EA580C",
-
         "#0891B2",
-
         "#DB2777",
-
         "#65A30D",
-
         "#4F46E5",
       ];
 
@@ -433,13 +417,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return {
           label: grupoNombre,
-
           data: datos,
-
           backgroundColor: color,
-
           borderColor: color,
-
           borderWidth: 1,
         };
       });
@@ -449,6 +429,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // --------------------------------------
 
       crearGraficoAsistencia(etiquetas, datasets);
+
     } catch (error) {
       console.error("Error al cargar asistencia semanal:", error);
     }
@@ -482,7 +463,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       data: {
         labels: etiquetas,
-
         datasets: datasets,
       },
 
@@ -501,7 +481,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             title: {
               display: true,
-
               text: "Cantidad de asistencias",
             },
           },
@@ -509,7 +488,6 @@ document.addEventListener("DOMContentLoaded", function () {
           x: {
             title: {
               display: true,
-
               text: "Día de la semana",
             },
           },
@@ -518,7 +496,6 @@ document.addEventListener("DOMContentLoaded", function () {
         plugins: {
           legend: {
             display: true,
-
             position: "bottom",
           },
 
@@ -587,7 +564,6 @@ document.addEventListener("DOMContentLoaded", function () {
         datasets: [
           {
             data: datos,
-
             borderWidth: 1,
           },
         ],
@@ -626,6 +602,7 @@ document.addEventListener("DOMContentLoaded", function () {
       mostrarEstadoClases(eventos);
 
       mostrarHorarioHoy(eventos);
+
     } catch (error) {
       console.error("Error al cargar eventos:", error);
     }
@@ -704,6 +681,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       currentClassGroup.textContent =
         claseActual.lugar || "Lugar no especificado";
+
     } else {
       currentClassStatus.textContent = "Sin clase";
 
@@ -731,6 +709,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       nextClassGroup.textContent =
         proximaClase.lugar || "Lugar no especificado";
+
     } else {
       nextClassName.textContent = "Sin clases próximas";
 
@@ -761,12 +740,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (eventosOrdenados.length === 0) {
       todaySchedule.innerHTML = `
-                <div class="dashboard-schedule__empty">
-
-                    No hay clases programadas para hoy.
-
-                </div>
-                `;
+        <div class="dashboard-schedule__empty">
+          No hay clases programadas para hoy.
+        </div>
+      `;
 
       return;
     }
@@ -779,40 +756,34 @@ document.addEventListener("DOMContentLoaded", function () {
       item.className = "dashboard-schedule__item";
 
       item.innerHTML = `
-                    <div class="dashboard-schedule__time">
+        <div class="dashboard-schedule__time">
 
-                        <strong>
-                            ${formatearHora(evento.horaInicio)}
-                        </strong>
+          <strong>
+            ${formatearHora(evento.horaInicio)}
+          </strong>
 
-                        <span>
-                            ${formatearHora(evento.horaFin)}
-                        </span>
+          <span>
+            ${formatearHora(evento.horaFin)}
+          </span>
 
-                    </div>
+        </div>
 
+        <div class="dashboard-schedule__info">
 
-                    <div class="dashboard-schedule__info">
+          <strong>
+            ${escapeHtml(evento.titulo || "Clase")}
+          </strong>
 
-                        <strong>
-                            ${escapeHtml(evento.titulo || "Clase")}
-                        </strong>
+          <span>
+            ${escapeHtml(evento.lugar || "Lugar no especificado")}
+          </span>
 
-                        <span>
-                            ${escapeHtml(
-                              evento.lugar || "Lugar no especificado",
-                            )}
-                        </span>
+        </div>
 
-                    </div>
-
-
-                    <span class="dashboard-schedule__status">
-
-                        ${escapeHtml(evento.estado || "")}
-
-                    </span>
-                    `;
+        <span class="dashboard-schedule__status">
+          ${escapeHtml(evento.estado || "")}
+        </span>
+      `;
 
       todaySchedule.appendChild(item);
     });
@@ -829,13 +800,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     return String(valor)
       .replace(/&/g, "&amp;")
-
       .replace(/</g, "&lt;")
-
       .replace(/>/g, "&gt;")
-
       .replace(/"/g, "&quot;")
-
       .replace(/'/g, "&#039;");
   }
 
@@ -860,9 +827,8 @@ document.addEventListener("DOMContentLoaded", function () {
        * en paralelo.
        */
 
-      const [estudiantes, grupos] = await Promise.all([
+      const [estudiantes] = await Promise.all([
         cargarEstudiantes(),
-
         cargarGrupos(),
       ]);
 
@@ -883,6 +849,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // ----------------------------------
 
       await cargarEventosHoy();
+
     } catch (error) {
       console.error("Error al inicializar dashboard:", error);
     }

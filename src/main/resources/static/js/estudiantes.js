@@ -1,11 +1,62 @@
-const auth = sessionStorage.getItem("kihonAuth");
 
 // ==========================================
-// VERIFICAR SESIÓN
+// AUTENTICACIÓN Y PETICIONES HTTP
 // ==========================================
 
-if (!auth) {
-  window.location.href = "/login";
+// La sesión se valida en el backend mediante Spring Security.
+// No se utiliza kihonAuth ni autenticación Basic.
+
+async function obtenerTokenCSRF() {
+  const response = await fetch("/api/auth/csrf", {
+    method: "GET",
+    credentials: "same-origin",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (response.status === 401 || response.status === 403) {
+    cerrarSesion();
+    throw new Error("La sesión ha expirado. Inicia sesión nuevamente.");
+  }
+
+  if (!response.ok) {
+    throw new Error("No se pudo obtener el token CSRF.");
+  }
+
+  const data = await response.json();
+
+  if (!data.token) {
+    throw new Error("El servidor no devolvió un token CSRF válido.");
+  }
+
+  return data.token;
+}
+
+async function apiFetch(url, options = {}) {
+  const method = (options.method || "GET").toUpperCase();
+  const headers = new Headers(options.headers || {});
+
+  headers.set("Accept", "application/json");
+
+  // Las operaciones de lectura no necesitan token CSRF.
+  if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+    const csrfToken = await obtenerTokenCSRF();
+    headers.set("X-CSRF-TOKEN", csrfToken);
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    method,
+    credentials: "same-origin",
+    headers,
+  });
+
+  if (response.status === 401) {
+    cerrarSesion();
+  }
+
+  return response;
 }
 
 // ==========================================
@@ -782,11 +833,10 @@ function validarFormularioEstudiante(prefijo) {
   ) {
     return {
       campo: telefono,
-      mensaje: `El teléfono de ${regla.nombre} debe tener ${
-        regla.min === regla.max
-          ? `exactamente ${regla.min}`
-          : `entre ${regla.min} y ${regla.max}`
-      } dígitos.`,
+      mensaje: `El teléfono de ${regla.nombre} debe tener ${regla.min === regla.max
+        ? `exactamente ${regla.min}`
+        : `entre ${regla.min} y ${regla.max}`
+        } dígitos.`,
     };
   }
 
@@ -1135,11 +1185,8 @@ async function cargarEstudiantes() {
   if (!studentsList) return;
 
   try {
-    const response = await fetch("/api/estudiantes", {
+    const response = await apiFetch("/api/estudiantes", {
       method: "GET",
-      headers: {
-        Authorization: "Basic " + auth,
-      },
     });
 
     if (response.status === 401) {
@@ -1464,11 +1511,8 @@ async function registrarEstudiante(event) {
   }
 
   try {
-    const response = await fetch("/api/estudiantes", {
+    const response = await apiFetch("/api/estudiantes", {
       method: "POST",
-      headers: {
-        Authorization: "Basic " + auth,
-      },
       body: formData,
     });
 
@@ -1543,13 +1587,13 @@ async function registrarApoderado(estudianteId) {
     formData.append(nombreCampo, campo.value.trim());
   });
 
-  const response = await fetch(`/api/apoderados/estudiante/${estudianteId}`, {
-    method: "POST",
-    headers: {
-      Authorization: "Basic " + auth,
+  const response = await apiFetch(
+    `/api/apoderados/estudiante/${estudianteId}`,
+    {
+      method: "POST",
+      body: formData,
     },
-    body: formData,
-  });
+  );
 
   if (response.status === 401) {
     cerrarSesion();
@@ -1575,11 +1619,8 @@ async function registrarApoderado(estudianteId) {
 
 async function editarEstudiante(id) {
   try {
-    const response = await fetch(`/api/estudiantes/${id}`, {
+    const response = await apiFetch(`/api/estudiantes/${id}`, {
       method: "GET",
-      headers: {
-        Authorization: "Basic " + auth,
-      },
     });
 
     if (response.status === 401) {
@@ -1596,14 +1637,28 @@ async function editarEstudiante(id) {
     }
 
     const estudiante = await response.json();
+    console.log("Datos recibidos del estudiante:", estudiante);
+    console.log("Tipo de documento recibido:", estudiante.tipoDocumento);
 
     estudianteEditandoId = estudiante.id;
 
     document.getElementById("editId").value = estudiante.id;
     document.getElementById("editNombre").value = estudiante.nombre || "";
     document.getElementById("editApellido").value = estudiante.apellido || "";
+    const tipoDocumento = (estudiante.tipoDocumento || "")
+      .trim()
+      .toUpperCase();
+
+    const equivalenciasDocumento = {
+      "DNI": "DNI",
+      "CE": "CE",
+      "CARNET DE EXTRANJERÍA": "CE",
+      "CARNÉ DE EXTRANJERÍA": "CE",
+      "PASAPORTE": "PASAPORTE"
+    };
+
     document.getElementById("editTipoDocumento").value =
-      estudiante.tipoDocumento || "";
+      equivalenciasDocumento[tipoDocumento] || "";
     document.getElementById("editDocumento").value = estudiante.documento || "";
     document.getElementById("editFechaNacimiento").value =
       estudiante.fechaNacimiento || "";
@@ -1689,12 +1744,12 @@ function prepararFotoEdicion(estudiante) {
 
 async function cargarApoderados(estudianteId) {
   try {
-    const response = await fetch(`/api/apoderados/estudiante/${estudianteId}`, {
-      method: "GET",
-      headers: {
-        Authorization: "Basic " + auth,
+    const response = await apiFetch(
+      `/api/apoderados/estudiante/${estudianteId}`,
+      {
+        method: "GET",
       },
-    });
+    );
 
     if (response.status === 401) {
       cerrarSesion();
@@ -2015,11 +2070,8 @@ async function actualizarEstudiante(event) {
   }
 
   try {
-    const response = await fetch(`/api/estudiantes/${id}`, {
+    const response = await apiFetch(`/api/estudiantes/${id}`, {
       method: "PUT",
-      headers: {
-        Authorization: "Basic " + auth,
-      },
       body: formData,
     });
 
@@ -2141,13 +2193,10 @@ async function cambiarEstadoEstudiante(id, estadoActual) {
   if (!confirmar) return;
 
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `/api/estudiantes/${id}/estado?estado=${nuevoEstado}`,
       {
         method: "PATCH",
-        headers: {
-          Authorization: "Basic " + auth,
-        },
       },
     );
 
@@ -2335,8 +2384,11 @@ function escapeHtml(valor) {
 // ==========================================
 
 function cerrarSesion() {
+  sessionStorage.removeItem("kihonUsername");
+  sessionStorage.removeItem("kihonRol");
   sessionStorage.removeItem("kihonAuth");
-  window.location.href = "/login";
+
+  window.location.replace("/login");
 }
 
 // ==========================================

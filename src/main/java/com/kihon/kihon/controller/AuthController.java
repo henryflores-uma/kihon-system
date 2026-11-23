@@ -1,3 +1,4 @@
+
 package com.kihon.kihon.controller;
 
 import com.kihon.kihon.dto.CambiarPasswordRequest;
@@ -9,6 +10,7 @@ import com.kihon.kihon.service.UsuarioService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +31,31 @@ public class AuthController {
                 this.storageService = storageService;
         }
 
+        /*
+         * =============================================================
+         * TOKEN CSRF
+         * =============================================================
+         *
+         * Este endpoint permite obtener el token antes del login.
+         * El token se almacena en la sesión HTTP.
+         *
+         * Después de iniciar sesión se debe solicitar nuevamente.
+         */
+
+        @GetMapping("/csrf")
+        public Map<String, String> obtenerTokenCsrf(CsrfToken csrfToken) {
+
+                return Map.of(
+                                "token",
+                                csrfToken.getToken());
+        }
+
+        /*
+         * =============================================================
+         * USUARIO AUTENTICADO
+         * =============================================================
+         */
+
         @GetMapping("/me")
         public Map<String, String> usuarioAutenticado(
                         Authentication authentication) {
@@ -47,6 +74,12 @@ public class AuthController {
                                 "rol", rol);
         }
 
+        /*
+         * =============================================================
+         * OBTENER PERFIL
+         * =============================================================
+         */
+
         @GetMapping("/perfil")
         public ResponseEntity<PerfilResponse> obtenerPerfil(
                         Authentication authentication) {
@@ -57,6 +90,12 @@ public class AuthController {
                 return ResponseEntity.ok(
                                 convertirPerfilResponse(usuario));
         }
+
+        /*
+         * =============================================================
+         * ACTUALIZAR PERFIL
+         * =============================================================
+         */
 
         @PutMapping(value = "/perfil", consumes = "multipart/form-data")
         public ResponseEntity<PerfilResponse> actualizarPerfil(
@@ -79,6 +118,12 @@ public class AuthController {
                                 convertirPerfilResponse(usuario));
         }
 
+        /*
+         * =============================================================
+         * CAMBIAR CONTRASEÑA
+         * =============================================================
+         */
+
         @PatchMapping("/perfil/password")
         public ResponseEntity<Void> cambiarPassword(
                         Authentication authentication,
@@ -91,6 +136,12 @@ public class AuthController {
 
                 return ResponseEntity.noContent().build();
         }
+
+        /*
+         * =============================================================
+         * CONVERTIR PERFIL RESPONSE
+         * =============================================================
+         */
 
         private PerfilResponse convertirPerfilResponse(
                         Usuario usuario) {
@@ -123,6 +174,7 @@ public class AuthController {
 
                 return new PerfilResponse(
                                 usuario.getId(),
+
                                 usuario.getUsername(),
 
                                 persona != null

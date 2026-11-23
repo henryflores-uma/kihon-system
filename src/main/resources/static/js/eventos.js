@@ -1,3 +1,4 @@
+
 /*
  * ==========================================
  * ESTADO GLOBAL DEL MÓDULO
@@ -5,19 +6,12 @@
  */
 
 window.KihonEventos = {
-
     ready: false,
-
     cargarEventos: null,
-
     obtenerEventosParaCelda: null,
-
     crearBloqueEvento: null,
-
     mostrarDetalleEvento: null,
-
     ocultarDetalle: null
-
 };
 
 
@@ -25,12 +19,104 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /*
      * ==========================================
-     * AUTENTICACIÓN
+     * AUTENTICACIÓN Y AUTORIZACIÓN
      * ==========================================
      */
 
-    const auth =
-        sessionStorage.getItem("kihonAuth");
+    const username = sessionStorage.getItem("kihonUsername");
+    const rol = sessionStorage.getItem("kihonRol");
+
+    const ROLES_PERMITIDOS = [
+        "ADMIN",
+        "SECRETARIA"
+    ];
+
+    /*
+     * Si no existe una sesión, volver al login.
+     * No utilizar kihonAuth: ahora se trabaja
+     * con la sesión de Spring Security.
+     */
+
+    if (!username || !rol) {
+
+        sessionStorage.removeItem("kihonUsername");
+        sessionStorage.removeItem("kihonRol");
+        sessionStorage.removeItem("kihonAuth");
+
+        window.location.href = "/login";
+
+        return;
+    }
+
+    /*
+     * El módulo de eventos solo funciona para
+     * ADMIN y SECRETARIA.
+     *
+     * SENSEI puede consultar su horario, pero
+     * no necesita inicializar este módulo.
+     */
+
+    if (!ROLES_PERMITIDOS.includes(rol)) {
+        return;
+    }
+
+
+    /*
+     * ==========================================
+     * TOKEN CSRF
+     * ==========================================
+     */
+
+    async function obtenerTokenCSRF() {
+
+        const response = await fetch("/api/auth/csrf", {
+            method: "GET",
+            credentials: "same-origin",
+            headers: {
+                Accept: "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("No se pudo obtener el token CSRF.");
+        }
+
+        const data = await response.json();
+
+        return data.token;
+    }
+
+
+    /*
+     * ==========================================
+     * SOLICITUDES HTTP
+     * ==========================================
+     */
+
+    async function solicitar(url, options = {}) {
+
+        const method = (options.method || "GET").toUpperCase();
+
+        const headers = new Headers(options.headers || {});
+
+        headers.delete("Authorization");
+
+        headers.set("Accept", "application/json");
+
+        if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+
+            const csrfToken = await obtenerTokenCSRF();
+
+            headers.set("X-CSRF-TOKEN", csrfToken);
+        }
+
+        return fetch(url, {
+            ...options,
+            method,
+            credentials: "same-origin",
+            headers
+        });
+    }
 
 
     /*
@@ -40,34 +126,22 @@ document.addEventListener("DOMContentLoaded", function () {
      */
 
     const showEventFormButton =
-        document.getElementById(
-            "showEventFormButton"
-        );
+        document.getElementById("showEventFormButton");
 
     const eventFormSection =
-        document.getElementById(
-            "eventFormSection"
-        );
+        document.getElementById("eventFormSection");
 
     const eventForm =
-        document.getElementById(
-            "eventForm"
-        );
+        document.getElementById("eventForm");
 
     const cancelEventButton =
-        document.getElementById(
-            "cancelEventButton"
-        );
+        document.getElementById("cancelEventButton");
 
     const eventFormMessage =
-        document.getElementById(
-            "eventFormMessage"
-        );
+        document.getElementById("eventFormMessage");
 
     const eventResponsible =
-        document.getElementById(
-            "eventResponsible"
-        );
+        document.getElementById("eventResponsible");
 
 
     /*
@@ -77,74 +151,46 @@ document.addEventListener("DOMContentLoaded", function () {
      */
 
     const eventDetailSection =
-        document.getElementById(
-            "eventDetailSection"
-        );
+        document.getElementById("eventDetailSection");
 
     const closeEventDetailButton =
-        document.getElementById(
-            "closeEventDetailButton"
-        );
+        document.getElementById("closeEventDetailButton");
 
     const eventDetailTitle =
-        document.getElementById(
-            "eventDetailTitle"
-        );
+        document.getElementById("eventDetailTitle");
 
     const eventDetailType =
-        document.getElementById(
-            "eventDetailType"
-        );
+        document.getElementById("eventDetailType");
 
     const eventDetailDate =
-        document.getElementById(
-            "eventDetailDate"
-        );
+        document.getElementById("eventDetailDate");
 
     const eventDetailTime =
-        document.getElementById(
-            "eventDetailTime"
-        );
+        document.getElementById("eventDetailTime");
 
     const eventDetailPlace =
-        document.getElementById(
-            "eventDetailPlace"
-        );
+        document.getElementById("eventDetailPlace");
 
     const eventDetailResponsible =
-        document.getElementById(
-            "eventDetailResponsible"
-        );
+        document.getElementById("eventDetailResponsible");
 
     const eventDetailDescription =
-        document.getElementById(
-            "eventDetailDescription"
-        );
+        document.getElementById("eventDetailDescription");
 
     const eventDetailStatus =
-        document.getElementById(
-            "eventDetailStatus"
-        );
+        document.getElementById("eventDetailStatus");
 
     const editEventButton =
-        document.getElementById(
-            "editEventButton"
-        );
+        document.getElementById("editEventButton");
 
     const toggleEventStatusButton =
-        document.getElementById(
-            "toggleEventStatusButton"
-        );
+        document.getElementById("toggleEventStatusButton");
 
     const deleteEventButton =
-        document.getElementById(
-            "deleteEventButton"
-        );
+        document.getElementById("deleteEventButton");
 
     const eventDetailMessage =
-        document.getElementById(
-            "eventDetailMessage"
-        );
+        document.getElementById("eventDetailMessage");
 
 
     /*
@@ -162,16 +208,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /*
      * ==========================================
-     * VERIFICAR SESIÓN
+     * VALIDAR ELEMENTOS PRINCIPALES
      * ==========================================
      */
 
-    if (!auth) {
+    const elementosObligatorios = [
+        showEventFormButton,
+        eventFormSection,
+        eventForm,
+        cancelEventButton,
+        eventFormMessage,
+        eventResponsible,
+        eventDetailSection,
+        closeEventDetailButton,
+        eventDetailTitle,
+        eventDetailType,
+        eventDetailDate,
+        eventDetailTime,
+        eventDetailPlace,
+        eventDetailResponsible,
+        eventDetailDescription,
+        eventDetailStatus,
+        editEventButton,
+        toggleEventStatusButton,
+        deleteEventButton,
+        eventDetailMessage
+    ];
 
-        sessionStorage.clear();
+    if (elementosObligatorios.some(elemento => !elemento)) {
 
-        window.location.href =
-            "/login";
+        console.error(
+            "No se encontraron todos los elementos necesarios para inicializar eventos.js."
+        );
 
         return;
     }
@@ -185,20 +253,84 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function obtenerFechaISO(fecha) {
 
-        const year =
-            fecha.getFullYear();
+        const year = fecha.getFullYear();
 
-        const month =
-            String(
-                fecha.getMonth() + 1
-            ).padStart(2, "0");
+        const month = String(
+            fecha.getMonth() + 1
+        ).padStart(2, "0");
 
-        const day =
-            String(
-                fecha.getDate()
-            ).padStart(2, "0");
+        const day = String(
+            fecha.getDate()
+        ).padStart(2, "0");
 
         return `${year}-${month}-${day}`;
+    }
+
+
+    /*
+     * ==========================================
+     * ESCAPAR HTML
+     * ==========================================
+     */
+
+    function escaparHTML(valor) {
+
+        return String(valor ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+
+    /*
+     * ==========================================
+     * OBTENER MENSAJE DE ERROR HTTP
+     * ==========================================
+     */
+
+    async function obtenerMensajeError(
+        response,
+        mensajePredeterminado
+    ) {
+
+        try {
+
+            const errorData = await response.json();
+
+            if (errorData.message) {
+                return errorData.message;
+            }
+
+        } catch {
+            // Mantener mensaje predeterminado.
+        }
+
+        return mensajePredeterminado;
+    }
+
+
+    /*
+     * ==========================================
+     * MANEJAR RESPUESTAS DE AUTENTICACIÓN
+     * ==========================================
+     */
+
+    function manejarErrorAutenticacion(response) {
+
+        if (response.status === 401) {
+
+            sessionStorage.removeItem("kihonUsername");
+            sessionStorage.removeItem("kihonRol");
+            sessionStorage.removeItem("kihonAuth");
+
+            window.location.href = "/login";
+
+            return true;
+        }
+
+        return false;
     }
 
 
@@ -213,11 +345,9 @@ document.addEventListener("DOMContentLoaded", function () {
         tipo = "error"
     ) {
 
-        eventFormMessage.textContent =
-            mensaje;
+        eventFormMessage.textContent = mensaje;
 
-        eventFormMessage.hidden =
-            false;
+        eventFormMessage.hidden = false;
 
         eventFormMessage.className =
             tipo === "success"
@@ -234,14 +364,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function ocultarMensajeFormulario() {
 
-        eventFormMessage.textContent =
-            "";
+        eventFormMessage.textContent = "";
 
-        eventFormMessage.hidden =
-            true;
+        eventFormMessage.hidden = true;
 
-        eventFormMessage.className =
-            "horario-message";
+        eventFormMessage.className = "horario-message";
     }
 
 
@@ -256,11 +383,9 @@ document.addEventListener("DOMContentLoaded", function () {
         tipo = "error"
     ) {
 
-        eventDetailMessage.textContent =
-            mensaje;
+        eventDetailMessage.textContent = mensaje;
 
-        eventDetailMessage.hidden =
-            false;
+        eventDetailMessage.hidden = false;
 
         eventDetailMessage.className =
             tipo === "success"
@@ -277,14 +402,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function ocultarMensajeDetalle() {
 
-        eventDetailMessage.textContent =
-            "";
+        eventDetailMessage.textContent = "";
 
-        eventDetailMessage.hidden =
-            true;
+        eventDetailMessage.hidden = true;
 
-        eventDetailMessage.className =
-            "horario-message";
+        eventDetailMessage.className = "horario-message";
     }
 
 
@@ -298,45 +420,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
 
-            const fechaInicio =
-                obtenerFechaISO(
-                    fechaSemana
-                );
+            const fechaInicio = obtenerFechaISO(fechaSemana);
 
+            const fechaFin = new Date(fechaSemana);
 
-            const fechaFin =
-                new Date(fechaSemana);
+            fechaFin.setDate(fechaFin.getDate() + 6);
 
-
-            fechaFin.setDate(
-                fechaFin.getDate() + 6
+            const response = await solicitar(
+                `/api/eventos?fechaInicio=${fechaInicio}&fechaFin=${obtenerFechaISO(fechaFin)}`,
+                {
+                    method: "GET"
+                }
             );
 
-
-            const response =
-                await fetch(
-                    `/api/eventos?fechaInicio=${fechaInicio}&fechaFin=${obtenerFechaISO(fechaFin)}`,
-                    {
-                        method: "GET",
-
-                        headers: {
-                            "Authorization":
-                                "Basic " + auth
-                        }
-                    }
-                );
-
-
-            if (response.status === 401) {
-
-                sessionStorage.clear();
-
-                window.location.href =
-                    "/login";
-
+            if (manejarErrorAutenticacion(response)) {
                 return;
             }
-
 
             if (response.status === 403) {
 
@@ -345,24 +444,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             }
 
-
             if (!response.ok) {
 
                 throw new Error(
-                    "No se pudieron obtener los eventos."
+                    await obtenerMensajeError(
+                        response,
+                        "No se pudieron obtener los eventos."
+                    )
                 );
             }
 
+            const datos = await response.json();
 
-            eventos =
-                await response.json();
+            eventos = Array.isArray(datos) ? datos : [];
 
         } catch (error) {
 
-            console.error(
-                "Error cargando eventos:",
-                error
-            );
+            console.error("Error cargando eventos:", error);
 
             throw error;
         }
@@ -379,30 +477,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
 
-            const response =
-                await fetch(
-                    "/api/usuarios/senseis",
-                    {
-                        method: "GET",
+            eventResponsible.innerHTML = `
+                <option value="">
+                    Cargando responsables...
+                </option>
+            `;
 
-                        headers: {
-                            "Authorization":
-                                "Basic " + auth
-                        }
-                    }
-                );
+            const response = await solicitar(
+                "/api/usuarios/senseis",
+                {
+                    method: "GET"
+                }
+            );
 
-
-            if (response.status === 401) {
-
-                sessionStorage.clear();
-
-                window.location.href =
-                    "/login";
-
-                return;
+            if (manejarErrorAutenticacion(response)) {
+                return false;
             }
-
 
             if (response.status === 403) {
 
@@ -411,66 +501,56 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             }
 
-
             if (!response.ok) {
 
                 throw new Error(
-                    "No se pudieron obtener los responsables."
+                    await obtenerMensajeError(
+                        response,
+                        "No se pudieron obtener los responsables."
+                    )
                 );
             }
 
+            const responsables = await response.json();
 
-            const responsables =
-                await response.json();
+            eventResponsible.innerHTML = "";
 
+            const opcionSinResponsable =
+                document.createElement("option");
 
-            eventResponsible.innerHTML = `
+            opcionSinResponsable.value = "";
 
-                <option value="">
-                    Sin responsable
-                </option>
+            opcionSinResponsable.textContent = "Sin responsable";
 
-            `;
+            eventResponsible.appendChild(opcionSinResponsable);
 
+            responsables.forEach(responsable => {
 
-            responsables.forEach(
-                responsable => {
+                const option = document.createElement("option");
 
-                    const option =
-                        document.createElement(
-                            "option"
-                        );
+                option.value = responsable.id;
 
+                option.textContent =
+                    `${responsable.nombre} ${responsable.apellido}`;
 
-                    option.value =
-                        responsable.id;
+                eventResponsible.appendChild(option);
+            });
 
-
-                    option.textContent =
-                        `${responsable.nombre} ${responsable.apellido}`;
-
-
-                    eventResponsible.appendChild(
-                        option
-                    );
-                }
-            );
+            return true;
 
         } catch (error) {
 
-            console.error(
-                "Error cargando responsables:",
-                error
-            );
-
+            console.error("Error cargando responsables:", error);
 
             eventResponsible.innerHTML = `
-
                 <option value="">
-                    No se pudieron cargar
+                    No se pudieron cargar los responsables
                 </option>
-
             `;
+
+            mostrarMensajeFormulario(error.message);
+
+            return false;
         }
     }
 
@@ -481,49 +561,32 @@ document.addEventListener("DOMContentLoaded", function () {
      * ==========================================
      */
 
-    function obtenerEventosParaCelda(
-        fecha,
-        hora
-    ) {
+    function obtenerEventosParaCelda(fecha, hora) {
 
-        const fechaISO =
-            obtenerFechaISO(fecha);
+        const fechaISO = obtenerFechaISO(fecha);
 
+        return eventos.filter(evento => {
 
-        return eventos.filter(
-            evento => {
-
-                if (
-                    evento.fecha !==
-                    fechaISO
-                ) {
-
-                    return false;
-                }
-
-
-                const horaInicio =
-                    parseInt(
-                        evento.horaInicio
-                            .substring(0, 2),
-                        10
-                    );
-
-
-                const horaFin =
-                    parseInt(
-                        evento.horaFin
-                            .substring(0, 2),
-                        10
-                    );
-
-
-                return (
-                    hora >= horaInicio &&
-                    hora < horaFin
-                );
+            if (evento.fecha !== fechaISO) {
+                return false;
             }
-        );
+
+            if (evento.estado !== "ACTIVO") {
+                return false;
+            }
+
+            const horaInicio = parseInt(
+                evento.horaInicio.substring(0, 2),
+                10
+            );
+
+            const horaFin = parseInt(
+                evento.horaFin.substring(0, 2),
+                10
+            );
+
+            return hora >= horaInicio && hora < horaFin;
+        });
     }
 
 
@@ -533,88 +596,76 @@ document.addEventListener("DOMContentLoaded", function () {
      * ==========================================
      */
 
-    function crearBloqueEvento(
-        evento,
-        horaActual
-    ) {
+    function crearBloqueEvento(evento, horaActual) {
 
-        const horaInicio =
-            evento.horaInicio
-                .substring(0, 5);
+        const horaInicio = evento.horaInicio.substring(0, 5);
 
+        const horaFin = evento.horaFin.substring(0, 5);
 
-        const horaFin =
-            evento.horaFin
-                .substring(0, 5);
+        const inicioHora = parseInt(
+            evento.horaInicio.substring(0, 2),
+            10
+        );
 
-
-        const inicioHora =
-            parseInt(
-                evento.horaInicio
-                    .substring(0, 2),
-                10
-            );
-
-
-        if (
-            horaActual !==
-            inicioHora
-        ) {
-
+        if (horaActual !== inicioHora) {
             return "";
         }
-
 
         const claseEstado =
             evento.estado === "CANCELADO"
                 ? "horario-evento--cancelado"
                 : "";
 
-
         const textoEstado =
             evento.estado === "CANCELADO"
                 ? " · CANCELADO"
                 : "";
 
-
         return `
+            <div
+                class="horario-evento horario-evento--especial ${claseEstado}"
+                data-evento-id="${escaparHTML(evento.id)}"
+                title="Ver detalles del evento">
 
-        <div
-            class="horario-evento horario-evento--especial ${claseEstado}"
-            data-evento-id="${evento.id}"
-            title="Ver detalles del evento">
+                <strong class="horario-evento__nombre">
+                    ${escaparHTML(evento.titulo)}
+                </strong>
 
-            <strong
-                class="horario-evento__nombre">
+                <span class="horario-evento__hora">
+                    ${escaparHTML(horaInicio)} -
+                    ${escaparHTML(horaFin)}
+                </span>
 
-                ${evento.titulo}
-
-            </strong>
-
-            <span
-                class="horario-evento__hora">
-
-                ${horaInicio} -
-                ${horaFin}
-
-            </span>
-
-            <span
-                class="horario-evento__sensei">
-
-                ${evento.tipo}
-
-                ${evento.responsableNombre
-                ? " · " + evento.responsableNombre
+                <span class="horario-evento__sensei">
+                    ${escaparHTML(evento.tipo)}
+                    ${evento.responsableNombre
+                ? " · " + escaparHTML(evento.responsableNombre)
                 : ""}
+                    ${textoEstado}
+                </span>
 
-                ${textoEstado}
+            </div>
+        `;
+    }
 
-            </span>
 
-        </div>
+    /*
+     * ==========================================
+     * MOSTRAR DETALLE POR IDENTIFICADOR
+     * ==========================================
+     */
 
-    `;
+    function mostrarDetalleEventoPorId(eventoId) {
+
+        const evento = eventos.find(
+            item => String(item.id) === String(eventoId)
+        );
+
+        if (!evento) {
+            return;
+        }
+
+        mostrarDetalleEvento(evento);
     }
 
 
@@ -624,92 +675,39 @@ document.addEventListener("DOMContentLoaded", function () {
      * ==========================================
      */
 
-    function mostrarDetalleEventoPorId(
-        eventoId
-    ) {
-
-        const evento =
-            eventos.find(
-                item =>
-                    item.id === eventoId
-            );
-
-
-        if (!evento) {
-            return;
-        }
-
-
-        mostrarDetalleEvento(
-            evento
-        );
-    }
-
-
     function mostrarDetalleEvento(evento) {
 
-        eventoSeleccionado =
-            evento;
+        eventoSeleccionado = evento;
 
+        eventDetailTitle.textContent = evento.titulo;
 
-        eventDetailTitle.textContent =
-            evento.titulo;
-
-
-        eventDetailType.textContent =
-            evento.tipo;
-
+        eventDetailType.textContent = evento.tipo;
 
         eventDetailDate.textContent =
-            formatearFechaEvento(
-                evento.fecha
-            );
-
+            formatearFechaEvento(evento.fecha);
 
         eventDetailTime.textContent =
             `${evento.horaInicio.substring(0, 5)} - ${evento.horaFin.substring(0, 5)}`;
 
-
         eventDetailPlace.textContent =
-            evento.lugar ||
-            "Sin lugar indicado";
-
+            evento.lugar || "Sin lugar indicado";
 
         eventDetailResponsible.textContent =
-            evento.responsableNombre ||
-            "Sin responsable";
-
+            evento.responsableNombre || "Sin responsable";
 
         eventDetailDescription.textContent =
-            evento.descripcion ||
-            "Sin descripción";
+            evento.descripcion || "Sin descripción";
 
+        eventDetailStatus.textContent = evento.estado;
 
-        eventDetailStatus.textContent =
-            evento.estado;
-
-
-        if (
-            evento.estado ===
-            "ACTIVO"
-        ) {
-
-            toggleEventStatusButton.textContent =
-                "Cancelar evento";
-
-        } else {
-
-            toggleEventStatusButton.textContent =
-                "Activar evento";
-        }
-
+        toggleEventStatusButton.textContent =
+            evento.estado === "ACTIVO"
+                ? "Cancelar evento"
+                : "Activar evento";
 
         ocultarMensajeDetalle();
 
-
-        eventDetailSection.hidden =
-            false;
-
+        eventDetailSection.hidden = false;
 
         eventDetailSection.scrollIntoView({
             behavior: "smooth",
@@ -726,13 +724,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function ocultarDetalle() {
 
-        eventDetailSection.hidden =
-            true;
+        eventDetailSection.hidden = true;
 
-
-        eventoSeleccionado =
-            null;
-
+        eventoSeleccionado = null;
 
         ocultarMensajeDetalle();
     }
@@ -744,36 +738,27 @@ document.addEventListener("DOMContentLoaded", function () {
      * ==========================================
      */
 
-    function formatearFechaEvento(
-        fechaISO
-    ) {
+    function formatearFechaEvento(fechaISO) {
 
-        const partes =
-            fechaISO.split("-");
+        const partes = fechaISO.split("-");
 
-
-        const fecha =
-            new Date(
-                Number(partes[0]),
-                Number(partes[1]) - 1,
-                Number(partes[2])
-            );
-
-
-        return fecha.toLocaleDateString(
-            "es-PE",
-            {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric"
-            }
+        const fecha = new Date(
+            Number(partes[0]),
+            Number(partes[1]) - 1,
+            Number(partes[2])
         );
+
+        return fecha.toLocaleDateString("es-PE", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        });
     }
 
 
     /*
      * ==========================================
-     * MOSTRAR FORMULARIO
+     * MOSTRAR FORMULARIO DE CREACIÓN
      * ==========================================
      */
 
@@ -781,38 +766,36 @@ document.addEventListener("DOMContentLoaded", function () {
         "click",
         async function () {
 
-            modoEdicion =
-                false;
+            modoEdicion = false;
 
-
-            eventoSeleccionado =
-                null;
-
+            eventoSeleccionado = null;
 
             eventForm.reset();
 
-
-            eventFormSection.hidden =
-                false;
-
-
             ocultarMensajeFormulario();
 
+            const responsablesCargados =
+                await cargarResponsables();
 
-            await cargarResponsables();
+            if (!responsablesCargados) {
+                return;
+            }
 
+            eventFormSection.hidden = false;
 
             const fechaActual =
-                window.KihonHorario
-                    .obtenerFechaActual();
+                window.KihonHorario?.obtenerFechaActual();
 
+            if (fechaActual) {
 
-            document.getElementById(
-                "eventDate"
-            ).value =
-                obtenerFechaISO(
-                    fechaActual
-                );
+                document.getElementById("eventDate").value =
+                    obtenerFechaISO(fechaActual);
+            }
+
+            eventFormSection.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
         }
     );
 
@@ -829,16 +812,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             eventForm.reset();
 
-
-            modoEdicion =
-                false;
-
+            modoEdicion = false;
 
             ocultarMensajeFormulario();
 
-
-            eventFormSection.hidden =
-                true;
+            eventFormSection.hidden = true;
         }
     );
 
@@ -857,76 +835,50 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
+            const responsablesCargados =
+                await cargarResponsables();
 
-            modoEdicion =
-                true;
+            if (!responsablesCargados) {
+                return;
+            }
 
+            modoEdicion = true;
 
-            const evento =
-                eventoSeleccionado;
+            const evento = eventoSeleccionado;
 
-
-            await cargarResponsables();
-
-
-            document.getElementById(
-                "eventTitle"
-            ).value =
+            document.getElementById("eventTitle").value =
                 evento.titulo || "";
 
-
-            document.getElementById(
-                "eventType"
-            ).value =
+            document.getElementById("eventType").value =
                 evento.tipo || "";
 
-
-            document.getElementById(
-                "eventDate"
-            ).value =
+            document.getElementById("eventDate").value =
                 evento.fecha || "";
 
-
-            document.getElementById(
-                "eventStart"
-            ).value =
+            document.getElementById("eventStart").value =
                 evento.horaInicio
                     ? evento.horaInicio.substring(0, 5)
                     : "";
 
-
-            document.getElementById(
-                "eventEnd"
-            ).value =
+            document.getElementById("eventEnd").value =
                 evento.horaFin
                     ? evento.horaFin.substring(0, 5)
                     : "";
 
-
-            document.getElementById(
-                "eventPlace"
-            ).value =
+            document.getElementById("eventPlace").value =
                 evento.lugar || "";
 
-
-            document.getElementById(
-                "eventDescription"
-            ).value =
+            document.getElementById("eventDescription").value =
                 evento.descripcion || "";
-
 
             eventResponsible.value =
                 evento.responsableId
-                    ? evento.responsableId
+                    ? String(evento.responsableId)
                     : "";
-
 
             ocultarMensajeFormulario();
 
-
-            eventFormSection.hidden =
-                false;
-
+            eventFormSection.hidden = false;
 
             eventFormSection.scrollIntoView({
                 behavior: "smooth",
@@ -948,60 +900,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
             event.preventDefault();
 
-
             ocultarMensajeFormulario();
 
-
             const titulo =
-                document.getElementById(
-                    "eventTitle"
-                ).value.trim();
-
+                document.getElementById("eventTitle").value.trim();
 
             const tipo =
-                document.getElementById(
-                    "eventType"
-                ).value;
-
+                document.getElementById("eventType").value;
 
             const fecha =
-                document.getElementById(
-                    "eventDate"
-                ).value;
-
+                document.getElementById("eventDate").value;
 
             const horaInicio =
-                document.getElementById(
-                    "eventStart"
-                ).value;
-
+                document.getElementById("eventStart").value;
 
             const horaFin =
-                document.getElementById(
-                    "eventEnd"
-                ).value;
-
+                document.getElementById("eventEnd").value;
 
             const lugar =
-                document.getElementById(
-                    "eventPlace"
-                ).value.trim();
-
+                document.getElementById("eventPlace").value.trim();
 
             const descripcion =
-                document.getElementById(
-                    "eventDescription"
-                ).value.trim();
+                document.getElementById("eventDescription").value.trim();
 
-
-            const responsableId =
-                eventResponsible.value;
+            const responsableId = eventResponsible.value;
 
 
             /*
-             * ======================================
              * VALIDACIONES
-             * ======================================
              */
 
             if (!titulo) {
@@ -1013,7 +939,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-
             if (!tipo) {
 
                 mostrarMensajeFormulario(
@@ -1022,7 +947,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 return;
             }
-
 
             if (!fecha) {
 
@@ -1033,11 +957,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-
-            if (
-                !horaInicio ||
-                !horaFin
-            ) {
+            if (!horaInicio || !horaFin) {
 
                 mostrarMensajeFormulario(
                     "Debes indicar la hora de inicio y la hora de fin."
@@ -1046,11 +966,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-
-            if (
-                horaInicio >=
-                horaFin
-            ) {
+            if (horaInicio >= horaFin) {
 
                 mostrarMensajeFormulario(
                     "La hora de inicio debe ser anterior a la hora de fin."
@@ -1059,136 +975,63 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-
             const datos = {
-
-                titulo: titulo,
-
-                tipo: tipo,
-
-                descripcion:
-                    descripcion ||
-                    null,
-
-                fecha: fecha,
-
-                horaInicio:
-                    horaInicio,
-
-                horaFin:
-                    horaFin,
-
-                lugar:
-                    lugar ||
-                    null,
-
-                responsableId:
-                    responsableId
-                        ? Number(
-                            responsableId
-                        )
-                        : null
+                titulo,
+                tipo,
+                descripcion: descripcion || null,
+                fecha,
+                horaInicio,
+                horaFin,
+                lugar: lugar || null,
+                responsableId: responsableId
+                    ? Number(responsableId)
+                    : null
             };
 
 
             try {
 
                 /*
-                 * ==================================
-                 * CREAR
-                 * ==================================
+                 * CREAR EVENTO
                  */
 
                 if (!modoEdicion) {
 
-                    const response =
-                        await fetch(
-                            "/api/eventos",
-                            {
-                                method: "POST",
+                    const response = await solicitar(
+                        "/api/eventos",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(datos)
+                        }
+                    );
 
-                                headers: {
-
-                                    "Authorization":
-                                        "Basic " + auth,
-
-                                    "Content-Type":
-                                        "application/json"
-                                },
-
-                                body:
-                                    JSON.stringify(
-                                        datos
-                                    )
-                            }
-                        );
-
-
-                    if (
-                        response.status ===
-                        401
-                    ) {
-
-                        sessionStorage.clear();
-
-                        window.location.href =
-                            "/login";
-
+                    if (manejarErrorAutenticacion(response)) {
                         return;
                     }
 
-
-                    if (
-                        response.status ===
-                        403
-                    ) {
+                    if (response.status === 403) {
 
                         throw new Error(
                             "No tienes permisos para crear eventos."
                         );
                     }
 
-
                     if (!response.ok) {
 
-                        let mensaje =
-                            "No se pudo crear el evento.";
-
-
-                        try {
-
-                            const errorData =
-                                await response.json();
-
-
-                            if (
-                                errorData.message
-                            ) {
-
-                                mensaje =
-                                    errorData.message;
-                            }
-
-                        } catch {
-                            // Mantener mensaje genérico
-                        }
-
-
                         throw new Error(
-                            mensaje
+                            await obtenerMensajeError(
+                                response,
+                                "No se pudo crear el evento."
+                            )
                         );
                     }
 
+                    const eventoCreado = await response.json();
 
-                    const eventoCreado =
-                        await response.json();
-
-
-                    console.log(
-                        "Evento creado:",
-                        eventoCreado
-                    );
-
+                    console.log("Evento creado:", eventoCreado);
 
                     mostrarMensajeFormulario(
                         "Evento creado correctamente.",
@@ -1198,9 +1041,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                 /*
-                 * ==================================
-                 * ACTUALIZAR
-                 * ==================================
+                 * ACTUALIZAR EVENTO
                  */
 
                 else {
@@ -1212,187 +1053,105 @@ document.addEventListener("DOMContentLoaded", function () {
                         );
                     }
 
+                    const response = await solicitar(
+                        `/api/eventos/${eventoSeleccionado.id}`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(datos)
+                        }
+                    );
 
-                    const response =
-                        await fetch(
-                            `/api/eventos/${eventoSeleccionado.id}`,
-                            {
-                                method: "PUT",
-
-                                headers: {
-
-                                    "Authorization":
-                                        "Basic " + auth,
-
-                                    "Content-Type":
-                                        "application/json"
-                                },
-
-                                body:
-                                    JSON.stringify(
-                                        datos
-                                    )
-                            }
-                        );
-
-
-                    if (
-                        response.status ===
-                        401
-                    ) {
-
-                        sessionStorage.clear();
-
-                        window.location.href =
-                            "/login";
-
+                    if (manejarErrorAutenticacion(response)) {
                         return;
                     }
 
-
-                    if (
-                        response.status ===
-                        403
-                    ) {
+                    if (response.status === 403) {
 
                         throw new Error(
                             "No tienes permisos para actualizar eventos."
                         );
                     }
 
-
                     if (!response.ok) {
 
-                        let mensaje =
-                            "No se pudo actualizar el evento.";
-
-
-                        try {
-
-                            const errorData =
-                                await response.json();
-
-
-                            if (
-                                errorData.message
-                            ) {
-
-                                mensaje =
-                                    errorData.message;
-                            }
-
-                        } catch {
-                            // Mantener mensaje genérico
-                        }
-
-
                         throw new Error(
-                            mensaje
+                            await obtenerMensajeError(
+                                response,
+                                "No se pudo actualizar el evento."
+                            )
                         );
                     }
 
-
-                    const eventoActualizado =
-                        await response.json();
-
+                    const eventoActualizado = await response.json();
 
                     console.log(
                         "Evento actualizado:",
                         eventoActualizado
                     );
 
-
                     mostrarMensajeFormulario(
                         "Evento actualizado correctamente.",
                         "success"
                     );
 
-
-                    eventoSeleccionado =
-                        eventoActualizado;
+                    eventoSeleccionado = eventoActualizado;
                 }
 
 
                 /*
-                 * ==================================
                  * LIMPIAR FORMULARIO
-                 * ==================================
                  */
 
                 eventForm.reset();
 
 
                 /*
-                 * ==================================
                  * RECARGAR CALENDARIO
-                 * ==================================
                  */
 
-                await window.KihonHorario
-                    .recargarCalendario();
+                await window.KihonHorario.recargarCalendario();
 
 
                 /*
-                 * ==================================
                  * CERRAR FORMULARIO
-                 * ==================================
                  */
 
-                setTimeout(
-                    function () {
+                setTimeout(function () {
 
-                        eventFormSection.hidden =
-                            true;
+                    eventFormSection.hidden = true;
 
+                    ocultarMensajeFormulario();
 
-                        ocultarMensajeFormulario();
-
-                    },
-                    1000
-                );
+                }, 1000);
 
 
                 /*
-                 * ==================================
                  * ACTUALIZAR DETALLE
-                 * ==================================
                  */
 
-                if (
-                    modoEdicion &&
-                    eventoSeleccionado
-                ) {
+                if (modoEdicion && eventoSeleccionado) {
 
-                    mostrarDetalleEvento(
-                        eventoSeleccionado
-                    );
+                    mostrarDetalleEvento(eventoSeleccionado);
                 }
 
-
-                modoEdicion =
-                    false;
-
+                modoEdicion = false;
 
             } catch (error) {
 
-                console.error(
-                    "Error procesando evento:",
-                    error
-                );
+                console.error("Error procesando evento:", error);
 
-
-                mostrarMensajeFormulario(
-                    error.message
-                );
+                mostrarMensajeFormulario(error.message);
             }
-
         }
     );
 
 
     /*
      * ==========================================
-     * CAMBIAR ESTADO
+     * CAMBIAR ESTADO DEL EVENTO
      * ==========================================
      */
 
@@ -1404,118 +1163,59 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-
-            const evento =
-                eventoSeleccionado;
-
+            const evento = eventoSeleccionado;
 
             const nuevoEstado =
                 evento.estado === "ACTIVO"
                     ? "CANCELADO"
                     : "ACTIVO";
 
-
             const confirmacion =
                 nuevoEstado === "CANCELADO"
                     ? "¿Seguro que deseas cancelar este evento?"
                     : "¿Deseas activar nuevamente este evento?";
 
-
             if (!confirm(confirmacion)) {
                 return;
             }
 
-
             try {
 
-                const response =
-                    await fetch(
-                        `/api/eventos/${evento.id}/estado?estado=${nuevoEstado}`,
-                        {
-                            method: "PATCH",
+                const response = await solicitar(
+                    `/api/eventos/${evento.id}/estado?estado=${nuevoEstado}`,
+                    {
+                        method: "PATCH"
+                    }
+                );
 
-                            headers: {
-                                "Authorization":
-                                    "Basic " + auth
-                            }
-                        }
-                    );
-
-
-                if (
-                    response.status ===
-                    401
-                ) {
-
-                    sessionStorage.clear();
-
-                    window.location.href =
-                        "/login";
-
+                if (manejarErrorAutenticacion(response)) {
                     return;
                 }
 
-
-                if (
-                    response.status ===
-                    403
-                ) {
+                if (response.status === 403) {
 
                     throw new Error(
                         "No tienes permisos para cambiar el estado del evento."
                     );
                 }
 
-
                 if (!response.ok) {
 
-                    let mensaje =
-                        "No se pudo cambiar el estado del evento.";
-
-
-                    try {
-
-                        const errorData =
-                            await response.json();
-
-
-                        if (
-                            errorData.message
-                        ) {
-
-                            mensaje =
-                                errorData.message;
-                        }
-
-                    } catch {
-                        // Mantener mensaje genérico
-                    }
-
-
                     throw new Error(
-                        mensaje
+                        await obtenerMensajeError(
+                            response,
+                            "No se pudo cambiar el estado del evento."
+                        )
                     );
                 }
 
+                const eventoActualizado = await response.json();
 
-                const eventoActualizado =
-                    await response.json();
+                eventoSeleccionado = eventoActualizado;
 
+                await window.KihonHorario.recargarCalendario();
 
-                console.log(
-                    "Estado actualizado:",
-                    eventoActualizado
-                );
-
-
-                eventoSeleccionado =
-                    eventoActualizado;
-
-
-                mostrarDetalleEvento(
-                    eventoActualizado
-                );
-
+                mostrarDetalleEvento(eventoActualizado);
 
                 mostrarMensajeDetalle(
                     nuevoEstado === "CANCELADO"
@@ -1524,22 +1224,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     "success"
                 );
 
-
-                await window.KihonHorario
-                    .recargarCalendario();
-
-
             } catch (error) {
 
-                console.error(
-                    "Error cambiando estado:",
-                    error
-                );
+                console.error("Error cambiando estado:", error);
 
-
-                mostrarMensajeDetalle(
-                    error.message
-                );
+                mostrarMensajeDetalle(error.message);
             }
         }
     );
@@ -1559,126 +1248,64 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
+            const evento = eventoSeleccionado;
 
-            const evento =
-                eventoSeleccionado;
-
-
-            const confirmacion =
-                confirm(
-                    `¿Seguro que deseas eliminar el evento "${evento.titulo}"? Esta acción no se puede deshacer.`
-                );
-
+            const confirmacion = confirm(
+                `¿Seguro que deseas eliminar el evento "${evento.titulo}"? Esta acción no se puede deshacer.`
+            );
 
             if (!confirmacion) {
                 return;
             }
 
-
             try {
 
-                const response =
-                    await fetch(
-                        `/api/eventos/${evento.id}`,
-                        {
-                            method: "DELETE",
+                const response = await solicitar(
+                    `/api/eventos/${evento.id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
 
-                            headers: {
-                                "Authorization":
-                                    "Basic " + auth
-                            }
-                        }
-                    );
-
-
-                if (
-                    response.status ===
-                    401
-                ) {
-
-                    sessionStorage.clear();
-
-                    window.location.href =
-                        "/login";
-
+                if (manejarErrorAutenticacion(response)) {
                     return;
                 }
 
-
-                if (
-                    response.status ===
-                    403
-                ) {
+                if (response.status === 403) {
 
                     throw new Error(
                         "No tienes permisos para eliminar eventos."
                     );
                 }
 
-
                 if (!response.ok) {
 
-                    let mensaje =
-                        "No se pudo eliminar el evento.";
-
-
-                    try {
-
-                        const errorData =
-                            await response.json();
-
-
-                        if (
-                            errorData.message
-                        ) {
-
-                            mensaje =
-                                errorData.message;
-                        }
-
-                    } catch {
-                        // Mantener mensaje genérico
-                    }
-
-
                     throw new Error(
-                        mensaje
+                        await obtenerMensajeError(
+                            response,
+                            "No se pudo eliminar el evento."
+                        )
                     );
                 }
 
+                eventoSeleccionado = null;
 
-                eventoSeleccionado =
-                    null;
-
-
-                eventDetailSection.hidden =
-                    true;
-
+                eventDetailSection.hidden = true;
 
                 ocultarMensajeDetalle();
-
 
                 mostrarMensajeCalendario(
                     "Evento eliminado correctamente.",
                     "success"
                 );
 
-
-                await window.KihonHorario
-                    .recargarCalendario();
-
+                await window.KihonHorario.recargarCalendario();
 
             } catch (error) {
 
-                console.error(
-                    "Error eliminando evento:",
-                    error
-                );
+                console.error("Error eliminando evento:", error);
 
-
-                mostrarMensajeDetalle(
-                    error.message
-                );
+                mostrarMensajeDetalle(error.message);
             }
         }
     );
@@ -1695,7 +1322,6 @@ document.addEventListener("DOMContentLoaded", function () {
         function () {
 
             ocultarDetalle();
-
         }
     );
 
@@ -1712,23 +1338,15 @@ document.addEventListener("DOMContentLoaded", function () {
     ) {
 
         const scheduleMessage =
-            document.getElementById(
-                "scheduleMessage"
-            );
-
+            document.getElementById("scheduleMessage");
 
         if (!scheduleMessage) {
             return;
         }
 
+        scheduleMessage.textContent = mensaje;
 
-        scheduleMessage.textContent =
-            mensaje;
-
-
-        scheduleMessage.hidden =
-            false;
-
+        scheduleMessage.hidden = false;
 
         scheduleMessage.className =
             tipo === "success"
@@ -1739,38 +1357,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /*
      * ==========================================
-     * EXPONER API
+     * EXPONER API DEL MÓDULO
      * ==========================================
      */
 
     window.KihonEventos.cargarEventos =
         cargarEventos;
 
-
-    window.KihonEventos
-        .obtenerEventosParaCelda =
+    window.KihonEventos.obtenerEventosParaCelda =
         obtenerEventosParaCelda;
-
 
     window.KihonEventos.crearBloqueEvento =
         crearBloqueEvento;
 
-
     window.KihonEventos.mostrarDetalleEvento =
         mostrarDetalleEventoPorId;
 
-
     window.KihonEventos.ocultarDetalle =
         ocultarDetalle;
-
-
-    /*
-     * ==========================================
-     * CARGAR RESPONSABLES
-     * ==========================================
-     */
-
-    cargarResponsables();
 
 
     /*
@@ -1779,14 +1383,10 @@ document.addEventListener("DOMContentLoaded", function () {
      * ==========================================
      */
 
-    window.KihonEventos.ready =
-        true;
-
+    window.KihonEventos.ready = true;
 
     window.dispatchEvent(
-        new Event(
-            "kihonEventosReady"
-        )
+        new Event("kihonEventosReady")
     );
 
 });
