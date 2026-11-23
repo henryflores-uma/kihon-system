@@ -2,23 +2,23 @@
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <meta name="description" content="Consulta y analiza los reportes de asistencia de los estudiantes de Kihon." />
+  <meta name="description" content="Consulta y analiza los reportes de asistencia de los estudiantes de Kihon.">
 
   <title>Kihon | Reportes</title>
 
-  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 
 <body>
+
   <main class="app-layout">
 
     <!-- ==========================================
-           SIDEBAR
-           ========================================== -->
+             SIDEBAR
+        ========================================== -->
 
     <aside class="sidebar" id="sidebarMenu">
 
@@ -26,21 +26,19 @@
 
       <nav class="sidebar__nav">
 
-        <!-- DASHBOARD -->
-
         <a href="/admin/admin" class="sidebar__link">
           Dashboard
         </a>
 
-        <!-- ======================================
-               GESTIÓN
-               ====================================== -->
+        <!-- GESTIÓN -->
 
         <div class="sidebar__accordion">
 
           <button type="button" class="sidebar__accordion-button" data-target="sidebarGestion" aria-expanded="false">
+
             <span>Gestión</span>
             <span class="sidebar__accordion-arrow">▶</span>
+
           </button>
 
           <div class="sidebar__submenu" id="sidebarGestion" hidden>
@@ -58,17 +56,18 @@
             </a>
 
           </div>
+
         </div>
 
-        <!-- ======================================
-               CONTROL
-               ====================================== -->
+        <!-- CONTROL -->
 
         <div class="sidebar__accordion">
 
           <button type="button" class="sidebar__accordion-button" data-target="sidebarControl" aria-expanded="false">
+
             <span>Control</span>
             <span class="sidebar__accordion-arrow">▶</span>
+
           </button>
 
           <div class="sidebar__submenu" id="sidebarControl" hidden>
@@ -82,18 +81,19 @@
             </a>
 
           </div>
+
         </div>
 
-        <!-- ======================================
-               ADMINISTRACIÓN
-               ====================================== -->
+        <!-- ADMINISTRACIÓN -->
 
         <div class="sidebar__accordion">
 
           <button type="button" class="sidebar__accordion-button" data-target="sidebarAdministracion"
             aria-expanded="true">
+
             <span>Administración</span>
             <span class="sidebar__accordion-arrow">▼</span>
+
           </button>
 
           <div class="sidebar__submenu" id="sidebarAdministracion">
@@ -107,32 +107,32 @@
             </a>
 
           </div>
+
         </div>
 
       </nav>
+
     </aside>
 
-    <!-- ==========================================
-           OVERLAY MENÚ MÓVIL
-           ========================================== -->
+    <!-- OVERLAY MÓVIL -->
 
     <div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden></div>
 
     <!-- ==========================================
-           CONTENIDO PRINCIPAL
-           ========================================== -->
+             CONTENIDO PRINCIPAL
+        ========================================== -->
 
     <section class="main-content">
 
-      <!-- ======================================
-             NAVEGACIÓN MÓVIL
-             ====================================== -->
+      <!-- NAVEGACIÓN MÓVIL -->
 
       <div class="mobile-nav">
 
         <button type="button" class="mobile-menu-button" id="mobileMenuButton" aria-label="Abrir menú"
           aria-expanded="false" aria-controls="sidebarMenu">
+
           <span id="mobileMenuIcon">☰</span>
+
         </button>
 
         <div class="mobile-nav__logo">
@@ -141,13 +141,9 @@
 
       </div>
 
-      <!-- ======================================
-             TOPBAR
-             ====================================== -->
+      <!-- TOPBAR -->
 
       <header class="topbar">
-
-        <!-- ROL -->
 
         <div class="topbar__role">
 
@@ -163,9 +159,7 @@
 
         <div class="topbar__actions">
 
-          <!-- ==================================
-                 NOTIFICACIONES
-                 ================================== -->
+          <!-- NOTIFICACIONES -->
 
           <button type="button" class="topbar__notification" id="notificationButton" aria-label="Notificaciones">
 
@@ -179,21 +173,15 @@
 
           </button>
 
-          <!-- ==================================
-                 PERFIL
-                 ================================== -->
+          <!-- PERFIL -->
 
           <div class="topbar__profile" id="profileMenuContainer">
 
             <button type="button" class="topbar__profile-button" id="profileMenuButton" aria-expanded="false">
 
-              <!-- AVATAR -->
-
               <div class="topbar__avatar" id="userProfileAvatar">
                 <span id="userAvatarInitial">U</span>
               </div>
-
-              <!-- INFORMACIÓN DEL USUARIO -->
 
               <div class="topbar__profile-info">
 
@@ -207,15 +195,11 @@
 
               </div>
 
-              <!-- FLECHA -->
-
               <span class="topbar__profile-arrow">
                 ▼
               </span>
 
             </button>
-
-            <!-- MENÚ -->
 
             <div class="topbar__profile-menu" id="profileMenu" hidden>
 
@@ -225,24 +209,26 @@
 
               <button type="button" id="topbarLogoutButton"
                 class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+
                 Cerrar sesión
+
               </button>
 
             </div>
 
           </div>
+
         </div>
+
       </header>
 
-      <!-- ======================================
-             CONTENIDO DE REPORTES
-             ====================================== -->
+      <!-- ==========================================
+                 REPORTES
+            ========================================== -->
 
       <div class="container reportes-page">
 
-        <!-- ======================================
-               ENCABEZADO
-               ====================================== -->
+        <!-- ENCABEZADO -->
 
         <section class="dashboard-header reportes-header">
 
@@ -264,8 +250,8 @@
         </section>
 
         <!-- ======================================
-               SELECTOR Y FILTROS
-               ====================================== -->
+                     SELECTOR Y FILTROS
+                ====================================== -->
 
         <section class="card reportes-selector-card">
 
@@ -294,25 +280,11 @@
 
             <select id="tipoReporte" class="form-select">
 
-              <option value="diario">
-                Reporte diario
-              </option>
-
-              <option value="semanal">
-                Reporte semanal
-              </option>
-
-              <option value="mensual">
-                Reporte mensual
-              </option>
-
-              <option value="estudiante">
-                Reporte por estudiante
-              </option>
-
-              <option value="grupo">
-                Reporte por grupo
-              </option>
+              <option value="diario">Reporte diario</option>
+              <option value="semanal">Reporte semanal</option>
+              <option value="mensual">Reporte mensual</option>
+              <option value="estudiante">Reporte por estudiante</option>
+              <option value="grupo">Reporte por grupo</option>
 
             </select>
 
@@ -324,14 +296,17 @@
 
           <!-- MENSAJES -->
 
-          <div id="reporteMessage" class="reportes-message" role="status" aria-live="polite" hidden></div>
+          <div id="reporteMessage" class="reportes-message" role="status" aria-live="polite" hidden>
+          </div>
 
           <!-- ACCIONES -->
 
           <div class="reportes-actions">
 
             <button type="button" id="generarReporteBtn" class="btn btn--primary">
+
               Generar reporte
+
             </button>
 
           </div>
@@ -339,14 +314,12 @@
         </section>
 
         <!-- ======================================
-               RESULTADOS DEL REPORTE
-               ====================================== -->
+                     RESULTADOS
+                ====================================== -->
 
-        <section id="reporteResultado" class="reportes-result-card" aria-live="polite" hidden>
+        <section id="reporteResultado" class="card reportes-result-card" aria-live="polite" hidden>
 
-          <!-- ==================================
-                 ENCABEZADO DEL RESULTADO
-                 ================================== -->
+          <!-- ENCABEZADO DEL RESULTADO -->
 
           <div class="reportes-result-header">
 
@@ -367,8 +340,8 @@
           </div>
 
           <!-- ==================================
-                 INDICADORES KPI
-                 ================================== -->
+                         INDICADORES KPI
+                    ================================== -->
 
           <section class="reportes-kpi-section" aria-label="Resumen de asistencia">
 
@@ -391,8 +364,8 @@
           </section>
 
           <!-- ==================================
-                 GRÁFICOS ESTADÍSTICOS
-                 ================================== -->
+                         GRÁFICOS
+                    ================================== -->
 
           <section class="reportes-graficos-section" aria-label="Gráficos estadísticos">
 
@@ -414,9 +387,9 @@
 
               <!-- DISTRIBUCIÓN -->
 
-              <article class="card reporte-chart-card">
+              <article class="reporte-grafico-card">
 
-                <div class="reporte-chart-header">
+                <div class="reporte-grafico-header">
 
                   <div>
 
@@ -430,10 +403,10 @@
 
                 </div>
 
-                <div class="reporte-chart-container">
+                <div class="reporte-grafico-wrapper reporte-grafico-wrapper--distribucion">
 
-                  <canvas id="reporteDistribucionChart" role="img"
-                    aria-label="Gráfico de distribución de asistencias por estado"></canvas>
+                  <canvas id="reporteDistribucionChart" role="img" aria-label="Distribución de asistencias por estado">
+                  </canvas>
 
                 </div>
 
@@ -441,9 +414,9 @@
 
               <!-- EVOLUCIÓN / COMPARACIÓN -->
 
-              <article class="card reporte-chart-card">
+              <article class="reporte-grafico-card">
 
-                <div class="reporte-chart-header">
+                <div class="reporte-grafico-header">
 
                   <div>
 
@@ -460,10 +433,10 @@
 
                 </div>
 
-                <div class="reporte-chart-container">
+                <div class="reporte-grafico-wrapper">
 
-                  <canvas id="reporteEvolucionChart" role="img"
-                    aria-label="Gráfico de evolución y comparación de asistencias"></canvas>
+                  <canvas id="reporteEvolucionChart" role="img" aria-label="Evolución y comparación de asistencias">
+                  </canvas>
 
                 </div>
 
@@ -474,8 +447,8 @@
           </section>
 
           <!-- ==================================
-                 DETALLE DE ASISTENCIAS
-                 ================================== -->
+                         DETALLE DE ASISTENCIAS
+                    ================================== -->
 
           <section class="reportes-detalle">
 
@@ -500,23 +473,21 @@
         </section>
 
       </div>
+
     </section>
+
   </main>
 
   <!-- ==========================================
          LIBRERÍAS
-         ========================================== -->
+    ========================================== -->
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
 
-  <!-- ==========================================
-         JAVASCRIPT DE KIHON
-         ========================================== -->
+  <!-- JAVASCRIPT DE KIHON -->
 
   <script src="/js/topbar.js"></script>
-
   <script src="/js/nav-acordeon.js"></script>
-
   <script src="/js/reportes.js"></script>
 
 </body>

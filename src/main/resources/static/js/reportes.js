@@ -48,6 +48,37 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
   // ==========================================
+  // VALIDAR ELEMENTOS PRINCIPALES
+  // ==========================================
+
+  const elementosObligatorios = [
+    "tipoReporte",
+    "reporteFiltros",
+    "generarReporteBtn",
+    "reporteMessage",
+    "reporteResultado",
+    "reportePeriodo",
+    "reporteResumen",
+    "reporteDetalle"
+  ];
+
+  const elementosFaltantes = elementosObligatorios.filter(
+    (elemento) => !elementos[elemento]
+  );
+
+  if (elementosFaltantes.length > 0) {
+
+    console.error(
+      "No se encontraron los siguientes elementos del DOM:",
+      elementosFaltantes
+    );
+
+    return;
+
+  }
+
+
+  // ==========================================
   // ESTADO
   // ==========================================
 
@@ -295,15 +326,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 
-  function obtenerPorcentaje(data, conteo) {
+  // ==========================================
+  // PORCENTAJE DE ASISTENCIA
+  // ==========================================
 
-    if (
-      data.porcentajeAsistencia !== null &&
-      data.porcentajeAsistencia !== undefined &&
-      Number.isFinite(Number(data.porcentajeAsistencia))
-    ) {
-      return Number(data.porcentajeAsistencia);
-    }
+  function obtenerPorcentaje(data, conteo) {
 
     const totalComputable =
       conteo.total - conteo.justificados;
@@ -386,7 +413,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    estudiantes = await response.json();
+    const data = await response.json();
+
+    estudiantes = Array.isArray(data) ? data : [];
 
     estudiantesCargados = true;
 
@@ -430,7 +459,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    grupos = await response.json();
+    const data = await response.json();
+
+    grupos = Array.isArray(data) ? data : [];
 
     gruposCargados = true;
 
@@ -450,6 +481,8 @@ document.addEventListener("DOMContentLoaded", function () {
     estudianteSeleccionado = null;
 
     grupoSeleccionado = null;
+
+    elementos.reporteResultado.hidden = true;
 
     ocultarMensaje();
 
@@ -1240,12 +1273,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
           const error = await response.json();
 
-          if (error.mensaje) {
-            mensaje = error.mensaje;
-          }
+          mensaje =
+            error.mensaje ||
+            error.message ||
+            mensaje;
 
         } catch (error) {
-          // La respuesta no contiene JSON.
+          // La respuesta no contiene JSON válido.
         }
 
         mostrarMensaje(mensaje);
@@ -1438,11 +1472,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 ">
 
                     <span class="reporte-stat__label">
-                        ${indicador.etiqueta}
+                        ${escaparHTML(indicador.etiqueta)}
                     </span>
 
                     <strong class="reporte-stat__value">
-                        ${indicador.valor}
+                        ${escaparHTML(indicador.valor)}
                     </strong>
 
                 </article>
@@ -1937,7 +1971,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
               tension: 0.3,
 
-              pointRadius: 4
+              pointRadius: 4,
+
+              pointHoverRadius: 6
 
             };
 
@@ -1974,8 +2010,6 @@ document.addEventListener("DOMContentLoaded", function () {
             y: {
 
               beginAtZero: true,
-
-              max: 1,
 
               ticks: {
                 precision: 0,
@@ -2185,41 +2219,82 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    crearGraficoDistribucion(asistencias);
+    if (
+      !elementos.distribucionCanvas ||
+      !elementos.evolucionCanvas
+    ) {
 
-    switch (tipo) {
+      console.error(
+        "No se encontraron los canvas de los gráficos."
+      );
 
-      case "diario":
+      mostrarMensaje(
+        "No se encontraron los elementos necesarios para mostrar los gráficos."
+      );
 
-        crearGraficoDiario(asistencias);
+      return;
 
-        break;
+    }
 
-      case "semanal":
-      case "mensual":
+    try {
 
-        crearGraficoTemporal(
-          asistencias,
-          tipo
-        );
+      crearGraficoDistribucion(asistencias);
 
-        break;
+      switch (tipo) {
 
-      case "estudiante":
+        case "diario":
 
-        crearGraficoEstudiante(
-          asistencias
-        );
+          crearGraficoDiario(asistencias);
 
-        break;
+          break;
 
-      case "grupo":
+        case "semanal":
+        case "mensual":
 
-        crearGraficoGrupo(
-          asistencias
-        );
+          crearGraficoTemporal(
+            asistencias,
+            tipo
+          );
 
-        break;
+          break;
+
+        case "estudiante":
+
+          crearGraficoEstudiante(
+            asistencias
+          );
+
+          break;
+
+        case "grupo":
+
+          crearGraficoGrupo(
+            asistencias
+          );
+
+          break;
+
+        default:
+
+          throw new Error(
+            "Tipo de reporte no reconocido."
+          );
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Error al construir los gráficos:",
+        error
+      );
+
+      destruirGraficos();
+
+      mostrarMensaje(
+        "El reporte se generó, pero ocurrió un error al mostrar los gráficos.",
+        "warning"
+      );
 
     }
 
