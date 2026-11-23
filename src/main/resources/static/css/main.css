@@ -3866,25 +3866,38 @@ body.modal-open {
     width: 100%;
   }
 }
+/* ==========================================
+   KIHON
+   REPORTES
+========================================== */
+/* ==========================================
+   PÁGINA Y ENCABEZADO
+========================================== */
 .reportes-page {
   width: 100%;
 }
 
-.reportes-header {
+.reportes-header,
+.dashboard-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 2rem;
 }
-.reportes-header h1 {
+.reportes-header h1,
+.dashboard-header h1 {
   margin-bottom: 0.35rem;
   font-size: 2rem;
 }
-.reportes-header p {
+.reportes-header p,
+.dashboard-header p {
   color: #666666;
 }
 
+/* ==========================================
+   SELECTOR Y FILTROS
+========================================== */
 .reportes-selector-card {
   margin-bottom: 2rem;
 }
@@ -3931,6 +3944,9 @@ body.modal-open {
   margin-top: 1.5rem;
 }
 
+/* ==========================================
+   RESULTADOS
+========================================== */
 .reportes-result-card {
   overflow: hidden;
 }
@@ -3946,12 +3962,12 @@ body.modal-open {
   font-size: 0.9rem;
 }
 
-/* ================================
-   RESUMEN
-================================ */
+/* ==========================================
+   INDICADORES KPI
+========================================== */
 .reportes-resumen {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
 }
@@ -3959,23 +3975,33 @@ body.modal-open {
 .reporte-stat {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  min-height: 115px;
   padding: 1.25rem;
   border: 1px solid #e5e5e5;
   border-radius: 8px;
   background-color: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.reporte-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .reporte-stat__label {
   margin-bottom: 0.5rem;
   color: #666666;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .reporte-stat__value {
   color: #1a1a1a;
   font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .reporte-stat--percentage {
@@ -3988,9 +4014,57 @@ body.modal-open {
   color: #ffffff;
 }
 
-/* ================================
-   DETALLE
-================================ */
+/* ==========================================
+   GRÁFICOS
+========================================== */
+.reportes-graficos {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.reporte-grafico-card {
+  min-width: 0;
+  padding: 1.5rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.reporte-grafico-header {
+  margin-bottom: 1.25rem;
+}
+.reporte-grafico-header h3 {
+  margin-bottom: 0.35rem;
+  color: #1a1a1a;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.reporte-grafico-header p {
+  color: #666666;
+  font-size: 0.85rem;
+}
+
+.reporte-grafico-wrapper {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 280px;
+}
+
+.reporte-grafico-wrapper--distribucion {
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.reporte-grafico-wrapper canvas {
+  max-width: 100%;
+}
+
+/* ==========================================
+   DETALLE DE ASISTENCIAS
+========================================== */
 .reportes-detalle {
   margin-top: 1rem;
 }
@@ -4036,16 +4110,18 @@ body.modal-open {
   border-bottom: none;
 }
 
-/* ================================
-   ESTADOS
-================================ */
+/* ==========================================
+   ESTADOS DE ASISTENCIA
+========================================== */
 .reporte-estado {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 0.35rem 0.7rem;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .reporte-estado--presente {
@@ -4063,18 +4139,23 @@ body.modal-open {
   color: #ff2400;
 }
 
-/* ================================
-   VACÍO
-================================ */
+.reporte-estado--justificado {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+/* ==========================================
+   ESTADO VACÍO
+========================================== */
 .reportes-empty {
   padding: 3rem 1rem;
   text-align: center;
   color: #666666;
 }
 
-/* ================================
+/* ==========================================
    BUSCADOR DINÁMICO
-================================ */
+========================================== */
 .reporte-busqueda-resultados {
   display: flex;
   flex-direction: column;
@@ -4122,12 +4203,20 @@ body.modal-open {
   font-size: 0.9rem;
 }
 
-/* ================================
+/* ==========================================
    RESPONSIVE
-================================ */
-@media (max-width: 1100px) {
+========================================== */
+@media (max-width: 1200px) {
   .reportes-resumen {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1000px) {
+  .reportes-graficos {
+    grid-template-columns: 1fr;
+  }
+  .reporte-grafico-wrapper--distribucion {
+    max-width: 420px;
   }
 }
 @media (max-width: 900px) {
@@ -4139,7 +4228,8 @@ body.modal-open {
   }
 }
 @media (max-width: 700px) {
-  .reportes-header {
+  .reportes-header,
+  .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -4152,10 +4242,28 @@ body.modal-open {
   .reportes-resumen {
     grid-template-columns: 1fr;
   }
+  .reporte-stat {
+    min-height: 95px;
+  }
+  .reporte-grafico-card {
+    padding: 1rem;
+  }
+  .reporte-grafico-wrapper {
+    height: 250px;
+  }
 }
 @media (max-width: 500px) {
   .reportes-actions .btn {
     width: 100%;
+  }
+  .reportes-graficos {
+    gap: 1rem;
+  }
+  .reporte-grafico-wrapper {
+    height: 220px;
+  }
+  .reporte-stat__value {
+    font-size: 1.6rem;
   }
 }
 .home-header {

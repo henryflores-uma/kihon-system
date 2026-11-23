@@ -1,77 +1,144 @@
+
 document.addEventListener("DOMContentLoaded", function () {
+
+  // ==========================================
+  // AUTENTICACIÓN
+  // ==========================================
+
   const auth = sessionStorage.getItem("kihonAuth");
 
   if (!auth) {
     window.location.href = "/login";
-
     return;
   }
 
-  const tipoReporte = document.getElementById("tipoReporte");
 
-  const reporteFiltros = document.getElementById("reporteFiltros");
+  // ==========================================
+  // ELEMENTOS DEL DOM
+  // ==========================================
 
-  const generarReporteBtn = document.getElementById("generarReporteBtn");
+  const elementos = {
 
-  const reporteMessage = document.getElementById("reporteMessage");
+    tipoReporte: document.getElementById("tipoReporte"),
+    reporteFiltros: document.getElementById("reporteFiltros"),
+    generarReporteBtn: document.getElementById("generarReporteBtn"),
+    reporteMessage: document.getElementById("reporteMessage"),
+    reporteResultado: document.getElementById("reporteResultado"),
+    reportePeriodo: document.getElementById("reportePeriodo"),
+    reporteResumen: document.getElementById("reporteResumen"),
+    reporteDetalle: document.getElementById("reporteDetalle"),
 
-  const reporteResultado = document.getElementById("reporteResultado");
+    distribucionCanvas: document.getElementById(
+      "reporteDistribucionChart"
+    ),
 
-  const reportePeriodo = document.getElementById("reportePeriodo");
+    evolucionCanvas: document.getElementById(
+      "reporteEvolucionChart"
+    ),
 
-  const reporteResumen = document.getElementById("reporteResumen");
+    evolucionTitulo: document.getElementById(
+      "reporteEvolucionTitulo"
+    ),
 
-  const reporteDetalle = document.getElementById("reporteDetalle");
+    evolucionDescripcion: document.getElementById(
+      "reporteEvolucionDescripcion"
+    )
+
+  };
+
+
+  // ==========================================
+  // ESTADO
+  // ==========================================
 
   let estudiantes = [];
-
   let grupos = [];
 
   let estudianteSeleccionado = null;
-
   let grupoSeleccionado = null;
 
-  /* ================================
-       UTILIDADES
-    ================================= */
+  let estudiantesCargados = false;
+  let gruposCargados = false;
+
+  let distribucionChart = null;
+  let evolucionChart = null;
+
+
+  // ==========================================
+  // CONFIGURACIÓN DE GRÁFICOS
+  // ==========================================
+
+  const colores = {
+
+    presente: "#22C55E",
+    tardanza: "#F59E0B",
+    ausente: "#EF4444",
+    justificado: "#3B82F6",
+
+    rojo: "#FF2400",
+    amarillo: "#FFD700",
+
+    texto: "#64748B",
+    grid: "rgba(148, 163, 184, 0.15)"
+
+  };
+
+  const estados = [
+
+    {
+      clave: "PRESENTE",
+      nombre: "Presentes",
+      color: colores.presente
+    },
+
+    {
+      clave: "TARDANZA",
+      nombre: "Tardanzas",
+      color: colores.tardanza
+    },
+
+    {
+      clave: "AUSENTE",
+      nombre: "Ausentes",
+      color: colores.ausente
+    },
+
+    {
+      clave: "JUSTIFICADO",
+      nombre: "Justificados",
+      color: colores.justificado
+    }
+
+  ];
+
+
+  // ==========================================
+  // UTILIDADES
+  // ==========================================
 
   function mostrarMensaje(mensaje, tipo = "error") {
-    reporteMessage.textContent = mensaje;
 
-    reporteMessage.hidden = false;
+    elementos.reporteMessage.textContent = mensaje;
 
-    reporteMessage.className = `reportes-message reportes-message--${tipo}`;
+    elementos.reporteMessage.hidden = false;
+
+    elementos.reporteMessage.className =
+      `reportes-message reportes-message--${tipo}`;
+
   }
+
 
   function ocultarMensaje() {
-    reporteMessage.textContent = "";
 
-    reporteMessage.hidden = true;
+    elementos.reporteMessage.textContent = "";
+
+    elementos.reporteMessage.hidden = true;
+
   }
 
-  function formatoFecha(fecha) {
-    if (!fecha) {
-      return "-";
-    }
-
-    const partes = fecha.split("-");
-
-    if (partes.length !== 3) {
-      return fecha;
-    }
-
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
-  }
-
-  function formatoPorcentaje(valor) {
-    if (valor === null || valor === undefined) {
-      return "0%";
-    }
-
-    return `${Number(valor).toFixed(2)}%`;
-  }
 
   function obtenerFechaActual() {
+
     const ahora = new Date();
 
     const anio = ahora.getFullYear();
@@ -81,77 +148,83 @@ document.addEventListener("DOMContentLoaded", function () {
     const dia = String(ahora.getDate()).padStart(2, "0");
 
     return `${anio}-${mes}-${dia}`;
+
   }
 
-  /* ================================
-       CARGAR ESTUDIANTES
-    ================================= */
 
-  async function cargarEstudiantes() {
-    try {
-      const response = await fetch("/api/estudiantes?estado=ACTIVO", {
-        method: "GET",
+  function formatoFecha(fecha) {
 
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
-      });
-
-      if (response.status === 401) {
-        sessionStorage.clear();
-
-        window.location.href = "/login";
-
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error("No se pudieron cargar los estudiantes.");
-      }
-
-      estudiantes = await response.json();
-    } catch (error) {
-      console.error(error);
+    if (!fecha) {
+      return "-";
     }
-  }
 
-  /* ================================
-       CARGAR GRUPOS
-    ================================= */
+    const partes = String(fecha).split("-");
 
-  async function cargarGrupos() {
-    try {
-      const response = await fetch("/api/grupos?estado=ACTIVO", {
-        method: "GET",
-
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
-      });
-
-      if (response.status === 401) {
-        sessionStorage.clear();
-
-        window.location.href = "/login";
-
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error("No se pudieron cargar los grupos.");
-      }
-
-      grupos = await response.json();
-    } catch (error) {
-      console.error(error);
+    if (partes.length !== 3) {
+      return fecha;
     }
+
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+
   }
 
-  /* ================================
-       NOMBRE ESTUDIANTE
-    ================================= */
+
+  function formatoPorcentaje(valor) {
+
+    if (
+      valor === null ||
+      valor === undefined ||
+      !Number.isFinite(Number(valor))
+    ) {
+      return "0.00%";
+    }
+
+    return `${Number(valor).toFixed(2)}%`;
+
+  }
+
+
+  function escaparHTML(valor) {
+
+    return String(valor ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  function normalizarEstado(estado) {
+
+    return String(estado || "")
+      .trim()
+      .toUpperCase();
+
+  }
+
+
+  function obtenerEstado(asistencia) {
+
+    return normalizarEstado(asistencia.estado);
+
+  }
+
+
+  function obtenerFechaOrdenable(fecha) {
+
+    if (!fecha) {
+      return "";
+    }
+
+    return String(fecha);
+
+  }
+
 
   function obtenerNombreEstudiante(estudiante) {
+
     if (estudiante.nombreCompleto) {
       return estudiante.nombreCompleto;
     }
@@ -161,35 +234,233 @@ document.addEventListener("DOMContentLoaded", function () {
     const apellido = estudiante.apellido || "";
 
     return `${nombre} ${apellido}`.trim();
+
   }
 
-  /* ================================
-       NOMBRE GRUPO
-    ================================= */
 
   function obtenerNombreGrupo(grupo) {
+
     return grupo.nombre || "";
+
   }
 
-  /* ================================
-       CARGAR FILTROS
-    ================================= */
+
+  function obtenerAsistencias(data) {
+
+    return Array.isArray(data.asistencias)
+      ? data.asistencias
+      : [];
+
+  }
+
+
+  function contarEstados(asistencias) {
+
+    const conteo = {
+      total: asistencias.length,
+      presentes: 0,
+      tardanzas: 0,
+      ausentes: 0,
+      justificados: 0
+    };
+
+    asistencias.forEach((asistencia) => {
+
+      const estado = obtenerEstado(asistencia);
+
+      switch (estado) {
+
+        case "PRESENTE":
+          conteo.presentes++;
+          break;
+
+        case "TARDANZA":
+          conteo.tardanzas++;
+          break;
+
+        case "AUSENTE":
+          conteo.ausentes++;
+          break;
+
+        case "JUSTIFICADO":
+          conteo.justificados++;
+          break;
+
+      }
+
+    });
+
+    return conteo;
+
+  }
+
+
+  function obtenerPorcentaje(data, conteo) {
+
+    if (
+      data.porcentajeAsistencia !== null &&
+      data.porcentajeAsistencia !== undefined &&
+      Number.isFinite(Number(data.porcentajeAsistencia))
+    ) {
+      return Number(data.porcentajeAsistencia);
+    }
+
+    const totalComputable =
+      conteo.total - conteo.justificados;
+
+    if (totalComputable <= 0) {
+      return 0;
+    }
+
+    return (
+      (conteo.presentes + conteo.tardanzas) /
+      totalComputable
+    ) * 100;
+
+  }
+
+
+  function obtenerEtiquetaEstado(estado) {
+
+    const etiquetas = {
+
+      PRESENTE: "Presente",
+      TARDANZA: "Tardanza",
+      AUSENTE: "Ausente",
+      JUSTIFICADO: "Justificado"
+
+    };
+
+    return etiquetas[normalizarEstado(estado)] || "Sin estado";
+
+  }
+
+
+  // ==========================================
+  // MENSAJES DE ERROR DE AUTENTICACIÓN
+  // ==========================================
+
+  function cerrarSesion() {
+
+    sessionStorage.clear();
+
+    window.location.href = "/login";
+
+  }
+
+
+  // ==========================================
+  // CARGAR ESTUDIANTES
+  // ==========================================
+
+  async function cargarEstudiantes() {
+
+    if (estudiantesCargados) {
+      return;
+    }
+
+    const response = await fetch(
+      "/api/estudiantes?estado=ACTIVO",
+      {
+        method: "GET",
+
+        headers: {
+          Authorization: `Basic ${auth}`
+        }
+      }
+    );
+
+    if (response.status === 401) {
+
+      cerrarSesion();
+
+      throw new Error("Sesión expirada.");
+
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        "No se pudieron cargar los estudiantes."
+      );
+
+    }
+
+    estudiantes = await response.json();
+
+    estudiantesCargados = true;
+
+  }
+
+
+  // ==========================================
+  // CARGAR GRUPOS
+  // ==========================================
+
+  async function cargarGrupos() {
+
+    if (gruposCargados) {
+      return;
+    }
+
+    const response = await fetch(
+      "/api/grupos?estado=ACTIVO",
+      {
+        method: "GET",
+
+        headers: {
+          Authorization: `Basic ${auth}`
+        }
+      }
+    );
+
+    if (response.status === 401) {
+
+      cerrarSesion();
+
+      throw new Error("Sesión expirada.");
+
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        "No se pudieron cargar los grupos."
+      );
+
+    }
+
+    grupos = await response.json();
+
+    gruposCargados = true;
+
+  }
+
+
+  // ==========================================
+  // CARGAR FILTROS DINÁMICOS
+  // ==========================================
 
   async function cargarFiltros() {
-    const tipo = tipoReporte.value;
 
-    reporteFiltros.innerHTML = "";
+    const tipo = elementos.tipoReporte.value;
+
+    elementos.reporteFiltros.innerHTML = "";
 
     estudianteSeleccionado = null;
 
     grupoSeleccionado = null;
 
-    /* ================================
-           DIARIO
-        ================================= */
+    ocultarMensaje();
+
+
+    // ======================================
+    // DIARIO
+    // ======================================
 
     if (tipo === "diario") {
-      reporteFiltros.innerHTML = `
+
+      elementos.reporteFiltros.innerHTML = `
 
                 <div class="form-group">
 
@@ -211,15 +482,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
             `;
 
-      document.getElementById("fechaReporte").value = obtenerFechaActual();
+      document.getElementById(
+        "fechaReporte"
+      ).value = obtenerFechaActual();
+
     }
 
-    /* ================================
-           SEMANAL
-        ================================= */
+
+    // ======================================
+    // SEMANAL
+    // ======================================
 
     if (tipo === "semanal") {
-      reporteFiltros.innerHTML = `
+
+      elementos.reporteFiltros.innerHTML = `
 
                 <div class="grid grid--2">
 
@@ -240,7 +516,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         >
 
                     </div>
-
 
                     <div class="form-group">
 
@@ -269,20 +544,23 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("fechaInicio").value = hoy;
 
       document.getElementById("fechaFin").value = hoy;
+
     }
 
-    /* ================================
-           MENSUAL
-        ================================= */
+
+    // ======================================
+    // MENSUAL
+    // ======================================
 
     if (tipo === "mensual") {
+
       const fechaActual = new Date();
 
       const anioActual = fechaActual.getFullYear();
 
       const mesActual = fechaActual.getMonth() + 1;
 
-      reporteFiltros.innerHTML = `
+      elementos.reporteFiltros.innerHTML = `
 
                 <div class="grid grid--2">
 
@@ -306,7 +584,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     </div>
 
-
                     <div class="form-group">
 
                         <label
@@ -322,53 +599,18 @@ document.addEventListener("DOMContentLoaded", function () {
                             required
                         >
 
-                            <option value="1">
-                                Enero
-                            </option>
-
-                            <option value="2">
-                                Febrero
-                            </option>
-
-                            <option value="3">
-                                Marzo
-                            </option>
-
-                            <option value="4">
-                                Abril
-                            </option>
-
-                            <option value="5">
-                                Mayo
-                            </option>
-
-                            <option value="6">
-                                Junio
-                            </option>
-
-                            <option value="7">
-                                Julio
-                            </option>
-
-                            <option value="8">
-                                Agosto
-                            </option>
-
-                            <option value="9">
-                                Septiembre
-                            </option>
-
-                            <option value="10">
-                                Octubre
-                            </option>
-
-                            <option value="11">
-                                Noviembre
-                            </option>
-
-                            <option value="12">
-                                Diciembre
-                            </option>
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
 
                         </select>
 
@@ -378,19 +620,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
             `;
 
-      document.getElementById("anioReporte").value = anioActual;
+      document.getElementById(
+        "anioReporte"
+      ).value = anioActual;
 
-      document.getElementById("mesReporte").value = mesActual;
+      document.getElementById(
+        "mesReporte"
+      ).value = mesActual;
+
     }
 
-    /* ================================
-           ESTUDIANTE
-        ================================= */
+
+    // ======================================
+    // ESTUDIANTE
+    // ======================================
 
     if (tipo === "estudiante") {
-      await cargarEstudiantes();
 
-      reporteFiltros.innerHTML = `
+      try {
+
+        await cargarEstudiantes();
+
+      } catch (error) {
+
+        mostrarMensaje(error.message);
+
+        return;
+
+      }
+
+      elementos.reporteFiltros.innerHTML = `
 
                 <div class="form-group">
 
@@ -411,12 +670,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 </div>
 
-
                 <div
                     id="estudiantesResultados"
                     class="reporte-busqueda-resultados"
                 ></div>
-
 
                 <div
                     id="estudianteSeleccionado"
@@ -427,21 +684,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
             `;
 
-      const buscar = document.getElementById("buscarEstudiante");
+      const buscar = document.getElementById(
+        "buscarEstudiante"
+      );
 
-      buscar.addEventListener("focus", filtrarEstudiantes);
+      buscar.addEventListener(
+        "focus",
+        filtrarEstudiantes
+      );
 
-      buscar.addEventListener("input", filtrarEstudiantes);
+      buscar.addEventListener(
+        "input",
+        filtrarEstudiantes
+      );
+
     }
 
-    /* ================================
-           GRUPO
-        ================================= */
+
+    // ======================================
+    // GRUPO
+    // ======================================
 
     if (tipo === "grupo") {
-      await cargarGrupos();
 
-      reporteFiltros.innerHTML = `
+      try {
+
+        await cargarGrupos();
+
+      } catch (error) {
+
+        mostrarMensaje(error.message);
+
+        return;
+
+      }
+
+      elementos.reporteFiltros.innerHTML = `
 
                 <div class="form-group">
 
@@ -462,12 +740,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 </div>
 
-
                 <div
                     id="gruposResultados"
                     class="reporte-busqueda-resultados"
                 ></div>
-
 
                 <div
                     id="grupoSeleccionado"
@@ -478,39 +754,68 @@ document.addEventListener("DOMContentLoaded", function () {
 
             `;
 
-      const buscar = document.getElementById("buscarGrupo");
+      const buscar = document.getElementById(
+        "buscarGrupo"
+      );
 
-      buscar.addEventListener("focus", filtrarGrupos);
+      buscar.addEventListener(
+        "focus",
+        filtrarGrupos
+      );
 
-      buscar.addEventListener("input", filtrarGrupos);
+      buscar.addEventListener(
+        "input",
+        filtrarGrupos
+      );
+
     }
+
   }
 
-  /* ================================
-       FILTRAR ESTUDIANTES
-    ================================= */
+
+  // ==========================================
+  // FILTRAR ESTUDIANTES
+  // ==========================================
 
   function filtrarEstudiantes() {
-    const input = document.getElementById("buscarEstudiante");
 
-    const resultados = document.getElementById("estudiantesResultados");
+    const input = document.getElementById(
+      "buscarEstudiante"
+    );
+
+    const resultados = document.getElementById(
+      "estudiantesResultados"
+    );
 
     const texto = input.value.trim().toLowerCase();
 
     estudianteSeleccionado = null;
 
-    document.getElementById("estudianteSeleccionado").textContent =
-      "Ningún estudiante seleccionado.";
+    document.getElementById(
+      "estudianteSeleccionado"
+    ).textContent = "Ningún estudiante seleccionado.";
 
     const encontrados = texto
       ? estudiantes.filter((estudiante) => {
-          const nombre = obtenerNombreEstudiante(estudiante).toLowerCase();
 
-          return nombre.includes(texto);
-        })
+        const nombre = obtenerNombreEstudiante(
+          estudiante
+        ).toLowerCase();
+
+        const documento = String(
+          estudiante.numeroDocumento || ""
+        ).toLowerCase();
+
+        return (
+          nombre.includes(texto) ||
+          documento.includes(texto)
+        );
+
+      })
       : estudiantes;
 
     if (encontrados.length === 0) {
+
       resultados.innerHTML = `
 
                 <div class="reporte-busqueda-vacio">
@@ -522,79 +827,109 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
 
       return;
+
     }
 
-    resultados.innerHTML = encontrados
-      .map(
-        (estudiante) => `
+    resultados.innerHTML = encontrados.map(
+      (estudiante) => `
 
-                        <button
-                            type="button"
-                            class="reporte-busqueda-item"
-                            data-estudiante-id="${estudiante.id}"
-                        >
-                            ${obtenerNombreEstudiante(estudiante)}
-                        </button>
+                <button
+                    type="button"
+                    class="reporte-busqueda-item"
+                    data-estudiante-id="${Number(estudiante.id)}"
+                >
+                    ${escaparHTML(obtenerNombreEstudiante(estudiante))}
+                </button>
 
-                    `,
-      )
-      .join("");
+            `
+    ).join("");
 
-    resultados.querySelectorAll(".reporte-busqueda-item").forEach((boton) => {
+    resultados.querySelectorAll(
+      ".reporte-busqueda-item"
+    ).forEach((boton) => {
+
       boton.addEventListener("click", () => {
-        seleccionarEstudiante(Number(boton.dataset.estudianteId));
+
+        seleccionarEstudiante(
+          Number(boton.dataset.estudianteId)
+        );
+
       });
+
     });
+
   }
 
-  /* ================================
-       SELECCIONAR ESTUDIANTE
-    ================================= */
+
+  // ==========================================
+  // SELECCIONAR ESTUDIANTE
+  // ==========================================
 
   function seleccionarEstudiante(id) {
+
     estudianteSeleccionado = estudiantes.find(
-      (estudiante) => estudiante.id === id,
+      (estudiante) => Number(estudiante.id) === id
     );
 
     if (!estudianteSeleccionado) {
       return;
     }
 
-    const nombre = obtenerNombreEstudiante(estudianteSeleccionado);
+    const nombre = obtenerNombreEstudiante(
+      estudianteSeleccionado
+    );
 
-    document.getElementById("buscarEstudiante").value = nombre;
+    document.getElementById(
+      "buscarEstudiante"
+    ).value = nombre;
 
-    document.getElementById("estudianteSeleccionado").textContent =
-      `Estudiante seleccionado: ${nombre}`;
+    document.getElementById(
+      "estudianteSeleccionado"
+    ).textContent = `Estudiante seleccionado: ${nombre}`;
 
-    document.getElementById("estudiantesResultados").innerHTML = "";
+    document.getElementById(
+      "estudiantesResultados"
+    ).innerHTML = "";
+
   }
 
-  /* ================================
-       FILTRAR GRUPOS
-    ================================= */
+
+  // ==========================================
+  // FILTRAR GRUPOS
+  // ==========================================
 
   function filtrarGrupos() {
-    const input = document.getElementById("buscarGrupo");
 
-    const resultados = document.getElementById("gruposResultados");
+    const input = document.getElementById(
+      "buscarGrupo"
+    );
+
+    const resultados = document.getElementById(
+      "gruposResultados"
+    );
 
     const texto = input.value.trim().toLowerCase();
 
     grupoSeleccionado = null;
 
-    document.getElementById("grupoSeleccionado").textContent =
-      "Ningún grupo seleccionado.";
+    document.getElementById(
+      "grupoSeleccionado"
+    ).textContent = "Ningún grupo seleccionado.";
 
     const encontrados = texto
       ? grupos.filter((grupo) => {
-          const nombre = obtenerNombreGrupo(grupo).toLowerCase();
 
-          return nombre.includes(texto);
-        })
+        const nombre = obtenerNombreGrupo(
+          grupo
+        ).toLowerCase();
+
+        return nombre.includes(texto);
+
+      })
       : grupos;
 
     if (encontrados.length === 0) {
+
       resultados.innerHTML = `
 
                 <div class="reporte-busqueda-vacio">
@@ -606,321 +941,1300 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
 
       return;
+
     }
 
-    resultados.innerHTML = encontrados
-      .map(
-        (grupo) => `
+    resultados.innerHTML = encontrados.map(
+      (grupo) => `
 
-                        <button
-                            type="button"
-                            class="reporte-busqueda-item"
-                            data-grupo-id="${grupo.id}"
-                        >
-                            ${obtenerNombreGrupo(grupo)}
-                        </button>
+                <button
+                    type="button"
+                    class="reporte-busqueda-item"
+                    data-grupo-id="${Number(grupo.id)}"
+                >
+                    ${escaparHTML(obtenerNombreGrupo(grupo))}
+                </button>
 
-                    `,
-      )
-      .join("");
+            `
+    ).join("");
 
-    resultados.querySelectorAll(".reporte-busqueda-item").forEach((boton) => {
+    resultados.querySelectorAll(
+      ".reporte-busqueda-item"
+    ).forEach((boton) => {
+
       boton.addEventListener("click", () => {
-        seleccionarGrupo(Number(boton.dataset.grupoId));
+
+        seleccionarGrupo(
+          Number(boton.dataset.grupoId)
+        );
+
       });
+
     });
+
   }
 
-  /* ================================
-       SELECCIONAR GRUPO
-    ================================= */
+
+  // ==========================================
+  // SELECCIONAR GRUPO
+  // ==========================================
 
   function seleccionarGrupo(id) {
-    grupoSeleccionado = grupos.find((grupo) => grupo.id === id);
+
+    grupoSeleccionado = grupos.find(
+      (grupo) => Number(grupo.id) === id
+    );
 
     if (!grupoSeleccionado) {
       return;
     }
 
-    const nombre = obtenerNombreGrupo(grupoSeleccionado);
+    const nombre = obtenerNombreGrupo(
+      grupoSeleccionado
+    );
 
-    document.getElementById("buscarGrupo").value = nombre;
+    document.getElementById(
+      "buscarGrupo"
+    ).value = nombre;
 
-    document.getElementById("grupoSeleccionado").textContent =
-      `Grupo seleccionado: ${nombre}`;
+    document.getElementById(
+      "grupoSeleccionado"
+    ).textContent = `Grupo seleccionado: ${nombre}`;
 
-    document.getElementById("gruposResultados").innerHTML = "";
+    document.getElementById(
+      "gruposResultados"
+    ).innerHTML = "";
+
   }
 
-  /* ================================
-       GENERAR REPORTE
-    ================================= */
 
-  async function generarReporte() {
-    ocultarMensaje();
+  // ==========================================
+  // GENERAR URL DEL REPORTE
+  // ==========================================
 
-    reporteResultado.hidden = true;
+  function obtenerURLReporte() {
 
-    const tipo = tipoReporte.value;
+    const tipo = elementos.tipoReporte.value;
 
     let url = "";
 
-    /* ================================
-           DIARIO
-        ================================= */
+
+    // ======================================
+    // DIARIO
+    // ======================================
 
     if (tipo === "diario") {
-      const fecha = document.getElementById("fechaReporte").value;
+
+      const fecha = document.getElementById(
+        "fechaReporte"
+      ).value;
 
       if (!fecha) {
-        mostrarMensaje("Selecciona una fecha.");
 
-        return;
+        throw new Error(
+          "Selecciona una fecha."
+        );
+
       }
 
-      url = `/api/reportes/asistencias/diario?fecha=${fecha}`;
+      url = `/api/reportes/asistencias/diario?fecha=${encodeURIComponent(fecha)}`;
+
     }
 
-    /* ================================
-           SEMANAL
-        ================================= */
+
+    // ======================================
+    // SEMANAL
+    // ======================================
 
     if (tipo === "semanal") {
-      const inicio = document.getElementById("fechaInicio").value;
 
-      const fin = document.getElementById("fechaFin").value;
+      const inicio = document.getElementById(
+        "fechaInicio"
+      ).value;
+
+      const fin = document.getElementById(
+        "fechaFin"
+      ).value;
 
       if (!inicio || !fin) {
-        mostrarMensaje("Selecciona las fechas de inicio y fin.");
 
-        return;
+        throw new Error(
+          "Selecciona las fechas de inicio y fin."
+        );
+
       }
 
       if (inicio > fin) {
-        mostrarMensaje(
-          "La fecha de inicio no puede ser posterior a la fecha de fin.",
+
+        throw new Error(
+          "La fecha de inicio no puede ser posterior a la fecha de fin."
         );
 
-        return;
       }
 
-      url = `/api/reportes/asistencias/semanal?inicio=${inicio}&fin=${fin}`;
+      url =
+        `/api/reportes/asistencias/semanal?inicio=${encodeURIComponent(inicio)}&fin=${encodeURIComponent(fin)}`;
+
     }
 
-    /* ================================
-           MENSUAL
-        ================================= */
+
+    // ======================================
+    // MENSUAL
+    // ======================================
 
     if (tipo === "mensual") {
-      const anio = document.getElementById("anioReporte").value;
 
-      const mes = document.getElementById("mesReporte").value;
+      const anio = Number(
+        document.getElementById("anioReporte").value
+      );
+
+      const mes = Number(
+        document.getElementById("mesReporte").value
+      );
 
       if (!anio || !mes) {
-        mostrarMensaje("Selecciona el año y el mes.");
 
-        return;
+        throw new Error(
+          "Selecciona el año y el mes."
+        );
+
       }
 
-      url = `/api/reportes/asistencias/mensual?anio=${anio}&mes=${mes}`;
+      if (
+        !Number.isInteger(anio) ||
+        anio < 2000 ||
+        anio > 2100
+      ) {
+
+        throw new Error(
+          "Ingresa un año válido."
+        );
+
+      }
+
+      if (
+        !Number.isInteger(mes) ||
+        mes < 1 ||
+        mes > 12
+      ) {
+
+        throw new Error(
+          "Selecciona un mes válido."
+        );
+
+      }
+
+      url =
+        `/api/reportes/asistencias/mensual?anio=${anio}&mes=${mes}`;
+
     }
 
-    /* ================================
-           ESTUDIANTE
-        ================================= */
+
+    // ======================================
+    // ESTUDIANTE
+    // ======================================
 
     if (tipo === "estudiante") {
-      if (!estudianteSeleccionado) {
-        mostrarMensaje("Selecciona un estudiante de la lista.");
 
-        return;
+      if (!estudianteSeleccionado) {
+
+        throw new Error(
+          "Selecciona un estudiante de la lista."
+        );
+
       }
 
-      url = `/api/reportes/asistencias/estudiante/${estudianteSeleccionado.id}`;
+      url =
+        `/api/reportes/asistencias/estudiante/${estudianteSeleccionado.id}`;
+
     }
 
-    /* ================================
-           GRUPO
-        ================================= */
+
+    // ======================================
+    // GRUPO
+    // ======================================
 
     if (tipo === "grupo") {
-      if (!grupoSeleccionado) {
-        mostrarMensaje("Selecciona un grupo de la lista.");
 
-        return;
+      if (!grupoSeleccionado) {
+
+        throw new Error(
+          "Selecciona un grupo de la lista."
+        );
+
       }
 
-      url = `/api/reportes/asistencias/grupo/${grupoSeleccionado.id}`;
+      url =
+        `/api/reportes/asistencias/grupo/${grupoSeleccionado.id}`;
+
     }
 
-    generarReporteBtn.disabled = true;
+    return url;
 
-    generarReporteBtn.textContent = "Generando...";
+  }
+
+
+  // ==========================================
+  // GENERAR REPORTE
+  // ==========================================
+
+  async function generarReporte() {
+
+    ocultarMensaje();
+
+    let url;
 
     try {
+
+      url = obtenerURLReporte();
+
+    } catch (error) {
+
+      mostrarMensaje(error.message);
+
+      return;
+
+    }
+
+    const tipo = elementos.tipoReporte.value;
+
+    elementos.generarReporteBtn.disabled = true;
+
+    elementos.generarReporteBtn.textContent = "Generando...";
+
+    try {
+
       const response = await fetch(url, {
+
         method: "GET",
 
         headers: {
-          Authorization: `Basic ${auth}`,
-        },
+          Authorization: `Basic ${auth}`
+        }
+
       });
 
       if (response.status === 401) {
-        sessionStorage.clear();
 
-        window.location.href = "/login";
+        cerrarSesion();
 
         return;
+
       }
 
       if (response.status === 403) {
-        mostrarMensaje("No tienes permisos para consultar este reporte.");
+
+        mostrarMensaje(
+          "No tienes permisos para consultar este reporte."
+        );
 
         return;
+
       }
 
       if (!response.ok) {
+
         let mensaje = "No se pudo generar el reporte.";
 
         try {
+
           const error = await response.json();
 
           if (error.mensaje) {
             mensaje = error.mensaje;
           }
-        } catch (e) {
-          // Sin respuesta JSON
+
+        } catch (error) {
+          // La respuesta no contiene JSON.
         }
 
         mostrarMensaje(mensaje);
 
         return;
+
       }
 
       const data = await response.json();
 
       mostrarReporte(data, tipo);
+
     } catch (error) {
-      console.error(error);
 
-      mostrarMensaje("Error de conexión con el servidor.");
+      console.error(
+        "Error al generar el reporte:",
+        error
+      );
+
+      mostrarMensaje(
+        "Error de conexión con el servidor."
+      );
+
     } finally {
-      generarReporteBtn.disabled = false;
 
-      generarReporteBtn.textContent = "Generar reporte";
+      elementos.generarReporteBtn.disabled = false;
+
+      elementos.generarReporteBtn.textContent =
+        "Generar reporte";
+
     }
+
   }
 
-  /* ================================
-       MOSTRAR REPORTE
-    ================================= */
+
+  // ==========================================
+  // MOSTRAR REPORTE
+  // ==========================================
 
   function mostrarReporte(data, tipo) {
-    reporteResultado.hidden = false;
+
+    if (!data || typeof data !== "object") {
+
+      mostrarMensaje(
+        "El servidor devolvió una respuesta inválida."
+      );
+
+      return;
+
+    }
+
+    const asistencias = obtenerAsistencias(data);
+
+    const conteo = contarEstados(asistencias);
+
+    const porcentaje = obtenerPorcentaje(
+      data,
+      conteo
+    );
+
+    mostrarPeriodo(data, tipo);
+
+    mostrarResumen(conteo, porcentaje);
+
+    mostrarGraficos(asistencias, tipo);
+
+    mostrarDetalle(asistencias);
+
+    elementos.reporteResultado.hidden = false;
+
+  }
+
+
+  // ==========================================
+  // MOSTRAR PERIODO
+  // ==========================================
+
+  function mostrarPeriodo(data, tipo) {
 
     let periodo = "";
 
     if (tipo === "diario") {
-      periodo = `Fecha: ${formatoFecha(data.fecha)}`;
+
+      periodo =
+        `Fecha: ${formatoFecha(data.fechaInicio)}`;
+
     } else if (tipo === "semanal") {
-      periodo = `Periodo: ${formatoFecha(data.fechaInicio)} - ${formatoFecha(data.fechaFin)}`;
+
+      periodo =
+        `Periodo: ${formatoFecha(data.fechaInicio)} - ${formatoFecha(data.fechaFin)}`;
+
     } else if (tipo === "mensual") {
-      periodo = `Periodo: ${data.mes}/${data.anio}`;
+
+      periodo =
+        `Periodo: ${formatoFecha(data.fechaInicio)} - ${formatoFecha(data.fechaFin)}`;
+
     } else if (tipo === "estudiante") {
-      periodo = `Estudiante: ${
-        estudianteSeleccionado
-          ? obtenerNombreEstudiante(estudianteSeleccionado)
-          : data.estudianteId
-      }`;
+
+      const nombre = estudianteSeleccionado
+        ? obtenerNombreEstudiante(estudianteSeleccionado)
+        : "Estudiante";
+
+      if (data.fechaInicio && data.fechaFin) {
+
+        periodo =
+          `${nombre} · ${formatoFecha(data.fechaInicio)} - ${formatoFecha(data.fechaFin)}`;
+
+      } else {
+
+        periodo = nombre;
+
+      }
+
     } else if (tipo === "grupo") {
-      periodo = `Grupo: ${
-        grupoSeleccionado ? obtenerNombreGrupo(grupoSeleccionado) : data.grupoId
-      }`;
+
+      const nombre = grupoSeleccionado
+        ? obtenerNombreGrupo(grupoSeleccionado)
+        : "Grupo";
+
+      if (data.fechaInicio && data.fechaFin) {
+
+        periodo =
+          `${nombre} · ${formatoFecha(data.fechaInicio)} - ${formatoFecha(data.fechaFin)}`;
+
+      } else {
+
+        periodo = nombre;
+
+      }
+
     }
 
-    reportePeriodo.textContent = periodo;
+    elementos.reportePeriodo.textContent = periodo || "-";
 
-    /* ================================
-           RESUMEN
-        ================================= */
-
-    reporteResumen.innerHTML = `
-
-            <div class="reporte-stat">
-
-                <span class="reporte-stat__label">
-                    Total
-                </span>
-
-                <strong class="reporte-stat__value">
-                    ${data.total}
-                </strong>
-
-            </div>
+  }
 
 
-            <div class="reporte-stat">
+  // ==========================================
+  // MOSTRAR INDICADORES KPI
+  // ==========================================
 
-                <span class="reporte-stat__label">
-                    Presentes
-                </span>
+  function mostrarResumen(conteo, porcentaje) {
 
-                <strong class="reporte-stat__value">
-                    ${data.presentes}
-                </strong>
+    const indicadores = [
 
-            </div>
+      {
+        clase: "total",
+        etiqueta: "Total de registros",
+        valor: conteo.total
+      },
+
+      {
+        clase: "presente",
+        etiqueta: "Presentes",
+        valor: conteo.presentes
+      },
+
+      {
+        clase: "tardanza",
+        etiqueta: "Tardanzas",
+        valor: conteo.tardanzas
+      },
+
+      {
+        clase: "ausente",
+        etiqueta: "Ausentes",
+        valor: conteo.ausentes
+      },
+
+      {
+        clase: "justificado",
+        etiqueta: "Justificados",
+        valor: conteo.justificados
+      },
+
+      {
+        clase: "percentage",
+        etiqueta: "Porcentaje de asistencia",
+        valor: formatoPorcentaje(porcentaje)
+      }
+
+    ];
+
+    elementos.reporteResumen.innerHTML = indicadores.map(
+      (indicador) => `
+
+                <article class="
+                    reporte-stat
+                    reporte-stat--${indicador.clase}
+                ">
+
+                    <span class="reporte-stat__label">
+                        ${indicador.etiqueta}
+                    </span>
+
+                    <strong class="reporte-stat__value">
+                        ${indicador.valor}
+                    </strong>
+
+                </article>
+
+            `
+    ).join("");
+
+  }
 
 
-            <div class="reporte-stat">
+  // ==========================================
+  // DESTRUIR GRÁFICOS ANTERIORES
+  // ==========================================
 
-                <span class="reporte-stat__label">
-                    Tardanzas
-                </span>
+  function destruirGraficos() {
 
-                <strong class="reporte-stat__value">
-                    ${data.tardanzas}
-                </strong>
+    if (distribucionChart) {
 
-            </div>
+      distribucionChart.destroy();
 
+      distribucionChart = null;
 
-            <div class="reporte-stat">
+    }
 
-                <span class="reporte-stat__label">
-                    Ausentes
-                </span>
+    if (evolucionChart) {
 
-                <strong class="reporte-stat__value">
-                    ${data.ausentes}
-                </strong>
+      evolucionChart.destroy();
 
-            </div>
+      evolucionChart = null;
+
+    }
+
+  }
 
 
-            <div class="reporte-stat reporte-stat--percentage">
+  // ==========================================
+  // CONFIGURACIÓN COMÚN DE GRÁFICOS
+  // ==========================================
 
-                <span class="reporte-stat__label">
-                    Porcentaje de asistencia
-                </span>
+  function opcionesGrafico() {
 
-                <strong class="reporte-stat__value">
-                    ${formatoPorcentaje(data.porcentajeAsistencia)}
-                </strong>
+    return {
 
-            </div>
+      responsive: true,
 
-        `;
+      maintainAspectRatio: false,
 
-    /* ================================
-           DETALLE
-        ================================= */
+      plugins: {
 
-    const asistencias = data.asistencias || [];
+        legend: {
+
+          position: "bottom",
+
+          labels: {
+
+            usePointStyle: true,
+
+            padding: 18,
+
+            color: colores.texto,
+
+            font: {
+              family: "Inter",
+              size: 12
+            }
+
+          }
+
+        },
+
+        tooltip: {
+
+          enabled: true
+
+        }
+
+      }
+
+    };
+
+  }
+
+
+  // ==========================================
+  // GRÁFICO DE DISTRIBUCIÓN
+  // ==========================================
+
+  function crearGraficoDistribucion(asistencias) {
+
+    const conteo = contarEstados(asistencias);
+
+    const datos = [
+
+      conteo.presentes,
+      conteo.tardanzas,
+      conteo.ausentes,
+      conteo.justificados
+
+    ];
+
+    const configuracion = {
+
+      type: "doughnut",
+
+      data: {
+
+        labels: [
+          "Presentes",
+          "Tardanzas",
+          "Ausentes",
+          "Justificados"
+        ],
+
+        datasets: [{
+
+          data: datos,
+
+          backgroundColor: [
+
+            colores.presente,
+            colores.tardanza,
+            colores.ausente,
+            colores.justificado
+
+          ],
+
+          borderWidth: 0,
+
+          hoverOffset: 8
+
+        }]
+
+      },
+
+      options: {
+
+        ...opcionesGrafico(),
+
+        cutout: "68%"
+
+      }
+
+    };
+
+    distribucionChart = new Chart(
+      elementos.distribucionCanvas,
+      configuracion
+    );
+
+  }
+
+
+  // ==========================================
+  // AGRUPAR ASISTENCIAS POR FECHA
+  // ==========================================
+
+  function agruparPorFecha(asistencias) {
+
+    const agrupados = new Map();
+
+    asistencias.forEach((asistencia) => {
+
+      const fecha = asistencia.fecha;
+
+      if (!fecha) {
+        return;
+      }
+
+      if (!agrupados.has(fecha)) {
+
+        agrupados.set(fecha, {
+
+          fecha,
+          presentes: 0,
+          tardanzas: 0,
+          ausentes: 0,
+          justificados: 0
+
+        });
+
+      }
+
+      const registro = agrupados.get(fecha);
+
+      switch (obtenerEstado(asistencia)) {
+
+        case "PRESENTE":
+          registro.presentes++;
+          break;
+
+        case "TARDANZA":
+          registro.tardanzas++;
+          break;
+
+        case "AUSENTE":
+          registro.ausentes++;
+          break;
+
+        case "JUSTIFICADO":
+          registro.justificados++;
+          break;
+
+      }
+
+    });
+
+    return Array.from(agrupados.values()).sort(
+      (a, b) => a.fecha.localeCompare(b.fecha)
+    );
+
+  }
+
+
+  // ==========================================
+  // GRÁFICO DIARIO
+  // ==========================================
+
+  function crearGraficoDiario(asistencias) {
+
+    const conteo = contarEstados(asistencias);
+
+    elementos.evolucionTitulo.textContent =
+      "Comparación por estado";
+
+    elementos.evolucionDescripcion.textContent =
+      "Cantidad de registros según el estado de asistencia.";
+
+    evolucionChart = new Chart(
+      elementos.evolucionCanvas,
+      {
+
+        type: "bar",
+
+        data: {
+
+          labels: [
+            "Presentes",
+            "Tardanzas",
+            "Ausentes",
+            "Justificados"
+          ],
+
+          datasets: [{
+
+            label: "Registros",
+
+            data: [
+
+              conteo.presentes,
+              conteo.tardanzas,
+              conteo.ausentes,
+              conteo.justificados
+
+            ],
+
+            backgroundColor: [
+
+              colores.presente,
+              colores.tardanza,
+              colores.ausente,
+              colores.justificado
+
+            ],
+
+            borderRadius: 7,
+
+            maxBarThickness: 55
+
+          }]
+
+        },
+
+        options: {
+
+          ...opcionesGrafico(),
+
+          indexAxis: "y",
+
+          plugins: {
+
+            ...opcionesGrafico().plugins,
+
+            legend: {
+              display: false
+            }
+
+          },
+
+          scales: {
+
+            x: {
+
+              beginAtZero: true,
+
+              ticks: {
+                precision: 0,
+                color: colores.texto
+              },
+
+              grid: {
+                color: colores.grid
+              }
+
+            },
+
+            y: {
+
+              ticks: {
+                color: colores.texto
+              },
+
+              grid: {
+                display: false
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // GRÁFICO SEMANAL Y MENSUAL
+  // ==========================================
+
+  function crearGraficoTemporal(asistencias, tipo) {
+
+    const registros = agruparPorFecha(asistencias);
+
+    elementos.evolucionTitulo.textContent =
+      tipo === "semanal"
+        ? "Evolución semanal"
+        : "Evolución mensual";
+
+    elementos.evolucionDescripcion.textContent =
+      "Cantidad de asistencias registradas por día.";
+
+    evolucionChart = new Chart(
+      elementos.evolucionCanvas,
+      {
+
+        type: "line",
+
+        data: {
+
+          labels: registros.map(
+            (registro) => formatoFecha(registro.fecha)
+          ),
+
+          datasets: estados.map((estado) => {
+
+            const clave = {
+
+              PRESENTE: "presentes",
+              TARDANZA: "tardanzas",
+              AUSENTE: "ausentes",
+              JUSTIFICADO: "justificados"
+
+            }[estado.clave];
+
+            return {
+
+              label: estado.nombre,
+
+              data: registros.map(
+                (registro) => registro[clave]
+              ),
+
+              borderColor: estado.color,
+
+              backgroundColor: estado.color,
+
+              tension: 0.3,
+
+              fill: false,
+
+              pointRadius: 4,
+
+              pointHoverRadius: 6
+
+            };
+
+          })
+
+        },
+
+        options: {
+
+          ...opcionesGrafico(),
+
+          interaction: {
+
+            intersect: false,
+
+            mode: "index"
+
+          },
+
+          scales: {
+
+            x: {
+
+              ticks: {
+                color: colores.texto
+              },
+
+              grid: {
+                display: false
+              }
+
+            },
+
+            y: {
+
+              beginAtZero: true,
+
+              ticks: {
+                precision: 0,
+                color: colores.texto
+              },
+
+              grid: {
+                color: colores.grid
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // GRÁFICO POR ESTUDIANTE
+  // ==========================================
+
+  function crearGraficoEstudiante(asistencias) {
+
+    const registros = agruparPorFecha(asistencias);
+
+    elementos.evolucionTitulo.textContent =
+      "Evolución de asistencia";
+
+    elementos.evolucionDescripcion.textContent =
+      "Historial de registros del estudiante por fecha.";
+
+    evolucionChart = new Chart(
+      elementos.evolucionCanvas,
+      {
+
+        type: "line",
+
+        data: {
+
+          labels: registros.map(
+            (registro) => formatoFecha(registro.fecha)
+          ),
+
+          datasets: estados.map((estado) => {
+
+            const clave = {
+
+              PRESENTE: "presentes",
+              TARDANZA: "tardanzas",
+              AUSENTE: "ausentes",
+              JUSTIFICADO: "justificados"
+
+            }[estado.clave];
+
+            return {
+
+              label: estado.nombre,
+
+              data: registros.map(
+                (registro) => registro[clave]
+              ),
+
+              borderColor: estado.color,
+
+              backgroundColor: estado.color,
+
+              tension: 0.3,
+
+              pointRadius: 4
+
+            };
+
+          })
+
+        },
+
+        options: {
+
+          ...opcionesGrafico(),
+
+          interaction: {
+
+            intersect: false,
+
+            mode: "index"
+
+          },
+
+          scales: {
+
+            x: {
+
+              ticks: {
+                color: colores.texto
+              },
+
+              grid: {
+                display: false
+              }
+
+            },
+
+            y: {
+
+              beginAtZero: true,
+
+              max: 1,
+
+              ticks: {
+                precision: 0,
+                color: colores.texto,
+                stepSize: 1
+              },
+
+              grid: {
+                color: colores.grid
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // AGRUPAR ASISTENCIAS POR ESTUDIANTE
+  // ==========================================
+
+  function agruparPorEstudiante(asistencias) {
+
+    const agrupados = new Map();
+
+    asistencias.forEach((asistencia) => {
+
+      const id = asistencia.estudianteId;
+
+      const nombre =
+        asistencia.estudianteNombre ||
+        `Estudiante ${id || ""}`;
+
+      const clave = id ?? nombre;
+
+      if (!agrupados.has(clave)) {
+
+        agrupados.set(clave, {
+
+          nombre,
+
+          presentes: 0,
+          tardanzas: 0,
+          ausentes: 0,
+          justificados: 0
+
+        });
+
+      }
+
+      const registro = agrupados.get(clave);
+
+      switch (obtenerEstado(asistencia)) {
+
+        case "PRESENTE":
+          registro.presentes++;
+          break;
+
+        case "TARDANZA":
+          registro.tardanzas++;
+          break;
+
+        case "AUSENTE":
+          registro.ausentes++;
+          break;
+
+        case "JUSTIFICADO":
+          registro.justificados++;
+          break;
+
+      }
+
+    });
+
+    return Array.from(agrupados.values()).sort(
+      (a, b) => a.nombre.localeCompare(b.nombre)
+    );
+
+  }
+
+
+  // ==========================================
+  // GRÁFICO POR GRUPO
+  // ==========================================
+
+  function crearGraficoGrupo(asistencias) {
+
+    const registros = agruparPorEstudiante(asistencias);
+
+    elementos.evolucionTitulo.textContent =
+      "Comparación por estudiante";
+
+    elementos.evolucionDescripcion.textContent =
+      "Distribución de asistencias de cada estudiante del grupo.";
+
+    evolucionChart = new Chart(
+      elementos.evolucionCanvas,
+      {
+
+        type: "bar",
+
+        data: {
+
+          labels: registros.map(
+            (registro) => registro.nombre
+          ),
+
+          datasets: estados.map((estado) => {
+
+            const clave = {
+
+              PRESENTE: "presentes",
+              TARDANZA: "tardanzas",
+              AUSENTE: "ausentes",
+              JUSTIFICADO: "justificados"
+
+            }[estado.clave];
+
+            return {
+
+              label: estado.nombre,
+
+              data: registros.map(
+                (registro) => registro[clave]
+              ),
+
+              backgroundColor: estado.color,
+
+              borderRadius: 4
+
+            };
+
+          })
+
+        },
+
+        options: {
+
+          ...opcionesGrafico(),
+
+          indexAxis: "y",
+
+          scales: {
+
+            x: {
+
+              beginAtZero: true,
+
+              stacked: true,
+
+              ticks: {
+                precision: 0,
+                color: colores.texto
+              },
+
+              grid: {
+                color: colores.grid
+              }
+
+            },
+
+            y: {
+
+              stacked: true,
+
+              ticks: {
+                color: colores.texto
+              },
+
+              grid: {
+                display: false
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // MOSTRAR GRÁFICOS
+  // ==========================================
+
+  function mostrarGraficos(asistencias, tipo) {
+
+    destruirGraficos();
+
+    if (typeof Chart === "undefined") {
+
+      mostrarMensaje(
+        "No se pudo cargar la librería de gráficos."
+      );
+
+      return;
+
+    }
+
+    crearGraficoDistribucion(asistencias);
+
+    switch (tipo) {
+
+      case "diario":
+
+        crearGraficoDiario(asistencias);
+
+        break;
+
+      case "semanal":
+      case "mensual":
+
+        crearGraficoTemporal(
+          asistencias,
+          tipo
+        );
+
+        break;
+
+      case "estudiante":
+
+        crearGraficoEstudiante(
+          asistencias
+        );
+
+        break;
+
+      case "grupo":
+
+        crearGraficoGrupo(
+          asistencias
+        );
+
+        break;
+
+    }
+
+  }
+
+
+  // ==========================================
+  // MOSTRAR DETALLE DE ASISTENCIAS
+  // ==========================================
+
+  function mostrarDetalle(asistencias) {
 
     if (asistencias.length === 0) {
-      reporteDetalle.innerHTML = `
+
+      elementos.reporteDetalle.innerHTML = `
 
                 <div class="reportes-empty">
 
@@ -932,67 +2246,77 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
 
       return;
+
     }
 
-    let filas = "";
+    const filas = asistencias.map((asistencia) => {
 
-    asistencias.forEach((asistencia) => {
-      filas += `
+      const estado = obtenerEstado(asistencia);
 
-                    <tr>
+      const estadoClase = estados.some(
+        (item) => item.clave === estado
+      )
+        ? estado.toLowerCase()
+        : "sin-estado";
 
-                        <td>
-                            ${
-                              asistencia.estudianteNombre ||
-                              asistencia.estudianteId ||
-                              "-"
-                            }
-                        </td>
+      return `
 
+                <tr>
 
-                        <td>
-                            ${
-                              asistencia.grupoNombre ||
-                              asistencia.grupoId ||
-                              "-"
-                            }
-                        </td>
+                    <td>
+                        ${escaparHTML(
+        asistencia.estudianteNombre ||
+        asistencia.estudianteId ||
+        "-"
+      )}
+                    </td>
 
+                    <td>
+                        ${escaparHTML(
+        asistencia.grupoNombre ||
+        asistencia.grupoId ||
+        "-"
+      )}
+                    </td>
 
-                        <td>
-                            ${formatoFecha(asistencia.fecha)}
-                        </td>
+                    <td>
+                        ${formatoFecha(asistencia.fecha)}
+                    </td>
 
+                    <td>
+                        ${escaparHTML(
+        asistencia.horaLlegada || "-"
+      )}
+                    </td>
 
-                        <td>
-                            ${asistencia.horaLlegada || "-"}
-                        </td>
+                    <td>
 
+                        <span class="
+                            reporte-estado
+                            reporte-estado--${estadoClase}
+                        ">
 
-                        <td>
+                            ${escaparHTML(
+        obtenerEtiquetaEstado(estado)
+      )}
 
-                            <span class="
-                                reporte-estado
-                                reporte-estado--${asistencia.estado.toLowerCase()}
-                            ">
+                        </span>
 
-                                ${asistencia.estado}
+                    </td>
 
-                            </span>
+                    <td>
+                        ${escaparHTML(
+        asistencia.observacion || "-"
+      )}
+                    </td>
 
-                        </td>
+                </tr>
 
+            `;
 
-                        <td>
-                            ${asistencia.observacion || "-"}
-                        </td>
+    }).join("");
 
-                    </tr>
-
-                `;
-    });
-
-    reporteDetalle.innerHTML = `
+    elementos.reporteDetalle.innerHTML = `
 
             <table class="reportes-table">
 
@@ -1000,34 +2324,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     <tr>
 
-                        <th>
-                            Estudiante
-                        </th>
+                        <th>Estudiante</th>
 
-                        <th>
-                            Grupo
-                        </th>
+                        <th>Grupo</th>
 
-                        <th>
-                            Fecha
-                        </th>
+                        <th>Fecha</th>
 
-                        <th>
-                            Hora
-                        </th>
+                        <th>Hora</th>
 
-                        <th>
-                            Estado
-                        </th>
+                        <th>Estado</th>
 
-                        <th>
-                            Observación
-                        </th>
+                        <th>Observación</th>
 
                     </tr>
 
                 </thead>
-
 
                 <tbody>
 
@@ -1038,19 +2349,29 @@ document.addEventListener("DOMContentLoaded", function () {
             </table>
 
         `;
+
   }
 
-  /* ================================
-       EVENTOS
-    ================================= */
 
-  tipoReporte.addEventListener("change", cargarFiltros);
+  // ==========================================
+  // EVENTOS
+  // ==========================================
 
-  generarReporteBtn.addEventListener("click", generarReporte);
+  elementos.tipoReporte.addEventListener(
+    "change",
+    cargarFiltros
+  );
 
-  /* ================================
-       INICIALIZACIÓN
-    ================================= */
+  elementos.generarReporteBtn.addEventListener(
+    "click",
+    generarReporte
+  );
+
+
+  // ==========================================
+  // INICIALIZACIÓN
+  // ==========================================
 
   cargarFiltros();
+
 });
