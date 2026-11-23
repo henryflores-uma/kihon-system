@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
 
     /*
@@ -6,26 +7,12 @@ document.addEventListener("DOMContentLoaded", function () {
      * =========================================================
      */
 
-    const auth =
-        sessionStorage.getItem("kihonAuth");
-
-    const usernameSesion =
-        sessionStorage.getItem("kihonUsername");
-
-    const rolSesion =
-        sessionStorage.getItem("kihonRol");
-
-
-    /*
-     * =========================================================
-     * VERIFICAR SESIÓN
-     * =========================================================
-     */
+    const auth = sessionStorage.getItem("kihonAuth");
+    const usernameSesion = sessionStorage.getItem("kihonUsername");
+    const rolSesion = sessionStorage.getItem("kihonRol");
 
     if (!auth || !usernameSesion || !rolSesion) {
-
         window.location.href = "/login";
-
         return;
     }
 
@@ -36,108 +23,40 @@ document.addEventListener("DOMContentLoaded", function () {
      * =========================================================
      */
 
-    const perfilVolverBtn =
-        document.getElementById("perfilVolverBtn");
+    const elementos = {
+        volverBtn: document.getElementById("perfilVolverBtn"),
 
+        perfilForm: document.getElementById("perfilForm"),
+        passwordForm: document.getElementById("passwordForm"),
 
-    const perfilForm =
-        document.getElementById("perfilForm");
+        fotoPreview: document.getElementById("perfilFotoPreview"),
+        cambiarFotoBtn: document.getElementById("cambiarFotoBtn"),
+        fotoInput: document.getElementById("perfilFotoInput"),
 
+        username: document.getElementById("perfilUsername"),
+        nombre: document.getElementById("perfilNombre"),
+        apellido: document.getElementById("perfilApellido"),
+        correo: document.getElementById("perfilCorreo"),
 
-    const passwordForm =
-        document.getElementById("passwordForm");
+        tipoDocumento: document.getElementById("perfilTipoDocumento"),
+        numeroDocumento: document.getElementById("perfilNumeroDocumento"),
+        telefono: document.getElementById("perfilTelefono"),
+        fechaNacimiento: document.getElementById("perfilFechaNacimiento"),
+        genero: document.getElementById("perfilGenero"),
 
+        rol: document.getElementById("perfilRol"),
+        estado: document.getElementById("perfilEstado"),
+        fechaRegistro: document.getElementById("perfilFechaRegistro"),
 
-    /*
-     * FOTO
-     */
+        nombreCompleto: document.getElementById("perfilNombreCompleto"),
+        usernameDisplay: document.getElementById("perfilUsernameDisplay"),
+        rolBadge: document.getElementById("perfilRolBadge"),
+        estadoBadge: document.getElementById("perfilEstadoBadge"),
 
-    const perfilFotoPreview =
-        document.getElementById("perfilFotoPreview");
-
-
-    const cambiarFotoBtn =
-        document.getElementById("cambiarFotoBtn");
-
-
-    const perfilFotoInput =
-        document.getElementById("perfilFotoInput");
-
-
-    /*
-     * DATOS EDITABLES
-     */
-
-    const perfilUsername =
-        document.getElementById("perfilUsername");
-
-
-    const perfilNombre =
-        document.getElementById("perfilNombre");
-
-
-    const perfilApellido =
-        document.getElementById("perfilApellido");
-
-
-    const perfilCorreo =
-        document.getElementById("perfilCorreo");
-
-
-    /*
-     * INFORMACIÓN PERSONAL
-     */
-
-    const perfilTipoDocumento =
-        document.getElementById("perfilTipoDocumento");
-
-
-    const perfilNumeroDocumento =
-        document.getElementById("perfilNumeroDocumento");
-
-
-    const perfilTelefono =
-        document.getElementById("perfilTelefono");
-
-
-    const perfilFechaNacimiento =
-        document.getElementById("perfilFechaNacimiento");
-
-
-    const perfilGenero =
-        document.getElementById("perfilGenero");
-
-
-    /*
-     * INFORMACIÓN DE CUENTA
-     */
-
-    const perfilRol =
-        document.getElementById("perfilRol");
-
-
-    const perfilEstado =
-        document.getElementById("perfilEstado");
-
-
-    const perfilFechaRegistro =
-        document.getElementById("perfilFechaRegistro");
-
-
-    /*
-     * CONTRASEÑA
-     */
-
-    const passwordActual =
-        document.getElementById("passwordActual");
-
-
-    const passwordNueva =
-        document.getElementById("passwordNueva");
-
-
-    const passwordConfirmar =
-        document.getElementById("passwordConfirmar");
+        passwordActual: document.getElementById("passwordActual"),
+        passwordNueva: document.getElementById("passwordNueva"),
+        passwordConfirmar: document.getElementById("passwordConfirmar")
+    };
 
 
     /*
@@ -147,7 +66,6 @@ document.addEventListener("DOMContentLoaded", function () {
      */
 
     let fotoActual = null;
-
     let fotoSeleccionada = null;
 
 
@@ -157,16 +75,10 @@ document.addEventListener("DOMContentLoaded", function () {
      * =========================================================
      */
 
-    if (perfilVolverBtn) {
-
-        perfilVolverBtn.addEventListener(
-            "click",
-            function () {
-
-                window.history.back();
-
-            }
-        );
+    if (elementos.volverBtn) {
+        elementos.volverBtn.addEventListener("click", function () {
+            window.history.back();
+        });
     }
 
 
@@ -180,133 +92,140 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
 
-            const response =
-                await fetch(
-                    "/api/auth/perfil",
-                    {
-                        method: "GET",
-
-                        headers: {
-                            "Authorization":
-                                "Basic " + auth
-                        }
-                    }
-                );
-
-
-            /*
-             * AUTENTICACIÓN INVÁLIDA
-             */
+            const response = await fetch("/api/auth/perfil", {
+                method: "GET",
+                headers: {
+                    "Authorization": "Basic " + auth
+                }
+            });
 
             if (response.status === 401) {
-
                 cerrarSesion();
-
                 return;
             }
 
-
             if (!response.ok) {
-
-                throw new Error(
-                    "No se pudo cargar el perfil."
-                );
+                throw new Error("No se pudo cargar la información del perfil.");
             }
 
-
-            const perfil =
-                await response.json();
-
+            const perfil = await response.json();
 
             /*
              * DATOS EDITABLES
              */
 
-            perfilUsername.value =
-                perfil.username || "";
-
-
-            perfilNombre.value =
-                perfil.nombre || "";
-
-
-            perfilApellido.value =
-                perfil.apellido || "";
-
-
-            perfilCorreo.value =
-                perfil.correo || "";
+            establecerValor(elementos.username, perfil.username);
+            establecerValor(elementos.nombre, perfil.nombre);
+            establecerValor(elementos.apellido, perfil.apellido);
+            establecerValor(elementos.correo, perfil.correo);
 
 
             /*
              * INFORMACIÓN PERSONAL
              */
 
-            perfilTipoDocumento.textContent =
-                perfil.tipoDocumento || "-";
-
-
-            perfilNumeroDocumento.textContent =
-                perfil.numeroDocumento || "-";
-
-
-            perfilTelefono.textContent =
-                perfil.telefono || "-";
-
-
-            perfilFechaNacimiento.textContent =
-                formatearFecha(
-                    perfil.fechaNacimiento
-                );
-
-
-            perfilGenero.textContent =
-                perfil.genero || "-";
+            establecerTexto(elementos.tipoDocumento, perfil.tipoDocumento);
+            establecerTexto(elementos.numeroDocumento, perfil.numeroDocumento);
+            establecerTexto(elementos.telefono, perfil.telefono);
+            establecerTexto(
+                elementos.fechaNacimiento,
+                formatearFecha(perfil.fechaNacimiento)
+            );
+            establecerTexto(elementos.genero, perfil.genero);
 
 
             /*
              * INFORMACIÓN DE CUENTA
              */
 
-            perfilRol.textContent =
-                perfil.rol || "-";
+            establecerTexto(elementos.rol, obtenerRolLegible(perfil.rol));
+            establecerTexto(elementos.estado, perfil.estado);
 
-
-            perfilEstado.textContent =
-                perfil.estado || "-";
-
-
-            perfilFechaRegistro.textContent =
-                formatearFechaHora(
-                    perfil.fechaRegistro
-                );
+            establecerTexto(
+                elementos.fechaRegistro,
+                formatearFechaHora(perfil.fechaRegistro)
+            );
 
 
             /*
-             * FOTO
-             *
-             * El backend devuelve aquí la URL
-             * firmada de Supabase.
+             * CABECERA DEL DASHBOARD
              */
 
-            fotoActual =
-                perfil.foto || null;
+            actualizarCabecera(perfil);
 
+
+            /*
+             * FOTO DE PERFIL
+             */
+
+            fotoActual = perfil.foto || null;
 
             mostrarFoto(fotoActual);
 
         } catch (error) {
 
-            console.error(
-                "Error al cargar perfil:",
-                error
-            );
+            console.error("Error al cargar perfil:", error);
 
             mostrarMensaje(
                 "No se pudo cargar la información del perfil.",
-                "error"
+                "error",
+                elementos.perfilForm
             );
         }
+    }
+
+
+    /*
+     * =========================================================
+     * ACTUALIZAR CABECERA
+     * =========================================================
+     */
+
+    function actualizarCabecera(perfil) {
+
+        const nombre = (perfil.nombre || "").trim();
+        const apellido = (perfil.apellido || "").trim();
+        const username = perfil.username || usernameSesion;
+        const rol = obtenerRolLegible(perfil.rol || rolSesion);
+        const estado = perfil.estado || "-";
+
+        const nombreCompleto = `${nombre} ${apellido}`.trim();
+
+        establecerTexto(
+            elementos.nombreCompleto,
+            nombreCompleto || username || "Mi cuenta"
+        );
+
+        establecerTexto(
+            elementos.usernameDisplay,
+            username ? `@${username}` : "@usuario"
+        );
+
+        establecerTexto(elementos.rolBadge, rol);
+        establecerTexto(elementos.estadoBadge, estado);
+    }
+
+
+    /*
+     * =========================================================
+     * OBTENER ROL LEGIBLE
+     * =========================================================
+     */
+
+    function obtenerRolLegible(rol) {
+
+        if (!rol) {
+            return "-";
+        }
+
+        const roles = {
+            ADMIN: "Administrador",
+            SECRETARIA: "Secretaria",
+            SENSEI: "Sensei",
+            ESTUDIANTE: "Estudiante"
+        };
+
+        return roles[rol.toUpperCase()] || rol;
     }
 
 
@@ -318,27 +237,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function mostrarFoto(foto) {
 
-        if (!foto) {
-
-            perfilFotoPreview.src =
-                "/img/default-avatar.png";
-
+        if (!elementos.fotoPreview) {
             return;
         }
 
+        elementos.fotoPreview.onerror = function () {
+            this.onerror = null;
+            this.src = "/img/default-avatar.png";
+        };
 
-        perfilFotoPreview.src = foto;
-
-
-        perfilFotoPreview.onerror =
-            function () {
-
-                this.onerror = null;
-
-                this.src =
-                    "/img/default-avatar.png";
-
-            };
+        elementos.fotoPreview.src =
+            foto || "/img/default-avatar.png";
     }
 
 
@@ -348,117 +257,105 @@ document.addEventListener("DOMContentLoaded", function () {
      * =========================================================
      */
 
-    if (cambiarFotoBtn) {
+    if (elementos.cambiarFotoBtn && elementos.fotoInput) {
 
-        cambiarFotoBtn.addEventListener(
-            "click",
-            function () {
-
-                perfilFotoInput.click();
-
-            }
-        );
+        elementos.cambiarFotoBtn.addEventListener("click", function () {
+            elementos.fotoInput.click();
+        });
     }
 
 
-    if (perfilFotoInput) {
+    if (elementos.fotoInput) {
 
-        perfilFotoInput.addEventListener(
-            "change",
-            function () {
+        elementos.fotoInput.addEventListener("change", function () {
 
-                const archivo =
-                    this.files[0];
+            const archivo = this.files[0];
 
-
-                if (!archivo) {
-                    return;
-                }
-
-
-                /*
-                 * =================================================
-                 * VALIDAR FOTO
-                 * =================================================
-                 *
-                 * Mismos formatos utilizados
-                 * en estudiantes.
-                 */
-
-                const tiposPermitidos = [
-                    "image/jpeg",
-                    "image/png",
-                    "image/webp"
-                ];
-
-
-                if (!tiposPermitidos.includes(archivo.type)) {
-
-                    mostrarMensaje(
-                        "La fotografía debe ser JPG, PNG o WEBP.",
-                        "error"
-                    );
-
-                    this.value = "";
-
-                    fotoSeleccionada = null;
-
-                    return;
-                }
-
-
-                /*
-                 * MÁXIMO 5 MB
-                 */
-
-                const maximo =
-                    5 * 1024 * 1024;
-
-
-                if (archivo.size > maximo) {
-
-                    mostrarMensaje(
-                        "La fotografía no puede superar los 5 MB.",
-                        "error"
-                    );
-
-                    this.value = "";
-
-                    fotoSeleccionada = null;
-
-                    return;
-                }
-
-
-                /*
-                 * GUARDAR ARCHIVO
-                 */
-
-                fotoSeleccionada =
-                    archivo;
-
-
-                /*
-                 * VISTA PREVIA
-                 */
-
-                const reader =
-                    new FileReader();
-
-
-                reader.onload =
-                    function (event) {
-
-                        perfilFotoPreview.src =
-                            event.target.result;
-
-                    };
-
-
-                reader.readAsDataURL(archivo);
-
+            if (!archivo) {
+                return;
             }
-        );
+
+            /*
+             * VALIDAR FORMATO
+             */
+
+            const tiposPermitidos = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+            if (!tiposPermitidos.includes(archivo.type)) {
+
+                mostrarMensaje(
+                    "La fotografía debe ser JPG, PNG o WEBP.",
+                    "error",
+                    elementos.perfilForm
+                );
+
+                this.value = "";
+                fotoSeleccionada = null;
+
+                return;
+            }
+
+
+            /*
+             * VALIDAR TAMAÑO: 5 MB
+             */
+
+            const maximo = 5 * 1024 * 1024;
+
+            if (archivo.size > maximo) {
+
+                mostrarMensaje(
+                    "La fotografía no puede superar los 5 MB.",
+                    "error",
+                    elementos.perfilForm
+                );
+
+                this.value = "";
+                fotoSeleccionada = null;
+
+                return;
+            }
+
+
+            /*
+             * GUARDAR ARCHIVO
+             */
+
+            fotoSeleccionada = archivo;
+
+
+            /*
+             * VISTA PREVIA
+             */
+
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+
+                if (elementos.fotoPreview) {
+                    elementos.fotoPreview.src = event.target.result;
+                }
+            };
+
+            reader.onerror = function () {
+
+                fotoSeleccionada = null;
+                elementos.fotoInput.value = "";
+
+                mostrarMensaje(
+                    "No se pudo visualizar la fotografía seleccionada.",
+                    "error",
+                    elementos.perfilForm
+                );
+            };
+
+            reader.readAsDataURL(archivo);
+
+        });
     }
 
 
@@ -468,31 +365,23 @@ document.addEventListener("DOMContentLoaded", function () {
      * =========================================================
      */
 
-    perfilForm.addEventListener(
-        "submit",
-        async function (event) {
+    if (elementos.perfilForm) {
+
+        elementos.perfilForm.addEventListener("submit", async function (event) {
 
             event.preventDefault();
+
+            limpiarMensaje(elementos.perfilForm);
 
 
             /*
              * OBTENER VALORES
              */
 
-            const username =
-                perfilUsername.value.trim();
-
-
-            const nombre =
-                perfilNombre.value.trim();
-
-
-            const apellido =
-                perfilApellido.value.trim();
-
-
-            const correo =
-                perfilCorreo.value.trim();
+            const username = elementos.username.value.trim();
+            const nombre = elementos.nombre.value.trim();
+            const apellido = elementos.apellido.value.trim();
+            const correo = elementos.correo.value.trim();
 
 
             /*
@@ -503,107 +392,72 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 mostrarMensaje(
                     "El nombre de usuario es obligatorio.",
-                    "error"
+                    "error",
+                    elementos.perfilForm
                 );
 
-                perfilUsername.focus();
-
+                elementos.username.focus();
                 return;
             }
-
 
             if (!nombre) {
 
                 mostrarMensaje(
                     "El nombre es obligatorio.",
-                    "error"
+                    "error",
+                    elementos.perfilForm
                 );
 
-                perfilNombre.focus();
-
+                elementos.nombre.focus();
                 return;
             }
-
 
             if (!apellido) {
 
                 mostrarMensaje(
                     "El apellido es obligatorio.",
-                    "error"
+                    "error",
+                    elementos.perfilForm
                 );
 
-                perfilApellido.focus();
-
+                elementos.apellido.focus();
                 return;
             }
-
 
             if (!correo) {
 
                 mostrarMensaje(
                     "El correo es obligatorio.",
-                    "error"
+                    "error",
+                    elementos.perfilForm
                 );
 
-                perfilCorreo.focus();
-
+                elementos.correo.focus();
                 return;
             }
 
 
             /*
-             * =================================================
              * FORM DATA
-             * =================================================
              *
-             * El backend ahora recibe multipart/form-data.
-             *
-             * IMPORTANTE:
-             * No agregamos Content-Type manualmente.
-             * El navegador genera automáticamente el boundary.
+             * No establecer Content-Type manualmente.
+             * El navegador genera el boundary.
              */
 
-            const formData =
-                new FormData();
+            const formData = new FormData();
 
-
-            formData.append(
-                "username",
-                username
-            );
-
-
-            formData.append(
-                "nombre",
-                nombre
-            );
-
-
-            formData.append(
-                "apellido",
-                apellido
-            );
-
-
-            formData.append(
-                "correo",
-                correo
-            );
+            formData.append("username", username);
+            formData.append("nombre", nombre);
+            formData.append("apellido", apellido);
+            formData.append("correo", correo);
 
 
             /*
-             * FOTO
-             *
-             * Solo enviamos la foto si el usuario
-             * seleccionó una nueva.
+             * FOTO OPCIONAL
              */
 
             if (fotoSeleccionada) {
-
-                formData.append(
-                    "foto",
-                    fotoSeleccionada
-                );
+                formData.append("foto", fotoSeleccionada);
             }
 
 
@@ -611,29 +465,29 @@ document.addEventListener("DOMContentLoaded", function () {
              * DETECTAR CAMBIO DE USERNAME
              */
 
-            const usernameCambio =
-                username !== usernameSesion;
+            const usernameCambio = username !== usernameSesion;
+
+
+            /*
+             * ESTADO DEL BOTÓN
+             */
+
+            const boton = establecerEstadoBoton(
+                elementos.perfilForm,
+                true,
+                "Guardando..."
+            );
 
 
             try {
 
-                const response =
-                    await fetch(
-                        "/api/auth/perfil",
-                        {
-                            method: "PUT",
-
-                            headers: {
-
-                                "Authorization":
-                                    "Basic " + auth
-
-                            },
-
-                            body:
-                                formData
-                        }
-                    );
+                const response = await fetch("/api/auth/perfil", {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": "Basic " + auth
+                    },
+                    body: formData
+                });
 
 
                 /*
@@ -641,23 +495,18 @@ document.addEventListener("DOMContentLoaded", function () {
                  */
 
                 if (response.status === 401) {
-
                     cerrarSesion();
-
                     return;
                 }
 
 
                 /*
-                 * ERROR
+                 * ERROR DEL BACKEND
                  */
 
                 if (!response.ok) {
 
-                    const mensaje =
-                        await obtenerMensajeError(
-                            response
-                        );
+                    const mensaje = await obtenerMensajeError(response);
 
                     throw new Error(mensaje);
                 }
@@ -667,46 +516,50 @@ document.addEventListener("DOMContentLoaded", function () {
                  * RESPUESTA
                  */
 
-                const perfilActualizado =
-                    await response.json();
+                const perfilActualizado = await leerRespuestaJSON(response);
 
 
                 /*
                  * ACTUALIZAR FORMULARIO
                  */
 
-                perfilUsername.value =
-                    perfilActualizado.username || "";
+                const datos = {
+                    username: perfilActualizado.username || username,
+                    nombre: perfilActualizado.nombre || nombre,
+                    apellido: perfilActualizado.apellido || apellido,
+                    correo: perfilActualizado.correo || correo
+                };
+
+                establecerValor(elementos.username, datos.username);
+                establecerValor(elementos.nombre, datos.nombre);
+                establecerValor(elementos.apellido, datos.apellido);
+                establecerValor(elementos.correo, datos.correo);
 
 
-                perfilNombre.value =
-                    perfilActualizado.nombre || "";
+                /*
+                 * ACTUALIZAR CABECERA
+                 */
 
-
-                perfilApellido.value =
-                    perfilActualizado.apellido || "";
-
-
-                perfilCorreo.value =
-                    perfilActualizado.correo || "";
+                actualizarCabecera({
+                    ...perfilActualizado,
+                    ...datos,
+                    rol: perfilActualizado.rol || rolSesion
+                });
 
 
                 /*
                  * ACTUALIZAR FOTO
-                 *
-                 * El backend devuelve la nueva URL
-                 * firmada de Supabase.
                  */
 
-                fotoActual =
-                    perfilActualizado.foto || null;
-
+                if (perfilActualizado.foto !== undefined) {
+                    fotoActual = perfilActualizado.foto || null;
+                }
 
                 fotoSeleccionada = null;
 
-
-                perfilFotoInput.value = "";
-
+                if (elementos.fotoInput) {
+                    elementos.fotoInput.value = "";
+                }
 
                 mostrarFoto(fotoActual);
 
@@ -714,31 +567,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 /*
                  * SI CAMBIÓ EL USERNAME
                  *
-                 * El Basic Auth actual contiene:
-                 *
-                 * username:contraseña
-                 *
-                 * Por tanto las credenciales actuales
+                 * Las credenciales Basic Auth actuales
                  * dejan de ser válidas.
                  */
 
                 if (usernameCambio) {
 
                     mostrarMensaje(
-                        "El perfil fue actualizado. Debes iniciar sesión nuevamente.",
-                        "success"
+                        "Perfil actualizado. Debes iniciar sesión nuevamente.",
+                        "success",
+                        elementos.perfilForm
                     );
 
-
-                    setTimeout(
-                        function () {
-
-                            cerrarSesion();
-
-                        },
-                        1500
-                    );
-
+                    setTimeout(cerrarSesion, 1500);
 
                     return;
                 }
@@ -750,30 +591,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 sessionStorage.setItem(
                     "kihonUsername",
-                    perfilActualizado.username
+                    datos.username
                 );
 
 
                 mostrarMensaje(
                     "Perfil actualizado correctamente.",
-                    "success"
+                    "success",
+                    elementos.perfilForm
                 );
 
             } catch (error) {
 
-                console.error(
-                    "Error al actualizar perfil:",
-                    error
-                );
+                console.error("Error al actualizar perfil:", error);
 
                 mostrarMensaje(
-                    error.message ||
-                    "No se pudo actualizar el perfil.",
-                    "error"
+                    error.message || "No se pudo actualizar el perfil.",
+                    "error",
+                    elementos.perfilForm
                 );
+
+            } finally {
+
+                restaurarEstadoBoton(boton);
             }
-        }
-    );
+
+        });
+    }
 
 
     /*
@@ -782,23 +626,22 @@ document.addEventListener("DOMContentLoaded", function () {
      * =========================================================
      */
 
-    passwordForm.addEventListener(
-        "submit",
-        async function (event) {
+    if (elementos.passwordForm) {
+
+        elementos.passwordForm.addEventListener("submit", async function (event) {
 
             event.preventDefault();
 
-
-            const actual =
-                passwordActual.value;
+            limpiarMensaje(elementos.passwordForm);
 
 
-            const nueva =
-                passwordNueva.value;
+            /*
+             * OBTENER VALORES
+             */
 
-
-            const confirmar =
-                passwordConfirmar.value;
+            const actual = elementos.passwordActual.value;
+            const nueva = elementos.passwordNueva.value;
+            const confirmar = elementos.passwordConfirmar.value;
 
 
             /*
@@ -809,110 +652,99 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 mostrarMensaje(
                     "Ingresa tu contraseña actual.",
-                    "error"
+                    "error",
+                    elementos.passwordForm
                 );
 
-                passwordActual.focus();
-
+                elementos.passwordActual.focus();
                 return;
             }
-
 
             if (!nueva) {
 
                 mostrarMensaje(
                     "Ingresa una nueva contraseña.",
-                    "error"
+                    "error",
+                    elementos.passwordForm
                 );
 
-                passwordNueva.focus();
-
+                elementos.passwordNueva.focus();
                 return;
             }
-
 
             if (nueva.length < 6) {
 
                 mostrarMensaje(
                     "La nueva contraseña debe tener al menos 6 caracteres.",
-                    "error"
+                    "error",
+                    elementos.passwordForm
                 );
 
-                passwordNueva.focus();
-
+                elementos.passwordNueva.focus();
                 return;
             }
-
 
             if (!confirmar) {
 
                 mostrarMensaje(
                     "Confirma la nueva contraseña.",
-                    "error"
+                    "error",
+                    elementos.passwordForm
                 );
 
-                passwordConfirmar.focus();
-
+                elementos.passwordConfirmar.focus();
                 return;
             }
-
 
             if (nueva !== confirmar) {
 
                 mostrarMensaje(
                     "Las nuevas contraseñas no coinciden.",
-                    "error"
+                    "error",
+                    elementos.passwordForm
                 );
 
-                passwordConfirmar.focus();
-
+                elementos.passwordConfirmar.focus();
                 return;
             }
-
 
             if (actual === nueva) {
 
                 mostrarMensaje(
                     "La nueva contraseña debe ser diferente a la actual.",
-                    "error"
+                    "error",
+                    elementos.passwordForm
                 );
 
-                passwordNueva.focus();
-
+                elementos.passwordNueva.focus();
                 return;
             }
 
 
+            /*
+             * ESTADO DEL BOTÓN
+             */
+
+            const boton = establecerEstadoBoton(
+                elementos.passwordForm,
+                true,
+                "Actualizando..."
+            );
+
+
             try {
 
-                const response =
-                    await fetch(
-                        "/api/auth/perfil/password",
-                        {
-                            method: "PATCH",
-
-                            headers: {
-
-                                "Authorization":
-                                    "Basic " + auth,
-
-                                "Content-Type":
-                                    "application/json"
-
-                            },
-
-                            body:
-                                JSON.stringify({
-
-                                    passwordActual:
-                                        actual,
-
-                                    passwordNueva:
-                                        nueva
-
-                                })
-                        }
-                    );
+                const response = await fetch("/api/auth/perfil/password", {
+                    method: "PATCH",
+                    headers: {
+                        "Authorization": "Basic " + auth,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        passwordActual: actual,
+                        passwordNueva: nueva
+                    })
+                });
 
 
                 /*
@@ -920,70 +752,241 @@ document.addEventListener("DOMContentLoaded", function () {
                  */
 
                 if (response.status === 401) {
-
                     cerrarSesion();
-
                     return;
                 }
 
 
                 /*
-                 * ERROR
+                 * ERROR DEL BACKEND
                  */
 
                 if (!response.ok) {
 
-                    const mensaje =
-                        await obtenerMensajeError(
-                            response
-                        );
+                    const mensaje = await obtenerMensajeError(response);
 
                     throw new Error(mensaje);
                 }
 
 
                 /*
-                 * LIMPIAR
+                 * LIMPIAR FORMULARIO
                  */
 
-                passwordForm.reset();
+                elementos.passwordForm.reset();
 
+
+                /*
+                 * MENSAJE DE ÉXITO
+                 */
 
                 mostrarMensaje(
                     "Contraseña actualizada. Debes iniciar sesión nuevamente.",
-                    "success"
+                    "success",
+                    elementos.passwordForm
                 );
 
 
                 /*
-                 * La contraseña almacenada en
-                 * kihonAuth ya no es válida.
+                 * CERRAR SESIÓN
+                 *
+                 * La contraseña almacenada en kihonAuth
+                 * ya no corresponde a la contraseña actual.
                  */
 
-                setTimeout(
-                    function () {
-
-                        cerrarSesion();
-
-                    },
-                    1500
-                );
+                setTimeout(cerrarSesion, 1500);
 
             } catch (error) {
 
-                console.error(
-                    "Error al cambiar contraseña:",
-                    error
-                );
+                console.error("Error al cambiar contraseña:", error);
 
                 mostrarMensaje(
-                    error.message ||
-                    "No se pudo cambiar la contraseña.",
-                    "error"
+                    error.message || "No se pudo cambiar la contraseña.",
+                    "error",
+                    elementos.passwordForm
                 );
+
+            } finally {
+
+                restaurarEstadoBoton(boton);
+            }
+
+        });
+    }
+
+
+    /*
+     * =========================================================
+     * MENSAJES VISUALES
+     * =========================================================
+     */
+
+    function mostrarMensaje(mensaje, tipo = "info", formulario = null) {
+
+        if (!formulario) {
+            console.log(`[${tipo.toUpperCase()}] ${mensaje}`);
+            return;
+        }
+
+        let contenedor = formulario.querySelector(".perfil-message");
+
+        /*
+         * CREAR CONTENEDOR SI NO EXISTE
+         */
+
+        if (!contenedor) {
+
+            contenedor = document.createElement("div");
+
+            contenedor.className = "perfil-message";
+
+            contenedor.setAttribute("role", "status");
+            contenedor.setAttribute("aria-live", "polite");
+
+            formulario.insertBefore(
+                contenedor,
+                formulario.firstChild
+            );
+        }
+
+
+        /*
+         * ACTUALIZAR MENSAJE
+         */
+
+        contenedor.className = `perfil-message perfil-message--${tipo}`;
+        contenedor.textContent = mensaje;
+        contenedor.hidden = false;
+
+        contenedor.setAttribute(
+            "role",
+            tipo === "error" ? "alert" : "status"
+        );
+    }
+
+
+    /*
+     * =========================================================
+     * LIMPIAR MENSAJE
+     * =========================================================
+     */
+
+    function limpiarMensaje(formulario) {
+
+        if (!formulario) {
+            return;
+        }
+
+        const contenedor = formulario.querySelector(".perfil-message");
+
+        if (contenedor) {
+            contenedor.hidden = true;
+            contenedor.textContent = "";
+        }
+    }
+
+
+    /*
+     * =========================================================
+     * ESTADO DE BOTONES
+     * =========================================================
+     */
+
+    function establecerEstadoBoton(formulario, cargando, texto) {
+
+        if (!formulario) {
+            return null;
+        }
+
+        const boton = formulario.querySelector(
+            'button[type="submit"], input[type="submit"]'
+        );
+
+        if (!boton) {
+            return null;
+        }
+
+        const estado = {
+            boton: boton,
+            disabled: boton.disabled,
+            contenido: boton.tagName === "INPUT"
+                ? boton.value
+                : boton.innerHTML
+        };
+
+        if (cargando) {
+
+            boton.disabled = true;
+
+            if (boton.tagName === "INPUT") {
+                boton.value = texto;
+            } else {
+                boton.textContent = texto;
             }
         }
-    );
+
+        return estado;
+    }
+
+
+    /*
+     * =========================================================
+     * RESTAURAR BOTÓN
+     * =========================================================
+     */
+
+    function restaurarEstadoBoton(estado) {
+
+        if (!estado || !estado.boton) {
+            return;
+        }
+
+        estado.boton.disabled = estado.disabled;
+
+        if (estado.boton.tagName === "INPUT") {
+            estado.boton.value = estado.contenido;
+        } else {
+            estado.boton.innerHTML = estado.contenido;
+        }
+    }
+
+
+    /*
+     * =========================================================
+     * UTILIDADES DOM
+     * =========================================================
+     */
+
+    function establecerValor(elemento, valor) {
+
+        if (elemento) {
+            elemento.value = valor || "";
+        }
+    }
+
+
+    function establecerTexto(elemento, valor) {
+
+        if (elemento) {
+            elemento.textContent = valor || "-";
+        }
+    }
+
+
+    /*
+     * =========================================================
+     * LEER RESPUESTA JSON
+     * =========================================================
+     */
+
+    async function leerRespuestaJSON(response) {
+
+        try {
+            return await response.json();
+        } catch (error) {
+            return {};
+        }
+    }
 
 
     /*
@@ -998,15 +1001,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return "-";
         }
 
-
-        const partes =
-            fecha.split("-");
-
+        const partes = String(fecha).split("-");
 
         if (partes.length !== 3) {
             return fecha;
         }
-
 
         return `${partes[2]}/${partes[1]}/${partes[0]}`;
     }
@@ -1024,28 +1023,15 @@ document.addEventListener("DOMContentLoaded", function () {
             return "-";
         }
 
+        const partes = String(fecha).split("T");
 
-        const partes =
-            fecha.split("T");
-
-
-        const fechaParte =
-            formatearFecha(
-                partes[0]
-            );
-
+        const fechaParte = formatearFecha(partes[0]);
 
         if (partes.length === 1) {
             return fechaParte;
         }
 
-
-        const hora =
-            partes[1].substring(
-                0,
-                5
-            );
-
+        const hora = partes[1].substring(0, 5);
 
         return `${fechaParte} ${hora}`;
     }
@@ -1057,20 +1043,15 @@ document.addEventListener("DOMContentLoaded", function () {
      * =========================================================
      */
 
-    async function obtenerMensajeError(
-        response
-    ) {
+    async function obtenerMensajeError(response) {
 
         try {
 
-            const data =
-                await response.json();
-
+            const data = await response.clone().json();
 
             if (data.message) {
                 return data.message;
             }
-
 
             if (data.error) {
                 return data.error;
@@ -1078,38 +1059,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
         } catch (error) {
 
-            // Respuesta sin JSON.
+            try {
 
+                const texto = await response.text();
+
+                if (texto) {
+                    return texto;
+                }
+
+            } catch (errorTexto) {
+                // No se pudo leer el cuerpo de la respuesta.
+            }
         }
-
 
         return "Ocurrió un error al procesar la solicitud.";
-    }
-
-
-    /*
-     * =========================================================
-     * MENSAJES
-     * =========================================================
-     */
-
-    function mostrarMensaje(
-        mensaje,
-        tipo = "info"
-    ) {
-
-        console.log(
-            `[${tipo.toUpperCase()}] ${mensaje}`
-        );
-
-
-        if (
-            tipo === "error" ||
-            tipo === "success"
-        ) {
-
-            alert(mensaje);
-        }
     }
 
 
@@ -1121,23 +1084,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function cerrarSesion() {
 
-        sessionStorage.removeItem(
-            "kihonAuth"
-        );
+        sessionStorage.removeItem("kihonAuth");
+        sessionStorage.removeItem("kihonUsername");
+        sessionStorage.removeItem("kihonRol");
 
-
-        sessionStorage.removeItem(
-            "kihonUsername"
-        );
-
-
-        sessionStorage.removeItem(
-            "kihonRol"
-        );
-
-
-        window.location.href =
-            "/login";
+        window.location.href = "/login";
     }
 
 
