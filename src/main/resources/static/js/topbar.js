@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     ESTUDIANTE: {
       nombre: "Estudiante",
-      dashboard: "/estudiante/grupos",
+      dashboard: "/estudiante/estudiante",
       perfil: "/estudiante/perfil",
     },
   };
@@ -316,6 +316,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     // ======================================
 
     else if (rol === "ESTUDIANTE") {
+
+      navegacion += generarEnlace(
+        "/estudiante/estudiante",
+        "Dashboard"
+      );
+
       navegacion += generarEnlace(
         "/estudiante/grupos",
         "Mis grupos"
@@ -327,8 +333,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       );
 
       navegacion += generarEnlace(
-        "/estudiante/perfil",
-        "Mi perfil"
+        "/estudiante/horario",
+        "Mi horario"
       );
     }
 

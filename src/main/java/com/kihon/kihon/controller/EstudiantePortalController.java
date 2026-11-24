@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.kihon.kihon.dto.EstudianteDashboardResponse;
 
 import java.util.List;
 
@@ -194,5 +195,24 @@ public class EstudiantePortalController {
 
                 return ResponseEntity.ok(
                                 "Contraseña actualizada correctamente");
+        }
+
+        @GetMapping("/resumen")
+        public EstudianteDashboardResponse obtenerResumen(
+                        Authentication authentication) {
+
+                return estudiantePortalService.obtenerDatosDashboard(
+                                authentication.getName());
+        }
+
+        @GetMapping("/asistencias/recientes")
+        public List<AsistenciaResponse> listarMisAsistenciasRecientes(
+                        Authentication authentication) {
+
+                return estudiantePortalService
+                                .listarMisAsistenciasRecientes(authentication.getName())
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
         }
 }

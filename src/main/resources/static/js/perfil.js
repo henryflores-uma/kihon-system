@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         ADMIN: "/admin/admin",
         SECRETARIA: "/secretaria/secretaria",
         SENSEI: "/sensei/sensei",
-        ESTUDIANTE: "/estudiante/grupos"
+        ESTUDIANTE: "/estudiante/estudiante"
     };
 
     let usernameSesion = null;

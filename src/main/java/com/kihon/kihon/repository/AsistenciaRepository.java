@@ -41,4 +41,7 @@ public interface AsistenciaRepository
                         Long estudianteId,
                         Long grupoId,
                         LocalDate fecha);
+
+        List<Asistencia> findTop5ByEstudianteIdOrderByFechaDescIdDesc(
+                        Long estudianteId);
 }

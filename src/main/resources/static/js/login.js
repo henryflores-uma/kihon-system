@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "ESTUDIANTE":
-        window.location.href = "/estudiante/perfil";
+        window.location.href = "/estudiante/estudiante";
         break;
 
       default:

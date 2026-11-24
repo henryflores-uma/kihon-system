@@ -197,6 +197,11 @@ public class ViewController {
     // ESTUDIANTE
     // ==========================================
 
+    @GetMapping("/estudiante/estudiante")
+    public String dashboardEstudiante() {
+        return "estudiante/estudiante";
+    }
+
     @GetMapping("/estudiante/perfil")
     public String perfilEstudiante() {
         return "admin/perfil";
@@ -210,6 +215,11 @@ public class ViewController {
     @GetMapping("/estudiante/asistencias")
     public String asistenciasEstudiante() {
         return "estudiante/asistencias";
+    }
+
+    @GetMapping("/estudiante/horario")
+    public String horarioEstudiante() {
+        return "estudiante/horario";
     }
 
     // ==========================================

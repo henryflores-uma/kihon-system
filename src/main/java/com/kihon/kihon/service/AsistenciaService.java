@@ -502,4 +502,11 @@ public class AsistenciaService {
                                         "Un estudiante AUSENTE no debe tener hora de llegada");
                 }
         }
+
+        @Transactional(readOnly = true)
+        public List<Asistencia> listarUltimasPorEstudiante(Long estudianteId) {
+
+                return asistenciaRepository
+                                .findTop5ByEstudianteIdOrderByFechaDescIdDesc(estudianteId);
+        }
 }
