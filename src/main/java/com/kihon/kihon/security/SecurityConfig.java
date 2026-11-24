@@ -276,9 +276,18 @@ public class SecurityConfig {
                                                 // ESTUDIANTES - GRUPOS
                                                 // =========================================
 
-                                                .requestMatchers("/api/estudiantes-grupos/**")
-                                                .hasAnyRole("ADMIN", "SECRETARIA")
+                                                // Consultar asignaciones de estudiantes por grupo
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/estudiantes-grupos",
+                                                                "/api/estudiantes-grupos/**")
+                                                .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
+                                                // Crear, actualizar y eliminar asignaciones
+                                                .requestMatchers(
+                                                                "/api/estudiantes-grupos",
+                                                                "/api/estudiantes-grupos/**")
+                                                .hasAnyRole("ADMIN", "SECRETARIA")
                                                 // =========================================
                                                 // ASISTENCIAS
                                                 // =========================================

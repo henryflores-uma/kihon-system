@@ -4,9 +4,11 @@ package com.kihon.kihon.service;
 import com.kihon.kihon.dto.AsistenciaResponse;
 import com.kihon.kihon.dto.ReporteAsistenciaResponse;
 import com.kihon.kihon.model.Asistencia;
+import com.kihon.kihon.model.EstudianteGrupo;
 import com.kihon.kihon.model.Grupo;
 import com.kihon.kihon.model.Usuario;
 import com.kihon.kihon.repository.AsistenciaRepository;
+import com.kihon.kihon.repository.EstudianteGrupoRepository;
 import com.kihon.kihon.repository.EstudianteRepository;
 import com.kihon.kihon.repository.GrupoRepository;
 import com.kihon.kihon.repository.UsuarioRepository;
@@ -25,17 +27,20 @@ public class ReporteAsistenciaService {
 
         private final AsistenciaRepository asistenciaRepository;
         private final EstudianteRepository estudianteRepository;
+        private final EstudianteGrupoRepository estudianteGrupoRepository;
         private final GrupoRepository grupoRepository;
         private final UsuarioRepository usuarioRepository;
 
         public ReporteAsistenciaService(
                         AsistenciaRepository asistenciaRepository,
                         EstudianteRepository estudianteRepository,
+                        EstudianteGrupoRepository estudianteGrupoRepository,
                         GrupoRepository grupoRepository,
                         UsuarioRepository usuarioRepository) {
 
                 this.asistenciaRepository = asistenciaRepository;
                 this.estudianteRepository = estudianteRepository;
+                this.estudianteGrupoRepository = estudianteGrupoRepository;
                 this.grupoRepository = grupoRepository;
                 this.usuarioRepository = usuarioRepository;
         }
@@ -52,18 +57,14 @@ public class ReporteAsistenciaService {
                 validarUsuarioAutenticado(username);
 
                 if (fecha == null) {
-                        throw new RuntimeException(
-                                        "La fecha es obligatoria");
+                        throw new RuntimeException("La fecha es obligatoria");
                 }
 
                 List<Asistencia> asistencias = asistenciaRepository.findByFecha(fecha);
 
                 asistencias = filtrarPorPermisos(asistencias, username);
 
-                return construirReporte(
-                                fecha,
-                                fecha,
-                                asistencias);
+                return construirReporte(fecha, fecha, asistencias);
         }
 
         // ==========================================
@@ -141,7 +142,7 @@ public class ReporteAsistenciaService {
                         Long estudianteId,
                         String username) {
 
-                validarUsuarioAutenticado(username);
+                Usuario usuario = validarUsuarioAutenticado(username);
 
                 if (estudianteId == null) {
                         throw new RuntimeException(
@@ -152,11 +153,17 @@ public class ReporteAsistenciaService {
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Estudiante no encontrado"));
 
-                List<Asistencia> asistencias = asistenciaRepository.findByEstudianteId(
-                                estudianteId);
+                // Validar que el estudiante pertenezca a alguno
+                // de los grupos asignados al SENSEI.
 
-                // Para SENSEI, solo se consideran las asistencias
-                // registradas en sus propios grupos.
+                validarAccesoEstudianteParaSensei(
+                                estudianteId,
+                                usuario);
+
+                List<Asistencia> asistencias = asistenciaRepository.findByEstudianteId(estudianteId);
+
+                // Mostrar únicamente las asistencias de los grupos
+                // a los que el usuario tiene acceso.
 
                 asistencias = filtrarPorPermisos(asistencias, username);
 
@@ -174,6 +181,63 @@ public class ReporteAsistenciaService {
                                 fechaInicio,
                                 fechaFin,
                                 asistencias);
+        }
+
+        // ==========================================
+        // VALIDAR ACCESO DEL SENSEI A UN ESTUDIANTE
+        // ==========================================
+
+        private void validarAccesoEstudianteParaSensei(
+                        Long estudianteId,
+                        Usuario usuario) {
+
+                String nombreRol = usuario.getRol().getNombre();
+
+                // ADMIN y SECRETARIA pueden consultar cualquier estudiante.
+
+                if ("ADMIN".equals(nombreRol)
+                                || "SECRETARIA".equals(nombreRol)) {
+                        return;
+                }
+
+                if (!"SENSEI".equals(nombreRol)) {
+                        throw new AccessDeniedException(
+                                        "No tienes permisos para consultar este estudiante");
+                }
+
+                // Obtener todas las asignaciones del estudiante.
+                // Se consideran tanto ACTIVO como INACTIVO.
+
+                List<EstudianteGrupo> asignaciones = estudianteGrupoRepository.findByEstudianteId(estudianteId);
+
+                // Obtener los grupos que pertenecen al SENSEI.
+
+                List<Grupo> grupos = grupoRepository.findBySenseiId(usuario.getId());
+
+                Set<Long> gruposDelSensei = new HashSet<>();
+
+                if (grupos != null) {
+                        for (Grupo grupo : grupos) {
+                                if (grupo != null && grupo.getId() != null) {
+                                        gruposDelSensei.add(grupo.getId());
+                                }
+                        }
+                }
+
+                // Comprobar si el estudiante tiene al menos una
+                // asignación en alguno de los grupos del SENSEI.
+
+                boolean perteneceAUnGrupoDelSensei = asignaciones.stream()
+                                .filter(asignacion -> asignacion != null)
+                                .anyMatch(asignacion -> asignacion.getGrupo() != null
+                                                && asignacion.getGrupo().getId() != null
+                                                && gruposDelSensei.contains(
+                                                                asignacion.getGrupo().getId()));
+
+                if (!perteneceAUnGrupoDelSensei) {
+                        throw new AccessDeniedException(
+                                        "No tienes acceso a los reportes de este estudiante");
+                }
         }
 
         // ==========================================
@@ -196,8 +260,8 @@ public class ReporteAsistenciaService {
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Grupo no encontrado"));
 
-                // El Sensei solamente puede consultar reportes
-                // de grupos que tiene asignados.
+                // El SENSEI solamente puede consultar los grupos
+                // que tiene asignados.
 
                 if ("SENSEI".equals(usuario.getRol().getNombre())) {
 
@@ -210,8 +274,7 @@ public class ReporteAsistenciaService {
                         }
                 }
 
-                List<Asistencia> asistencias = asistenciaRepository.findByGrupoId(
-                                grupoId);
+                List<Asistencia> asistencias = asistenciaRepository.findByGrupoId(grupoId);
 
                 if (asistencias.isEmpty()) {
                         return construirReporte(
@@ -239,36 +302,35 @@ public class ReporteAsistenciaService {
 
                 Usuario usuario = validarUsuarioAutenticado(username);
 
-                // ADMIN y SECRETARIA conservan el acceso completo.
-
                 String nombreRol = usuario.getRol().getNombre();
+
+                // ADMIN y SECRETARIA conservan el acceso completo.
 
                 if ("ADMIN".equals(nombreRol)
                                 || "SECRETARIA".equals(nombreRol)) {
-
                         return asistencias;
                 }
-
-                // SENSEI solo recibe asistencias de sus grupos.
 
                 if (!"SENSEI".equals(nombreRol)) {
                         throw new AccessDeniedException(
                                         "No tienes permisos para consultar reportes");
                 }
 
+                // Obtener los grupos asignados al SENSEI.
+
                 List<Grupo> grupos = grupoRepository.findBySenseiId(usuario.getId());
 
                 Set<Long> gruposDelSensei = new HashSet<>();
 
                 if (grupos != null) {
-
                         for (Grupo grupo : grupos) {
-
                                 if (grupo != null && grupo.getId() != null) {
                                         gruposDelSensei.add(grupo.getId());
                                 }
                         }
                 }
+
+                // Filtrar las asistencias por los grupos autorizados.
 
                 return asistencias.stream()
                                 .filter(asistencia -> asistencia.getGrupo() != null
@@ -282,7 +344,8 @@ public class ReporteAsistenciaService {
         // OBTENER FECHA MÍNIMA
         // ==========================================
 
-        private LocalDate obtenerFechaMinima(List<Asistencia> asistencias) {
+        private LocalDate obtenerFechaMinima(
+                        List<Asistencia> asistencias) {
 
                 LocalDate fechaMinima = null;
 
@@ -310,7 +373,8 @@ public class ReporteAsistenciaService {
         // OBTENER FECHA MÁXIMA
         // ==========================================
 
-        private LocalDate obtenerFechaMaxima(List<Asistencia> asistencias) {
+        private LocalDate obtenerFechaMaxima(
+                        List<Asistencia> asistencias) {
 
                 LocalDate fechaMaxima = null;
 
@@ -397,11 +461,20 @@ public class ReporteAsistenciaService {
                                 .filter(a -> "AUSENTE".equals(a.getEstado()))
                                 .count();
 
+                int justificados = (int) asistencias.stream()
+                                .filter(a -> "JUSTIFICADO".equals(a.getEstado()))
+                                .count();
+
+                // Las asistencias justificadas no forman parte
+                // del total computable para el porcentaje.
+
+                int totalComputable = total - justificados;
+
                 double porcentajeAsistencia = 0.0;
 
-                if (total > 0) {
+                if (totalComputable > 0) {
 
-                        porcentajeAsistencia = ((double) (presentes + tardanzas) / total) * 100;
+                        porcentajeAsistencia = ((double) (presentes + tardanzas) / totalComputable) * 100;
 
                         porcentajeAsistencia = Math.round(porcentajeAsistencia * 100.0) / 100.0;
                 }
@@ -417,6 +490,7 @@ public class ReporteAsistenciaService {
                                 presentes,
                                 tardanzas,
                                 ausentes,
+                                justificados,
                                 porcentajeAsistencia,
                                 detalle);
         }

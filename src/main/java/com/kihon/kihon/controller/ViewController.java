@@ -1,7 +1,7 @@
-
 package com.kihon.kihon.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
@@ -41,7 +41,13 @@ public class ViewController {
     }
 
     @GetMapping("/admin/grupos")
-    public String grupos() {
+    public String grupos(Model model) {
+        configurarVistaGrupos(
+                model,
+                "admin",
+                "Administrador",
+                false);
+
         return "admin/grupos";
     }
 
@@ -61,7 +67,12 @@ public class ViewController {
     }
 
     @GetMapping("/admin/reportes")
-    public String reportes() {
+    public String reportes(Model model) {
+        configurarVistaReportes(
+                model,
+                "admin",
+                "Administrador");
+
         return "admin/reportes";
     }
 
@@ -92,7 +103,13 @@ public class ViewController {
     }
 
     @GetMapping("/secretaria/grupos")
-    public String gruposSecretaria() {
+    public String gruposSecretaria(Model model) {
+        configurarVistaGrupos(
+                model,
+                "secretaria",
+                "Secretaría",
+                false);
+
         return "admin/grupos";
     }
 
@@ -112,7 +129,12 @@ public class ViewController {
     }
 
     @GetMapping("/secretaria/reportes")
-    public String reportesSecretaria() {
+    public String reportesSecretaria(Model model) {
+        configurarVistaReportes(
+                model,
+                "secretaria",
+                "Secretaría");
+
         return "admin/reportes";
     }
 
@@ -128,6 +150,42 @@ public class ViewController {
     @GetMapping("/sensei/sensei")
     public String sensei() {
         return "sensei/sensei";
+    }
+
+    @GetMapping("/sensei/grupos")
+    public String gruposSensei(Model model) {
+        configurarVistaGrupos(
+                model,
+                "sensei",
+                "Sensei",
+                true);
+
+        return "admin/grupos";
+    }
+
+    @GetMapping("/sensei/estudiantes")
+    public String estudiantesSensei() {
+        return "admin/estudiantes";
+    }
+
+    @GetMapping("/sensei/asistencias")
+    public String asistenciasSensei() {
+        return "admin/asistencia";
+    }
+
+    @GetMapping("/sensei/horario")
+    public String horarioSensei() {
+        return "admin/horario";
+    }
+
+    @GetMapping("/sensei/reportes")
+    public String reportesSensei(Model model) {
+        configurarVistaReportes(
+                model,
+                "sensei",
+                "Sensei");
+
+        return "admin/reportes";
     }
 
     @GetMapping("/sensei/perfil")
@@ -152,5 +210,60 @@ public class ViewController {
     @GetMapping("/estudiante/asistencias")
     public String asistenciasEstudiante() {
         return "estudiante/asistencias";
+    }
+
+    // ==========================================
+    // CONFIGURACIÓN DE VISTA DE GRUPOS
+    // ==========================================
+
+    private void configurarVistaGrupos(
+            Model model,
+            String rutaBase,
+            String rolDisplay,
+            boolean esSensei) {
+
+        model.addAttribute("rutaBase", "/" + rutaBase);
+        model.addAttribute("rolDisplay", rolDisplay);
+        model.addAttribute("esSensei", esSensei);
+        model.addAttribute("puedeGestionarGrupos", !esSensei);
+
+        model.addAttribute(
+                "dashboardUrl",
+                "/" + rutaBase + "/" + rutaBase);
+
+        model.addAttribute(
+                "perfilUrl",
+                "/" + rutaBase + "/perfil");
+
+        model.addAttribute(
+                "scriptGrupos",
+                esSensei
+                        ? "/js/sensei-grupos.js"
+                        : "/js/grupos.js");
+    }
+
+    // ==========================================
+    // CONFIGURACIÓN DE VISTA DE REPORTES
+    // ==========================================
+
+    private void configurarVistaReportes(
+            Model model,
+            String rutaBase,
+            String rolDisplay) {
+
+        model.addAttribute("rutaBase", "/" + rutaBase);
+        model.addAttribute("rolDisplay", rolDisplay);
+
+        model.addAttribute(
+                "dashboardUrl",
+                "/" + rutaBase + "/" + rutaBase);
+
+        model.addAttribute(
+                "perfilUrl",
+                "/" + rutaBase + "/perfil");
+
+        model.addAttribute(
+                "scriptReportes",
+                "/js/reportes.js");
     }
 }

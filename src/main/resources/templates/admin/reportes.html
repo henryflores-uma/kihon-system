@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <meta charset="UTF-8">
@@ -17,98 +17,23 @@
   <main class="app-layout">
 
     <!-- ==========================================
-             SIDEBAR
-        ========================================== -->
+         SIDEBAR
+    ========================================== -->
 
     <aside class="sidebar" id="sidebarMenu">
 
-      <div class="sidebar__logo">KIHON</div>
+      <div class="sidebar__logo">
+        KIHON
+      </div>
+
+      <!--
+        La navegación se genera dinámicamente
+        desde topbar.js según el rol autenticado.
+      -->
 
       <nav class="sidebar__nav">
 
-        <a href="/admin/admin" class="sidebar__link">
-          Dashboard
-        </a>
-
-        <!-- GESTIÓN -->
-
-        <div class="sidebar__accordion">
-
-          <button type="button" class="sidebar__accordion-button" data-target="sidebarGestion" aria-expanded="false">
-
-            <span>Gestión</span>
-            <span class="sidebar__accordion-arrow">▶</span>
-
-          </button>
-
-          <div class="sidebar__submenu" id="sidebarGestion" hidden>
-
-            <a href="/admin/estudiantes" class="sidebar__link">
-              Estudiantes
-            </a>
-
-            <a href="/admin/grupos" class="sidebar__link">
-              Grupos
-            </a>
-
-            <a href="/admin/inscripciones" class="sidebar__link">
-              Inscripciones
-            </a>
-
-          </div>
-
-        </div>
-
-        <!-- CONTROL -->
-
-        <div class="sidebar__accordion">
-
-          <button type="button" class="sidebar__accordion-button" data-target="sidebarControl" aria-expanded="false">
-
-            <span>Control</span>
-            <span class="sidebar__accordion-arrow">▶</span>
-
-          </button>
-
-          <div class="sidebar__submenu" id="sidebarControl" hidden>
-
-            <a href="/admin/asistencia" class="sidebar__link">
-              Asistencia
-            </a>
-
-            <a href="/admin/horario" class="sidebar__link">
-              Horario
-            </a>
-
-          </div>
-
-        </div>
-
-        <!-- ADMINISTRACIÓN -->
-
-        <div class="sidebar__accordion">
-
-          <button type="button" class="sidebar__accordion-button" data-target="sidebarAdministracion"
-            aria-expanded="true">
-
-            <span>Administración</span>
-            <span class="sidebar__accordion-arrow">▼</span>
-
-          </button>
-
-          <div class="sidebar__submenu" id="sidebarAdministracion">
-
-            <a href="/admin/reportes" class="sidebar__link sidebar__link--active" aria-current="page">
-              Reportes
-            </a>
-
-            <a href="/admin/usuarios" class="sidebar__link">
-              Usuarios
-            </a>
-
-          </div>
-
-        </div>
+        <!-- Navegación generada por topbar.js -->
 
       </nav>
 
@@ -116,22 +41,27 @@
 
     <!-- OVERLAY MÓVIL -->
 
-    <div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden></div>
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden>
+    </div>
 
     <!-- ==========================================
-             CONTENIDO PRINCIPAL
-        ========================================== -->
+         CONTENIDO PRINCIPAL
+    ========================================== -->
 
     <section class="main-content">
 
-      <!-- NAVEGACIÓN MÓVIL -->
+      <!-- ======================================
+           NAVEGACIÓN MÓVIL
+      ====================================== -->
 
       <div class="mobile-nav">
 
         <button type="button" class="mobile-menu-button" id="mobileMenuButton" aria-label="Abrir menú"
           aria-expanded="false" aria-controls="sidebarMenu">
 
-          <span id="mobileMenuIcon">☰</span>
+          <span id="mobileMenuIcon">
+            ☰
+          </span>
 
         </button>
 
@@ -141,7 +71,9 @@
 
       </div>
 
-      <!-- TOPBAR -->
+      <!-- ======================================
+           TOPBAR
+      ====================================== -->
 
       <header class="topbar">
 
@@ -151,7 +83,7 @@
             Rol
           </span>
 
-          <strong id="roleDisplay">
+          <strong id="roleDisplay" th:text="${rolDisplay}">
             Administrador
           </strong>
 
@@ -180,7 +112,11 @@
             <button type="button" class="topbar__profile-button" id="profileMenuButton" aria-expanded="false">
 
               <div class="topbar__avatar" id="userProfileAvatar">
-                <span id="userAvatarInitial">U</span>
+
+                <span id="userAvatarInitial">
+                  U
+                </span>
+
               </div>
 
               <div class="topbar__profile-info">
@@ -189,7 +125,7 @@
                   Usuario
                 </strong>
 
-                <span id="profileRoleDisplay">
+                <span id="profileRoleDisplay" th:text="${rolDisplay}">
                   Administrador
                 </span>
 
@@ -203,8 +139,10 @@
 
             <div class="topbar__profile-menu" id="profileMenu" hidden>
 
-              <a href="/admin/perfil" class="topbar__profile-menu-item">
+              <a th:href="${perfilUrl}" class="topbar__profile-menu-item">
+
                 Editar perfil
+
               </a>
 
               <button type="button" id="topbarLogoutButton"
@@ -223,22 +161,26 @@
       </header>
 
       <!-- ==========================================
-                 REPORTES
-            ========================================== -->
+           REPORTES
+      ========================================== -->
 
       <div class="container reportes-page">
 
-        <!-- ENCABEZADO -->
+        <!-- ======================================
+             ENCABEZADO
+        ====================================== -->
 
         <section class="dashboard-header reportes-header">
 
           <div>
 
-            <span class="section-kicker">
+            <span class="section-kicker" th:text="${rolDisplay}">
               Administración
             </span>
 
-            <h1>Reportes</h1>
+            <h1>
+              Reportes
+            </h1>
 
             <p>
               Consulta, analiza y supervisa la asistencia
@@ -250,8 +192,8 @@
         </section>
 
         <!-- ======================================
-                     SELECTOR Y FILTROS
-                ====================================== -->
+             SELECTOR Y FILTROS
+        ====================================== -->
 
         <section class="card reportes-selector-card">
 
@@ -259,7 +201,9 @@
 
             <div>
 
-              <h2>Generar reporte</h2>
+              <h2>
+                Generar reporte
+              </h2>
 
               <p>
                 Selecciona el tipo de reporte y establece
@@ -275,16 +219,32 @@
           <div class="form-group">
 
             <label for="tipoReporte" class="form-label">
+
               Tipo de reporte
+
             </label>
 
             <select id="tipoReporte" class="form-select">
 
-              <option value="diario">Reporte diario</option>
-              <option value="semanal">Reporte semanal</option>
-              <option value="mensual">Reporte mensual</option>
-              <option value="estudiante">Reporte por estudiante</option>
-              <option value="grupo">Reporte por grupo</option>
+              <option value="diario">
+                Reporte diario
+              </option>
+
+              <option value="semanal">
+                Reporte semanal
+              </option>
+
+              <option value="mensual">
+                Reporte mensual
+              </option>
+
+              <option value="estudiante">
+                Reporte por estudiante
+              </option>
+
+              <option value="grupo">
+                Reporte por grupo
+              </option>
 
             </select>
 
@@ -292,7 +252,8 @@
 
           <!-- FILTROS DINÁMICOS -->
 
-          <div id="reporteFiltros" class="reportes-filtros"></div>
+          <div id="reporteFiltros" class="reportes-filtros">
+          </div>
 
           <!-- MENSAJES -->
 
@@ -314,8 +275,8 @@
         </section>
 
         <!-- ======================================
-                     RESULTADOS
-                ====================================== -->
+             RESULTADOS
+        ====================================== -->
 
         <section id="reporteResultado" class="card reportes-result-card" aria-live="polite" hidden>
 
@@ -329,7 +290,9 @@
                 Análisis de asistencia
               </span>
 
-              <h2>Resultado del reporte</h2>
+              <h2>
+                Resultado del reporte
+              </h2>
 
               <p id="reportePeriodo">
                 -
@@ -340,8 +303,8 @@
           </div>
 
           <!-- ==================================
-                         INDICADORES KPI
-                    ================================== -->
+               INDICADORES KPI
+          ================================== -->
 
           <section class="reportes-kpi-section" aria-label="Resumen de asistencia">
 
@@ -349,7 +312,9 @@
 
               <div>
 
-                <h3>Resumen general</h3>
+                <h3>
+                  Resumen general
+                </h3>
 
                 <p>
                   Indicadores del periodo consultado.
@@ -359,13 +324,14 @@
 
             </div>
 
-            <div id="reporteResumen" class="reportes-resumen"></div>
+            <div id="reporteResumen" class="reportes-resumen">
+            </div>
 
           </section>
 
           <!-- ==================================
-                         GRÁFICOS
-                    ================================== -->
+               GRÁFICOS
+          ================================== -->
 
           <section class="reportes-graficos-section" aria-label="Gráficos estadísticos">
 
@@ -373,7 +339,9 @@
 
               <div>
 
-                <h3>Análisis estadístico</h3>
+                <h3>
+                  Análisis estadístico
+                </h3>
 
                 <p>
                   Visualización de los registros de asistencia.
@@ -393,7 +361,9 @@
 
                   <div>
 
-                    <h3>Distribución de asistencias</h3>
+                    <h3>
+                      Distribución de asistencias
+                    </h3>
 
                     <p>
                       Registros agrupados por estado.
@@ -447,8 +417,8 @@
           </section>
 
           <!-- ==================================
-                         DETALLE DE ASISTENCIAS
-                    ================================== -->
+               DETALLE DE ASISTENCIAS
+          ================================== -->
 
           <section class="reportes-detalle">
 
@@ -456,7 +426,9 @@
 
               <div>
 
-                <h3>Detalle de asistencias</h3>
+                <h3>
+                  Detalle de asistencias
+                </h3>
 
                 <p>
                   Consulta los registros individuales del reporte.
@@ -466,7 +438,8 @@
 
             </div>
 
-            <div id="reporteDetalle" class="reportes-table-wrapper"></div>
+            <div id="reporteDetalle" class="reportes-table-wrapper">
+            </div>
 
           </section>
 
@@ -479,16 +452,20 @@
   </main>
 
   <!-- ==========================================
-         LIBRERÍAS
-    ========================================== -->
+       LIBRERÍAS
+  ========================================== -->
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
 
-  <!-- JAVASCRIPT DE KIHON -->
+  <!-- ==========================================
+       JAVASCRIPT DE KIHON
+  ========================================== -->
 
   <script src="/js/topbar.js"></script>
+
   <script src="/js/nav-acordeon.js"></script>
-  <script src="/js/reportes.js"></script>
+
+  <script th:src="${scriptReportes}"></script>
 
 </body>
 

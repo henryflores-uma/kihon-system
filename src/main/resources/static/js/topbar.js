@@ -298,15 +298,16 @@ document.addEventListener("DOMContentLoaded", async function () {
       navegacion += generarAcordeon(
         "senseiEnsenanzaSubmenu",
         "Enseñanza",
-        generarEnlace("/admin/grupos", "Grupos") +
-        generarEnlace("/admin/estudiantes", "Estudiantes")
+        generarEnlace("/sensei/grupos", "Mis grupos") +
+        generarEnlace("/sensei/estudiantes", "Mis estudiantes")
       );
 
       navegacion += generarAcordeon(
         "senseiControlSubmenu",
         "Control",
-        generarEnlace("/admin/asistencia", "Asistencia") +
-        generarEnlace("/admin/horario", "Horario")
+        generarEnlace("/sensei/asistencias", "Asistencias") +
+        generarEnlace("/sensei/horario", "Mi horario") +
+        generarEnlace("/sensei/reportes", "Reportes")
       );
     }
 
@@ -333,7 +334,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     sidebarNav.innerHTML = navegacion;
   }
-
 
   // ==========================================
   // MOSTRAR DATOS DEL ROL
@@ -574,7 +574,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       window.location.replace("/login");
     } catch (error) {
-      console.error("Error cerrando sesión:", error);
+      console.error("Error cerrando la sesión:", error);
 
       if (topbarLogoutButton) {
         topbarLogoutButton.disabled = false;
