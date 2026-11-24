@@ -1,4 +1,3 @@
-
 package com.kihon.kihon.security;
 
 import tools.jackson.databind.ObjectMapper;
@@ -23,22 +22,18 @@ import java.util.Map;
 @Configuration
 public class SecurityConfig {
 
-        /*
-         * =============================================================
-         * PASSWORD ENCODER
-         * =============================================================
-         */
+        // =============================================================
+        // PASSWORD ENCODER
+        // =============================================================
 
         @Bean
         public PasswordEncoder passwordEncoder() {
                 return new BCryptPasswordEncoder();
         }
 
-        /*
-         * =============================================================
-         * AUTENTICACIÓN CON USUARIOS DE LA BASE DE DATOS
-         * =============================================================
-         */
+        // =============================================================
+        // AUTENTICACIÓN CON USUARIOS DE LA BASE DE DATOS
+        // =============================================================
 
         @Bean
         public AuthenticationProvider authenticationProvider(
@@ -52,11 +47,9 @@ public class SecurityConfig {
                 return provider;
         }
 
-        /*
-         * =============================================================
-         * CONFIGURACIÓN PRINCIPAL DE SEGURIDAD
-         * =============================================================
-         */
+        // =============================================================
+        // CONFIGURACIÓN PRINCIPAL DE SEGURIDAD
+        // =============================================================
 
         @Bean
         public SecurityFilterChain securityFilterChain(
@@ -64,21 +57,17 @@ public class SecurityConfig {
                         ObjectMapper objectMapper,
                         AuthenticationProvider authenticationProvider) throws Exception {
 
-                /*
-                 * =====================================================
-                 * REPOSITORIO CSRF
-                 * =====================================================
-                 */
+                // =====================================================
+                // REPOSITORIO CSRF
+                // =====================================================
 
                 HttpSessionCsrfTokenRepository csrfTokenRepository = new HttpSessionCsrfTokenRepository();
 
                 CsrfTokenRequestAttributeHandler csrfRequestHandler = new CsrfTokenRequestAttributeHandler();
 
-                /*
-                 * =====================================================
-                 * RESPUESTA PARA SOLICITUDES API NO AUTENTICADAS
-                 * =====================================================
-                 */
+                // =====================================================
+                // RESPUESTA PARA SOLICITUDES API NO AUTENTICADAS
+                // =====================================================
 
                 var apiAuthenticationEntryPoint = (org.springframework.security.web.AuthenticationEntryPoint) (request,
                                 response, exception) -> {
@@ -92,47 +81,37 @@ public class SecurityConfig {
                                         Map.of("mensaje", "No estás autenticado."));
                 };
 
-                /*
-                 * =====================================================
-                 * CONFIGURACIÓN PRINCIPAL
-                 * =====================================================
-                 */
+                // =====================================================
+                // CONFIGURACIÓN PRINCIPAL
+                // =====================================================
 
                 http
 
-                                /*
-                                 * =========================================
-                                 * PROVEEDOR DE AUTENTICACIÓN
-                                 * =========================================
-                                 */
+                                // =========================================
+                                // PROVEEDOR DE AUTENTICACIÓN
+                                // =========================================
 
                                 .authenticationProvider(authenticationProvider)
 
-                                /*
-                                 * =========================================
-                                 * CSRF
-                                 * =========================================
-                                 */
+                                // =========================================
+                                // CSRF
+                                // =========================================
 
                                 .csrf(csrf -> csrf
                                                 .csrfTokenRepository(csrfTokenRepository)
                                                 .csrfTokenRequestHandler(csrfRequestHandler))
 
-                                /*
-                                 * =========================================
-                                 * SESIONES HTTP
-                                 * =========================================
-                                 */
+                                // =========================================
+                                // SESIONES HTTP
+                                // =========================================
 
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                                                 .sessionFixation(fixation -> fixation.migrateSession()))
 
-                                /*
-                                 * =========================================
-                                 * AUTORIZACIÓN
-                                 * =========================================
-                                 */
+                                // =========================================
+                                // AUTORIZACIÓN
+                                // =========================================
 
                                 .authorizeHttpRequests(auth -> auth
 
@@ -236,6 +215,10 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/estudiante")
                                                 .hasAnyRole("ADMIN", "ESTUDIANTE")
 
+                                                // =========================================
+                                                // ESTUDIANTES
+                                                // =========================================
+
                                                 // Consultar estudiantes
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
@@ -243,7 +226,7 @@ public class SecurityConfig {
                                                                 "/api/estudiantes/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
-                                                // Crear, actualizar y cambiar estado de estudiantes
+                                                // Crear, actualizar y cambiar estado
                                                 .requestMatchers(
                                                                 "/api/estudiantes",
                                                                 "/api/estudiantes/**")
@@ -255,9 +238,9 @@ public class SecurityConfig {
                                                                 "/api/apoderados/estudiante/*")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                // =====================================================
+                                                // =========================================
                                                 // GRUPOS
-                                                // =====================================================
+                                                // =========================================
 
                                                 // Consulta de grupos
                                                 .requestMatchers(
@@ -266,15 +249,40 @@ public class SecurityConfig {
                                                                 "/api/grupos/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
-                                                // Cualquier otra operación sobre grupos
-                                                .requestMatchers("/api/grupos/**")
+                                                // Crear, actualizar y eliminar grupos
+                                                .requestMatchers(
+                                                                "/api/grupos",
+                                                                "/api/grupos/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                // Estudiantes - grupos
+                                                // =========================================
+                                                // HORARIOS DE GRUPOS
+                                                // =========================================
+
+                                                // Consulta de horarios
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/grupo-horarios",
+                                                                "/api/grupo-horarios/**")
+                                                .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
+
+                                                // Crear, actualizar y eliminar horarios
+                                                .requestMatchers(
+                                                                "/api/grupo-horarios",
+                                                                "/api/grupo-horarios/**")
+                                                .hasAnyRole("ADMIN", "SECRETARIA")
+
+                                                // =========================================
+                                                // ESTUDIANTES - GRUPOS
+                                                // =========================================
+
                                                 .requestMatchers("/api/estudiantes-grupos/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                // Asistencias
+                                                // =========================================
+                                                // ASISTENCIAS
+                                                // =========================================
+
                                                 .requestMatchers("/api/asistencias/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
@@ -294,19 +302,24 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/reportes/asistencias/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
-                                                // Eventos - consulta
+                                                // =========================================
+                                                // EVENTOS
+                                                // =========================================
+
+                                                // Consulta de eventos
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/eventos",
                                                                 "/api/eventos/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
-                                                // Eventos - modificación
+                                                // Crear eventos
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/eventos")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
+                                                // Actualizar eventos
                                                 .requestMatchers(
                                                                 HttpMethod.PUT,
                                                                 "/api/eventos/**")
@@ -317,23 +330,25 @@ public class SecurityConfig {
                                                                 "/api/eventos/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
+                                                // Eliminar eventos
                                                 .requestMatchers(
                                                                 HttpMethod.DELETE,
                                                                 "/api/eventos/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                // Portal del estudiante
+                                                // =========================================
+                                                // PORTAL DEL ESTUDIANTE
+                                                // =========================================
+
                                                 .requestMatchers("/api/estudiante/**")
                                                 .hasAnyRole("ADMIN", "ESTUDIANTE")
 
                                                 // Cualquier otra solicitud
                                                 .anyRequest().authenticated())
 
-                                /*
-                                 * =================================================
-                                 * FORM LOGIN
-                                 * =================================================
-                                 */
+                                // =========================================
+                                // FORM LOGIN
+                                // =========================================
 
                                 .formLogin(form -> form
 
@@ -382,11 +397,9 @@ public class SecurityConfig {
 
                                                 .permitAll())
 
-                                /*
-                                 * =================================================
-                                 * CIERRE DE SESIÓN
-                                 * =================================================
-                                 */
+                                // =========================================
+                                // CIERRE DE SESIÓN
+                                // =========================================
 
                                 .logout(logout -> logout
                                                 .logoutUrl("/api/auth/logout")
@@ -399,11 +412,9 @@ public class SecurityConfig {
                                                                                                 HttpStatus.NO_CONTENT
                                                                                                                 .value())))
 
-                                /*
-                                 * =================================================
-                                 * MANEJO DE ERRORES DE AUTENTICACIÓN
-                                 * =================================================
-                                 */
+                                // =========================================
+                                // MANEJO DE ERRORES DE AUTENTICACIÓN
+                                // =========================================
 
                                 .exceptionHandling(exception -> exception
 
@@ -415,18 +426,20 @@ public class SecurityConfig {
                                                 .authenticationEntryPoint(
                                                                 new LoginUrlAuthenticationEntryPoint("/login"))
 
-                                                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                                                .accessDeniedHandler(
+                                                                (request, response, accessDeniedException) -> {
 
-                                                        response.setStatus(HttpStatus.FORBIDDEN.value());
-                                                        response.setContentType("application/json");
-                                                        response.setCharacterEncoding("UTF-8");
+                                                                        response.setStatus(
+                                                                                        HttpStatus.FORBIDDEN.value());
+                                                                        response.setContentType("application/json");
+                                                                        response.setCharacterEncoding("UTF-8");
 
-                                                        objectMapper.writeValue(
-                                                                        response.getWriter(),
-                                                                        Map.of(
-                                                                                        "mensaje",
-                                                                                        "No tienes permisos para realizar esta operación."));
-                                                }));
+                                                                        objectMapper.writeValue(
+                                                                                        response.getWriter(),
+                                                                                        Map.of(
+                                                                                                        "mensaje",
+                                                                                                        "No tienes permisos para realizar esta operación."));
+                                                                }));
 
                 return http.build();
         }

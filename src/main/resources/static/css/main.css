@@ -8731,6 +8731,9 @@ body:has(#crearUsuarioModal:not([hidden]),
    ========================================================= */
 .sensei-layout {
   background-color: #f7f8fa;
+  /* =====================================================
+     HEADER
+     ===================================================== */
 }
 .sensei-layout .sensei-header {
   margin-bottom: 24px;
@@ -8771,6 +8774,7 @@ body:has(#crearUsuarioModal:not([hidden]),
   max-width: 620px;
   margin: 0;
   color: #6b7280;
+  font-size: 14px;
   line-height: 1.6;
 }
 .sensei-layout .sensei-welcome__icon {
@@ -8912,6 +8916,112 @@ body:has(#crearUsuarioModal:not([hidden]),
   padding: 12px 0;
   color: #777;
   font-size: 14px;
+  line-height: 1.5;
+}
+.sensei-layout {
+  /* =====================================================
+     TARJETAS DINÁMICAS DE CLASES
+     ===================================================== */
+}
+.sensei-layout .sensei-class-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-left: 4px solid #ff2400;
+  border-radius: 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.sensei-layout .sensei-class-card:hover {
+  border-color: #ffb5a8;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.055);
+  transform: translateY(-2px);
+}
+.sensei-layout .sensei-class-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.sensei-layout .sensei-class-card__header h3 {
+  margin: 0;
+  color: #252525;
+  font-size: 16px;
+  font-weight: 700;
+}
+.sensei-layout .sensei-class-card__time {
+  margin: 0;
+  padding: 7px 11px;
+  background: #fff3ef;
+  border-radius: 7px;
+  color: #d9270a;
+  font-size: 13px;
+  font-weight: 600;
+}
+.sensei-layout .sensei-class-card__info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+}
+.sensei-layout .sensei-class-card__info p {
+  margin: 0;
+  color: #737373;
+  font-size: 13px;
+}
+.sensei-layout .sensei-class-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid #eeeeee;
+}
+.sensei-layout {
+  /* =====================================================
+     TARJETAS DINÁMICAS DE GRUPOS
+     ===================================================== */
+}
+.sensei-layout .sensei-group-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.sensei-layout .sensei-group-card:hover {
+  border-color: #ffb5a8;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.055);
+  transform: translateY(-2px);
+}
+.sensei-layout .sensei-group-card h3 {
+  width: 100%;
+  margin: 0;
+  color: #252525;
+  font-size: 16px;
+  font-weight: 700;
+}
+.sensei-layout .sensei-group-card p {
+  flex: 1;
+  margin: 0;
+  color: #737373;
+  font-size: 13px;
+}
+.sensei-layout .sensei-group-card .btn {
+  flex-shrink: 0;
+}
+.sensei-layout .sensei-empty-message {
+  padding: 18px !important;
+  background: #f8f9fb;
+  border: 1px dashed #d9dde3;
+  border-radius: 8px;
+  color: #777 !important;
+  text-align: center;
 }
 .sensei-layout {
   /* =====================================================
@@ -8987,9 +9097,25 @@ body:has(#crearUsuarioModal:not([hidden]),
   border-radius: 8px;
   color: #725d13;
   font-size: 14px;
+  line-height: 1.5;
 }
 .sensei-layout .sensei-status-message[hidden] {
   display: none;
+}
+.sensei-layout .sensei-status-message--info {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e40af;
+}
+.sensei-layout .sensei-status-message--error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+.sensei-layout .sensei-status-message--success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
 }
 .sensei-layout {
   /* =====================================================
@@ -9052,7 +9178,17 @@ body:has(#crearUsuarioModal:not([hidden]),
 }
 .sensei-layout {
   /* =====================================================
-     RESPONSIVE
+     INTERACCIÓN Y ACCESIBILIDAD
+     ===================================================== */
+}
+.sensei-layout a:focus-visible,
+.sensei-layout button:focus-visible {
+  outline: 3px solid rgba(255, 36, 0, 0.35);
+  outline-offset: 3px;
+}
+.sensei-layout {
+  /* =====================================================
+     RESPONSIVE - TABLETS
      ===================================================== */
 }
 @media (max-width: 1100px) {
@@ -9062,6 +9198,11 @@ body:has(#crearUsuarioModal:not([hidden]),
   .sensei-layout .sensei-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+.sensei-layout {
+  /* =====================================================
+     RESPONSIVE - MÓVILES
+     ===================================================== */
 }
 @media (max-width: 768px) {
   .sensei-layout .sensei-header {
@@ -9085,10 +9226,37 @@ body:has(#crearUsuarioModal:not([hidden]),
   .sensei-layout .sensei-panel {
     padding: 18px;
   }
+  .sensei-layout .sensei-class-card {
+    padding: 16px;
+  }
+  .sensei-layout .sensei-class-card__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .sensei-layout .sensei-class-card__actions {
+    justify-content: stretch;
+  }
+  .sensei-layout .sensei-class-card__actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+  .sensei-layout .sensei-group-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .sensei-layout .sensei-group-card .btn {
+    width: 100%;
+    text-align: center;
+  }
   .sensei-layout .sensei-session {
     align-items: flex-start;
     flex-direction: column;
   }
+}
+.sensei-layout {
+  /* =====================================================
+     RESPONSIVE - MÓVILES PEQUEÑOS
+     ===================================================== */
 }
 @media (max-width: 520px) {
   .sensei-layout .sensei-kpis {
@@ -9111,6 +9279,32 @@ body:has(#crearUsuarioModal:not([hidden]),
   }
   .sensei-layout .sensei-panel {
     padding: 15px;
+  }
+  .sensei-layout .sensei-class-card__info {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sensei-layout .sensei-session {
+    padding: 20px;
+  }
+}
+.sensei-layout {
+  /* =====================================================
+     PREFERENCIA DE MOVIMIENTO REDUCIDO
+     ===================================================== */
+}
+@media (prefers-reduced-motion: reduce) {
+  .sensei-layout .dashboard-kpi,
+  .sensei-layout .dashboard-card,
+  .sensei-layout .sensei-class-card,
+  .sensei-layout .sensei-group-card {
+    transition: none;
+  }
+  .sensei-layout .dashboard-kpi:hover,
+  .sensei-layout .dashboard-card:hover,
+  .sensei-layout .sensei-class-card:hover,
+  .sensei-layout .sensei-group-card:hover {
+    transform: none;
   }
 }
 

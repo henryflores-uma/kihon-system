@@ -3,30 +3,39 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     /*
      * =========================================================
-     * CONFIGURACIÓN Y SESIÓN
+     * CONFIGURACIÓN Y ELEMENTOS DEL DOM
      * =========================================================
      */
 
     const username = sessionStorage.getItem("kihonUsername");
+
     const rol = (sessionStorage.getItem("kihonRol") || "")
         .trim()
         .toUpperCase()
         .replace("PROFESOR", "SENSEI");
 
-    const usernameDisplay = document.getElementById("usernameDisplay");
-    const welcomeTitle = document.getElementById("welcomeTitle");
+    const elementos = {
+        usernameDisplay: document.getElementById("usernameDisplay"),
+        welcomeTitle: document.getElementById("welcomeTitle"),
+        profileRoleDisplay: document.getElementById("profileRoleDisplay"),
+        userAvatarInitial: document.getElementById("userAvatarInitial"),
+        senseiSessionUsername: document.getElementById("senseiSessionUsername"),
+        senseiSessionInitial: document.getElementById("senseiSessionInitial"),
 
-    const totalEstudiantes = document.getElementById("totalEstudiantes");
-    const totalGrupos = document.getElementById("totalGrupos");
-    const totalClasesHoy = document.getElementById("totalClasesHoy");
-    const totalAsistenciasHoy = document.getElementById("totalAsistenciasHoy");
+        totalEstudiantes: document.getElementById("totalEstudiantes"),
+        totalGrupos: document.getElementById("totalGrupos"),
+        totalClasesHoy: document.getElementById("totalClasesHoy"),
+        totalAsistenciasHoy: document.getElementById("totalAsistenciasHoy"),
 
-    const clasesHoyContainer = document.getElementById("clasesHoyContainer");
-    const gruposContainer = document.getElementById("gruposContainer");
+        clasesHoyContainer: document.getElementById("clasesHoyContainer"),
+        gruposContainer: document.getElementById("gruposContainer"),
+
+        statusMessage: document.getElementById("senseiStatusMessage")
+    };
 
     /*
      * =========================================================
-     * VALIDAR SESIÓN LOCAL
+     * VALIDACIÓN DE SESIÓN
      * =========================================================
      */
 
@@ -44,6 +53,35 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!username || rol !== "SENSEI") {
         redirigirLogin();
         return;
+    }
+
+    /*
+     * =========================================================
+     * MENSAJES DEL DASHBOARD
+     * =========================================================
+     */
+
+    function mostrarMensaje(mensaje, tipo = "info") {
+
+        const contenedor = elementos.statusMessage;
+
+        if (!contenedor) {
+            return;
+        }
+
+        contenedor.textContent = mensaje;
+        contenedor.className = `sensei-status-message sensei-status-message--${tipo}`;
+        contenedor.hidden = false;
+    }
+
+    function ocultarMensaje() {
+
+        if (!elementos.statusMessage) {
+            return;
+        }
+
+        elementos.statusMessage.hidden = true;
+        elementos.statusMessage.textContent = "";
     }
 
     /*
@@ -79,6 +117,46 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     /*
      * =========================================================
+     * ACTUALIZAR INFORMACIÓN DEL PERFIL
+     * =========================================================
+     */
+
+    function actualizarPerfil(nombreUsuario) {
+
+        const nombre = nombreUsuario || "Sensei";
+
+        const inicial = nombre
+            .trim()
+            .charAt(0)
+            .toUpperCase() || "S";
+
+        if (elementos.usernameDisplay) {
+            elementos.usernameDisplay.textContent = nombre;
+        }
+
+        if (elementos.welcomeTitle) {
+            elementos.welcomeTitle.textContent = `Bienvenido, ${nombre}`;
+        }
+
+        if (elementos.profileRoleDisplay) {
+            elementos.profileRoleDisplay.textContent = "Sensei";
+        }
+
+        if (elementos.userAvatarInitial) {
+            elementos.userAvatarInitial.textContent = inicial;
+        }
+
+        if (elementos.senseiSessionUsername) {
+            elementos.senseiSessionUsername.textContent = nombre;
+        }
+
+        if (elementos.senseiSessionInitial) {
+            elementos.senseiSessionInitial.textContent = inicial;
+        }
+    }
+
+    /*
+     * =========================================================
      * VERIFICAR USUARIO AUTENTICADO
      * =========================================================
      */
@@ -107,13 +185,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const nombreUsuario = usuario.username || username;
 
-        if (usernameDisplay) {
-            usernameDisplay.textContent = nombreUsuario;
-        }
-
-        if (welcomeTitle) {
-            welcomeTitle.textContent = `Bienvenido, ${nombreUsuario}`;
-        }
+        actualizarPerfil(nombreUsuario);
 
         sessionStorage.setItem("kihonUsername", nombreUsuario);
         sessionStorage.setItem("kihonRol", rolServidor);
@@ -127,13 +199,23 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function formatearFecha(fecha) {
 
-        if (!fecha) {
+        if (!fecha || typeof fecha !== "string") {
             return "Fecha no disponible";
         }
 
-        const [anio, mes, dia] = fecha.split("-").map(Number);
+        const partes = fecha.split("-").map(Number);
+
+        if (partes.length !== 3 || partes.some(Number.isNaN)) {
+            return "Fecha no disponible";
+        }
+
+        const [anio, mes, dia] = partes;
 
         const fechaLocal = new Date(anio, mes - 1, dia);
+
+        if (Number.isNaN(fechaLocal.getTime())) {
+            return "Fecha no disponible";
+        }
 
         return fechaLocal.toLocaleDateString("es-PE", {
             weekday: "long",
@@ -151,7 +233,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function formatearHora(hora) {
 
-        if (!hora) {
+        if (!hora || typeof hora !== "string") {
             return "--:--";
         }
 
@@ -160,7 +242,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     /*
      * =========================================================
-     * CREAR ELEMENTO DE TEXTO
+     * CREAR ELEMENTOS HTML DE FORMA SEGURA
      * =========================================================
      */
 
@@ -185,25 +267,39 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function actualizarIndicadores(datos) {
 
-        if (totalEstudiantes) {
-            totalEstudiantes.textContent =
-                datos.totalEstudiantes ?? 0;
+        const indicadores = [
+            ["totalEstudiantes", datos.totalEstudiantes],
+            ["totalGrupos", datos.totalGrupos],
+            ["totalClasesHoy", datos.totalClasesHoy],
+            ["totalAsistenciasHoy", datos.totalAsistenciasHoy]
+        ];
+
+        indicadores.forEach(([elemento, valor]) => {
+
+            if (elementos[elemento]) {
+                elementos[elemento].textContent = valor ?? 0;
+            }
+        });
+    }
+
+    /*
+     * =========================================================
+     * ACTUALIZAR FECHA DEL DASHBOARD
+     * =========================================================
+     */
+
+    function actualizarFechaDashboard(fecha) {
+
+        const parrafo = document.querySelector(
+            ".sensei-welcome .sensei-welcome__content p"
+        );
+
+        if (!parrafo || !fecha) {
+            return;
         }
 
-        if (totalGrupos) {
-            totalGrupos.textContent =
-                datos.totalGrupos ?? 0;
-        }
-
-        if (totalClasesHoy) {
-            totalClasesHoy.textContent =
-                datos.totalClasesHoy ?? 0;
-        }
-
-        if (totalAsistenciasHoy) {
-            totalAsistenciasHoy.textContent =
-                datos.totalAsistenciasHoy ?? 0;
-        }
+        parrafo.textContent =
+            `Desde este panel puedes consultar tus actividades y gestionar el seguimiento de tus estudiantes. Hoy es ${formatearFecha(fecha)}.`;
     }
 
     /*
@@ -214,18 +310,20 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function mostrarClasesHoy(clases) {
 
-        if (!clasesHoyContainer) {
+        const contenedor = elementos.clasesHoyContainer;
+
+        if (!contenedor) {
             return;
         }
 
-        clasesHoyContainer.replaceChildren();
+        contenedor.replaceChildren();
 
         if (!Array.isArray(clases) || clases.length === 0) {
 
-            clasesHoyContainer.appendChild(
+            contenedor.appendChild(
                 crearElemento(
                     "p",
-                    "",
+                    "sensei-empty-message",
                     "No tienes clases programadas para hoy."
                 )
             );
@@ -236,9 +334,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         clases.forEach(clase => {
 
             const tarjeta = document.createElement("article");
-            tarjeta.className = "card";
+            tarjeta.className = "card sensei-class-card";
 
             const encabezado = document.createElement("div");
+            encabezado.className = "sensei-class-card__header";
 
             encabezado.appendChild(
                 crearElemento(
@@ -251,12 +350,13 @@ document.addEventListener("DOMContentLoaded", async function () {
             encabezado.appendChild(
                 crearElemento(
                     "p",
-                    "",
+                    "sensei-class-card__time",
                     `${formatearHora(clase.horaInicio)} - ${formatearHora(clase.horaFin)}`
                 )
             );
 
             const informacion = document.createElement("div");
+            informacion.className = "sensei-class-card__info";
 
             informacion.appendChild(
                 crearElemento(
@@ -274,24 +374,27 @@ document.addEventListener("DOMContentLoaded", async function () {
                 )
             );
 
-            const acciones = document.createElement("div");
-            acciones.className = "dashboard-actions";
-
-            const botonAsistencia = document.createElement("a");
-
-            botonAsistencia.className = "btn btn--accent";
-            botonAsistencia.href =
-                `/sensei/asistencias?grupoId=${encodeURIComponent(clase.grupoId)}`;
-
-            botonAsistencia.textContent = "Registrar asistencia";
-
-            acciones.appendChild(botonAsistencia);
-
             tarjeta.appendChild(encabezado);
             tarjeta.appendChild(informacion);
-            tarjeta.appendChild(acciones);
 
-            clasesHoyContainer.appendChild(tarjeta);
+            if (clase.grupoId != null) {
+
+                const acciones = document.createElement("div");
+                acciones.className = "sensei-class-card__actions";
+
+                const botonAsistencia = document.createElement("a");
+
+                botonAsistencia.className = "btn btn--accent";
+                botonAsistencia.href =
+                    `/sensei/asistencias?grupoId=${encodeURIComponent(clase.grupoId)}`;
+
+                botonAsistencia.textContent = "Registrar asistencia";
+
+                acciones.appendChild(botonAsistencia);
+                tarjeta.appendChild(acciones);
+            }
+
+            contenedor.appendChild(tarjeta);
         });
     }
 
@@ -303,18 +406,20 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function mostrarGrupos(grupos) {
 
-        if (!gruposContainer) {
+        const contenedor = elementos.gruposContainer;
+
+        if (!contenedor) {
             return;
         }
 
-        gruposContainer.replaceChildren();
+        contenedor.replaceChildren();
 
         if (!Array.isArray(grupos) || grupos.length === 0) {
 
-            gruposContainer.appendChild(
+            contenedor.appendChild(
                 crearElemento(
                     "p",
-                    "",
+                    "sensei-empty-message",
                     "Actualmente no tienes grupos activos asignados."
                 )
             );
@@ -325,7 +430,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         grupos.forEach(grupo => {
 
             const tarjeta = document.createElement("article");
-            tarjeta.className = "card";
+            tarjeta.className = "card sensei-group-card";
 
             tarjeta.appendChild(
                 crearElemento(
@@ -343,17 +448,67 @@ document.addEventListener("DOMContentLoaded", async function () {
                 )
             );
 
-            const enlace = document.createElement("a");
+            if (grupo.grupoId != null) {
 
-            enlace.className = "btn btn--secondary";
-            enlace.href =
-                `/sensei/estudiantes?grupoId=${encodeURIComponent(grupo.grupoId)}`;
+                const enlace = document.createElement("a");
 
-            enlace.textContent = "Consultar estudiantes";
+                enlace.className = "btn btn--secondary";
 
-            tarjeta.appendChild(enlace);
+                enlace.href =
+                    `/sensei/estudiantes?grupoId=${encodeURIComponent(grupo.grupoId)}`;
 
-            gruposContainer.appendChild(tarjeta);
+                enlace.textContent = "Consultar estudiantes";
+
+                tarjeta.appendChild(enlace);
+            }
+
+            contenedor.appendChild(tarjeta);
+        });
+    }
+
+    /*
+     * =========================================================
+     * ESTADO DE CARGA
+     * =========================================================
+     */
+
+    function mostrarCargando() {
+
+        if (elementos.clasesHoyContainer) {
+            elementos.clasesHoyContainer.textContent =
+                "Cargando clases...";
+        }
+
+        if (elementos.gruposContainer) {
+            elementos.gruposContainer.textContent =
+                "Cargando grupos...";
+        }
+    }
+
+    function mostrarErrorCarga(mensaje) {
+
+        const texto = mensaje || "No se pudo cargar la información.";
+
+        if (elementos.clasesHoyContainer) {
+            elementos.clasesHoyContainer.textContent = texto;
+        }
+
+        if (elementos.gruposContainer) {
+            elementos.gruposContainer.textContent = texto;
+        }
+
+        const indicadores = [
+            elementos.totalEstudiantes,
+            elementos.totalGrupos,
+            elementos.totalClasesHoy,
+            elementos.totalAsistenciasHoy
+        ];
+
+        indicadores.forEach(elemento => {
+
+            if (elemento) {
+                elemento.textContent = "—";
+            }
         });
     }
 
@@ -364,6 +519,9 @@ document.addEventListener("DOMContentLoaded", async function () {
      */
 
     async function cargarDashboard() {
+
+        mostrarCargando();
+        ocultarMensaje();
 
         try {
 
@@ -388,17 +546,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             mostrarGrupos(datos.grupos);
 
-            if (datos.fecha) {
-
-                const fechaElemento = document.querySelector(
-                    ".dashboard-welcome p"
-                );
-
-                if (fechaElemento) {
-                    fechaElemento.textContent =
-                        `Consulta tus grupos, estudiantes y clases programadas. Hoy es ${formatearFecha(datos.fecha)}.`;
-                }
-            }
+            actualizarFechaDashboard(datos.fecha);
 
         } catch (error) {
 
@@ -407,15 +555,14 @@ document.addEventListener("DOMContentLoaded", async function () {
                 error
             );
 
-            if (clasesHoyContainer) {
-                clasesHoyContainer.textContent =
-                    error.message || "No se pudieron cargar las clases.";
-            }
+            mostrarErrorCarga(
+                error.message || "No se pudo cargar el dashboard."
+            );
 
-            if (gruposContainer) {
-                gruposContainer.textContent =
-                    "No se pudieron cargar los grupos.";
-            }
+            mostrarMensaje(
+                error.message || "Ocurrió un error al cargar el dashboard.",
+                "error"
+            );
         }
     }
 
@@ -436,6 +583,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         console.error(
             "Error al inicializar el dashboard:",
             error
+        );
+
+        mostrarMensaje(
+            error.message || "No se pudo iniciar el panel del Sensei.",
+            "error"
         );
     }
 
