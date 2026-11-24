@@ -1,0 +1,1083 @@
+/* =========================================================
+   DASHBOARD ESTUDIANTE
+   ========================================================= */
+
+.estudiante-layout {
+
+    background-color: #f7f8fa;
+
+    /* HEADER */
+
+    .estudiante-header {
+        margin-bottom: 24px;
+
+        h1 {
+            margin-bottom: 8px;
+        }
+
+        p {
+            margin: 0;
+        }
+    }
+
+    /* BIENVENIDA */
+
+    .estudiante-welcome {
+        margin-bottom: 28px;
+
+        &__content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+
+            padding: 28px 32px;
+
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-left: 5px solid #ff2400;
+            border-radius: 12px;
+
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        h2 {
+            margin: 8px 0;
+            color: #252525;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        p {
+            max-width: 620px;
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        &__icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            width: 76px;
+            height: 76px;
+
+            background: #fff3ef;
+            border-radius: 18px;
+
+            font-size: 38px;
+        }
+    }
+
+    /* SECCIONES */
+
+    .estudiante-section {
+        margin-bottom: 28px;
+    }
+
+    .section-header {
+        margin-bottom: 18px;
+
+        h2 {
+            margin: 5px 0 7px;
+            color: #252525;
+            font-size: 21px;
+            font-weight: 700;
+        }
+
+        p {
+            margin: 0;
+            color: #737373;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    }
+
+    .section-kicker {
+        display: inline-block;
+
+        color: #ff2400;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .estudiante-section__heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    /* INDICADORES */
+
+    .estudiante-kpis {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .dashboard-kpi {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        min-width: 0;
+        min-height: 125px;
+        padding: 22px;
+
+        background: #fff;
+        border: 1px solid #e9e9e9;
+        border-radius: 12px;
+
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.035);
+
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+
+        &:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 18px rgba(0, 0, 0, 0.07);
+        }
+
+        &__icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            width: 48px;
+            height: 48px;
+
+            background: #fff0ed;
+            border-radius: 12px;
+
+            font-size: 23px;
+        }
+
+        &__content {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 0;
+
+            strong {
+                color: #252525;
+                font-size: 27px;
+                font-weight: 700;
+                line-height: 1.2;
+            }
+
+            small {
+                color: #888;
+                font-size: 12px;
+            }
+        }
+
+        &__label {
+            color: #686868;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        &--primary {
+            .dashboard-kpi__icon {
+                background: #fff3ef;
+            }
+        }
+
+        &--accent {
+            .dashboard-kpi__icon {
+                background: #fff8dc;
+            }
+        }
+    }
+
+    .estudiante-kpi--progress {
+        .dashboard-kpi__icon {
+            background: #eaf7ef;
+        }
+    }
+
+    /* PANELES */
+
+    .estudiante-panel {
+        padding: 24px;
+
+        background: #fff;
+        border: 1px solid #e9e9e9;
+        border-radius: 12px;
+
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.035);
+
+        &__content {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+
+            min-height: 50px;
+
+            >p {
+                margin: 0;
+                padding: 12px 0;
+                color: #777;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+        }
+    }
+
+    /* ACCIONES RÁPIDAS */
+
+    .estudiante-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+
+        .dashboard-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+
+            min-width: 0;
+            min-height: 115px;
+            padding: 22px;
+
+            background: #fff;
+            border: 1px solid #e9e9e9;
+            border-radius: 12px;
+
+            text-decoration: none;
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
+
+            &:hover {
+                transform: translateY(-3px);
+                border-color: #ffb5a8;
+                box-shadow: 0 7px 18px rgba(0, 0, 0, 0.07);
+            }
+
+            &__icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                flex-shrink: 0;
+
+                width: 48px;
+                height: 48px;
+
+                background: #fff0ed;
+                border-radius: 12px;
+
+                font-size: 23px;
+            }
+
+            &__content {
+                display: flex;
+                flex-direction: column;
+                gap: 7px;
+                min-width: 0;
+
+                strong {
+                    color: #252525;
+                    font-size: 14px;
+                    font-weight: 700;
+                }
+
+                small {
+                    color: #777;
+                    font-size: 12px;
+                    line-height: 1.5;
+                }
+            }
+
+            &--primary {
+                .dashboard-card__icon {
+                    background: #fff0ed;
+                }
+            }
+
+            &--accent {
+                .dashboard-card__icon {
+                    background: #fff8dc;
+                }
+            }
+        }
+    }
+
+    /* MENSAJES */
+
+    .estudiante-status-message {
+        margin-bottom: 20px;
+        padding: 14px 18px;
+
+        background: #fff8dc;
+        border: 1px solid #f0d978;
+        border-radius: 8px;
+
+        color: #725d13;
+        font-size: 14px;
+        line-height: 1.5;
+
+        &[hidden] {
+            display: none;
+        }
+
+        &--info {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1e40af;
+        }
+
+        &--error {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #b91c1c;
+        }
+
+        &--success {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+    }
+
+    /* SESIÓN */
+
+    .estudiante-session {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+
+        margin-bottom: 30px;
+        padding: 26px;
+
+        background: #fff;
+        border: 1px solid #e9e9e9;
+        border-radius: 12px;
+
+        h2 {
+            margin: 7px 0;
+            color: #252525;
+            font-size: 19px;
+        }
+
+        p {
+            max-width: 600px;
+            margin: 0;
+            color: #777;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        &__user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+
+            strong,
+            span {
+                display: block;
+            }
+
+            strong {
+                color: #252525;
+                font-size: 14px;
+            }
+
+            span {
+                margin-top: 4px;
+                color: #777;
+                font-size: 12px;
+            }
+        }
+
+        &__avatar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            width: 44px;
+            height: 44px;
+
+            background: #fff0ed;
+            border-radius: 50%;
+
+            color: #ff2400;
+            font-size: 17px;
+            font-weight: 700;
+        }
+    }
+
+
+    /* =====================================================
+       CONTENIDO DINÁMICO: GRUPOS Y ACTIVIDAD RECIENTE
+       ===================================================== */
+
+    /* MENSAJES VACÍOS */
+
+    .estudiante-empty-message {
+        margin: 0;
+        padding: 18px;
+        color: #777;
+        background: #f9fafb;
+        border: 1px dashed #d9dce2;
+        border-radius: 8px;
+        font-size: 13px;
+        line-height: 1.6;
+        text-align: center;
+    }
+
+    /* TARJETAS DE GRUPOS */
+
+    .estudiante-group-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        padding: 18px;
+
+        background: #fff;
+        border: 1px solid #e9e9e9;
+        border-left: 4px solid #ff2400;
+        border-radius: 10px;
+
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+
+        &:hover {
+            border-color: #ffc2b8;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.045);
+        }
+
+        &__title {
+            margin: 0;
+            color: #252525;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        &__description {
+            margin: 0;
+            color: #777;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        &__status {
+            align-self: flex-start;
+            padding: 5px 10px;
+
+            background: #f0fdf4;
+            border-radius: 20px;
+
+            color: #166534;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        &__subtitle {
+            margin: 4px 0 0;
+            color: #444;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        &__schedule {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+
+            margin: 0;
+            padding: 0;
+            list-style: none;
+
+            li {
+                padding: 7px 10px;
+
+                background: #f7f8fa;
+                border: 1px solid #eceef1;
+                border-radius: 6px;
+
+                color: #626262;
+                font-size: 12px;
+                line-height: 1.4;
+            }
+        }
+    }
+
+    /* ACTIVIDAD RECIENTE */
+
+    .estudiante-activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .estudiante-activity-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+
+        padding: 15px 4px;
+        border-bottom: 1px solid #eeeeee;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &__info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 0;
+        }
+
+        &__group {
+            color: #303030;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        &__date {
+            color: #858585;
+            font-size: 12px;
+        }
+
+        &__time {
+            color: #858585;
+            font-size: 11px;
+        }
+
+        &__status {
+            flex-shrink: 0;
+            padding: 6px 10px;
+
+            background: #f3f4f6;
+            border-radius: 20px;
+
+            color: #555;
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+
+            &--presente {
+                background: #eaf7ef;
+                color: #15803d;
+            }
+
+            &--ausente {
+                background: #fef2f2;
+                color: #b91c1c;
+            }
+
+            &--tardanza {
+                background: #fff8dc;
+                color: #946c00;
+            }
+
+            &--justificado {
+                background: #eff6ff;
+                color: #1d4ed8;
+            }
+
+            &--desconocido {
+                background: #f3f4f6;
+                color: #555;
+            }
+        }
+    }
+
+    /* RESPONSIVE: CONTENIDO DINÁMICO */
+
+    @media (max-width: 520px) {
+        .estudiante-group-card {
+            padding: 14px;
+
+            &__schedule {
+                flex-direction: column;
+
+                li {
+                    width: 100%;
+                }
+            }
+        }
+
+        .estudiante-activity-item {
+            align-items: flex-start;
+            gap: 10px;
+
+            &__status {
+                max-width: 105px;
+                white-space: normal;
+            }
+        }
+    }
+
+
+    // ==========================================
+    // MIS ASISTENCIAS
+    // ==========================================
+
+    .asistencias-history-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
+
+        h3 {
+            margin: 0 0 5px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        span {
+            color: #777;
+            font-size: 13px;
+        }
+    }
+
+    .asistencias-table-container {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #e8e8e8;
+        border-radius: 10px;
+    }
+
+    .asistencias-table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
+        text-align: left;
+
+        thead {
+            background: #f7f7f7;
+
+            th {
+                padding: 15px 16px;
+                color: #555;
+                font-size: 12px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                white-space: nowrap;
+                border-bottom: 1px solid #e8e8e8;
+            }
+        }
+
+        tbody {
+            tr {
+                transition: background 0.2s ease;
+
+                &:not(:last-child) {
+                    border-bottom: 1px solid #eeeeee;
+                }
+
+                &:hover {
+                    background: #fafafa;
+                }
+            }
+
+            td {
+                padding: 15px 16px;
+                color: #444;
+                font-size: 13px;
+                vertical-align: middle;
+            }
+
+            td[colspan] {
+                padding: 28px 16px;
+                color: #777;
+                text-align: center;
+            }
+        }
+    }
+
+    // ESTADOS DE ASISTENCIA
+
+    .asistencias-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+        background: #f1f1f1;
+        color: #555;
+
+        &--presente {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        &--ausente {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        &--tardanza {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        &--justificado {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        &--desconocido {
+            background: #eeeeee;
+            color: #555;
+        }
+    }
+
+    // INFORMACIÓN DE LA PÁGINA
+
+    .asistencias-table__observation {
+        max-width: 220px;
+        line-height: 1.5;
+        overflow-wrap: break-word;
+    }
+
+    // RESPONSIVE
+
+    @media (max-width: 768px) {
+        .asistencias-history-header {
+            align-items: flex-start;
+        }
+
+        .asistencias-table {
+            min-width: 700px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .asistencias-history-header {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .asistencias-table {
+            min-width: 650px;
+        }
+    }
+
+
+    // ==========================================
+    // MI HORARIO
+    // ==========================================
+
+    .horario-week-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 8px;
+
+        h3 {
+            margin: 0 0 5px;
+            color: #252525;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        span {
+            color: #777;
+            font-size: 13px;
+        }
+    }
+
+    // CONTENEDOR SEMANAL
+
+    .horario-week {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    // DÍA DE ENTRENAMIENTO
+
+    .horario-day {
+        overflow: hidden;
+
+        background: #fff;
+        border: 1px solid #e9e9e9;
+        border-radius: 10px;
+
+        &__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+
+            padding: 14px 18px;
+
+            background: #f8f8f8;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        &__name {
+            margin: 0;
+            color: #303030;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        &__count {
+            padding: 5px 10px;
+
+            background: #fff0ed;
+            border-radius: 20px;
+
+            color: #e52b12;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        &__classes {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 4px 18px;
+        }
+    }
+
+    // TARJETA DE CLASE
+
+    .horario-class-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+
+        padding: 17px 14px;
+
+        border-bottom: 1px solid #eeeeee;
+
+        transition: background 0.2s ease;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &:hover {
+            background: #fafafa;
+        }
+
+        &__info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 0;
+        }
+
+        &__group {
+            color: #303030;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        &__label {
+            color: #888;
+            font-size: 12px;
+        }
+
+        &__time {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-shrink: 0;
+
+            padding: 9px 12px;
+
+            background: #fff3ef;
+            border-radius: 8px;
+
+            color: #d92d16;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        &__start,
+        &__end {
+            font-weight: 700;
+        }
+
+        &__separator {
+            color: #e58c7e;
+        }
+    }
+
+    // CARGA DEL HORARIO
+
+    .horario-loading {
+        padding: 24px;
+        color: #777;
+        font-size: 13px;
+        text-align: center;
+    }
+
+    // RESPONSIVE
+
+    @media (max-width: 520px) {
+
+        .horario-week-header {
+            align-items: flex-start;
+        }
+
+        .horario-day {
+
+            &__header {
+                padding: 12px 14px;
+            }
+
+            &__classes {
+                padding: 4px 10px;
+            }
+        }
+
+        .horario-class-card {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 12px;
+            padding: 15px 10px;
+
+            &__time {
+                align-self: flex-start;
+            }
+        }
+    }
+
+    /* ACCESIBILIDAD */
+
+    a:focus-visible,
+    button:focus-visible {
+        outline: 3px solid rgba(255, 36, 0, 0.35);
+        outline-offset: 3px;
+    }
+
+    /* TABLETS */
+
+    @media (max-width: 1100px) {
+
+        .estudiante-kpis {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .estudiante-actions {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    /* MÓVILES */
+
+    @media (max-width: 768px) {
+
+        .estudiante-header {
+            margin-top: 20px;
+        }
+
+        .estudiante-welcome {
+
+            &__content {
+                padding: 22px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            &__icon {
+                width: 58px;
+                height: 58px;
+                font-size: 29px;
+            }
+        }
+
+        .estudiante-section__heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .estudiante-panel {
+            padding: 18px;
+        }
+
+        .estudiante-session {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+
+    /* MÓVILES PEQUEÑOS */
+
+    @media (max-width: 520px) {
+
+        .estudiante-kpis {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .dashboard-kpi {
+            min-height: 105px;
+            padding: 17px;
+        }
+
+        .estudiante-actions {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .estudiante-welcome {
+
+            &__content {
+                padding: 18px;
+            }
+
+            &__icon {
+                display: none;
+            }
+        }
+
+        .estudiante-panel {
+            padding: 15px;
+        }
+
+        .estudiante-session {
+            padding: 20px;
+        }
+    }
+
+    /* MOVIMIENTO REDUCIDO */
+
+    @media (prefers-reduced-motion: reduce) {
+
+        .dashboard-kpi,
+        .dashboard-card {
+            transition: none;
+        }
+
+        .dashboard-kpi:hover,
+        .dashboard-card:hover {
+            transform: none;
+        }
+    }
+}

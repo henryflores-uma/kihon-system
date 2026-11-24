@@ -2,8 +2,11 @@ package com.kihon.kihon.controller;
 
 import com.kihon.kihon.model.GrupoHorario;
 import com.kihon.kihon.service.GrupoHorarioService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalTime;
@@ -26,11 +29,24 @@ public class GrupoHorarioController {
         // ==========================================
 
         @GetMapping
-        public ResponseEntity<List<GrupoHorarioResponse>> listarHorarios() {
+        public ResponseEntity<List<GrupoHorarioResponse>> listarHorarios(
+                        Authentication authentication) {
 
-                List<GrupoHorarioResponse> response = grupoHorarioService
-                                .listarHorarios()
-                                .stream()
+                validarRolConsulta(authentication);
+
+                List<GrupoHorario> horarios;
+
+                if (esSensei(authentication)) {
+
+                        horarios = grupoHorarioService.listarPorSensei(
+                                        authentication.getName());
+
+                } else {
+
+                        horarios = grupoHorarioService.listarHorarios();
+                }
+
+                List<GrupoHorarioResponse> response = horarios.stream()
                                 .map(this::convertirResponse)
                                 .toList();
 
@@ -43,11 +59,25 @@ public class GrupoHorarioController {
 
         @GetMapping("/dia/{diaSemana}")
         public ResponseEntity<List<GrupoHorarioResponse>> listarPorDia(
-                        @PathVariable String diaSemana) {
+                        @PathVariable String diaSemana,
+                        Authentication authentication) {
 
-                List<GrupoHorarioResponse> response = grupoHorarioService
-                                .listarPorDia(diaSemana)
-                                .stream()
+                validarRolConsulta(authentication);
+
+                List<GrupoHorario> horarios;
+
+                if (esSensei(authentication)) {
+
+                        horarios = grupoHorarioService.listarPorDiaDeSensei(
+                                        diaSemana,
+                                        authentication.getName());
+
+                } else {
+
+                        horarios = grupoHorarioService.listarPorDia(diaSemana);
+                }
+
+                List<GrupoHorarioResponse> response = horarios.stream()
                                 .map(this::convertirResponse)
                                 .toList();
 
@@ -60,11 +90,25 @@ public class GrupoHorarioController {
 
         @GetMapping("/grupo/{grupoId}")
         public ResponseEntity<List<GrupoHorarioResponse>> listarPorGrupo(
-                        @PathVariable Long grupoId) {
+                        @PathVariable Long grupoId,
+                        Authentication authentication) {
 
-                List<GrupoHorarioResponse> response = grupoHorarioService
-                                .listarPorGrupo(grupoId)
-                                .stream()
+                validarRolConsulta(authentication);
+
+                List<GrupoHorario> horarios;
+
+                if (esSensei(authentication)) {
+
+                        horarios = grupoHorarioService.listarPorGrupoDeSensei(
+                                        grupoId,
+                                        authentication.getName());
+
+                } else {
+
+                        horarios = grupoHorarioService.listarPorGrupo(grupoId);
+                }
+
+                List<GrupoHorarioResponse> response = horarios.stream()
                                 .map(this::convertirResponse)
                                 .toList();
 
@@ -77,12 +121,25 @@ public class GrupoHorarioController {
 
         @GetMapping("/{id}")
         public ResponseEntity<GrupoHorarioResponse> buscarPorId(
-                        @PathVariable Long id) {
+                        @PathVariable Long id,
+                        Authentication authentication) {
 
-                GrupoHorario horario = grupoHorarioService.buscarPorId(id);
+                validarRolConsulta(authentication);
 
-                return ResponseEntity.ok(
-                                convertirResponse(horario));
+                GrupoHorario horario;
+
+                if (esSensei(authentication)) {
+
+                        horario = grupoHorarioService.buscarPorIdDeSensei(
+                                        id,
+                                        authentication.getName());
+
+                } else {
+
+                        horario = grupoHorarioService.buscarPorId(id);
+                }
+
+                return ResponseEntity.ok(convertirResponse(horario));
         }
 
         // ==========================================
@@ -120,8 +177,7 @@ public class GrupoHorarioController {
                                 request.horaInicio(),
                                 request.horaFin());
 
-                return ResponseEntity.ok(
-                                convertirResponse(horario));
+                return ResponseEntity.ok(convertirResponse(horario));
         }
 
         // ==========================================
@@ -140,7 +196,50 @@ public class GrupoHorarioController {
         }
 
         // ==========================================
-        // RESPONSE
+        // VALIDAR ROL DE CONSULTA
+        // ==========================================
+
+        private void validarRolConsulta(Authentication authentication) {
+
+                if (authentication == null
+                                || !authentication.isAuthenticated()) {
+
+                        throw new AccessDeniedException(
+                                        "Debes iniciar sesión para consultar horarios");
+                }
+
+                boolean autorizado = authentication.getAuthorities()
+                                .stream()
+                                .anyMatch(authority -> {
+
+                                        String rol = authority.getAuthority();
+
+                                        return "ROLE_ADMIN".equals(rol)
+                                                        || "ROLE_SECRETARIA".equals(rol)
+                                                        || "ROLE_SENSEI".equals(rol);
+                                });
+
+                if (!autorizado) {
+
+                        throw new AccessDeniedException(
+                                        "No tienes permisos para consultar horarios");
+                }
+        }
+
+        // ==========================================
+        // VALIDAR SI ES SENSEI
+        // ==========================================
+
+        private boolean esSensei(Authentication authentication) {
+
+                return authentication != null
+                                && authentication.getAuthorities().stream()
+                                                .anyMatch(authority -> "ROLE_SENSEI".equals(
+                                                                authority.getAuthority()));
+        }
+
+        // ==========================================
+        // CONVERTIR RESPONSE
         // ==========================================
 
         private GrupoHorarioResponse convertirResponse(
@@ -149,9 +248,7 @@ public class GrupoHorarioController {
                 String senseiNombre = null;
 
                 if (horario.getGrupo().getSensei() != null
-                                && horario.getGrupo()
-                                                .getSensei()
-                                                .getPersona() != null) {
+                                && horario.getGrupo().getSensei().getPersona() != null) {
 
                         senseiNombre = horario.getGrupo()
                                         .getSensei()

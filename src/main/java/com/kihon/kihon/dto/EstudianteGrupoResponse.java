@@ -1,5 +1,7 @@
 package com.kihon.kihon.dto;
 
+import java.time.LocalDateTime;
+
 public class EstudianteGrupoResponse {
 
     private Long id;
@@ -12,6 +14,8 @@ public class EstudianteGrupoResponse {
 
     private String estado;
 
+    private LocalDateTime fechaInscripcion;
+
     public EstudianteGrupoResponse() {
     }
 
@@ -21,7 +25,8 @@ public class EstudianteGrupoResponse {
             String estudianteNombre,
             Long grupoId,
             String grupoNombre,
-            String estado) {
+            String estado,
+            LocalDateTime fechaInscripcion) {
 
         this.id = id;
         this.estudianteId = estudianteId;
@@ -29,6 +34,7 @@ public class EstudianteGrupoResponse {
         this.grupoId = grupoId;
         this.grupoNombre = grupoNombre;
         this.estado = estado;
+        this.fechaInscripcion = fechaInscripcion;
     }
 
     public Long getId() {
@@ -53,5 +59,9 @@ public class EstudianteGrupoResponse {
 
     public String getEstado() {
         return estado;
+    }
+
+    public LocalDateTime getFechaInscripcion() {
+        return fechaInscripcion;
     }
 }

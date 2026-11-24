@@ -6,9 +6,11 @@ import com.kihon.kihon.model.Grupo;
 import com.kihon.kihon.repository.EstudianteGrupoRepository;
 import com.kihon.kihon.repository.EstudianteRepository;
 import com.kihon.kihon.repository.GrupoRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -108,6 +110,7 @@ public class EstudianteGrupoService {
                 asignacion.setEstudiante(estudiante);
                 asignacion.setGrupo(grupo);
                 asignacion.setEstado("ACTIVO");
+                asignacion.setFechaInscripcion(LocalDateTime.now());
 
                 return estudianteGrupoRepository.save(asignacion);
         }
@@ -156,17 +159,15 @@ public class EstudianteGrupoService {
                                         "El estudiante ya pertenece a este grupo");
                 }
 
-                validarEstudianteActivo(
-                                asignacion.getEstudiante());
-
+                validarEstudianteActivo(asignacion.getEstudiante());
                 validarGrupoActivo(nuevoGrupo);
 
                 /*
-                 * Solo comprobamos duplicidad si la asignación que
-                 * estamos moviendo se encuentra activa.
+                 * Solo comprobamos duplicidad y capacidad
+                 * si la asignación se encuentra activa.
                  */
-                if ("ACTIVO".equalsIgnoreCase(
-                                asignacion.getEstado())) {
+
+                if ("ACTIVO".equalsIgnoreCase(asignacion.getEstado())) {
 
                         boolean yaAsignado = estudianteGrupoRepository
                                         .existsByEstudianteIdAndGrupoIdAndEstado(
@@ -183,6 +184,13 @@ public class EstudianteGrupoService {
                 }
 
                 asignacion.setGrupo(nuevoGrupo);
+
+                /*
+                 * Al cambiar de grupo, registramos la fecha
+                 * de ingreso al nuevo grupo.
+                 */
+
+                asignacion.setFechaInscripcion(LocalDateTime.now());
 
                 return estudianteGrupoRepository.save(asignacion);
         }
@@ -216,6 +224,7 @@ public class EstudianteGrupoService {
                  * Si se está activando la asignación,
                  * validamos estudiante, grupo, duplicidad y capacidad.
                  */
+
                 if ("ACTIVO".equals(nuevoEstado)) {
 
                         Estudiante estudiante = asignacion.getEstudiante();
@@ -225,20 +234,15 @@ public class EstudianteGrupoService {
                         validarGrupoActivo(grupo);
 
                         /*
-                         * Si la asignación ya estaba activa, no es una nueva
-                         * inscripción. Por lo tanto, no debemos bloquearla
-                         * por duplicidad ni por capacidad.
+                         * Si ya estaba activa, no necesitamos
+                         * realizar nuevamente las validaciones de capacidad.
                          */
+
                         boolean yaEstabaActiva = "ACTIVO".equalsIgnoreCase(
                                         asignacion.getEstado());
 
                         if (!yaEstabaActiva) {
 
-                                /*
-                                 * Buscamos otra asignación ACTIVA del mismo
-                                 * estudiante en el mismo grupo, excluyendo
-                                 * la asignación que estamos modificando.
-                                 */
                                 boolean otraAsignacionActiva = estudianteGrupoRepository
                                                 .existsByEstudianteIdAndGrupoIdAndEstadoAndIdNot(
                                                                 estudiante.getId(),
@@ -251,14 +255,14 @@ public class EstudianteGrupoService {
                                                         "El estudiante ya está activo en este grupo");
                                 }
 
-                                /*
-                                 * Verificamos la capacidad únicamente cuando
-                                 * realmente estamos activando una asignación
-                                 * que estaba inactiva.
-                                 */
                                 validarCapacidadDisponible(grupo);
                         }
                 }
+
+                /*
+                 * La fecha de inscripción original se conserva
+                 * tanto al retirar como al reactivar.
+                 */
 
                 asignacion.setEstado(nuevoEstado);
 
@@ -287,12 +291,10 @@ public class EstudianteGrupoService {
          * =========================================================
          */
 
-        private void validarEstudianteActivo(
-                        Estudiante estudiante) {
+        private void validarEstudianteActivo(Estudiante estudiante) {
 
                 if (estudiante == null
-                                || !"ACTIVO".equalsIgnoreCase(
-                                                estudiante.getEstado())) {
+                                || !"ACTIVO".equalsIgnoreCase(estudiante.getEstado())) {
 
                         throw new RuntimeException(
                                         "El estudiante no se encuentra activo");
@@ -305,12 +307,10 @@ public class EstudianteGrupoService {
          * =========================================================
          */
 
-        private void validarGrupoActivo(
-                        Grupo grupo) {
+        private void validarGrupoActivo(Grupo grupo) {
 
                 if (grupo == null
-                                || !"ACTIVO".equalsIgnoreCase(
-                                                grupo.getEstado())) {
+                                || !"ACTIVO".equalsIgnoreCase(grupo.getEstado())) {
 
                         throw new RuntimeException(
                                         "El grupo no se encuentra activo");
@@ -323,8 +323,7 @@ public class EstudianteGrupoService {
          * =========================================================
          */
 
-        private void validarCapacidadDisponible(
-                        Grupo grupo) {
+        private void validarCapacidadDisponible(Grupo grupo) {
 
                 long estudiantesActivos = estudianteGrupoRepository
                                 .countByGrupoIdAndEstado(

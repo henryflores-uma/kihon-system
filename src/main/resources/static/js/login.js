@@ -1,16 +1,13 @@
+
 document.addEventListener("DOMContentLoaded", function () {
   // ==========================================
   // ELEMENTOS DEL DOM
   // ==========================================
 
   const loginForm = document.getElementById("loginForm");
-
   const loginError = document.getElementById("loginError");
-
   const usernameInput = document.getElementById("username");
-
   const passwordInput = document.getElementById("password");
-
   const togglePassword = document.getElementById("togglePassword");
 
   // ==========================================
@@ -38,6 +35,73 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ==========================================
+  // VALIDAR ELEMENTOS
+  // ==========================================
+
+  if (!loginForm || !loginError || !usernameInput || !passwordInput) {
+    console.error("No se encontraron todos los elementos del formulario.");
+
+    return;
+  }
+
+  // ==========================================
+  // OBTENER TOKEN CSRF
+  // ==========================================
+
+  async function obtenerTokenCSRF() {
+    const response = await fetch("/api/auth/csrf", {
+      method: "GET",
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudo obtener el token CSRF.");
+    }
+
+    const data = await response.json();
+
+    if (!data.token) {
+      throw new Error("El servidor no devolvió un token CSRF válido.");
+    }
+
+    return data.token;
+  }
+
+  // ==========================================
+  // REDIRECCIÓN SEGÚN ROL
+  // ==========================================
+
+  function redirigirSegunRol(rol) {
+    switch (rol) {
+      case "ADMIN":
+        window.location.href = "/admin/admin";
+        break;
+
+      case "SECRETARIA":
+        window.location.href = "/secretaria/secretaria";
+        break;
+
+      case "SENSEI":
+        window.location.href = "/sensei/sensei";
+        break;
+
+      case "ESTUDIANTE":
+        window.location.href = "/estudiante/estudiante";
+        break;
+
+      default:
+        console.error("Rol no reconocido:", rol);
+
+        loginError.textContent = "El usuario no tiene un rol válido.";
+        loginError.hidden = false;
+        break;
+    }
+  }
+
+  // ==========================================
   // LOGIN
   // ==========================================
 
@@ -49,7 +113,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==========================================
 
     const username = usernameInput.value.trim();
-
     const password = passwordInput.value;
 
     // ==========================================
@@ -57,7 +120,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==========================================
 
     loginError.hidden = true;
-
     loginError.textContent = "";
 
     // ==========================================
@@ -66,29 +128,55 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!username || !password) {
       loginError.textContent = "Ingresa usuario y contraseña.";
-
       loginError.hidden = false;
 
       return;
     }
 
     // ==========================================
-    // BASIC AUTH
+    // EVITAR ENVÍOS REPETIDOS
     // ==========================================
 
-    const credentials = btoa(username + ":" + password);
+    const submitButton = loginForm.querySelector(
+      'button[type="submit"], input[type="submit"]',
+    );
+
+    if (submitButton) {
+      submitButton.disabled = true;
+    }
 
     try {
       // ==========================================
-      // VALIDAR AUTENTICACIÓN
+      // OBTENER TOKEN CSRF
       // ==========================================
 
-      const response = await fetch("/api/auth/me", {
-        method: "GET",
+      const csrfToken = await obtenerTokenCSRF();
+
+      // ==========================================
+      // PREPARAR CREDENCIALES
+      // ==========================================
+
+      const formData = new URLSearchParams();
+
+      formData.append("username", username);
+      formData.append("password", password);
+      formData.append("_csrf", csrfToken);
+
+      // ==========================================
+      // ENVIAR SOLICITUD DE LOGIN
+      // ==========================================
+
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+
+        credentials: "same-origin",
 
         headers: {
-          Authorization: "Basic " + credentials,
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
         },
+
+        body: formData.toString(),
       });
 
       console.log("Login status:", response.status);
@@ -97,20 +185,35 @@ document.addEventListener("DOMContentLoaded", function () {
       // LOGIN CORRECTO
       // ==========================================
 
-      if (response.status === 200) {
+      if (response.ok) {
         const data = await response.json();
 
         console.log("Usuario autenticado:", data);
 
         // ==========================================
-        // GUARDAR DATOS DE SESIÓN
+        // VALIDAR RESPUESTA
         // ==========================================
 
-        sessionStorage.setItem("kihonAuth", credentials);
+        if (!data.username || !data.rol) {
+          throw new Error(
+            "El servidor no devolvió los datos de autenticación esperados.",
+          );
+        }
+
+        // ==========================================
+        // GUARDAR DATOS PARA LA INTERFAZ
+        // ==========================================
+
+        sessionStorage.removeItem("kihonAuth");
 
         sessionStorage.setItem("kihonUsername", data.username);
-
         sessionStorage.setItem("kihonRol", data.rol);
+
+        // ==========================================
+        // ACTUALIZAR TOKEN CSRF
+        // ==========================================
+
+        await obtenerTokenCSRF();
 
         console.log("Rol:", data.rol);
 
@@ -118,42 +221,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // REDIRECCIÓN SEGÚN ROL
         // ==========================================
 
-        switch (data.rol) {
-          case "ADMIN":
-            window.location.href = "/admin/admin";
-
-            break;
-
-          case "SECRETARIA":
-            window.location.href = "/secretaria/secretaria";
-
-            break;
-
-          case "SENSEI":
-            window.location.href = "/sensei/sensei";
-
-            break;
-
-          case "ESTUDIANTE":
-            window.location.href = "/estudiante/perfil";
-
-            break;
-
-          default:
-            console.error("Rol no reconocido:", data.rol);
-
-            loginError.textContent = "El usuario no tiene un rol válido.";
-
-            loginError.hidden = false;
-
-            break;
-        }
+        redirigirSegunRol(data.rol);
 
         return;
       }
 
       // ==========================================
-      // 401 - NO AUTENTICADO
+      // 401 - AUTENTICACIÓN FALLIDA
       // ==========================================
 
       if (response.status === 401) {
@@ -161,27 +235,39 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // ==========================================
-      // 403 - SIN PERMISOS
+      // 403 - ACCESO DENEGADO
       // ==========================================
+
       else if (response.status === 403) {
         loginError.textContent =
-          "Tu cuenta no está activa o no tienes permisos.";
+          "No se pudo completar el inicio de sesión. Verifica la protección CSRF y el estado de tu cuenta.";
       }
 
       // ==========================================
       // OTROS ERRORES
       // ==========================================
+
       else {
-        loginError.textContent = "Ocurrió un error en el servidor.";
+        loginError.textContent =
+          "Ocurrió un error en el servidor. Inténtalo nuevamente.";
       }
 
       loginError.hidden = false;
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error durante el inicio de sesión:", error);
 
-      loginError.textContent = "No se pudo conectar con el servidor.";
+      loginError.textContent =
+        "No se pudo completar el inicio de sesión. Verifica tu conexión e inténtalo nuevamente.";
 
       loginError.hidden = false;
+    } finally {
+      // ==========================================
+      // HABILITAR BOTÓN
+      // ==========================================
+
+      if (submitButton) {
+        submitButton.disabled = false;
+      }
     }
   });
 });

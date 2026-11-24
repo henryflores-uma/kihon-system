@@ -1,11 +1,15 @@
+
 package com.kihon.kihon.controller;
 
 import com.kihon.kihon.dto.AsistenciaRequest;
 import com.kihon.kihon.dto.AsistenciaResponse;
 import com.kihon.kihon.model.Asistencia;
 import com.kihon.kihon.service.AsistenciaService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -17,9 +21,7 @@ public class AsistenciaController {
 
         private final AsistenciaService asistenciaService;
 
-        public AsistenciaController(
-                        AsistenciaService asistenciaService) {
-
+        public AsistenciaController(AsistenciaService asistenciaService) {
                 this.asistenciaService = asistenciaService;
         }
 
@@ -29,15 +31,29 @@ public class AsistenciaController {
 
         @PostMapping
         public ResponseEntity<AsistenciaResponse> registrarAsistencia(
-                        @RequestBody AsistenciaRequest request) {
+                        @RequestBody AsistenciaRequest request,
+                        Authentication authentication) {
 
-                Asistencia asistencia = asistenciaService.registrarAsistencia(
-                                request.getEstudianteId(),
-                                request.getGrupoId(),
-                                request.getFecha(),
-                                request.getHoraLlegada(),
-                                request.getEstado(),
-                                request.getObservacion());
+                Asistencia asistencia;
+
+                if (esSensei(authentication)) {
+                        asistencia = asistenciaService.registrarAsistenciaDeSensei(
+                                        request.getEstudianteId(),
+                                        request.getGrupoId(),
+                                        request.getFecha(),
+                                        request.getHoraLlegada(),
+                                        request.getEstado(),
+                                        request.getObservacion(),
+                                        authentication.getName());
+                } else {
+                        asistencia = asistenciaService.registrarAsistencia(
+                                        request.getEstudianteId(),
+                                        request.getGrupoId(),
+                                        request.getFecha(),
+                                        request.getHoraLlegada(),
+                                        request.getEstado(),
+                                        request.getObservacion());
+                }
 
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
@@ -51,19 +67,33 @@ public class AsistenciaController {
         @PutMapping("/{id}")
         public ResponseEntity<AsistenciaResponse> actualizarAsistencia(
                         @PathVariable Long id,
-                        @RequestBody AsistenciaRequest request) {
+                        @RequestBody AsistenciaRequest request,
+                        Authentication authentication) {
 
-                Asistencia asistencia = asistenciaService.actualizarAsistencia(
-                                id,
-                                request.getEstudianteId(),
-                                request.getGrupoId(),
-                                request.getFecha(),
-                                request.getHoraLlegada(),
-                                request.getEstado(),
-                                request.getObservacion());
+                Asistencia asistencia;
 
-                return ResponseEntity.ok(
-                                convertirAResponse(asistencia));
+                if (esSensei(authentication)) {
+                        asistencia = asistenciaService.actualizarAsistenciaDeSensei(
+                                        id,
+                                        request.getEstudianteId(),
+                                        request.getGrupoId(),
+                                        request.getFecha(),
+                                        request.getHoraLlegada(),
+                                        request.getEstado(),
+                                        request.getObservacion(),
+                                        authentication.getName());
+                } else {
+                        asistencia = asistenciaService.actualizarAsistencia(
+                                        id,
+                                        request.getEstudianteId(),
+                                        request.getGrupoId(),
+                                        request.getFecha(),
+                                        request.getHoraLlegada(),
+                                        request.getEstado(),
+                                        request.getObservacion());
+                }
+
+                return ResponseEntity.ok(convertirAResponse(asistencia));
         }
 
         // ==========================================
@@ -72,15 +102,23 @@ public class AsistenciaController {
 
         @GetMapping("/estudiante/{estudianteId}")
         public ResponseEntity<List<AsistenciaResponse>> listarPorEstudiante(
-                        @PathVariable Long estudianteId) {
+                        @PathVariable Long estudianteId,
+                        Authentication authentication) {
 
-                List<AsistenciaResponse> response = asistenciaService
-                                .listarPorEstudiante(estudianteId)
-                                .stream()
-                                .map(this::convertirAResponse)
-                                .toList();
+                List<Asistencia> asistencias;
 
-                return ResponseEntity.ok(response);
+                if (esSensei(authentication)) {
+                        asistencias = asistenciaService.listarPorEstudianteDeSensei(
+                                        estudianteId,
+                                        authentication.getName());
+                } else {
+                        asistencias = asistenciaService.listarPorEstudiante(estudianteId);
+                }
+
+                return ResponseEntity.ok(
+                                asistencias.stream()
+                                                .map(this::convertirAResponse)
+                                                .toList());
         }
 
         // ==========================================
@@ -89,15 +127,23 @@ public class AsistenciaController {
 
         @GetMapping("/grupo/{grupoId}")
         public ResponseEntity<List<AsistenciaResponse>> listarPorGrupo(
-                        @PathVariable Long grupoId) {
+                        @PathVariable Long grupoId,
+                        Authentication authentication) {
 
-                List<AsistenciaResponse> response = asistenciaService
-                                .listarPorGrupo(grupoId)
-                                .stream()
-                                .map(this::convertirAResponse)
-                                .toList();
+                List<Asistencia> asistencias;
 
-                return ResponseEntity.ok(response);
+                if (esSensei(authentication)) {
+                        asistencias = asistenciaService.listarPorGrupoDeSensei(
+                                        grupoId,
+                                        authentication.getName());
+                } else {
+                        asistencias = asistenciaService.listarPorGrupo(grupoId);
+                }
+
+                return ResponseEntity.ok(
+                                asistencias.stream()
+                                                .map(this::convertirAResponse)
+                                                .toList());
         }
 
         // ==========================================
@@ -106,15 +152,23 @@ public class AsistenciaController {
 
         @GetMapping("/fecha/{fecha}")
         public ResponseEntity<List<AsistenciaResponse>> listarPorFecha(
-                        @PathVariable LocalDate fecha) {
+                        @PathVariable LocalDate fecha,
+                        Authentication authentication) {
 
-                List<AsistenciaResponse> response = asistenciaService
-                                .listarPorFecha(fecha)
-                                .stream()
-                                .map(this::convertirAResponse)
-                                .toList();
+                List<Asistencia> asistencias;
 
-                return ResponseEntity.ok(response);
+                if (esSensei(authentication)) {
+                        asistencias = asistenciaService.listarPorFechaDeSensei(
+                                        fecha,
+                                        authentication.getName());
+                } else {
+                        asistencias = asistenciaService.listarPorFecha(fecha);
+                }
+
+                return ResponseEntity.ok(
+                                asistencias.stream()
+                                                .map(this::convertirAResponse)
+                                                .toList());
         }
 
         // ==========================================
@@ -124,17 +178,26 @@ public class AsistenciaController {
         @GetMapping("/estudiante/{estudianteId}/fecha/{fecha}")
         public ResponseEntity<List<AsistenciaResponse>> listarPorEstudianteYFecha(
                         @PathVariable Long estudianteId,
-                        @PathVariable LocalDate fecha) {
+                        @PathVariable LocalDate fecha,
+                        Authentication authentication) {
 
-                List<AsistenciaResponse> response = asistenciaService
-                                .listarPorEstudianteYFecha(
-                                                estudianteId,
-                                                fecha)
-                                .stream()
-                                .map(this::convertirAResponse)
-                                .toList();
+                List<Asistencia> asistencias;
 
-                return ResponseEntity.ok(response);
+                if (esSensei(authentication)) {
+                        asistencias = asistenciaService.listarPorEstudianteYFechaDeSensei(
+                                        estudianteId,
+                                        fecha,
+                                        authentication.getName());
+                } else {
+                        asistencias = asistenciaService.listarPorEstudianteYFecha(
+                                        estudianteId,
+                                        fecha);
+                }
+
+                return ResponseEntity.ok(
+                                asistencias.stream()
+                                                .map(this::convertirAResponse)
+                                                .toList());
         }
 
         // ==========================================
@@ -144,29 +207,63 @@ public class AsistenciaController {
         @GetMapping("/grupo/{grupoId}/fecha/{fecha}")
         public ResponseEntity<List<AsistenciaResponse>> listarPorGrupoYFecha(
                         @PathVariable Long grupoId,
-                        @PathVariable LocalDate fecha) {
+                        @PathVariable LocalDate fecha,
+                        Authentication authentication) {
 
-                List<AsistenciaResponse> response = asistenciaService
-                                .listarPorGrupoYFecha(
-                                                grupoId,
-                                                fecha)
-                                .stream()
-                                .map(this::convertirAResponse)
-                                .toList();
+                List<Asistencia> asistencias;
 
-                return ResponseEntity.ok(response);
+                if (esSensei(authentication)) {
+                        asistencias = asistenciaService.listarPorGrupoYFechaDeSensei(
+                                        grupoId,
+                                        fecha,
+                                        authentication.getName());
+                } else {
+                        asistencias = asistenciaService.listarPorGrupoYFecha(
+                                        grupoId,
+                                        fecha);
+                }
+
+                return ResponseEntity.ok(
+                                asistencias.stream()
+                                                .map(this::convertirAResponse)
+                                                .toList());
+        }
+
+        // ==========================================
+        // IDENTIFICAR ROL
+        // ==========================================
+
+        private boolean esSensei(Authentication authentication) {
+
+                if (authentication == null
+                                || authentication.getAuthorities() == null) {
+                        return false;
+                }
+
+                for (GrantedAuthority authority : authentication.getAuthorities()) {
+
+                        if (authority != null
+                                        && "ROLE_SENSEI".equals(authority.getAuthority())) {
+                                return true;
+                        }
+                }
+
+                return false;
         }
 
         // ==========================================
         // RESPONSE
         // ==========================================
 
-        private AsistenciaResponse convertirAResponse(
-                        Asistencia asistencia) {
+        private AsistenciaResponse convertirAResponse(Asistencia asistencia) {
 
-                String estudianteNombre = asistencia.getEstudiante().getPersona().getNombre()
+                String estudianteNombre = asistencia.getEstudiante()
+                                .getPersona()
+                                .getNombre()
                                 + " "
-                                + asistencia.getEstudiante().getPersona().getApellido();
+                                + asistencia.getEstudiante()
+                                                .getPersona()
+                                                .getApellido();
 
                 return new AsistenciaResponse(
                                 asistencia.getId(),

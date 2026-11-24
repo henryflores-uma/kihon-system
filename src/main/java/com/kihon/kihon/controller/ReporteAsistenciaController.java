@@ -1,7 +1,10 @@
+
 package com.kihon.kihon.controller;
 
 import com.kihon.kihon.dto.ReporteAsistenciaResponse;
 import com.kihon.kihon.service.ReporteAsistenciaService;
+
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,55 +17,95 @@ import java.time.LocalDate;
 @RequestMapping("/api/reportes/asistencias")
 public class ReporteAsistenciaController {
 
-    private final ReporteAsistenciaService reporteAsistenciaService;
+        private final ReporteAsistenciaService reporteAsistenciaService;
 
-    public ReporteAsistenciaController(
-            ReporteAsistenciaService reporteAsistenciaService) {
+        public ReporteAsistenciaController(
+                        ReporteAsistenciaService reporteAsistenciaService) {
 
-        this.reporteAsistenciaService = reporteAsistenciaService;
-    }
+                this.reporteAsistenciaService = reporteAsistenciaService;
+        }
 
-    @GetMapping("/diario")
-    public ReporteAsistenciaResponse reporteDiario(
-            @RequestParam LocalDate fecha) {
+        /*
+         * =========================================================
+         * REPORTE DIARIO
+         * =========================================================
+         */
 
-        return reporteAsistenciaService.generarReporteDiario(
-                fecha);
-    }
+        @GetMapping("/diario")
+        public ReporteAsistenciaResponse reporteDiario(
+                        @RequestParam LocalDate fecha,
+                        Authentication authentication) {
 
-    @GetMapping("/semanal")
-    public ReporteAsistenciaResponse reporteSemanal(
-            @RequestParam LocalDate inicio,
-            @RequestParam LocalDate fin) {
+                return reporteAsistenciaService.generarReporteDiario(
+                                fecha,
+                                authentication.getName());
+        }
 
-        return reporteAsistenciaService.generarReporteSemanal(
-                inicio,
-                fin);
-    }
+        /*
+         * =========================================================
+         * REPORTE SEMANAL
+         * =========================================================
+         */
 
-    @GetMapping("/mensual")
-    public ReporteAsistenciaResponse reporteMensual(
-            @RequestParam int anio,
-            @RequestParam int mes) {
+        @GetMapping("/semanal")
+        public ReporteAsistenciaResponse reporteSemanal(
+                        @RequestParam LocalDate inicio,
+                        @RequestParam LocalDate fin,
+                        Authentication authentication) {
 
-        return reporteAsistenciaService.generarReporteMensual(
-                anio,
-                mes);
-    }
+                return reporteAsistenciaService.generarReporteSemanal(
+                                inicio,
+                                fin,
+                                authentication.getName());
+        }
 
-    @GetMapping("/estudiante/{estudianteId}")
-    public ReporteAsistenciaResponse reportePorEstudiante(
-            @PathVariable Long estudianteId) {
+        /*
+         * =========================================================
+         * REPORTE MENSUAL
+         * =========================================================
+         */
 
-        return reporteAsistenciaService.generarReportePorEstudiante(
-                estudianteId);
-    }
+        @GetMapping("/mensual")
+        public ReporteAsistenciaResponse reporteMensual(
+                        @RequestParam int anio,
+                        @RequestParam int mes,
+                        Authentication authentication) {
 
-    @GetMapping("/grupo/{grupoId}")
-    public ReporteAsistenciaResponse reportePorGrupo(
-            @PathVariable Long grupoId) {
+                return reporteAsistenciaService.generarReporteMensual(
+                                anio,
+                                mes,
+                                authentication.getName());
+        }
 
-        return reporteAsistenciaService.generarReportePorGrupo(
-                grupoId);
-    }
+        /*
+         * =========================================================
+         * REPORTE POR ESTUDIANTE
+         * =========================================================
+         */
+
+        @GetMapping("/estudiante/{estudianteId}")
+        public ReporteAsistenciaResponse reportePorEstudiante(
+                        @PathVariable Long estudianteId,
+                        Authentication authentication) {
+
+                return reporteAsistenciaService.generarReportePorEstudiante(
+                                estudianteId,
+                                authentication.getName());
+        }
+
+        /*
+         * =========================================================
+         * REPORTE POR GRUPO
+         * =========================================================
+         */
+
+        @GetMapping("/grupo/{grupoId}")
+        public ReporteAsistenciaResponse reportePorGrupo(
+                        @PathVariable Long grupoId,
+                        Authentication authentication) {
+
+                return reporteAsistenciaService.generarReportePorGrupo(
+                                grupoId,
+                                authentication.getName());
+        }
 }

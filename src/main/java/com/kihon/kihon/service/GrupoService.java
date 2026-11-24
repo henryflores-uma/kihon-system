@@ -1,3 +1,4 @@
+
 package com.kihon.kihon.service;
 
 import com.kihon.kihon.model.FrecuenciaGrupo;
@@ -7,6 +8,7 @@ import com.kihon.kihon.repository.EstudianteGrupoRepository;
 import com.kihon.kihon.repository.FrecuenciaGrupoRepository;
 import com.kihon.kihon.repository.GrupoRepository;
 import com.kihon.kihon.repository.UsuarioRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,258 +17,419 @@ import java.util.List;
 @Service
 public class GrupoService {
 
-    private final GrupoRepository grupoRepository;
-    private final EstudianteGrupoRepository estudianteGrupoRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final FrecuenciaGrupoRepository frecuenciaGrupoRepository;
+        private final GrupoRepository grupoRepository;
+        private final EstudianteGrupoRepository estudianteGrupoRepository;
+        private final UsuarioRepository usuarioRepository;
+        private final FrecuenciaGrupoRepository frecuenciaGrupoRepository;
 
-    public GrupoService(
-            GrupoRepository grupoRepository,
-            EstudianteGrupoRepository estudianteGrupoRepository,
-            UsuarioRepository usuarioRepository,
-            FrecuenciaGrupoRepository frecuenciaGrupoRepository) {
+        public GrupoService(
+                        GrupoRepository grupoRepository,
+                        EstudianteGrupoRepository estudianteGrupoRepository,
+                        UsuarioRepository usuarioRepository,
+                        FrecuenciaGrupoRepository frecuenciaGrupoRepository) {
 
-        this.grupoRepository = grupoRepository;
-        this.estudianteGrupoRepository = estudianteGrupoRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.frecuenciaGrupoRepository = frecuenciaGrupoRepository;
-    }
-
-    public List<Grupo> listarGrupos() {
-        return grupoRepository.findAll();
-    }
-
-    public List<Grupo> listarPorEstado(String estado) {
-
-        if (estado == null ||
-                (!estado.equalsIgnoreCase("ACTIVO")
-                        && !estado.equalsIgnoreCase("INACTIVO"))) {
-
-            throw new RuntimeException(
-                    "El estado debe ser ACTIVO o INACTIVO");
+                this.grupoRepository = grupoRepository;
+                this.estudianteGrupoRepository = estudianteGrupoRepository;
+                this.usuarioRepository = usuarioRepository;
+                this.frecuenciaGrupoRepository = frecuenciaGrupoRepository;
         }
 
-        return grupoRepository.findByEstado(
-                estado.toUpperCase());
-    }
+        /*
+         * =============================================================
+         * LISTAR TODOS LOS GRUPOS
+         * ADMIN / SECRETARIA
+         * =============================================================
+         */
 
-    public Grupo buscarPorId(Long id) {
-
-        return grupoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Grupo no encontrado"));
-    }
-
-    @Transactional
-    public void eliminarGrupo(Long id) {
-
-        if (!grupoRepository.existsById(id)) {
-
-            throw new RuntimeException(
-                    "Grupo no encontrado");
+        public List<Grupo> listarGrupos() {
+                return grupoRepository.findAll();
         }
 
-        grupoRepository.deleteById(id);
-    }
+        /*
+         * =============================================================
+         * LISTAR GRUPOS POR ESTADO
+         * ADMIN / SECRETARIA
+         * =============================================================
+         */
 
-    @Transactional
-    public Grupo crearGrupo(
-            String nombre,
-            String descripcion,
-            Integer capacidad,
-            Long senseiId,
-            Long frecuenciaId) {
+        public List<Grupo> listarPorEstado(String estado) {
 
-        nombre = normalizarObligatorio(
-                nombre,
-                "El nombre del grupo es obligatorio");
+                validarEstado(estado);
 
-        descripcion = normalizarObligatorio(
-                descripcion,
-                "La descripción del grupo es obligatoria");
-
-        if (grupoRepository.findByNombre(nombre).isPresent()) {
-
-            throw new RuntimeException(
-                    "El nombre del grupo ya existe");
+                return grupoRepository.findByEstado(
+                                estado.toUpperCase());
         }
 
-        validarCapacidad(capacidad);
+        /*
+         * =============================================================
+         * LISTAR GRUPOS DEL SENSEI AUTENTICADO
+         * =============================================================
+         */
 
-        FrecuenciaGrupo frecuencia = obtenerFrecuencia(frecuenciaId);
+        public List<Grupo> listarPorSensei(
+                        String username,
+                        String estado) {
 
-        Grupo grupo = new Grupo();
+                Usuario sensei = obtenerSenseiAutenticado(username);
 
-        grupo.setNombre(nombre);
-        grupo.setDescripcion(descripcion);
-        grupo.setCapacidad(capacidad);
-        grupo.setFrecuencia(frecuencia);
-        grupo.setEstado("ACTIVO");
+                List<Grupo> grupos = grupoRepository.findBySenseiId(
+                                sensei.getId());
 
-        if (senseiId != null) {
+                if (estado == null || estado.isBlank()) {
+                        return grupos;
+                }
 
-            Usuario sensei = obtenerSensei(senseiId);
+                validarEstado(estado);
 
-            grupo.setSensei(sensei);
+                return grupos.stream()
+                                .filter(grupo -> estado.equalsIgnoreCase(
+                                                grupo.getEstado()))
+                                .toList();
         }
 
-        return grupoRepository.save(grupo);
-    }
+        /*
+         * =============================================================
+         * BUSCAR GRUPO POR ID
+         * ADMIN / SECRETARIA
+         * =============================================================
+         */
 
-    @Transactional
-    public Grupo actualizarGrupo(
-            Long id,
-            String nombre,
-            String descripcion,
-            Integer capacidad,
-            Long senseiId,
-            Long frecuenciaId) {
+        public Grupo buscarPorId(Long id) {
 
-        Grupo grupo = grupoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Grupo no encontrado"));
-
-        nombre = normalizarObligatorio(
-                nombre,
-                "El nombre del grupo es obligatorio");
-
-        descripcion = normalizarObligatorio(
-                descripcion,
-                "La descripción del grupo es obligatoria");
-
-        if (!grupo.getNombre().equals(nombre)
-                && grupoRepository.findByNombre(nombre).isPresent()) {
-
-            throw new RuntimeException(
-                    "El nombre del grupo ya existe");
+                return grupoRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Grupo no encontrado"));
         }
 
-        validarCapacidad(capacidad);
+        /*
+         * =============================================================
+         * BUSCAR GRUPO DEL SENSEI AUTENTICADO
+         * =============================================================
+         */
 
-        long estudiantesActivos = estudianteGrupoRepository
-                .countByGrupoIdAndEstado(
-                        id,
-                        "ACTIVO");
+        public Grupo buscarPorIdDeSensei(
+                        Long grupoId,
+                        String username) {
 
-        if (capacidad < estudiantesActivos) {
+                Usuario sensei = obtenerSenseiAutenticado(username);
 
-            throw new RuntimeException(
-                    "La capacidad no puede ser menor que la cantidad de estudiantes activos");
+                Grupo grupo = grupoRepository.findById(grupoId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Grupo no encontrado"));
+
+                if (grupo.getSensei() == null
+                                || !grupo.getSensei().getId().equals(sensei.getId())) {
+
+                        throw new RuntimeException(
+                                        "No tienes acceso a este grupo");
+                }
+
+                return grupo;
         }
 
-        FrecuenciaGrupo frecuencia = obtenerFrecuencia(frecuenciaId);
+        /*
+         * =============================================================
+         * ELIMINAR GRUPO
+         * ADMIN / SECRETARIA
+         * =============================================================
+         */
 
-        grupo.setNombre(nombre);
-        grupo.setDescripcion(descripcion);
-        grupo.setCapacidad(capacidad);
-        grupo.setFrecuencia(frecuencia);
+        @Transactional
+        public void eliminarGrupo(Long id) {
 
-        if (senseiId != null) {
+                if (!grupoRepository.existsById(id)) {
 
-            Usuario sensei = obtenerSensei(senseiId);
+                        throw new RuntimeException(
+                                        "Grupo no encontrado");
+                }
 
-            grupo.setSensei(sensei);
-
-        } else {
-
-            grupo.setSensei(null);
+                grupoRepository.deleteById(id);
         }
 
-        return grupoRepository.save(grupo);
-    }
+        /*
+         * =============================================================
+         * CREAR GRUPO
+         * ADMIN / SECRETARIA
+         * =============================================================
+         */
 
-    @Transactional
-    public Grupo cambiarEstado(
-            Long id,
-            String estado) {
+        @Transactional
+        public Grupo crearGrupo(
+                        String nombre,
+                        String descripcion,
+                        Integer capacidad,
+                        Long senseiId,
+                        Long frecuenciaId) {
 
-        Grupo grupo = grupoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Grupo no encontrado"));
+                nombre = normalizarObligatorio(
+                                nombre,
+                                "El nombre del grupo es obligatorio");
 
-        if (estado == null ||
-                (!estado.equalsIgnoreCase("ACTIVO")
-                        && !estado.equalsIgnoreCase("INACTIVO"))) {
+                descripcion = normalizarObligatorio(
+                                descripcion,
+                                "La descripción del grupo es obligatoria");
 
-            throw new RuntimeException(
-                    "El estado debe ser ACTIVO o INACTIVO");
+                if (grupoRepository.findByNombre(nombre).isPresent()) {
+
+                        throw new RuntimeException(
+                                        "El nombre del grupo ya existe");
+                }
+
+                validarCapacidad(capacidad);
+
+                FrecuenciaGrupo frecuencia = obtenerFrecuencia(frecuenciaId);
+
+                Grupo grupo = new Grupo();
+
+                grupo.setNombre(nombre);
+                grupo.setDescripcion(descripcion);
+                grupo.setCapacidad(capacidad);
+                grupo.setFrecuencia(frecuencia);
+                grupo.setEstado("ACTIVO");
+
+                if (senseiId != null) {
+
+                        Usuario sensei = obtenerSensei(senseiId);
+
+                        grupo.setSensei(sensei);
+                }
+
+                return grupoRepository.save(grupo);
         }
 
-        grupo.setEstado(
-                estado.toUpperCase());
+        /*
+         * =============================================================
+         * ACTUALIZAR GRUPO
+         * ADMIN / SECRETARIA
+         * =============================================================
+         */
 
-        return grupoRepository.save(grupo);
-    }
+        @Transactional
+        public Grupo actualizarGrupo(
+                        Long id,
+                        String nombre,
+                        String descripcion,
+                        Integer capacidad,
+                        Long senseiId,
+                        Long frecuenciaId) {
 
-    public long contarEstudiantesActivos(
-            Long grupoId) {
+                Grupo grupo = grupoRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Grupo no encontrado"));
 
-        return estudianteGrupoRepository
-                .countByGrupoIdAndEstado(
-                        grupoId,
-                        "ACTIVO");
-    }
+                nombre = normalizarObligatorio(
+                                nombre,
+                                "El nombre del grupo es obligatorio");
 
-    private FrecuenciaGrupo obtenerFrecuencia(
-            Long frecuenciaId) {
+                descripcion = normalizarObligatorio(
+                                descripcion,
+                                "La descripción del grupo es obligatoria");
 
-        if (frecuenciaId == null) {
+                if (!grupo.getNombre().equals(nombre)
+                                && grupoRepository.findByNombre(nombre).isPresent()) {
 
-            throw new RuntimeException(
-                    "La frecuencia semanal es obligatoria");
+                        throw new RuntimeException(
+                                        "El nombre del grupo ya existe");
+                }
+
+                validarCapacidad(capacidad);
+
+                long estudiantesActivos = estudianteGrupoRepository
+                                .countByGrupoIdAndEstado(
+                                                id,
+                                                "ACTIVO");
+
+                if (capacidad < estudiantesActivos) {
+
+                        throw new RuntimeException(
+                                        "La capacidad no puede ser menor que la cantidad de estudiantes activos");
+                }
+
+                FrecuenciaGrupo frecuencia = obtenerFrecuencia(frecuenciaId);
+
+                grupo.setNombre(nombre);
+                grupo.setDescripcion(descripcion);
+                grupo.setCapacidad(capacidad);
+                grupo.setFrecuencia(frecuencia);
+
+                if (senseiId != null) {
+
+                        Usuario sensei = obtenerSensei(senseiId);
+
+                        grupo.setSensei(sensei);
+
+                } else {
+
+                        grupo.setSensei(null);
+                }
+
+                return grupoRepository.save(grupo);
         }
 
-        return frecuenciaGrupoRepository
-                .findById(frecuenciaId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Frecuencia de grupo no encontrada"));
-    }
+        /*
+         * =============================================================
+         * CAMBIAR ESTADO
+         * ADMIN / SECRETARIA
+         * =============================================================
+         */
 
-    private Usuario obtenerSensei(
-            Long senseiId) {
+        @Transactional
+        public Grupo cambiarEstado(
+                        Long id,
+                        String estado) {
 
-        Usuario usuario = usuarioRepository
-                .findById(senseiId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Sensei no encontrado"));
+                Grupo grupo = grupoRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Grupo no encontrado"));
 
-        if (usuario.getRol() == null
-                || !"SENSEI".equalsIgnoreCase(
-                        usuario.getRol().getNombre())) {
+                validarEstado(estado);
 
-            throw new RuntimeException(
-                    "El usuario seleccionado no tiene el rol SENSEI");
+                grupo.setEstado(estado.toUpperCase());
+
+                return grupoRepository.save(grupo);
         }
 
-        if (!"ACTIVO".equalsIgnoreCase(
-                usuario.getEstado())) {
+        /*
+         * =============================================================
+         * CONTAR ESTUDIANTES ACTIVOS
+         * =============================================================
+         */
 
-            throw new RuntimeException(
-                    "El sensei seleccionado no está activo");
+        public long contarEstudiantesActivos(Long grupoId) {
+
+                return estudianteGrupoRepository
+                                .countByGrupoIdAndEstado(
+                                                grupoId,
+                                                "ACTIVO");
         }
 
-        return usuario;
-    }
+        /*
+         * =============================================================
+         * OBTENER SENSEI AUTENTICADO
+         * =============================================================
+         */
 
-    private void validarCapacidad(
-            Integer capacidad) {
+        private Usuario obtenerSenseiAutenticado(String username) {
 
-        if (capacidad == null || capacidad <= 0) {
+                Usuario usuario = usuarioRepository
+                                .findByUsername(username)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Usuario autenticado no encontrado"));
 
-            throw new RuntimeException(
-                    "La capacidad debe ser mayor que 0");
+                if (usuario.getRol() == null
+                                || !"SENSEI".equalsIgnoreCase(
+                                                usuario.getRol().getNombre())) {
+
+                        throw new RuntimeException(
+                                        "El usuario autenticado no tiene el rol SENSEI");
+                }
+
+                if (!"ACTIVO".equalsIgnoreCase(usuario.getEstado())) {
+
+                        throw new RuntimeException(
+                                        "El Sensei no se encuentra activo");
+                }
+
+                return usuario;
         }
-    }
 
-    private String normalizarObligatorio(
-            String valor,
-            String mensaje) {
+        /*
+         * =============================================================
+         * OBTENER SENSEI PARA ASIGNACIÓN DE GRUPOS
+         * =============================================================
+         */
 
-        if (valor == null || valor.isBlank()) {
+        private Usuario obtenerSensei(Long senseiId) {
 
-            throw new RuntimeException(mensaje);
+                Usuario usuario = usuarioRepository
+                                .findById(senseiId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Sensei no encontrado"));
+
+                if (usuario.getRol() == null
+                                || !"SENSEI".equalsIgnoreCase(
+                                                usuario.getRol().getNombre())) {
+
+                        throw new RuntimeException(
+                                        "El usuario seleccionado no tiene el rol SENSEI");
+                }
+
+                if (!"ACTIVO".equalsIgnoreCase(usuario.getEstado())) {
+
+                        throw new RuntimeException(
+                                        "El sensei seleccionado no está activo");
+                }
+
+                return usuario;
         }
 
-        return valor.trim();
-    }
+        /*
+         * =============================================================
+         * OBTENER FRECUENCIA
+         * =============================================================
+         */
+
+        private FrecuenciaGrupo obtenerFrecuencia(Long frecuenciaId) {
+
+                if (frecuenciaId == null) {
+
+                        throw new RuntimeException(
+                                        "La frecuencia semanal es obligatoria");
+                }
+
+                return frecuenciaGrupoRepository
+                                .findById(frecuenciaId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Frecuencia de grupo no encontrada"));
+        }
+
+        /*
+         * =============================================================
+         * VALIDAR ESTADO
+         * =============================================================
+         */
+
+        private void validarEstado(String estado) {
+
+                if (estado == null
+                                || (!estado.equalsIgnoreCase("ACTIVO")
+                                                && !estado.equalsIgnoreCase("INACTIVO"))) {
+
+                        throw new RuntimeException(
+                                        "El estado debe ser ACTIVO o INACTIVO");
+                }
+        }
+
+        /*
+         * =============================================================
+         * VALIDAR CAPACIDAD
+         * =============================================================
+         */
+
+        private void validarCapacidad(Integer capacidad) {
+
+                if (capacidad == null || capacidad <= 0) {
+
+                        throw new RuntimeException(
+                                        "La capacidad debe ser mayor que 0");
+                }
+        }
+
+        /*
+         * =============================================================
+         * NORMALIZAR CAMPOS OBLIGATORIOS
+         * =============================================================
+         */
+
+        private String normalizarObligatorio(
+                        String valor,
+                        String mensaje) {
+
+                if (valor == null || valor.isBlank()) {
+
+                        throw new RuntimeException(mensaje);
+                }
+
+                return valor.trim();
+        }
 }

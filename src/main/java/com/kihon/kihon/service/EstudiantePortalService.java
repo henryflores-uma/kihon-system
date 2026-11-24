@@ -12,6 +12,9 @@ import com.kihon.kihon.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.kihon.kihon.dto.EstudianteDashboardResponse;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
@@ -225,5 +228,28 @@ public class EstudiantePortalService {
                                 passwordEncoder.encode(nuevaPassword));
 
                 usuarioRepository.save(usuario);
+        }
+
+        @Transactional(readOnly = true)
+        public EstudianteDashboardResponse obtenerDatosDashboard(String username) {
+
+                Estudiante estudiante = obtenerEstudianteAutenticado(username);
+
+                Persona persona = estudiante.getPersona();
+
+                return new EstudianteDashboardResponse(
+                                persona.getNombre(),
+                                persona.getApellido(),
+                                persona.getFoto(),
+                                estudiante.getCinturon().getNombre(),
+                                estudiante.getEstado());
+        }
+
+        public List<Asistencia> listarMisAsistenciasRecientes(String username) {
+
+                Estudiante estudiante = obtenerEstudianteAutenticado(username);
+
+                return asistenciaService.listarUltimasPorEstudiante(
+                                estudiante.getId());
         }
 }

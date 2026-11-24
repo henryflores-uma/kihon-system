@@ -1,21 +1,32 @@
+
 package com.kihon.kihon.service;
 
 import com.kihon.kihon.exception.DatoDuplicadoException;
+
 import com.kihon.kihon.model.Cinturon;
 import com.kihon.kihon.model.Estudiante;
+import com.kihon.kihon.model.EstudianteGrupo;
+import com.kihon.kihon.model.Grupo;
 import com.kihon.kihon.model.Persona;
 import com.kihon.kihon.model.TipoDocumento;
+import com.kihon.kihon.model.Usuario;
+
 import com.kihon.kihon.repository.CinturonRepository;
 import com.kihon.kihon.repository.EstudianteRepository;
+import com.kihon.kihon.repository.EstudianteGrupoRepository;
+import com.kihon.kihon.repository.GrupoRepository;
 import com.kihon.kihon.repository.PersonaRepository;
 import com.kihon.kihon.repository.TipoDocumentoRepository;
+import com.kihon.kihon.repository.UsuarioRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class EstudianteService {
@@ -26,18 +37,30 @@ public class EstudianteService {
         private final CinturonRepository cinturonRepository;
         private final SupabaseStorageService storageService;
 
+        // Dependencias para el acceso del Sensei
+        private final GrupoRepository grupoRepository;
+        private final EstudianteGrupoRepository estudianteGrupoRepository;
+        private final UsuarioRepository usuarioRepository;
+
         public EstudianteService(
                         EstudianteRepository estudianteRepository,
                         PersonaRepository personaRepository,
                         TipoDocumentoRepository tipoDocumentoRepository,
                         CinturonRepository cinturonRepository,
-                        SupabaseStorageService storageService) {
+                        SupabaseStorageService storageService,
+                        GrupoRepository grupoRepository,
+                        EstudianteGrupoRepository estudianteGrupoRepository,
+                        UsuarioRepository usuarioRepository) {
 
                 this.estudianteRepository = estudianteRepository;
                 this.personaRepository = personaRepository;
                 this.tipoDocumentoRepository = tipoDocumentoRepository;
                 this.cinturonRepository = cinturonRepository;
                 this.storageService = storageService;
+
+                this.grupoRepository = grupoRepository;
+                this.estudianteGrupoRepository = estudianteGrupoRepository;
+                this.usuarioRepository = usuarioRepository;
         }
 
         /*
@@ -60,6 +83,164 @@ public class EstudianteService {
                 return estudianteRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Estudiante no encontrado"));
+        }
+
+        /*
+         * ==========================================
+         * LISTAR ESTUDIANTES DEL SENSEI
+         * ==========================================
+         */
+        @Transactional(readOnly = true)
+        public List<Estudiante> listarPorSensei(
+                        String username,
+                        String estado) {
+
+                Usuario sensei = obtenerSenseiAutenticado(username);
+
+                // ==============================
+                // VALIDAR FILTRO DE ESTADO
+                // ==============================
+
+                String estadoFiltro = null;
+
+                if (estado != null && !estado.isBlank()) {
+
+                        estadoFiltro = estado.trim().toUpperCase();
+
+                        if (!estadoFiltro.equals("ACTIVO")
+                                        && !estadoFiltro.equals("INACTIVO")) {
+
+                                throw new RuntimeException(
+                                                "El estado debe ser ACTIVO o INACTIVO");
+                        }
+                }
+
+                // ==============================
+                // OBTENER GRUPOS DEL SENSEI
+                // ==============================
+
+                List<Grupo> grupos = grupoRepository.findBySenseiId(
+                                sensei.getId());
+
+                // ==============================
+                // OBTENER ESTUDIANTES ÚNICOS
+                // ==============================
+
+                Map<Long, Estudiante> estudiantesUnicos = new LinkedHashMap<>();
+
+                for (Grupo grupo : grupos) {
+
+                        List<EstudianteGrupo> inscripciones = estudianteGrupoRepository
+                                        .findByGrupoId(grupo.getId());
+
+                        for (EstudianteGrupo inscripcion : inscripciones) {
+
+                                // Solo inscripciones activas
+                                if (!"ACTIVO".equalsIgnoreCase(inscripcion.getEstado())) {
+                                        continue;
+                                }
+
+                                Estudiante estudiante = inscripcion.getEstudiante();
+
+                                if (estudiante == null) {
+                                        continue;
+                                }
+
+                                // Aplicar filtro de estado del estudiante
+                                if (estadoFiltro != null
+                                                && !estadoFiltro.equalsIgnoreCase(estudiante.getEstado())) {
+
+                                        continue;
+                                }
+
+                                // Evitar estudiantes duplicados
+                                estudiantesUnicos.putIfAbsent(
+                                                estudiante.getId(),
+                                                estudiante);
+                        }
+                }
+
+                return List.copyOf(estudiantesUnicos.values());
+        }
+
+        /*
+         * ==========================================
+         * BUSCAR ESTUDIANTE DEL SENSEI POR ID
+         * ==========================================
+         */
+        @Transactional(readOnly = true)
+        public Estudiante buscarPorIdDeSensei(
+                        Long estudianteId,
+                        String username) {
+
+                Usuario sensei = obtenerSenseiAutenticado(username);
+
+                // ==============================
+                // BUSCAR ESTUDIANTE
+                // ==============================
+
+                Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Estudiante no encontrado"));
+
+                // ==============================
+                // OBTENER INSCRIPCIONES ACTIVAS
+                // ==============================
+
+                List<EstudianteGrupo> inscripciones = estudianteGrupoRepository
+                                .findByEstudianteIdAndEstado(
+                                                estudianteId,
+                                                "ACTIVO");
+
+                // ==============================
+                // VALIDAR PERTENENCIA AL SENSEI
+                // ==============================
+
+                boolean perteneceAlSensei = inscripciones.stream()
+                                .anyMatch(inscripcion -> {
+
+                                        Grupo grupo = inscripcion.getGrupo();
+
+                                        return grupo != null
+                                                        && grupo.getSensei() != null
+                                                        && grupo.getSensei().getId()
+                                                                        .equals(sensei.getId());
+                                });
+
+                if (!perteneceAlSensei) {
+
+                        throw new RuntimeException(
+                                        "No tienes acceso a este estudiante");
+                }
+
+                return estudiante;
+        }
+
+        /*
+         * ==========================================
+         * VALIDAR SENSEI AUTENTICADO
+         * ==========================================
+         */
+        private Usuario obtenerSenseiAutenticado(String username) {
+
+                Usuario usuario = usuarioRepository.findByUsername(username)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Usuario autenticado no encontrado"));
+
+                if (usuario.getRol() == null
+                                || !"SENSEI".equalsIgnoreCase(usuario.getRol().getNombre())) {
+
+                        throw new RuntimeException(
+                                        "El usuario autenticado no tiene el rol SENSEI");
+                }
+
+                if (!"ACTIVO".equalsIgnoreCase(usuario.getEstado())) {
+
+                        throw new RuntimeException(
+                                        "El Sensei no se encuentra activo");
+                }
+
+                return usuario;
         }
 
         /*
@@ -146,7 +327,8 @@ public class EstudianteService {
                 // BUSCAR TIPO DE DOCUMENTO
                 // ==============================
 
-                TipoDocumento tipoDocumentoEntidad = tipoDocumentoRepository.findByNombre(tipoDocumento)
+                TipoDocumento tipoDocumentoEntidad = tipoDocumentoRepository
+                                .findByNombre(tipoDocumento)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "El tipo de documento no existe"));
 
@@ -154,7 +336,8 @@ public class EstudianteService {
                 // BUSCAR CINTURÓN
                 // ==============================
 
-                Cinturon cinturonEntidad = cinturonRepository.findByNombre(cinturon)
+                Cinturon cinturonEntidad = cinturonRepository
+                                .findByNombre(cinturon)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "El cinturón no existe"));
 
@@ -428,7 +611,8 @@ public class EstudianteService {
                                         .findByTipoDocumentoIdAndNumeroDocumento(
                                                         tipoDocumentoEntidad.getId(),
                                                         documento)
-                                        .filter(personaEncontrada -> !personaEncontrada.getId().equals(personaId))
+                                        .filter(personaEncontrada -> !personaEncontrada.getId()
+                                                        .equals(personaId))
                                         .isPresent();
 
                         if (documentoExiste) {
@@ -446,7 +630,8 @@ public class EstudianteService {
 
                         boolean correoExiste = personaRepository
                                         .findByCorreo(correo)
-                                        .filter(personaEncontrada -> !personaEncontrada.getId().equals(personaId))
+                                        .filter(personaEncontrada -> !personaEncontrada.getId()
+                                                        .equals(personaId))
                                         .isPresent();
 
                         if (correoExiste) {
@@ -460,7 +645,8 @@ public class EstudianteService {
                 // BUSCAR CINTURÓN
                 // ==============================
 
-                Cinturon cinturonEntidad = cinturonRepository.findByNombre(cinturon)
+                Cinturon cinturonEntidad = cinturonRepository
+                                .findByNombre(cinturon)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "El cinturón no existe"));
 

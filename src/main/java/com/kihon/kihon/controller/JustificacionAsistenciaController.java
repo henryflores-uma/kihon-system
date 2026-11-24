@@ -1,3 +1,4 @@
+
 package com.kihon.kihon.controller;
 
 import com.kihon.kihon.dto.JustificacionAsistenciaRequest;
@@ -5,8 +6,10 @@ import com.kihon.kihon.dto.JustificacionAsistenciaResponse;
 import com.kihon.kihon.model.JustificacionAsistencia;
 import com.kihon.kihon.model.Persona;
 import com.kihon.kihon.service.JustificacionAsistenciaService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,19 +26,29 @@ public class JustificacionAsistenciaController {
                 this.justificacionService = justificacionService;
         }
 
+        // ==========================================
+        // CREAR
+        // ==========================================
+
         @PostMapping
         public ResponseEntity<JustificacionAsistenciaResponse> crear(
-                        @RequestBody JustificacionAsistenciaRequest request) {
+                        @RequestBody JustificacionAsistenciaRequest request,
+                        Authentication authentication) {
 
                 JustificacionAsistencia justificacion = justificacionService.crearJustificacion(
                                 request.getAsistenciaId(),
                                 request.getMotivoId(),
-                                request.getDescripcion());
+                                request.getDescripcion(),
+                                authentication.getName());
 
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
                                 .body(convertirAResponse(justificacion));
         }
+
+        // ==========================================
+        // BUSCAR POR ID
+        // ==========================================
 
         @GetMapping("/{id}")
         public ResponseEntity<JustificacionAsistenciaResponse> buscarPorId(
@@ -43,20 +56,25 @@ public class JustificacionAsistenciaController {
 
                 JustificacionAsistencia justificacion = justificacionService.buscarPorId(id);
 
-                return ResponseEntity.ok(
-                                convertirAResponse(justificacion));
+                return ResponseEntity.ok(convertirAResponse(justificacion));
         }
+
+        // ==========================================
+        // BUSCAR POR ASISTENCIA
+        // ==========================================
 
         @GetMapping("/asistencia/{asistenciaId}")
         public ResponseEntity<JustificacionAsistenciaResponse> buscarPorAsistencia(
                         @PathVariable Long asistenciaId) {
 
-                JustificacionAsistencia justificacion = justificacionService.buscarPorAsistencia(
-                                asistenciaId);
+                JustificacionAsistencia justificacion = justificacionService.buscarPorAsistencia(asistenciaId);
 
-                return ResponseEntity.ok(
-                                convertirAResponse(justificacion));
+                return ResponseEntity.ok(convertirAResponse(justificacion));
         }
+
+        // ==========================================
+        // LISTAR
+        // ==========================================
 
         @GetMapping
         public ResponseEntity<List<JustificacionAsistenciaResponse>> listar() {
@@ -68,6 +86,10 @@ public class JustificacionAsistenciaController {
 
                 return ResponseEntity.ok(response);
         }
+
+        // ==========================================
+        // CONVERTIR RESPONSE
+        // ==========================================
 
         private JustificacionAsistenciaResponse convertirAResponse(
                         JustificacionAsistencia justificacion) {

@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
   // ==========================================
   // FUNCIÓN REUTILIZABLE
@@ -10,7 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!formulario) {
       console.error("No se encontró el formulario de registro.");
-
       return null;
     }
 
@@ -19,7 +19,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==========================================
 
     const modo = opciones.modo || "pagina";
-
     const alCrearUsuario = opciones.alCrearUsuario || null;
 
     // ==========================================
@@ -27,31 +26,18 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==========================================
 
     const registroForm = formulario;
-
     const registroMessage = registroForm.querySelector("#registroMessage");
-
     const tipoDocumento = registroForm.querySelector("#tipoDocumento");
-
     const numeroDocumento = registroForm.querySelector("#numeroDocumento");
-
     const codigoPais = registroForm.querySelector("#codigoPais");
-
     const telefono = registroForm.querySelector("#telefono");
-
     const nombre = registroForm.querySelector("#nombre");
-
     const apellido = registroForm.querySelector("#apellido");
-
     const username = registroForm.querySelector("#username");
-
     const password = registroForm.querySelector("#password");
-
     const togglePassword = registroForm.querySelector("#togglePassword");
-
     const fechaNacimiento = registroForm.querySelector("#fechaNacimiento");
-
     const genero = registroForm.querySelector("#genero");
-
     const correo = registroForm.querySelector("#correo");
 
     // ==========================================
@@ -74,8 +60,65 @@ document.addEventListener("DOMContentLoaded", function () {
       !correo
     ) {
       console.error("El formulario de registro está incompleto.");
-
       return null;
+    }
+
+    // ==========================================
+    // OBTENER TOKEN CSRF
+    // ==========================================
+
+    async function obtenerTokenCSRF() {
+      const response = await fetch("/api/auth/csrf", {
+        method: "GET",
+        credentials: "same-origin",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudo obtener el token CSRF.");
+      }
+
+      const data = await response.json();
+      return data.token;
+    }
+
+    // ==========================================
+    // SOLICITUD HTTP
+    // ==========================================
+
+    async function solicitar(url, opciones = {}) {
+      const method = (opciones.method || "GET").toUpperCase();
+      const headers = new Headers(opciones.headers || {});
+
+      // Eliminar autenticación Basic anterior
+      headers.delete("Authorization");
+
+      headers.set("Accept", "application/json");
+
+      // Obtener CSRF para operaciones que modifican datos
+      if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+        const csrfToken = await obtenerTokenCSRF();
+        headers.set("X-CSRF-TOKEN", csrfToken);
+      }
+
+      return fetch(url, {
+        ...opciones,
+        method,
+        credentials: "same-origin",
+        headers,
+      });
+    }
+
+    // ==========================================
+    // LIMPIAR SESIÓN KIHON
+    // ==========================================
+
+    function limpiarSesion() {
+      sessionStorage.removeItem("kihonUsername");
+      sessionStorage.removeItem("kihonRol");
+      sessionStorage.removeItem("kihonAuth");
     }
 
     // ==========================================
@@ -85,21 +128,17 @@ document.addEventListener("DOMContentLoaded", function () {
     togglePassword.addEventListener("click", function () {
       if (password.type === "password") {
         password.type = "text";
-
         togglePassword.textContent = "🙈";
-
         togglePassword.setAttribute("aria-label", "Ocultar contraseña");
       } else {
         password.type = "password";
-
         togglePassword.textContent = "👁️";
-
         togglePassword.setAttribute("aria-label", "Mostrar contraseña");
       }
     });
 
     // ==========================================
-    // REGLAS DE TELEFONO POR PAIS
+    // REGLAS DE TELÉFONO POR PAÍS
     // ==========================================
 
     const reglasTelefono = {
@@ -108,43 +147,36 @@ document.addEventListener("DOMContentLoaded", function () {
         min: 9,
         max: 9,
       },
-
       "+57": {
         nombre: "Colombia",
         min: 10,
         max: 10,
       },
-
       "+56": {
         nombre: "Chile",
         min: 9,
         max: 9,
       },
-
       "+54": {
         nombre: "Argentina",
         min: 10,
         max: 10,
       },
-
       "+55": {
         nombre: "Brasil",
         min: 10,
         max: 11,
       },
-
       "+52": {
         nombre: "México",
         min: 10,
         max: 10,
       },
-
       "+1": {
         nombre: "Estados Unidos / Canadá",
         min: 10,
         max: 10,
       },
-
       "+34": {
         nombre: "España",
         min: 9,
@@ -153,17 +185,16 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     // ==========================================
-    // CONFIGURACION INICIAL
+    // CONFIGURACIÓN INICIAL
     // ==========================================
 
     const hoy = new Date().toISOString().split("T")[0];
 
     fechaNacimiento.max = hoy;
-
     numeroDocumento.disabled = true;
 
     // ==========================================
-    // ACTUALIZAR REGLAS DEL TELEFONO
+    // ACTUALIZAR REGLAS DEL TELÉFONO
     // ==========================================
 
     function actualizarReglasTelefono() {
@@ -171,16 +202,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!regla) {
         telefono.value = "";
-
         telefono.removeAttribute("maxlength");
-
         telefono.placeholder = "Ingresa tu número";
-
         return;
       }
 
       telefono.value = "";
-
       telefono.maxLength = regla.max;
 
       if (regla.min === regla.max) {
@@ -193,7 +220,7 @@ document.addEventListener("DOMContentLoaded", function () {
     actualizarReglasTelefono();
 
     // ==========================================
-    // CAMBIO DE PAIS
+    // CAMBIO DE PAÍS
     // ==========================================
 
     codigoPais.addEventListener("change", function () {
@@ -207,81 +234,42 @@ document.addEventListener("DOMContentLoaded", function () {
     tipoDocumento.addEventListener("change", function () {
       numeroDocumento.value = "";
 
-      // ----------------------------------
-      // DNI
-      // ----------------------------------
-
       if (tipoDocumento.value === "DNI") {
         numeroDocumento.disabled = false;
-
         numeroDocumento.maxLength = 8;
-
         numeroDocumento.inputMode = "numeric";
-
         numeroDocumento.pattern = "[0-9]{8}";
-
         numeroDocumento.placeholder = "8 dígitos";
-      }
-
-      // ----------------------------------
-      // CARNÉ DE EXTRANJERÍA
-      // ----------------------------------
-      else if (tipoDocumento.value === "CE") {
+      } else if (tipoDocumento.value === "CE") {
         numeroDocumento.disabled = false;
-
         numeroDocumento.maxLength = 12;
-
         numeroDocumento.inputMode = "text";
-
         numeroDocumento.pattern = "[A-Za-z0-9]{1,12}";
-
         numeroDocumento.placeholder = "Hasta 12 caracteres";
-      }
-
-      // ----------------------------------
-      // PASAPORTE
-      // ----------------------------------
-      else if (tipoDocumento.value === "PASAPORTE") {
+      } else if (tipoDocumento.value === "PASAPORTE") {
         numeroDocumento.disabled = false;
-
         numeroDocumento.maxLength = 12;
-
         numeroDocumento.inputMode = "text";
-
         numeroDocumento.pattern = "[A-Za-z0-9]{1,12}";
-
         numeroDocumento.placeholder = "Hasta 12 caracteres";
-      }
-
-      // ----------------------------------
-      // SIN SELECCION
-      // ----------------------------------
-      else {
+      } else {
         numeroDocumento.disabled = true;
-
         numeroDocumento.removeAttribute("maxlength");
-
         numeroDocumento.removeAttribute("pattern");
-
         numeroDocumento.placeholder = "Selecciona el tipo de documento";
       }
     });
 
     // ==========================================
-    // LIMPIEZA DEL NUMERO DE DOCUMENTO
+    // LIMPIEZA DEL NÚMERO DE DOCUMENTO
     // ==========================================
 
     numeroDocumento.addEventListener("input", function () {
-      // DNI
-
       if (tipoDocumento.value === "DNI") {
         numeroDocumento.value = numeroDocumento.value
           .replace(/\D/g, "")
           .slice(0, 8);
-      }
-
-      // CE / PASAPORTE
-      else if (
+      } else if (
         tipoDocumento.value === "CE" ||
         tipoDocumento.value === "PASAPORTE"
       ) {
@@ -292,7 +280,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // ==========================================
-    // LIMPIEZA DEL TELEFONO
+    // LIMPIEZA DEL TELÉFONO
     // ==========================================
 
     telefono.addEventListener("input", function () {
@@ -302,11 +290,13 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      telefono.value = telefono.value.replace(/\D/g, "").slice(0, regla.max);
+      telefono.value = telefono.value
+        .replace(/\D/g, "")
+        .slice(0, regla.max);
     });
 
     // ==========================================
-    // VALIDACION DEL NOMBRE
+    // VALIDACIÓN DEL NOMBRE
     // ==========================================
 
     nombre.addEventListener("input", function () {
@@ -316,7 +306,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // ==========================================
-    // VALIDACION DEL APELLIDO
+    // VALIDACIÓN DEL APELLIDO
     // ==========================================
 
     apellido.addEventListener("input", function () {
@@ -326,7 +316,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // ==========================================
-    // VALIDACION DEL USERNAME
+    // VALIDACIÓN DEL USERNAME
     // ==========================================
 
     username.addEventListener("input", function () {
@@ -343,10 +333,6 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         const contentType = response.headers.get("content-type") || "";
 
-        // ----------------------------------
-        // RESPUESTA JSON
-        // ----------------------------------
-
         if (contentType.includes("application/json")) {
           const error = await response.json();
 
@@ -360,8 +346,6 @@ document.addEventListener("DOMContentLoaded", function () {
             return error.mensaje;
           }
 
-          // Compatibilidad con posibles respuestas anteriores
-
           if (
             error &&
             typeof error.message === "string" &&
@@ -373,18 +357,13 @@ document.addEventListener("DOMContentLoaded", function () {
           if (error && typeof error.error === "string" && error.error.trim()) {
             return error.error;
           }
-        }
+        } else {
+          const texto = await response.text();
 
-        // ----------------------------------
-        // RESPUESTA TEXTO
-        // ----------------------------------
-
-        const texto = await response.text();
-
-        if (texto && texto.trim()) {
-          console.error("Error del backend:", texto);
-
-          return texto.trim();
+          if (texto && texto.trim()) {
+            console.error("Error del backend:", texto);
+            return texto.trim();
+          }
         }
       } catch (error) {
         console.error("No se pudo leer el error del servidor:", error);
@@ -397,17 +376,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // MOSTRAR MODAL KIHON
     // ==========================================
 
-    async function mostrarModalError(mensaje, titulo = "Ocurrió un error") {
-      /*
-       * usuarios.js expone estos helpers
-       * globalmente para que registro.js
-       * pueda utilizarlos.
-       *
-       * Si no están disponibles todavía,
-       * utilizamos el mensaje interno
-       * del formulario como respaldo.
-       */
-
+    async function mostrarModalError(
+      mensaje,
+      titulo = "Ocurrió un error",
+    ) {
       if (typeof window.mostrarModalKihon === "function") {
         await window.mostrarModalKihon({
           titulo: titulo,
@@ -422,7 +394,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // ==========================================
-    // MOSTRAR MODAL DE CONFIRMACION
+    // MOSTRAR MODAL DE CONFIRMACIÓN
     // ==========================================
 
     async function confirmarRegistro() {
@@ -432,10 +404,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const mensaje =
         `¿Estás seguro de registrar al usuario "${username.value.trim()}"` +
         `${nombreCompleto ? ` para ${nombreCompleto}` : ""}?`;
-
-      /*
-       * Utilizamos el modal creado por usuarios.js.
-       */
 
       if (typeof window.mostrarConfirmacionKihon === "function") {
         return await window.mostrarConfirmacionKihon({
@@ -447,71 +415,57 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       }
 
-      /*
-       * Respaldo si usuarios.js todavía
-       * no cargó el helper.
-       */
-
       return window.confirm(mensaje);
     }
 
     // ==========================================
-    // ENVIO DEL FORMULARIO
+    // ENVÍO DEL FORMULARIO
     // ==========================================
 
     registroForm.addEventListener("submit", async function (event) {
       event.preventDefault();
 
       registroMessage.hidden = true;
-
       registroMessage.textContent = "";
 
       // ======================================
-      // VALIDACION DEL USERNAME
+      // VALIDACIÓN DEL USERNAME
       // ======================================
 
       if (username.value.length < 4) {
         mostrarMensaje("El usuario debe tener al menos 4 caracteres.");
-
         username.focus();
-
         return;
       }
 
       // ======================================
-      // VALIDACION DE CONTRASEÑA
+      // VALIDACIÓN DE CONTRASEÑA
       // ======================================
 
       if (password.value.length < 8) {
         mostrarMensaje("La contraseña debe tener al menos 8 caracteres.");
-
         password.focus();
-
         return;
       }
 
       // ======================================
-      // VALIDACION DEL TIPO DE DOCUMENTO
+      // VALIDACIÓN DEL TIPO DE DOCUMENTO
       // ======================================
 
       if (!tipoDocumento.value) {
         mostrarMensaje("Debes seleccionar un tipo de documento.");
-
         tipoDocumento.focus();
-
         return;
       }
 
       // ======================================
-      // VALIDACION DEL NUMERO DE DOCUMENTO
+      // VALIDACIÓN DEL NÚMERO DE DOCUMENTO
       // ======================================
 
       if (tipoDocumento.value === "DNI") {
         if (!/^\d{8}$/.test(numeroDocumento.value)) {
           mostrarMensaje("El DNI debe contener exactamente 8 dígitos.");
-
           numeroDocumento.focus();
-
           return;
         }
       } else if (
@@ -520,15 +474,13 @@ document.addEventListener("DOMContentLoaded", function () {
       ) {
         if (!/^[a-zA-Z0-9]{1,12}$/.test(numeroDocumento.value)) {
           mostrarMensaje("El número de documento no es válido.");
-
           numeroDocumento.focus();
-
           return;
         }
       }
 
       // ======================================
-      // VALIDACION DEL TELEFONO
+      // VALIDACIÓN DEL TELÉFONO
       // ======================================
 
       if (telefono.value) {
@@ -536,9 +488,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!regla) {
           mostrarMensaje("Selecciona un código de país válido.");
-
           codigoPais.focus();
-
           return;
         }
 
@@ -551,33 +501,35 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             telefono.focus();
-
             return;
           }
         } else {
-          if (cantidadDigitos < regla.min || cantidadDigitos > regla.max) {
+          if (
+            cantidadDigitos < regla.min ||
+            cantidadDigitos > regla.max
+          ) {
             mostrarMensaje(
               `El número de ${regla.nombre} debe contener entre ${regla.min} y ${regla.max} dígitos.`,
             );
 
             telefono.focus();
-
             return;
           }
         }
       }
 
       // ======================================
-      // VALIDACION DE FECHA
+      // VALIDACIÓN DE FECHA
       // ======================================
 
       if (fechaNacimiento.value) {
-        const fechaSeleccionada = new Date(fechaNacimiento.value + "T00:00:00");
+        const fechaSeleccionada = new Date(
+          fechaNacimiento.value + "T00:00:00",
+        );
 
         const fechaActual = new Date();
 
         const añoSeleccionado = fechaSeleccionada.getFullYear();
-
         const añoActual = fechaActual.getFullYear();
 
         if (añoSeleccionado > añoActual) {
@@ -586,21 +538,18 @@ document.addEventListener("DOMContentLoaded", function () {
           );
 
           fechaNacimiento.focus();
-
           return;
         }
 
         if (fechaSeleccionada > fechaActual) {
           mostrarMensaje("La fecha de nacimiento no puede ser futura.");
-
           fechaNacimiento.focus();
-
           return;
         }
       }
 
       // ======================================
-      // CONSTRUIR TELEFONO
+      // CONSTRUIR TELÉFONO
       // ======================================
 
       let telefonoCompleto = "";
@@ -615,30 +564,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const datos = {
         username: username.value.trim(),
-
         password: password.value,
-
         nombre: nombre.value.trim(),
-
         apellido: apellido.value.trim(),
-
         tipoDocumento: tipoDocumento.value,
-
         numeroDocumento: numeroDocumento.value.trim(),
-
         telefono: telefonoCompleto,
-
         fechaNacimiento: fechaNacimiento.value,
-
         genero: genero.value,
-
         correo: correo.value.trim(),
       };
 
       console.log("Datos preparados para registro:", datos);
 
       // ======================================
-      // CONFIRMACION
+      // CONFIRMACIÓN
       // ======================================
 
       const confirmar = await confirmarRegistro();
@@ -655,49 +595,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (botonSubmit) {
         botonSubmit.disabled = true;
-
         botonSubmit.textContent = "Creando...";
       }
 
       // ======================================
-      // ENVIO AL BACKEND
+      // ENVÍO AL BACKEND
       // ======================================
 
       try {
-        const headers = {
-          "Content-Type": "application/json",
-        };
-
-        /*
-         * En modo modal se utiliza
-         * la autenticación del administrador.
-         *
-         * En modo página el endpoint
-         * sigue siendo público.
-         */
-
-        if (modo === "modal") {
-          const auth = sessionStorage.getItem("kihonAuth");
-
-          if (!auth) {
-            await mostrarModalError(
-              "Tu sesión ha expirado. Inicia sesión nuevamente.",
-              "Sesión expirada",
-            );
-
-            sessionStorage.clear();
-
-            window.location.href = "/login";
-
-            return;
-          }
-
-          headers.Authorization = "Basic " + auth;
-        }
-
-        const response = await fetch("/api/usuarios", {
+        const response = await solicitar("/api/usuarios", {
           method: "POST",
-          headers: headers,
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify(datos),
         });
 
@@ -743,7 +653,6 @@ document.addEventListener("DOMContentLoaded", function () {
           );
 
           registroForm.reset();
-
           restaurarFormulario();
 
           return;
@@ -760,7 +669,6 @@ document.addEventListener("DOMContentLoaded", function () {
           );
 
           await mostrarModalError(mensaje, "Datos no válidos");
-
           return;
         }
 
@@ -775,8 +683,7 @@ document.addEventListener("DOMContentLoaded", function () {
               "Sesión expirada",
             );
 
-            sessionStorage.clear();
-
+            limpiarSesion();
             window.location.href = "/login";
 
             return;
@@ -814,7 +721,6 @@ document.addEventListener("DOMContentLoaded", function () {
           );
 
           await mostrarModalError(mensaje, "Recurso no encontrado");
-
           return;
         }
 
@@ -828,23 +734,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "El usuario o los datos ingresados ya están registrados.",
           );
 
-          /*
-           * IMPORTANTE:
-           *
-           * Aquí se muestra exactamente
-           * el mensaje enviado por Spring.
-           *
-           * Ejemplo:
-           *
-           * "El número de documento ya está registrado."
-           *
-           * "El correo ya está registrado."
-           *
-           * "El teléfono ya está registrado."
-           */
-
           await mostrarModalError(mensaje, "Dato ya registrado");
-
           return;
         }
 
@@ -881,7 +771,6 @@ document.addEventListener("DOMContentLoaded", function () {
       } finally {
         if (botonSubmit) {
           botonSubmit.disabled = false;
-
           botonSubmit.textContent = "Crear usuario";
         }
       }
@@ -893,13 +782,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function restaurarFormulario() {
       numeroDocumento.value = "";
-
       numeroDocumento.disabled = true;
-
       numeroDocumento.removeAttribute("maxlength");
-
       numeroDocumento.removeAttribute("pattern");
-
       numeroDocumento.placeholder = "Selecciona el tipo de documento";
 
       actualizarReglasTelefono();
@@ -911,9 +796,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function mostrarMensaje(mensaje) {
       registroMessage.textContent = mensaje;
-
       registroMessage.hidden = false;
-
       registroMessage.style.color = "";
     }
 
@@ -921,7 +804,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // MOSTRAR MODAL DE ÉXITO
     // ==========================================
 
-    async function mostrarModalExito(mensaje, titulo = "Operación exitosa") {
+    async function mostrarModalExito(
+      mensaje,
+      titulo = "Operación exitosa",
+    ) {
       if (typeof window.mostrarModalKihon === "function") {
         await window.mostrarModalKihon({
           titulo: titulo,
@@ -933,9 +819,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       registroMessage.textContent = mensaje;
-
       registroMessage.hidden = false;
-
       registroMessage.style.color = "green";
     }
 
@@ -946,11 +830,8 @@ document.addEventListener("DOMContentLoaded", function () {
     return {
       reset: function () {
         registroForm.reset();
-
         restaurarFormulario();
-
         registroMessage.textContent = "";
-
         registroMessage.hidden = true;
       },
 

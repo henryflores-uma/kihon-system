@@ -1,337 +1,472 @@
 <!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Kihon | Reportes</title>
+  <meta name="description" content="Consulta y analiza los reportes de asistencia de los estudiantes de Kihon.">
 
-    <link rel="stylesheet" href="/css/main.css" />
-  </head>
+  <title>Kihon | Reportes</title>
 
-  <body>
-    <main class="app-layout">
-      <!-- ==========================================
-           SIDEBAR
-           ========================================== -->
+  <link rel="stylesheet" href="/css/main.css">
+</head>
 
-      <aside class="sidebar" id="sidebarMenu">
-        <div class="sidebar__logo">KIHON</div>
+<body>
 
-        <nav class="sidebar__nav">
-          <!-- DASHBOARD -->
-
-          <a href="/admin/admin" class="sidebar__link"> Dashboard </a>
-
-          <!-- ======================================
-               GESTIÓN
-               ====================================== -->
-
-          <div class="sidebar__accordion">
-            <button
-              type="button"
-              class="sidebar__accordion-button"
-              data-target="sidebarGestion"
-              aria-expanded="false"
-            >
-              <span>Gestión</span>
-
-              <span class="sidebar__accordion-arrow">▶</span>
-            </button>
-
-            <div class="sidebar__submenu" id="sidebarGestion" hidden>
-              <a href="/admin/estudiantes" class="sidebar__link">
-                Estudiantes
-              </a>
-
-              <a href="/admin/grupos" class="sidebar__link"> Grupos </a>
-
-              <a href="/admin/inscripciones" class="sidebar__link">
-                Inscripciones
-              </a>
-            </div>
-          </div>
-
-          <!-- ======================================
-               CONTROL
-               ====================================== -->
-
-          <div class="sidebar__accordion">
-            <button
-              type="button"
-              class="sidebar__accordion-button"
-              data-target="sidebarControl"
-              aria-expanded="false"
-            >
-              <span>Control</span>
-
-              <span class="sidebar__accordion-arrow">▶</span>
-            </button>
-
-            <div class="sidebar__submenu" id="sidebarControl" hidden>
-              <a href="/admin/asistencia" class="sidebar__link"> Asistencia </a>
-
-              <a href="/admin/horario" class="sidebar__link"> Horario </a>
-            </div>
-          </div>
-
-          <!-- ======================================
-               ADMINISTRACIÓN
-               ====================================== -->
-
-          <div class="sidebar__accordion">
-            <button
-              type="button"
-              class="sidebar__accordion-button"
-              data-target="sidebarAdministracion"
-              aria-expanded="true"
-            >
-              <span>Administración</span>
-
-              <span class="sidebar__accordion-arrow">▼</span>
-            </button>
-
-            <div class="sidebar__submenu" id="sidebarAdministracion">
-              <a
-                href="/admin/reportes"
-                class="sidebar__link sidebar__link--active"
-              >
-                Reportes
-              </a>
-
-              <a href="/admin/usuarios" class="sidebar__link"> Usuarios </a>
-            </div>
-          </div>
-        </nav>
-      </aside>
-
-      <!-- ==========================================
-           OVERLAY MENÚ MÓVIL
-           ========================================== -->
-
-      <div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden></div>
-
-      <!-- ==========================================
-           CONTENIDO PRINCIPAL
-           ========================================== -->
-
-      <section class="main-content">
-        <!-- ======================================
-             NAVEGACIÓN MÓVIL
-             ====================================== -->
-
-        <div class="mobile-nav">
-          <button
-            type="button"
-            class="mobile-menu-button"
-            id="mobileMenuButton"
-            aria-label="Abrir menú"
-            aria-expanded="false"
-            aria-controls="sidebarMenu"
-          >
-            <span id="mobileMenuIcon">☰</span>
-          </button>
-
-          <div class="mobile-nav__logo">KIHON</div>
-        </div>
-
-        <!-- ======================================
-             TOPBAR
-             ====================================== -->
-
-        <header class="topbar">
-          <!-- ROL -->
-
-          <div class="topbar__role">
-            <span class="topbar__role-label"> Rol </span>
-
-            <strong id="roleDisplay"> Administrador </strong>
-          </div>
-
-          <div class="topbar__actions">
-            <!-- ==================================
-                 NOTIFICACIONES
-                 ================================== -->
-
-            <button
-              type="button"
-              class="topbar__notification"
-              id="notificationButton"
-              aria-label="Notificaciones"
-            >
-              <span class="topbar__notification-icon"> 🔔 </span>
-
-              <span
-                id="notificationCount"
-                class="topbar__notification-count"
-                hidden
-              >
-                0
-              </span>
-            </button>
-
-            <!-- ==================================
-                 PERFIL
-                 ================================== -->
-
-            <div class="topbar__profile" id="profileMenuContainer">
-              <button
-                type="button"
-                class="topbar__profile-button"
-                id="profileMenuButton"
-                aria-expanded="false"
-              >
-                <!-- AVATAR -->
-
-                <div class="topbar__avatar" id="userProfileAvatar">
-                  <span id="userAvatarInitial"> U </span>
-                </div>
-
-                <!-- INFORMACIÓN DEL USUARIO -->
-
-                <div class="topbar__profile-info">
-                  <strong id="usernameDisplay"> Usuario </strong>
-
-                  <span id="profileRoleDisplay"> Administrador </span>
-                </div>
-
-                <!-- FLECHA -->
-
-                <span class="topbar__profile-arrow"> ▼ </span>
-              </button>
-
-              <!-- MENÚ -->
-
-              <div class="topbar__profile-menu" id="profileMenu" hidden>
-                <a href="/admin/perfil" class="topbar__profile-menu-item">
-                  Editar perfil
-                </a>
-
-                <button
-                  type="button"
-                  id="topbarLogoutButton"
-                  class="topbar__profile-menu-item topbar__profile-menu-item--danger"
-                >
-                  Cerrar sesión
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <!-- ======================================
-             CONTENIDO DE REPORTES
-             ====================================== -->
-
-        <div class="container reportes-page">
-          <!-- ======================================
-               ENCABEZADO
-               ====================================== -->
-
-          <section class="dashboard-header">
-            <div>
-              <span class="section-kicker"> Administración </span>
-
-              <h1>Reportes</h1>
-
-              <p>Consulta y analiza la asistencia de los estudiantes.</p>
-            </div>
-          </section>
-
-          <!-- ======================================
-               SELECTOR DE REPORTE
-               ====================================== -->
-
-          <section class="card reportes-selector-card">
-            <div class="reportes-section-header">
-              <h2>Generar reporte</h2>
-
-              <p>Selecciona el tipo de reporte que deseas consultar.</p>
-            </div>
-
-            <!-- TIPO DE REPORTE -->
-
-            <div class="form-group">
-              <label for="tipoReporte" class="form-label">
-                Tipo de reporte
-              </label>
-
-              <select id="tipoReporte" class="form-select">
-                <option value="diario">Reporte diario</option>
-
-                <option value="semanal">Reporte semanal</option>
-
-                <option value="mensual">Reporte mensual</option>
-
-                <option value="estudiante">Reporte por estudiante</option>
-
-                <option value="grupo">Reporte por grupo</option>
-              </select>
-            </div>
-
-            <!-- FILTROS -->
-
-            <div id="reporteFiltros" class="reportes-filtros"></div>
-
-            <!-- MENSAJE -->
-
-            <div id="reporteMessage" class="reportes-message" hidden></div>
-
-            <!-- ACCIONES -->
-
-            <div class="reportes-actions">
-              <button
-                type="button"
-                id="generarReporteBtn"
-                class="btn btn--primary"
-              >
-                Generar reporte
-              </button>
-            </div>
-          </section>
-
-          <!-- ======================================
-               RESULTADO
-               ====================================== -->
-
-          <section
-            id="reporteResultado"
-            class="card reportes-result-card"
-            hidden
-          >
-            <!-- ENCABEZADO -->
-
-            <div class="reportes-result-header">
-              <div>
-                <h2>Resultado del reporte</h2>
-
-                <p id="reportePeriodo">-</p>
-              </div>
-            </div>
-
-            <!-- RESUMEN -->
-
-            <div id="reporteResumen" class="reportes-resumen"></div>
-
-            <!-- DETALLE -->
-
-            <div class="reportes-detalle">
-              <h3>Detalle de asistencias</h3>
-
-              <div id="reporteDetalle" class="reportes-table-wrapper"></div>
-            </div>
-          </section>
-        </div>
-      </section>
-    </main>
+  <main class="app-layout">
 
     <!-- ==========================================
-         JAVASCRIPT
-         ========================================== -->
+         SIDEBAR
+    ========================================== -->
 
-    <script src="/js/topbar.js"></script>
-    <script src="/js/nav-acordeon.js"></script>
-    <script src="/js/reportes.js"></script>
-  </body>
+    <aside class="sidebar" id="sidebarMenu">
+
+      <div class="sidebar__logo">
+        KIHON
+      </div>
+
+      <!--
+        La navegación se genera dinámicamente
+        desde topbar.js según el rol autenticado.
+      -->
+
+      <nav class="sidebar__nav">
+
+        <!-- Navegación generada por topbar.js -->
+
+      </nav>
+
+    </aside>
+
+    <!-- OVERLAY MÓVIL -->
+
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden>
+    </div>
+
+    <!-- ==========================================
+         CONTENIDO PRINCIPAL
+    ========================================== -->
+
+    <section class="main-content">
+
+      <!-- ======================================
+           NAVEGACIÓN MÓVIL
+      ====================================== -->
+
+      <div class="mobile-nav">
+
+        <button type="button" class="mobile-menu-button" id="mobileMenuButton" aria-label="Abrir menú"
+          aria-expanded="false" aria-controls="sidebarMenu">
+
+          <span id="mobileMenuIcon">
+            ☰
+          </span>
+
+        </button>
+
+        <div class="mobile-nav__logo">
+          KIHON
+        </div>
+
+      </div>
+
+      <!-- ======================================
+           TOPBAR
+      ====================================== -->
+
+      <header class="topbar">
+
+        <div class="topbar__role">
+
+          <span class="topbar__role-label">
+            Rol
+          </span>
+
+          <strong id="roleDisplay" th:text="${rolDisplay}">
+            Administrador
+          </strong>
+
+        </div>
+
+        <div class="topbar__actions">
+
+          <!-- NOTIFICACIONES -->
+
+          <button type="button" class="topbar__notification" id="notificationButton" aria-label="Notificaciones">
+
+            <span class="topbar__notification-icon">
+              🔔
+            </span>
+
+            <span id="notificationCount" class="topbar__notification-count" hidden>
+              0
+            </span>
+
+          </button>
+
+          <!-- PERFIL -->
+
+          <div class="topbar__profile" id="profileMenuContainer">
+
+            <button type="button" class="topbar__profile-button" id="profileMenuButton" aria-expanded="false">
+
+              <div class="topbar__avatar" id="userProfileAvatar">
+
+                <span id="userAvatarInitial">
+                  U
+                </span>
+
+              </div>
+
+              <div class="topbar__profile-info">
+
+                <strong id="usernameDisplay">
+                  Usuario
+                </strong>
+
+                <span id="profileRoleDisplay" th:text="${rolDisplay}">
+                  Administrador
+                </span>
+
+              </div>
+
+              <span class="topbar__profile-arrow">
+                ▼
+              </span>
+
+            </button>
+
+            <div class="topbar__profile-menu" id="profileMenu" hidden>
+
+              <a th:href="${perfilUrl}" class="topbar__profile-menu-item">
+
+                Editar perfil
+
+              </a>
+
+              <button type="button" id="topbarLogoutButton"
+                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+
+                Cerrar sesión
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </header>
+
+      <!-- ==========================================
+           REPORTES
+      ========================================== -->
+
+      <div class="container reportes-page">
+
+        <!-- ======================================
+             ENCABEZADO
+        ====================================== -->
+
+        <section class="dashboard-header reportes-header">
+
+          <div>
+
+            <span class="section-kicker" th:text="${rolDisplay}">
+              Administración
+            </span>
+
+            <h1>
+              Reportes
+            </h1>
+
+            <p>
+              Consulta, analiza y supervisa la asistencia
+              de los estudiantes.
+            </p>
+
+          </div>
+
+        </section>
+
+        <!-- ======================================
+             SELECTOR Y FILTROS
+        ====================================== -->
+
+        <section class="card reportes-selector-card">
+
+          <div class="reportes-section-header">
+
+            <div>
+
+              <h2>
+                Generar reporte
+              </h2>
+
+              <p>
+                Selecciona el tipo de reporte y establece
+                los filtros de consulta.
+              </p>
+
+            </div>
+
+          </div>
+
+          <!-- TIPO DE REPORTE -->
+
+          <div class="form-group">
+
+            <label for="tipoReporte" class="form-label">
+
+              Tipo de reporte
+
+            </label>
+
+            <select id="tipoReporte" class="form-select">
+
+              <option value="diario">
+                Reporte diario
+              </option>
+
+              <option value="semanal">
+                Reporte semanal
+              </option>
+
+              <option value="mensual">
+                Reporte mensual
+              </option>
+
+              <option value="estudiante">
+                Reporte por estudiante
+              </option>
+
+              <option value="grupo">
+                Reporte por grupo
+              </option>
+
+            </select>
+
+          </div>
+
+          <!-- FILTROS DINÁMICOS -->
+
+          <div id="reporteFiltros" class="reportes-filtros">
+          </div>
+
+          <!-- MENSAJES -->
+
+          <div id="reporteMessage" class="reportes-message" role="status" aria-live="polite" hidden>
+          </div>
+
+          <!-- ACCIONES -->
+
+          <div class="reportes-actions">
+
+            <button type="button" id="generarReporteBtn" class="btn btn--primary">
+
+              Generar reporte
+
+            </button>
+
+          </div>
+
+        </section>
+
+        <!-- ======================================
+             RESULTADOS
+        ====================================== -->
+
+        <section id="reporteResultado" class="card reportes-result-card" aria-live="polite" hidden>
+
+          <!-- ENCABEZADO DEL RESULTADO -->
+
+          <div class="reportes-result-header">
+
+            <div>
+
+              <span class="section-kicker">
+                Análisis de asistencia
+              </span>
+
+              <h2>
+                Resultado del reporte
+              </h2>
+
+              <p id="reportePeriodo">
+                -
+              </p>
+
+            </div>
+
+          </div>
+
+          <!-- ==================================
+               INDICADORES KPI
+          ================================== -->
+
+          <section class="reportes-kpi-section" aria-label="Resumen de asistencia">
+
+            <div class="reportes-section-header">
+
+              <div>
+
+                <h3>
+                  Resumen general
+                </h3>
+
+                <p>
+                  Indicadores del periodo consultado.
+                </p>
+
+              </div>
+
+            </div>
+
+            <div id="reporteResumen" class="reportes-resumen">
+            </div>
+
+          </section>
+
+          <!-- ==================================
+               GRÁFICOS
+          ================================== -->
+
+          <section class="reportes-graficos-section" aria-label="Gráficos estadísticos">
+
+            <div class="reportes-section-header">
+
+              <div>
+
+                <h3>
+                  Análisis estadístico
+                </h3>
+
+                <p>
+                  Visualización de los registros de asistencia.
+                </p>
+
+              </div>
+
+            </div>
+
+            <div class="reportes-graficos">
+
+              <!-- DISTRIBUCIÓN -->
+
+              <article class="reporte-grafico-card">
+
+                <div class="reporte-grafico-header">
+
+                  <div>
+
+                    <h3>
+                      Distribución de asistencias
+                    </h3>
+
+                    <p>
+                      Registros agrupados por estado.
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <div class="reporte-grafico-wrapper reporte-grafico-wrapper--distribucion">
+
+                  <canvas id="reporteDistribucionChart" role="img" aria-label="Distribución de asistencias por estado">
+                  </canvas>
+
+                </div>
+
+              </article>
+
+              <!-- EVOLUCIÓN / COMPARACIÓN -->
+
+              <article class="reporte-grafico-card">
+
+                <div class="reporte-grafico-header">
+
+                  <div>
+
+                    <h3 id="reporteEvolucionTitulo">
+                      Evolución de asistencias
+                    </h3>
+
+                    <p id="reporteEvolucionDescripcion">
+                      Comportamiento de los registros durante
+                      el periodo consultado.
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <div class="reporte-grafico-wrapper">
+
+                  <canvas id="reporteEvolucionChart" role="img" aria-label="Evolución y comparación de asistencias">
+                  </canvas>
+
+                </div>
+
+              </article>
+
+            </div>
+
+          </section>
+
+          <!-- ==================================
+               DETALLE DE ASISTENCIAS
+          ================================== -->
+
+          <section class="reportes-detalle">
+
+            <div class="reportes-section-header">
+
+              <div>
+
+                <h3>
+                  Detalle de asistencias
+                </h3>
+
+                <p>
+                  Consulta los registros individuales del reporte.
+                </p>
+
+              </div>
+
+            </div>
+
+            <div id="reporteDetalle" class="reportes-table-wrapper">
+            </div>
+
+          </section>
+
+        </section>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==========================================
+       LIBRERÍAS
+  ========================================== -->
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+
+  <!-- ==========================================
+       JAVASCRIPT DE KIHON
+  ========================================== -->
+
+  <script src="/js/topbar.js"></script>
+
+  <script src="/js/nav-acordeon.js"></script>
+
+  <script th:src="${scriptReportes}"></script>
+
+</body>
+
 </html>

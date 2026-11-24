@@ -1,16 +1,52 @@
+
 document.addEventListener("DOMContentLoaded", function () {
   /*
    * =========================================================
-   * AUTENTICACIÓN
+   * AUTENTICACIÓN Y PETICIONES HTTP
    * =========================================================
    */
 
-  const auth = sessionStorage.getItem("kihonAuth");
+  async function obtenerTokenCSRF() {
+    const response = await window.fetch("/api/auth/csrf", {
+      method: "GET",
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json",
+      },
+    });
 
-  if (!auth) {
-    window.location.href = "/login";
+    if (!response.ok) {
+      throw new Error("No se pudo obtener el token CSRF.");
+    }
 
-    return;
+    const data = await response.json();
+
+    return data.token;
+  }
+
+  async function apiFetch(url, options = {}) {
+    const method = (options.method || "GET").toUpperCase();
+
+    const headers = new Headers(options.headers || {});
+
+    // Se elimina cualquier autenticación Basic Auth antigua.
+    headers.delete("Authorization");
+
+    headers.set("Accept", "application/json");
+
+    // Las operaciones que modifican datos requieren CSRF.
+    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+      const csrfToken = await obtenerTokenCSRF();
+
+      headers.set("X-CSRF-TOKEN", csrfToken);
+    }
+
+    return window.fetch(url, {
+      ...options,
+      method,
+      credentials: "same-origin",
+      headers,
+    });
   }
 
   /*
@@ -158,17 +194,11 @@ document.addEventListener("DOMContentLoaded", function () {
   function obtenerNombreDia(dia) {
     const dias = {
       LUNES: "Lunes",
-
       MARTES: "Martes",
-
       MIERCOLES: "Miércoles",
-
       JUEVES: "Jueves",
-
       VIERNES: "Viernes",
-
       SABADO: "Sábado",
-
       DOMINGO: "Domingo",
     };
 
@@ -184,17 +214,11 @@ document.addEventListener("DOMContentLoaded", function () {
   function obtenerOrdenDia(dia) {
     const orden = {
       LUNES: 1,
-
       MARTES: 2,
-
       MIERCOLES: 3,
-
       JUEVES: 4,
-
       VIERNES: 5,
-
       SABADO: 6,
-
       DOMINGO: 7,
     };
 
@@ -209,13 +233,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function manejarNoAutorizado(response) {
     if (response.status === 401) {
+      sessionStorage.removeItem("kihonUsername");
+      sessionStorage.removeItem("kihonRol");
       sessionStorage.removeItem("kihonAuth");
 
-      sessionStorage.removeItem("kihonUsername");
-
-      sessionStorage.removeItem("kihonRol");
-
-      window.location.href = "/login";
+      window.location.replace("/login");
 
       return true;
     }
@@ -357,12 +379,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function cargarFrecuencias() {
     try {
-      const response = await fetch("/api/frecuencias-grupo", {
+      const response = await apiFetch("/api/frecuencias-grupo", {
         method: "GET",
-
-        headers: {
-          Authorization: "Basic " + auth,
-        },
       });
 
       if (manejarNoAutorizado(response)) {
@@ -380,12 +398,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const frecuencias = await response.json();
 
       frecuenciasDisponibles = frecuencias;
-
-      /*
-       * Selector de registro.
-       * Actualmente no existe en el HTML,
-       * pero se mantiene por compatibilidad.
-       */
 
       if (frecuenciaSelect) {
         frecuenciaSelect.innerHTML = `
@@ -406,10 +418,6 @@ document.addEventListener("DOMContentLoaded", function () {
           frecuenciaSelect.appendChild(option);
         });
       }
-
-      /*
-       * Selector de edición.
-       */
 
       if (editFrecuenciaSelect) {
         editFrecuenciaSelect.innerHTML = `
@@ -484,12 +492,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function cargarSenseis() {
     try {
-      const response = await fetch("/api/usuarios/senseis", {
+      const response = await apiFetch("/api/usuarios/senseis", {
         method: "GET",
-
-        headers: {
-          Authorization: "Basic " + auth,
-        },
       });
 
       if (manejarNoAutorizado(response)) {
@@ -559,12 +563,8 @@ document.addEventListener("DOMContentLoaded", function () {
    */
 
   async function obtenerCrucesHorarios(dias, horaInicio, horaFin) {
-    const response = await fetch("/api/grupos", {
+    const response = await apiFetch("/api/grupos", {
       method: "GET",
-
-      headers: {
-        Authorization: "Basic " + auth,
-      },
     });
 
     if (manejarNoAutorizado(response)) {
@@ -590,14 +590,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const gruposConHorarios = await Promise.all(
       gruposActivos.map(async (grupo) => {
-        const horariosResponse = await fetch(
+        const horariosResponse = await apiFetch(
           `/api/grupo-horarios/grupo/${grupo.id}`,
           {
             method: "GET",
-
-            headers: {
-              Authorization: "Basic " + auth,
-            },
           },
         );
 
@@ -624,7 +620,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return {
           grupo: grupo,
-
           horarios: horarios,
         };
       }),
@@ -653,11 +648,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (horaInicio < finExistente && horaFin > inicioExistente) {
           cruces.push({
             grupoNombre: grupo.nombre,
-
             dia: diaExistente,
-
             horaInicio: inicioExistente,
-
             horaFin: finExistente,
           });
         }
@@ -695,10 +687,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const diasSeleccionados = obtenerDiasSeleccionados();
 
-      /*
-       * VALIDAR DÍAS
-       */
-
       if (diasSeleccionados.length === 0) {
         mostrarMensaje(
           groupMessage,
@@ -708,10 +696,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return;
       }
-
-      /*
-       * FRECUENCIA AUTOMÁTICA
-       */
 
       const frecuencia = obtenerFrecuenciaPorCantidadDias(
         diasSeleccionados.length,
@@ -726,10 +710,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return;
       }
-
-      /*
-       * VALIDAR HORARIOS
-       */
 
       if (!horaInicio || !horaFin) {
         mostrarMensaje(
@@ -751,10 +731,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      /*
-       * VALIDAR CAPACIDAD
-       */
-
       if (!capacidad || capacidad <= 0) {
         mostrarMensaje(
           groupMessage,
@@ -765,19 +741,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      /*
-       * DATOS DEL GRUPO
-       */
-
       const grupo = {
         nombre: nombre,
-
         descripcion: descripcion,
-
         capacidad: capacidad,
-
         senseiId: senseiValue ? Number(senseiValue) : null,
-
         frecuenciaId: frecuencia.id,
       };
 
@@ -785,15 +753,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (submitButton) {
         submitButton.disabled = true;
-
         submitButton.textContent = "Validando horario...";
       }
 
       try {
-        /*
-         * VALIDAR CRUCES
-         */
-
         const cruces = await obtenerCrucesHorarios(
           diasSeleccionados,
           horaInicio,
@@ -818,20 +781,14 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         }
 
-        /*
-         * CREAR GRUPO
-         */
-
         if (submitButton) {
           submitButton.textContent = "Registrando...";
         }
 
-        const response = await fetch("/api/grupos", {
+        const response = await apiFetch("/api/grupos", {
           method: "POST",
 
           headers: {
-            Authorization: "Basic " + auth,
-
             "Content-Type": "application/json",
           },
 
@@ -856,10 +813,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const nuevoGrupo = await response.json();
-
-        /*
-         * CREAR HORARIOS
-         */
 
         await crearHorariosGrupo(
           nuevoGrupo.id,
@@ -915,26 +868,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     groupsList.innerHTML = `
-
       <div class="grupos-loading">
-
         <div class="grupos-loading__spinner"></div>
-
-        <span>
-          Cargando grupos...
-        </span>
-
+        <span>Cargando grupos...</span>
       </div>
-
     `;
 
     try {
-      const response = await fetch("/api/grupos", {
+      const response = await apiFetch("/api/grupos", {
         method: "GET",
-
-        headers: {
-          Authorization: "Basic " + auth,
-        },
       });
 
       if (manejarNoAutorizado(response)) {
@@ -957,13 +899,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (grupos.length === 0) {
         groupsList.innerHTML = `
-
           <div class="grupos-empty">
-
             No hay grupos registrados.
-
           </div>
-
         `;
 
         return;
@@ -976,14 +914,10 @@ document.addEventListener("DOMContentLoaded", function () {
       const gruposConHorarios = await Promise.all(
         grupos.map(async (grupo) => {
           try {
-            const horariosResponse = await fetch(
+            const horariosResponse = await apiFetch(
               `/api/grupo-horarios/grupo/${grupo.id}`,
               {
                 method: "GET",
-
-                headers: {
-                  Authorization: "Basic " + auth,
-                },
               },
             );
 
@@ -992,7 +926,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
               return {
                 ...grupo,
-
                 horarios: [],
               };
             }
@@ -1000,7 +933,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!horariosResponse.ok) {
               return {
                 ...grupo,
-
                 horarios: [],
               };
             }
@@ -1009,7 +941,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             return {
               ...grupo,
-
               horarios: horarios,
             };
           } catch (error) {
@@ -1020,7 +951,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             return {
               ...grupo,
-
               horarios: [],
             };
           }
@@ -1042,11 +972,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!gruposPorFrecuencia.has(frecuenciaId)) {
           gruposPorFrecuencia.set(frecuenciaId, {
             id: grupo.frecuenciaId,
-
             nombre: grupo.frecuenciaNombre || "Sin frecuencia",
-
             frecuenciaSemanal: grupo.frecuenciaSemanal ?? null,
-
             grupos: [],
           });
         }
@@ -1077,382 +1004,259 @@ document.addEventListener("DOMContentLoaded", function () {
        */
 
       groupsList.innerHTML = `
-
         <table class="grupos-table">
-
           <tbody>
-
             ${categorias
-              .map((categoria, categoriaIndex) => {
-                const categoriaId = `frecuencia-${categoria.id ?? "sin"}-${categoriaIndex}`;
-
-                const capacidadTotal = categoria.grupos.reduce(
-                  (total, grupo) => total + (Number(grupo.capacidad) || 0),
-                  0,
-                );
-
-                const inscritosTotal = categoria.grupos.reduce(
-                  (total, grupo) =>
-                    total + (Number(grupo.estudiantesActivos) || 0),
-                  0,
-                );
-
-                const cuposTotal = categoria.grupos.reduce(
-                  (total, grupo) =>
-                    total + (Number(grupo.cuposDisponibles) || 0),
-                  0,
-                );
-
-                return `
-
-                    <tr
-                      class="grupo-frecuencia-header"
-                      data-frecuencia-toggle="${categoriaId}"
-                    >
-
-                      <td colspan="9">
-
-                        <div class="grupo-frecuencia-titulo">
-
-                          <strong>
-                            ${categoria.nombre}
-                          </strong>
-
-                          <span>
-                            (${categoria.grupos.length}
-                            grupo${categoria.grupos.length !== 1 ? "s" : ""})
-                          </span>
-
-                        </div>
-
-
-                        <div class="grupo-frecuencia-resumen">
-
-                          <span>
-                            Capacidad:
-                            <strong>
-                              ${capacidadTotal}
-                            </strong>
-                          </span>
-
-
-                          <span>
-                            Inscritos:
-                            <strong>
-                              ${inscritosTotal}
-                            </strong>
-                          </span>
-
-
-                          <span>
-                            Cupos:
-                            <strong>
-                              ${cuposTotal}
-                            </strong>
-                          </span>
-
-                        </div>
-
-                      </td>
-
-                    </tr>
-
-
-                    <tr
-                      class="grupo-columnas-header"
-                      data-frecuencia-columnas="${categoriaId}"
-                    >
-
-                      <th>
-                        Grupo
-                      </th>
-
-                      <th>
-                        Sensei
-                      </th>
-
-                      <th>
-                        Días
-                      </th>
-
-                      <th>
-                        Horario
-                      </th>
-
-                      <th>
-                        Capacidad
-                      </th>
-
-                      <th>
-                        Inscritos
-                      </th>
-
-                      <th>
-                        Cupos disponibles
-                      </th>
-
-                      <th>
-                        Estado
-                      </th>
-
-                      <th>
-                        Acciones
-                      </th>
-
-                    </tr>
-
-
-                    ${categoria.grupos
-                      .map((grupo) => {
-                        const ordenDias = {
-                          LUNES: 1,
-
-                          MARTES: 2,
-
-                          MIERCOLES: 3,
-
-                          JUEVES: 4,
-
-                          VIERNES: 5,
-
-                          SABADO: 6,
-
-                          DOMINGO: 7,
-                        };
-
-                        const inicialesDias = {
-                          LUNES: "Lunes",
-
-                          MARTES: "Martes",
-
-                          MIERCOLES: "Miércoles",
-
-                          JUEVES: "Jueves",
-
-                          VIERNES: "Viernes",
-
-                          SABADO: "Sábado",
-
-                          DOMINGO: "Domingo",
-                        };
-
-                        const dias = [...(grupo.horarios || [])].sort(
-                          (a, b) =>
-                            (ordenDias[a.diaSemana] || 99) -
-                            (ordenDias[b.diaSemana] || 99),
-                        );
-
-                        const diasIniciales = dias
-                          .map(
-                            (horario) =>
-                              inicialesDias[horario.diaSemana] ||
-                              horario.diaSemana,
-                          )
-                          .filter(
-                            (dia, index, array) => array.indexOf(dia) === index,
-                          )
-                          .join(" - ");
-
-                        const diasMostrar = diasIniciales || "Sin días";
-
-                        let horarioMostrar = "Sin horario";
-
-                        if (dias.length > 0) {
-                          const horarios = dias.map((horario) => ({
-                            dia:
-                              inicialesDias[horario.diaSemana] ||
-                              horario.diaSemana,
-
-                            hora: `${formatearHora(
-                              horario.horaInicio,
-                            )} - ${formatearHora(horario.horaFin)}`,
-                          }));
-
-                          const primeraHora = horarios[0].hora;
-
-                          const todosMismaHora = horarios.every(
-                            (horario) => horario.hora === primeraHora,
-                          );
-
-                          if (todosMismaHora) {
-                            horarioMostrar = primeraHora;
-                          } else {
-                            horarioMostrar = horarios
-                              .map(
-                                (horario) => `${horario.dia}: ${horario.hora}`,
-                              )
-                              .join(" / ");
-                          }
-                        }
-
-                        const cuposLlenos =
-                          Number(grupo.cuposDisponibles) === 0;
-
-                        const grupoActivo = grupo.estado === "ACTIVO";
-
-                        return `
-
-                            <tr
-                              class="grupo-frecuencia-item"
-                              data-frecuencia-parent="${categoriaId}"
-                            >
-
-                              <td>
-
-                                <div class="grupo-info">
-
-                                  <span class="grupo-nombre">
-                                    ${grupo.nombre}
-                                  </span>
-
-                                  <span class="grupo-descripcion">
-                                    ${grupo.descripcion || "Sin descripción"}
-                                  </span>
-
-                                </div>
-
-                              </td>
-
-
-                              <td>
-
-                                <span class="grupo-sensei">
-
-                                  ${grupo.senseiNombre || "Sin asignar"}
-
-                                </span>
-
-                              </td>
-
-
-                              <td>
-
-                                <span class="grupo-dias">
-
-                                  ${diasMostrar}
-
-                                </span>
-
-                              </td>
-
-
-                              <td>
-
-                                <span class="grupo-horario">
-
-                                  ${horarioMostrar}
-
-                                </span>
-
-                              </td>
-
-
-                              <td>
-
-                                <span class="grupo-capacidad">
-
-                                  ${grupo.capacidad}
-
-                                </span>
-
-                              </td>
-
-
-                              <td>
-
-                                <span class="grupo-inscritos">
-
-                                  ${grupo.estudiantesActivos}
-
-                                </span>
-
-                              </td>
-
-
-                              <td>
-
-                                <span class="
-                                  grupo-cupos
-                                  ${cuposLlenos ? "grupo-cupos--lleno" : ""}
-                                ">
-
-                                  ${grupo.cuposDisponibles}
-
-                                </span>
-
-                              </td>
-
-
-                              <td>
-
-                                <span class="
-                                  grupo-estado
-                                  ${
-                                    grupoActivo
-                                      ? "grupo-estado--activo"
-                                      : "grupo-estado--inactivo"
-                                  }
-                                ">
-
-                                  ${grupo.estado}
-
-                                </span>
-
-                              </td>
-
-
-                              <td>
-
-                                <div class="grupo-acciones">
-
-                                  <button
-                                    type="button"
-                                    class="btn btn--outline btn-editar-grupo"
-                                    data-id="${grupo.id}"
-                                  >
-                                    Editar
-                                  </button>
-
-
-                                  <button
-                                    type="button"
-                                    class="btn btn--secondary btn-estado-grupo"
-                                    data-id="${grupo.id}"
-                                    data-estado="${grupo.estado}"
-                                  >
-
-                                    ${grupoActivo ? "Desactivar" : "Activar"}
-
-                                  </button>
-
-
-                                  <button
-                                    type="button"
-                                    class="btn btn--secondary btn-eliminar-grupo"
-                                    data-id="${grupo.id}"
-                                    data-nombre="${grupo.nombre}"
-                                  >
-                                    Eliminar
-                                  </button>
-
-                                </div>
-
-                              </td>
-
-                            </tr>
-
-                          `;
-                      })
-                      .join("")}
-
-                  `;
-              })
-              .join("")}
-
+          .map((categoria, categoriaIndex) => {
+            const categoriaId = `frecuencia-${categoria.id ?? "sin"}-${categoriaIndex}`;
+
+            const capacidadTotal = categoria.grupos.reduce(
+              (total, grupo) => total + (Number(grupo.capacidad) || 0),
+              0,
+            );
+
+            const inscritosTotal = categoria.grupos.reduce(
+              (total, grupo) =>
+                total + (Number(grupo.estudiantesActivos) || 0),
+              0,
+            );
+
+            const cuposTotal = categoria.grupos.reduce(
+              (total, grupo) =>
+                total + (Number(grupo.cuposDisponibles) || 0),
+              0,
+            );
+
+            return `
+                  <tr
+                    class="grupo-frecuencia-header"
+                    data-frecuencia-toggle="${categoriaId}"
+                  >
+                    <td colspan="9">
+                      <div class="grupo-frecuencia-titulo">
+                        <strong>${categoria.nombre}</strong>
+                        <span>
+                          (${categoria.grupos.length}
+                          grupo${categoria.grupos.length !== 1 ? "s" : ""})
+                        </span>
+                      </div>
+
+                      <div class="grupo-frecuencia-resumen">
+                        <span>
+                          Capacidad:
+                          <strong>${capacidadTotal}</strong>
+                        </span>
+
+                        <span>
+                          Inscritos:
+                          <strong>${inscritosTotal}</strong>
+                        </span>
+
+                        <span>
+                          Cupos:
+                          <strong>${cuposTotal}</strong>
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr
+                    class="grupo-columnas-header"
+                    data-frecuencia-columnas="${categoriaId}"
+                  >
+                    <th>Grupo</th>
+                    <th>Sensei</th>
+                    <th>Días</th>
+                    <th>Horario</th>
+                    <th>Capacidad</th>
+                    <th>Inscritos</th>
+                    <th>Cupos disponibles</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+
+                  ${categoria.grupos
+                .map((grupo) => {
+                  const ordenDias = {
+                    LUNES: 1,
+                    MARTES: 2,
+                    MIERCOLES: 3,
+                    JUEVES: 4,
+                    VIERNES: 5,
+                    SABADO: 6,
+                    DOMINGO: 7,
+                  };
+
+                  const inicialesDias = {
+                    LUNES: "Lunes",
+                    MARTES: "Martes",
+                    MIERCOLES: "Miércoles",
+                    JUEVES: "Jueves",
+                    VIERNES: "Viernes",
+                    SABADO: "Sábado",
+                    DOMINGO: "Domingo",
+                  };
+
+                  const dias = [...(grupo.horarios || [])].sort(
+                    (a, b) =>
+                      (ordenDias[a.diaSemana] || 99) -
+                      (ordenDias[b.diaSemana] || 99),
+                  );
+
+                  const diasIniciales = dias
+                    .map(
+                      (horario) =>
+                        inicialesDias[horario.diaSemana] ||
+                        horario.diaSemana,
+                    )
+                    .filter(
+                      (dia, index, array) => array.indexOf(dia) === index,
+                    )
+                    .join(" - ");
+
+                  const diasMostrar = diasIniciales || "Sin días";
+
+                  let horarioMostrar = "Sin horario";
+
+                  if (dias.length > 0) {
+                    const horarios = dias.map((horario) => ({
+                      dia:
+                        inicialesDias[horario.diaSemana] ||
+                        horario.diaSemana,
+
+                      hora: `${formatearHora(
+                        horario.horaInicio,
+                      )} - ${formatearHora(horario.horaFin)}`,
+                    }));
+
+                    const primeraHora = horarios[0].hora;
+
+                    const todosMismaHora = horarios.every(
+                      (horario) => horario.hora === primeraHora,
+                    );
+
+                    if (todosMismaHora) {
+                      horarioMostrar = primeraHora;
+                    } else {
+                      horarioMostrar = horarios
+                        .map(
+                          (horario) => `${horario.dia}: ${horario.hora}`,
+                        )
+                        .join(" / ");
+                    }
+                  }
+
+                  const cuposLlenos =
+                    Number(grupo.cuposDisponibles) === 0;
+
+                  const grupoActivo = grupo.estado === "ACTIVO";
+
+                  return `
+                        <tr
+                          class="grupo-frecuencia-item"
+                          data-frecuencia-parent="${categoriaId}"
+                        >
+                          <td>
+                            <div class="grupo-info">
+                              <span class="grupo-nombre">
+                                ${grupo.nombre}
+                              </span>
+
+                              <span class="grupo-descripcion">
+                                ${grupo.descripcion || "Sin descripción"}
+                              </span>
+                            </div>
+                          </td>
+
+                          <td>
+                            <span class="grupo-sensei">
+                              ${grupo.senseiNombre || "Sin asignar"}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span class="grupo-dias">
+                              ${diasMostrar}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span class="grupo-horario">
+                              ${horarioMostrar}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span class="grupo-capacidad">
+                              ${grupo.capacidad}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span class="grupo-inscritos">
+                              ${grupo.estudiantesActivos}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span class="
+                              grupo-cupos
+                              ${cuposLlenos ? "grupo-cupos--lleno" : ""}
+                            ">
+                              ${grupo.cuposDisponibles}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span class="
+                              grupo-estado
+                              ${grupoActivo
+                      ? "grupo-estado--activo"
+                      : "grupo-estado--inactivo"
+                    }
+                            ">
+                              ${grupo.estado}
+                            </span>
+                          </td>
+
+                          <td>
+                            <div class="grupo-acciones">
+                              <button
+                                type="button"
+                                class="btn btn--outline btn-editar-grupo"
+                                data-id="${grupo.id}"
+                              >
+                                Editar
+                              </button>
+
+                              <button
+                                type="button"
+                                class="btn btn--secondary btn-estado-grupo"
+                                data-id="${grupo.id}"
+                                data-estado="${grupo.estado}"
+                              >
+                                ${grupoActivo ? "Desactivar" : "Activar"}
+                              </button>
+
+                              <button
+                                type="button"
+                                class="btn btn--secondary btn-eliminar-grupo"
+                                data-id="${grupo.id}"
+                                data-nombre="${grupo.nombre}"
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `;
+                })
+                .join("")}
+                `;
+          })
+          .join("")}
           </tbody>
-
         </table>
-
       `;
 
       /*
@@ -1492,13 +1296,9 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("Error cargando grupos:", error);
 
       groupsList.innerHTML = `
-
         <div class="grupos-empty">
-
           ${error.message}
-
         </div>
-
       `;
     }
   }
@@ -1511,22 +1311,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function crearHorariosGrupo(grupoId, dias, horaInicio, horaFin) {
     for (const dia of dias) {
-      const response = await fetch("/api/grupo-horarios", {
+      const response = await apiFetch("/api/grupo-horarios", {
         method: "POST",
 
         headers: {
-          Authorization: "Basic " + auth,
-
           "Content-Type": "application/json",
         },
 
         body: JSON.stringify({
           grupoId: Number(grupoId),
-
           diaSemana: dia,
-
           horaInicio: horaInicio,
-
           horaFin: horaFin,
         }),
       });
@@ -1562,27 +1357,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     groupSchedulesList.innerHTML = `
-
       <div class="grupos-loading">
-
         <div class="grupos-loading__spinner"></div>
-
-        <span>
-          Cargando horarios...
-        </span>
-
+        <span>Cargando horarios...</span>
       </div>
-
     `;
 
     try {
-      const response = await fetch(`/api/grupo-horarios/grupo/${grupoId}`, {
-        method: "GET",
-
-        headers: {
-          Authorization: "Basic " + auth,
+      const response = await apiFetch(
+        `/api/grupo-horarios/grupo/${grupoId}`,
+        {
+          method: "GET",
         },
-      });
+      );
 
       if (manejarNoAutorizado(response)) {
         return;
@@ -1605,13 +1392,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (horarios.length === 0) {
         groupSchedulesList.innerHTML = `
-
           <div class="grupos-empty">
-
             Este grupo todavía no tiene horarios registrados.
-
           </div>
-
         `;
 
         return;
@@ -1632,74 +1415,54 @@ document.addEventListener("DOMContentLoaded", function () {
       groupSchedulesList.innerHTML = horarios
         .map(
           (horario) => `
+            <div
+              class="grupo-horario-item"
+              data-id="${horario.id}"
+            >
+              <div class="grupo-horario-info">
+                <strong>
+                  ${obtenerNombreDia(horario.diaSemana)}
+                </strong>
 
-              <div
-                class="grupo-horario-item"
-                data-id="${horario.id}"
-              >
-
-                <div class="grupo-horario-info">
-
-                  <strong>
-
-                    ${obtenerNombreDia(horario.diaSemana)}
-
-                  </strong>
-
-                  <span>
-
-                    ${formatearHora(horario.horaInicio)}
-
-                    -
-
-                    ${formatearHora(horario.horaFin)}
-
-                  </span>
-
-                </div>
-
-
-                <div class="grupo-horario-acciones">
-
-                  <button
-                    type="button"
-                    class="btn btn--secondary btn-editar-horario"
-                    data-id="${horario.id}"
-                    data-grupo-id="${horario.grupoId}"
-                    data-dia="${horario.diaSemana}"
-                    data-hora-inicio="${formatearHora(horario.horaInicio)}"
-                    data-hora-fin="${formatearHora(horario.horaFin)}"
-                  >
-                    Editar
-                  </button>
-
-
-                  <button
-                    type="button"
-                    class="btn btn--secondary btn-eliminar-horario"
-                    data-id="${horario.id}"
-                  >
-                    Eliminar
-                  </button>
-
-                </div>
-
+                <span>
+                  ${formatearHora(horario.horaInicio)}
+                  -
+                  ${formatearHora(horario.horaFin)}
+                </span>
               </div>
 
-            `,
+              <div class="grupo-horario-acciones">
+                <button
+                  type="button"
+                  class="btn btn--secondary btn-editar-horario"
+                  data-id="${horario.id}"
+                  data-grupo-id="${horario.grupoId}"
+                  data-dia="${horario.diaSemana}"
+                  data-hora-inicio="${formatearHora(horario.horaInicio)}"
+                  data-hora-fin="${formatearHora(horario.horaFin)}"
+                >
+                  Editar
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn--secondary btn-eliminar-horario"
+                  data-id="${horario.id}"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          `,
         )
         .join("");
     } catch (error) {
       console.error("Error cargando horarios:", error);
 
       groupSchedulesList.innerHTML = `
-
         <div class="grupos-empty">
-
           ${error.message}
-
         </div>
-
       `;
     }
   }
@@ -1720,12 +1483,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const id = botonEditar.dataset.id;
 
     try {
-      const response = await fetch(`/api/grupos/${id}`, {
+      const response = await apiFetch(`/api/grupos/${id}`, {
         method: "GET",
-
-        headers: {
-          Authorization: "Basic " + auth,
-        },
       });
 
       if (manejarNoAutorizado(response)) {
@@ -1765,13 +1524,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (editHoraInicio) {
         editHoraInicio.value = "";
-
         editHoraInicio.required = false;
       }
 
       if (editHoraFin) {
         editHoraFin.value = "";
-
         editHoraFin.required = false;
       }
 
@@ -1820,13 +1577,12 @@ document.addEventListener("DOMContentLoaded", function () {
    */
 
   async function obtenerHorariosGrupo(grupoId) {
-    const response = await fetch(`/api/grupo-horarios/grupo/${grupoId}`, {
-      method: "GET",
-
-      headers: {
-        Authorization: "Basic " + auth,
+    const response = await apiFetch(
+      `/api/grupo-horarios/grupo/${grupoId}`,
+      {
+        method: "GET",
       },
-    });
+    );
 
     if (manejarNoAutorizado(response)) {
       throw new Error("La sesión ha expirado.");
@@ -1916,13 +1672,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const grupo = {
         nombre: nombre,
-
         descripcion: descripcion,
-
         capacidad: capacidad,
-
         senseiId: senseiValue ? Number(senseiValue) : null,
-
         frecuenciaId: frecuencia.id,
       };
 
@@ -1930,17 +1682,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (submitButton) {
         submitButton.disabled = true;
-
         submitButton.textContent = "Guardando...";
       }
 
       try {
-        const response = await fetch(`/api/grupos/${id}`, {
+        const response = await apiFetch(`/api/grupos/${id}`, {
           method: "PUT",
 
           headers: {
-            Authorization: "Basic " + auth,
-
             "Content-Type": "application/json",
           },
 
@@ -1982,7 +1731,6 @@ document.addEventListener("DOMContentLoaded", function () {
       } finally {
         if (submitButton) {
           submitButton.disabled = false;
-
           submitButton.textContent = "Guardar cambios";
         }
       }
@@ -2096,22 +1844,17 @@ document.addEventListener("DOMContentLoaded", function () {
       addScheduleButton.textContent = "Guardando...";
 
       try {
-        const response = await fetch("/api/grupo-horarios", {
+        const response = await apiFetch("/api/grupo-horarios", {
           method: "POST",
 
           headers: {
-            Authorization: "Basic " + auth,
-
             "Content-Type": "application/json",
           },
 
           body: JSON.stringify({
             grupoId: Number(grupoId),
-
             diaSemana: dia,
-
             horaInicio: horaInicio,
-
             horaFin: horaFin,
           }),
         });
@@ -2199,50 +1942,42 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       info.innerHTML = `
+        <strong>
+          ${obtenerNombreDia(diaSemana)}
+        </strong>
 
-          <strong>
-            ${obtenerNombreDia(diaSemana)}
-          </strong>
+        <div class="grupo-horario-edicion">
+          <input
+            type="time"
+            class="editar-hora-inicio"
+            value="${horaInicioActual}"
+          >
 
-          <div class="grupo-horario-edicion">
+          <span>-</span>
 
-            <input
-              type="time"
-              class="editar-hora-inicio"
-              value="${horaInicioActual}"
-            >
-
-            <span>
-              -
-            </span>
-
-            <input
-              type="time"
-              class="editar-hora-fin"
-              value="${horaFinActual}"
-            >
-
-          </div>
-
-        `;
+          <input
+            type="time"
+            class="editar-hora-fin"
+            value="${horaFinActual}"
+          >
+        </div>
+      `;
 
       acciones.innerHTML = `
+        <button
+          type="button"
+          class="btn btn--primary btn-guardar-horario"
+        >
+          Guardar
+        </button>
 
-          <button
-            type="button"
-            class="btn btn--primary btn-guardar-horario"
-          >
-            Guardar
-          </button>
-
-          <button
-            type="button"
-            class="btn btn--secondary btn-cancelar-edicion-horario"
-          >
-            Cancelar
-          </button>
-
-        `;
+        <button
+          type="button"
+          class="btn btn--secondary btn-cancelar-edicion-horario"
+        >
+          Cancelar
+        </button>
+      `;
 
       const inputInicio = item.querySelector(".editar-hora-inicio");
 
@@ -2250,7 +1985,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const botonGuardar = item.querySelector(".btn-guardar-horario");
 
-      const botonCancelar = item.querySelector(".btn-cancelar-edicion-horario");
+      const botonCancelar = item.querySelector(
+        ".btn-cancelar-edicion-horario",
+      );
 
       botonCancelar.addEventListener("click", function () {
         cargarHorariosGrupo(Number(grupoId));
@@ -2286,25 +2023,23 @@ document.addEventListener("DOMContentLoaded", function () {
         botonCancelar.disabled = true;
 
         try {
-          const response = await fetch(`/api/grupo-horarios/${horarioId}`, {
-            method: "PUT",
+          const response = await apiFetch(
+            `/api/grupo-horarios/${horarioId}`,
+            {
+              method: "PUT",
 
-            headers: {
-              Authorization: "Basic " + auth,
+              headers: {
+                "Content-Type": "application/json",
+              },
 
-              "Content-Type": "application/json",
+              body: JSON.stringify({
+                grupoId: Number(grupoId),
+                diaSemana: diaSemana,
+                horaInicio: horaInicio,
+                horaFin: horaFin,
+              }),
             },
-
-            body: JSON.stringify({
-              grupoId: Number(grupoId),
-
-              diaSemana: diaSemana,
-
-              horaInicio: horaInicio,
-
-              horaFin: horaFin,
-            }),
-          });
+          );
 
           if (manejarNoAutorizado(response)) {
             return;
@@ -2373,13 +2108,12 @@ document.addEventListener("DOMContentLoaded", function () {
     button.textContent = "Eliminando...";
 
     try {
-      const response = await fetch(`/api/grupo-horarios/${horarioId}`, {
-        method: "DELETE",
-
-        headers: {
-          Authorization: "Basic " + auth,
+      const response = await apiFetch(
+        `/api/grupo-horarios/${horarioId}`,
+        {
+          method: "DELETE",
         },
-      });
+      );
 
       if (manejarNoAutorizado(response)) {
         return;
@@ -2448,12 +2182,8 @@ document.addEventListener("DOMContentLoaded", function () {
     button.textContent = "Eliminando...";
 
     try {
-      const response = await fetch(`/api/grupos/${id}`, {
+      const response = await apiFetch(`/api/grupos/${id}`, {
         method: "DELETE",
-
-        headers: {
-          Authorization: "Basic " + auth,
-        },
       });
 
       if (manejarNoAutorizado(response)) {
@@ -2487,14 +2217,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (groupSchedulesList) {
           groupSchedulesList.innerHTML = `
-
-              <div class="grupos-empty">
-
-                Selecciona un grupo para gestionar sus horarios.
-
-              </div>
-
-            `;
+            <div class="grupos-empty">
+              Selecciona un grupo para gestionar sus horarios.
+            </div>
+          `;
         }
       }
 
@@ -2538,14 +2264,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (groupSchedulesList) {
         groupSchedulesList.innerHTML = `
-
-            <div class="grupos-empty">
-
-              Selecciona un grupo para gestionar sus horarios.
-
-            </div>
-
-          `;
+          <div class="grupos-empty">
+            Selecciona un grupo para gestionar sus horarios.
+          </div>
+        `;
       }
     });
   }
@@ -2572,14 +2294,10 @@ document.addEventListener("DOMContentLoaded", function () {
     button.disabled = true;
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/grupos/${id}/estado?estado=${nuevoEstado}`,
         {
           method: "PATCH",
-
-          headers: {
-            Authorization: "Basic " + auth,
-          },
         },
       );
 

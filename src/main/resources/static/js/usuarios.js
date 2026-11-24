@@ -1,233 +1,112 @@
+
 document.addEventListener("DOMContentLoaded", async function () {
   // =========================================================
-  // DATOS DE SESIÓN
+  // SESIÓN Y CONFIGURACIÓN
   // =========================================================
 
-  const auth = sessionStorage.getItem("kihonAuth");
   const username = sessionStorage.getItem("kihonUsername");
   const rol = sessionStorage.getItem("kihonRol");
 
-  // =========================================================
-  // CONFIGURACIÓN
-  // =========================================================
-
   const REGISTROS_POR_PAGINA = 10;
-
   const ROLES_VALIDOS = ["ADMIN", "SECRETARIA", "SENSEI", "ESTUDIANTE"];
 
   // =========================================================
-  // ELEMENTOS - USUARIOS
+  // ELEMENTOS DEL DOM
   // =========================================================
 
-  const usuariosTableBody = document.getElementById("usuariosTableBody");
-
-  const usuariosMessage = document.getElementById("usuariosMessage");
-
-  const usuariosSearch = document.getElementById("usuariosSearch");
-
-  const estadoFiltro = document.getElementById("estadoFiltro");
-
-  const registrarUsuarioButton = document.getElementById(
-    "registrarUsuarioButton",
-  );
-
-  // Paginación usuarios
-
-  const usuariosPreviousPage = document.getElementById("usuariosPreviousPage");
-
-  const usuariosPageInfo = document.getElementById("usuariosPageInfo");
-
-  const usuariosNextPage = document.getElementById("usuariosNextPage");
-
-  // =========================================================
-  // ELEMENTOS - ESTUDIANTES
-  // =========================================================
-
-  const estudiantesSearch = document.getElementById("estudiantesSearch");
-
-  const estudiantesMessage = document.getElementById("estudiantesMessage");
-
-  const estudiantesSinCuentaTableBody = document.getElementById(
-    "estudiantesSinCuentaTableBody",
-  );
-
-  // Paginación estudiantes
-
-  const estudiantesPreviousPage = document.getElementById(
-    "estudiantesPreviousPage",
-  );
-
-  const estudiantesPageInfo = document.getElementById("estudiantesPageInfo");
-
-  const estudiantesNextPage = document.getElementById("estudiantesNextPage");
-
-  // =========================================================
-  // ELEMENTOS - MODAL CREAR CUENTA
-  // =========================================================
-
-  const crearUsuarioModal = document.getElementById("crearUsuarioModal");
-
-  const crearUsuarioModalOverlay = document.getElementById(
-    "crearUsuarioModalOverlay",
-  );
-
-  const cerrarCrearUsuarioModal = document.getElementById(
-    "cerrarCrearUsuarioModal",
-  );
-
-  const cancelarCrearUsuario = document.getElementById("cancelarCrearUsuario");
-
-  const crearUsuarioForm = document.getElementById("crearUsuarioForm");
-
-  const modalEstudianteId = document.getElementById("modalEstudianteId");
-
-  const modalEstudianteNombre = document.getElementById(
-    "modalEstudianteNombre",
-  );
-
-  const modalEstudianteDocumento = document.getElementById(
-    "modalEstudianteDocumento",
-  );
-
-  const modalEstudianteCorreo = document.getElementById(
-    "modalEstudianteCorreo",
-  );
-
-  const modalUsername = document.getElementById("modalUsername");
-
-  const modalPassword = document.getElementById("modalPassword");
-
-  const modalGenero = document.getElementById("modalGenero");
-
-  const crearUsuarioMessage = document.getElementById("crearUsuarioMessage");
-
-  const crearUsuarioSubmit = document.getElementById("crearUsuarioSubmit");
-
-  // =========================================================
-  // ELEMENTOS - MODAL REGISTRAR
-  // =========================================================
-
-  const registrarUsuarioModal = document.getElementById(
-    "registrarUsuarioModal",
-  );
-
-  const registrarUsuarioModalOverlay = document.getElementById(
-    "registrarUsuarioModalOverlay",
-  );
-
-  const cerrarRegistrarUsuarioModal = document.getElementById(
-    "cerrarRegistrarUsuarioModal",
-  );
-
-  const cancelarRegistrarUsuario = document.getElementById(
-    "cancelarRegistrarUsuario",
-  );
-
-  const registroUsuarioForm = document.getElementById("registroUsuarioForm");
-
-  // =========================================================
-  // ELEMENTOS - MODAL EDITAR
-  // =========================================================
-
-  const editarUsuarioModal = document.getElementById("editarUsuarioModal");
-
-  const editarUsuarioModalOverlay = document.getElementById(
-    "editarUsuarioModalOverlay",
-  );
-
-  const cerrarEditarUsuarioModal = document.getElementById(
-    "cerrarEditarUsuarioModal",
-  );
-
-  const cancelarEditarUsuario = document.getElementById(
-    "cancelarEditarUsuario",
-  );
-
-  const editarUsuarioForm = document.getElementById("editarUsuarioForm");
-
-  const editarUsuarioId = document.getElementById("editarUsuarioId");
-
-  const editarFoto = document.getElementById("editarFoto");
-
-  const editarUsuarioFoto = document.getElementById("editarUsuarioFoto");
-
-  const editarFotoInput = document.getElementById("editarFotoInput");
-
-  const cambiarEditarFotoBtn = document.getElementById("cambiarEditarFotoBtn");
-
-  const editarUsername = document.getElementById("editarUsername");
-
-  const editarRol = document.getElementById("editarRol");
-
-  const editarPassword = document.getElementById("editarPassword");
-
-  const editarPasswordConfirmacion = document.getElementById(
-    "editarPasswordConfirmacion",
-  );
-
-  const toggleEditarPassword = document.getElementById("toggleEditarPassword");
-
-  const editarNombre = document.getElementById("editarNombre");
-
-  const editarApellido = document.getElementById("editarApellido");
-
-  const editarTipoDocumento = document.getElementById("editarTipoDocumento");
-
-  const editarNumeroDocumento = document.getElementById(
-    "editarNumeroDocumento",
-  );
-
-  const editarCodigoPais = document.getElementById("editarCodigoPais");
-
-  const editarTelefono = document.getElementById("editarTelefono");
-
-  const editarFechaNacimiento = document.getElementById(
-    "editarFechaNacimiento",
-  );
-
-  const editarGenero = document.getElementById("editarGenero");
-
-  const editarCorreo = document.getElementById("editarCorreo");
-
-  const editarUsuarioMessage = document.getElementById("editarUsuarioMessage");
-
-  const editarUsuarioSubmit = document.getElementById("editarUsuarioSubmit");
-
-  // =========================================================
-  // ELEMENTOS - MODAL ALERTAS / CONFIRMACIONES
-  // =========================================================
-
-  const sistemaAlertModal = document.getElementById("sistemaAlertModal");
-
-  const sistemaAlertModalOverlay = document.getElementById(
-    "sistemaAlertModalOverlay",
-  );
-
-  const sistemaAlertModalClose = document.getElementById(
-    "sistemaAlertModalClose",
-  );
-
-  const sistemaAlertModalTitle = document.getElementById(
-    "sistemaAlertModalTitle",
-  );
-
-  const sistemaAlertModalIcon = document.getElementById(
-    "sistemaAlertModalIcon",
-  );
-
-  const sistemaAlertModalMessage = document.getElementById(
-    "sistemaAlertModalMessage",
-  );
-
-  const sistemaAlertModalCancel = document.getElementById(
-    "sistemaAlertModalCancel",
-  );
-
-  const sistemaAlertModalConfirm = document.getElementById(
-    "sistemaAlertModalConfirm",
-  );
-
-  let resolverSistemaAlertModal = null;
+  const $ = (id) => document.getElementById(id);
+
+  const elementos = {
+    // Usuarios
+    usuariosTableBody: $("usuariosTableBody"),
+    usuariosMessage: $("usuariosMessage"),
+    usuariosSearch: $("usuariosSearch"),
+    estadoFiltro: $("estadoFiltro"),
+    rolFiltro: $("rolFiltro"),
+    registrarUsuarioButton: $("registrarUsuarioButton"),
+
+    // KPI
+    usuariosTotal: $("usuariosTotal"),
+    usuariosActivos: $("usuariosActivos"),
+    usuariosPendientes: $("usuariosPendientes"),
+    usuariosInactivos: $("usuariosInactivos"),
+
+    // Paginación usuarios
+    usuariosPreviousPage: $("usuariosPreviousPage"),
+    usuariosPageInfo: $("usuariosPageInfo"),
+    usuariosNextPage: $("usuariosNextPage"),
+
+    // Estudiantes
+    estudiantesSearch: $("estudiantesSearch"),
+    estudiantesMessage: $("estudiantesMessage"),
+    estudiantesSinCuentaTableBody: $("estudiantesSinCuentaTableBody"),
+
+    // Paginación estudiantes
+    estudiantesPreviousPage: $("estudiantesPreviousPage"),
+    estudiantesPageInfo: $("estudiantesPageInfo"),
+    estudiantesNextPage: $("estudiantesNextPage"),
+
+    // Modal crear cuenta
+    crearUsuarioModal: $("crearUsuarioModal"),
+    crearUsuarioModalOverlay: $("crearUsuarioModalOverlay"),
+    cerrarCrearUsuarioModal: $("cerrarCrearUsuarioModal"),
+    cancelarCrearUsuario: $("cancelarCrearUsuario"),
+    crearUsuarioForm: $("crearUsuarioForm"),
+    modalEstudianteId: $("modalEstudianteId"),
+    modalEstudianteNombre: $("modalEstudianteNombre"),
+    modalEstudianteDocumento: $("modalEstudianteDocumento"),
+    modalEstudianteCorreo: $("modalEstudianteCorreo"),
+    modalUsername: $("modalUsername"),
+    modalPassword: $("modalPassword"),
+    modalGenero: $("modalGenero"),
+    crearUsuarioMessage: $("crearUsuarioMessage"),
+    crearUsuarioSubmit: $("crearUsuarioSubmit"),
+
+    // Modal registrar
+    registrarUsuarioModal: $("registrarUsuarioModal"),
+    registrarUsuarioModalOverlay: $("registrarUsuarioModalOverlay"),
+    cerrarRegistrarUsuarioModal: $("cerrarRegistrarUsuarioModal"),
+    cancelarRegistrarUsuario: $("cancelarRegistrarUsuario"),
+    registroUsuarioForm: $("registroUsuarioForm"),
+
+    // Modal editar
+    editarUsuarioModal: $("editarUsuarioModal"),
+    editarUsuarioModalOverlay: $("editarUsuarioModalOverlay"),
+    cerrarEditarUsuarioModal: $("cerrarEditarUsuarioModal"),
+    cancelarEditarUsuario: $("cancelarEditarUsuario"),
+    editarUsuarioForm: $("editarUsuarioForm"),
+    editarUsuarioId: $("editarUsuarioId"),
+    editarFoto: $("editarFoto"),
+    editarUsuarioFoto: $("editarUsuarioFoto"),
+    editarFotoInput: $("editarFotoInput"),
+    cambiarEditarFotoBtn: $("cambiarEditarFotoBtn"),
+    editarUsername: $("editarUsername"),
+    editarRol: $("editarRol"),
+    editarPassword: $("editarPassword"),
+    editarPasswordConfirmacion: $("editarPasswordConfirmacion"),
+    toggleEditarPassword: $("toggleEditarPassword"),
+    editarNombre: $("editarNombre"),
+    editarApellido: $("editarApellido"),
+    editarTipoDocumento: $("editarTipoDocumento"),
+    editarNumeroDocumento: $("editarNumeroDocumento"),
+    editarCodigoPais: $("editarCodigoPais"),
+    editarTelefono: $("editarTelefono"),
+    editarFechaNacimiento: $("editarFechaNacimiento"),
+    editarGenero: $("editarGenero"),
+    editarCorreo: $("editarCorreo"),
+    editarUsuarioMessage: $("editarUsuarioMessage"),
+    editarUsuarioSubmit: $("editarUsuarioSubmit"),
+
+    // Modal de alertas
+    sistemaAlertModal: $("sistemaAlertModal"),
+    sistemaAlertModalOverlay: $("sistemaAlertModalOverlay"),
+    sistemaAlertModalClose: $("sistemaAlertModalClose"),
+    sistemaAlertModalTitle: $("sistemaAlertModalTitle"),
+    sistemaAlertModalIcon: $("sistemaAlertModalIcon"),
+    sistemaAlertModalMessage: $("sistemaAlertModalMessage"),
+    sistemaAlertModalCancel: $("sistemaAlertModalCancel"),
+    sistemaAlertModalConfirm: $("sistemaAlertModalConfirm"),
+  };
 
   // =========================================================
   // DATOS EN MEMORIA
@@ -236,54 +115,89 @@ document.addEventListener("DOMContentLoaded", async function () {
   let usuarios = [];
   let estudiantes = [];
 
-  let editarFotoSeleccionada = null;
-
   let usuariosPaginaActual = 1;
   let estudiantesPaginaActual = 1;
 
+  let editarFotoSeleccionada = null;
+  let resolverSistemaAlertModal = null;
+
   // =========================================================
-  // VERIFICAR SESIÓN
+  // VALIDAR SESIÓN
   // =========================================================
 
-  if (!auth || !username || !rol) {
+  if (!username || !rol) {
+    sessionStorage.removeItem("kihonUsername");
+    sessionStorage.removeItem("kihonRol");
+    sessionStorage.removeItem("kihonAuth");
+
     window.location.href = "/login";
     return;
   }
 
-  // =========================================================
-  // VERIFICAR ROL
-  // =========================================================
-
   if (rol !== "ADMIN") {
-    if (usuariosMessage) {
-      usuariosMessage.textContent =
+    if (elementos.usuariosMessage) {
+      elementos.usuariosMessage.textContent =
         "No tienes permisos para acceder a esta sección.";
     }
 
-    if (registrarUsuarioButton) {
-      registrarUsuarioButton.disabled = true;
+    if (elementos.registrarUsuarioButton) {
+      elementos.registrarUsuarioButton.disabled = true;
     }
 
     return;
   }
 
   // =========================================================
-  // PETICIONES AUTENTICADAS
+  // PETICIONES AUTENTICADAS CON SESIÓN Y CSRF
   // =========================================================
 
-  async function fetchAutenticado(url, opciones = {}) {
-    const headers = {
-      ...(opciones.headers || {}),
-      Authorization: "Basic " + auth,
-    };
+  async function obtenerTokenCSRF() {
+    const response = await fetch("/api/auth/csrf", {
+      method: "GET",
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudo obtener el token CSRF.");
+    }
+
+    const data = await response.json();
+
+    return data.token;
+  }
+
+  async function solicitar(url, opciones = {}) {
+    const method = (opciones.method || "GET").toUpperCase();
+
+    const headers = new Headers(opciones.headers || {});
+
+    // No utilizar autenticación Basic.
+    headers.delete("Authorization");
+
+    headers.set("Accept", "application/json");
+
+    // Las operaciones que modifican datos requieren CSRF.
+    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+      const csrfToken = await obtenerTokenCSRF();
+
+      headers.set("X-CSRF-TOKEN", csrfToken);
+    }
 
     const response = await fetch(url, {
       ...opciones,
+      method,
+      credentials: "same-origin",
       headers,
     });
 
+    // La sesión ya no es válida.
     if (response.status === 401) {
-      sessionStorage.clear();
+      sessionStorage.removeItem("kihonUsername");
+      sessionStorage.removeItem("kihonRol");
+      sessionStorage.removeItem("kihonAuth");
 
       window.location.href = "/login";
 
@@ -294,15 +208,11 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   // =========================================================
-  // LEER RESPUESTA JSON DE FORMA SEGURA
+  // LECTURA SEGURA DE JSON
   // =========================================================
 
   async function leerJsonSeguro(response) {
-    if (!response) {
-      return null;
-    }
-
-    if (response.status === 204) {
+    if (!response || response.status === 204) {
       return null;
     }
 
@@ -316,14 +226,9 @@ document.addEventListener("DOMContentLoaded", async function () {
       return JSON.parse(contenido);
     } catch (error) {
       console.warn("La respuesta no contiene JSON válido.", error);
-
       return null;
     }
   }
-
-  // =========================================================
-  // OBTENER MENSAJE DE ERROR
-  // =========================================================
 
   async function obtenerMensajeError(response, mensajePorDefecto) {
     try {
@@ -333,28 +238,20 @@ document.addEventListener("DOMContentLoaded", async function () {
         return mensajePorDefecto;
       }
 
-      if (typeof contenido.mensaje === "string" && contenido.mensaje.trim()) {
-        return contenido.mensaje;
-      }
-
-      if (typeof contenido.message === "string" && contenido.message.trim()) {
-        return contenido.message;
-      }
-
-      if (typeof contenido.error === "string" && contenido.error.trim()) {
-        return contenido.error;
-      }
-
-      return mensajePorDefecto;
+      return (
+        contenido.mensaje ||
+        contenido.message ||
+        contenido.error ||
+        mensajePorDefecto
+      );
     } catch (error) {
-      console.error("No se pudo leer el error del servidor:", error);
-
+      console.error("No se pudo leer el error:", error);
       return mensajePorDefecto;
     }
   }
 
   // =========================================================
-  // ESCAPAR HTML
+  // UTILIDADES
   // =========================================================
 
   function escaparHtml(valor) {
@@ -370,9 +267,9 @@ document.addEventListener("DOMContentLoaded", async function () {
       .replace(/'/g, "&#039;");
   }
 
-  // =========================================================
-  // NOMBRES
-  // =========================================================
+  function normalizarTexto(valor) {
+    return String(valor || "").trim().toLowerCase();
+  }
 
   function nombreCompletoUsuario(usuario) {
     return `${usuario.nombre || ""} ${usuario.apellido || ""}`.trim();
@@ -382,9 +279,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     return `${estudiante.nombre || ""} ${estudiante.apellido || ""}`.trim();
   }
 
-  // =========================================================
-  // ESTUDIANTE DE UN USUARIO
-  // =========================================================
+  function obtenerDocumentoUsuario(usuario) {
+    return usuario.numeroDocumento || usuario.documento || "";
+  }
+
+  function obtenerDocumentoEstudiante(estudiante) {
+    return estudiante.numeroDocumento || estudiante.documento || "";
+  }
 
   function obtenerEstudianteDeUsuario(usuario) {
     if (!usuario.estudianteId) {
@@ -392,15 +293,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     return (
-      estudiantes.find(function (estudiante) {
-        return Number(estudiante.id) === Number(usuario.estudianteId);
-      }) || null
+      estudiantes.find(
+        (estudiante) =>
+          Number(estudiante.id) === Number(usuario.estudianteId),
+      ) || null
     );
   }
-
-  // =========================================================
-  // FOTO EFECTIVA
-  // =========================================================
 
   function obtenerFotoUsuario(usuario) {
     const estudiante = obtenerEstudianteDeUsuario(usuario);
@@ -412,19 +310,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     return usuario.foto || null;
   }
 
-  // =========================================================
-  // HTML FOTO
-  // =========================================================
-
   function generarFotoHtml(fotoUrl, nombre) {
-    const inicial = escaparHtml((nombre || "U").charAt(0).toUpperCase());
+    const inicial = escaparHtml(
+      (nombre || "U").charAt(0).toUpperCase(),
+    );
 
     if (!fotoUrl) {
       return `
-        <div
-          class="topbar__avatar"
-          aria-label="Sin foto"
-        >
+        <div class="topbar__avatar" aria-label="Sin foto">
           <span>${inicial}</span>
         </div>
       `;
@@ -435,23 +328,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         <img
           src="${escaparHtml(fotoUrl)}"
           alt="Foto de ${escaparHtml(nombre || "usuario")}"
-          style="
-            width:100%;
-            height:100%;
-            object-fit:cover;
-            border-radius:50%;
-          "
-          onerror="
-            this.parentElement.innerHTML =
-            '<span>${inicial}</span>';
-          "
+          style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+          onerror="this.parentElement.innerHTML='<span>${inicial}</span>';"
         >
       </div>
     `;
   }
 
   // =========================================================
-  // MODAL DE ALERTAS / CONFIRMACIONES
+  // MODAL DE ALERTAS Y CONFIRMACIONES
   // =========================================================
 
   function mostrarModalSistema({
@@ -463,74 +348,65 @@ document.addEventListener("DOMContentLoaded", async function () {
     mostrarCancelar = false,
   }) {
     return new Promise(function (resolve) {
+      const modal = elementos.sistemaAlertModal;
+
       if (
-        !sistemaAlertModal ||
-        !sistemaAlertModalTitle ||
-        !sistemaAlertModalMessage ||
-        !sistemaAlertModalConfirm
+        !modal ||
+        !elementos.sistemaAlertModalTitle ||
+        !elementos.sistemaAlertModalMessage ||
+        !elementos.sistemaAlertModalConfirm
       ) {
         console.error(
-          "No se encontró correctamente el modal de alertas del sistema.",
+          "No se encontró correctamente el modal de alertas.",
         );
 
-        resolve(true);
-
+        resolve(false);
         return;
+      }
+
+      if (resolverSistemaAlertModal) {
+        resolverSistemaAlertModal(false);
       }
 
       resolverSistemaAlertModal = resolve;
 
-      sistemaAlertModal.classList.remove(
+      modal.classList.remove(
         "sistema-alert-modal--success",
         "sistema-alert-modal--error",
         "sistema-alert-modal--confirm",
       );
 
-      sistemaAlertModal.classList.add(`sistema-alert-modal--${tipo}`);
+      modal.classList.add(`sistema-alert-modal--${tipo}`);
 
-      sistemaAlertModalTitle.textContent = titulo;
+      elementos.sistemaAlertModalTitle.textContent = titulo;
+      elementos.sistemaAlertModalMessage.textContent = mensaje;
 
-      sistemaAlertModalMessage.textContent = mensaje;
-
-      if (sistemaAlertModalIcon) {
-        if (tipo === "error") {
-          sistemaAlertModalIcon.textContent = "!";
-        } else if (tipo === "confirm") {
-          sistemaAlertModalIcon.textContent = "?";
-        } else {
-          sistemaAlertModalIcon.textContent = "✓";
-        }
+      if (elementos.sistemaAlertModalIcon) {
+        elementos.sistemaAlertModalIcon.textContent =
+          tipo === "error" ? "!" : tipo === "confirm" ? "?" : "✓";
       }
 
-      sistemaAlertModalConfirm.textContent = textoConfirmar;
+      elementos.sistemaAlertModalConfirm.textContent = textoConfirmar;
 
-      if (sistemaAlertModalCancel) {
-        sistemaAlertModalCancel.textContent = textoCancelar;
-
-        sistemaAlertModalCancel.hidden = !mostrarCancelar;
+      if (elementos.sistemaAlertModalCancel) {
+        elementos.sistemaAlertModalCancel.textContent = textoCancelar;
+        elementos.sistemaAlertModalCancel.hidden = !mostrarCancelar;
       }
 
-      sistemaAlertModal.hidden = false;
+      modal.hidden = false;
 
-      setTimeout(function () {
-        sistemaAlertModalConfirm.focus();
+      setTimeout(() => {
+        elementos.sistemaAlertModalConfirm.focus();
       }, 50);
     });
   }
 
-  // =========================================================
-  // CERRAR MODAL DEL SISTEMA
-  // =========================================================
-
   function cerrarModalSistema(resultado = false) {
-    if (!sistemaAlertModal) {
-      return;
+    if (elementos.sistemaAlertModal) {
+      elementos.sistemaAlertModal.hidden = true;
     }
 
-    sistemaAlertModal.hidden = true;
-
     const resolver = resolverSistemaAlertModal;
-
     resolverSistemaAlertModal = null;
 
     if (resolver) {
@@ -538,23 +414,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   }
 
-  // =========================================================
-  // ALERTA DE ÉXITO
-  // =========================================================
-
   async function mostrarExito(titulo, mensaje) {
     await mostrarModalSistema({
       tipo: "success",
       titulo,
       mensaje,
       textoConfirmar: "Aceptar",
-      mostrarCancelar: false,
     });
   }
-
-  // =========================================================
-  // ALERTA DE ERROR
-  // =========================================================
 
   async function mostrarError(titulo, mensaje) {
     await mostrarModalSistema({
@@ -562,20 +429,15 @@ document.addEventListener("DOMContentLoaded", async function () {
       titulo,
       mensaje,
       textoConfirmar: "Aceptar",
-      mostrarCancelar: false,
     });
   }
-
-  // =========================================================
-  // CONFIRMACIÓN
-  // =========================================================
 
   async function mostrarConfirmacion(
     titulo,
     mensaje,
     textoConfirmar = "Confirmar",
   ) {
-    return await mostrarModalSistema({
+    return mostrarModalSistema({
       tipo: "confirm",
       titulo,
       mensaje,
@@ -585,40 +447,31 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
   }
 
-  // =========================================================
-  // EXPONER MODALES PARA registro.js
-  // =========================================================
-
+  // Funciones utilizadas por registro.js.
   window.mostrarErrorKihon = mostrarError;
-
   window.mostrarExitoKihon = mostrarExito;
-
   window.mostrarConfirmacionKihon = mostrarConfirmacion;
 
-  // =========================================================
-  // EVENTOS MODAL DEL SISTEMA
-  // =========================================================
-
-  if (sistemaAlertModalConfirm) {
-    sistemaAlertModalConfirm.addEventListener("click", function () {
+  if (elementos.sistemaAlertModalConfirm) {
+    elementos.sistemaAlertModalConfirm.addEventListener("click", () => {
       cerrarModalSistema(true);
     });
   }
 
-  if (sistemaAlertModalCancel) {
-    sistemaAlertModalCancel.addEventListener("click", function () {
+  if (elementos.sistemaAlertModalCancel) {
+    elementos.sistemaAlertModalCancel.addEventListener("click", () => {
       cerrarModalSistema(false);
     });
   }
 
-  if (sistemaAlertModalClose) {
-    sistemaAlertModalClose.addEventListener("click", function () {
+  if (elementos.sistemaAlertModalClose) {
+    elementos.sistemaAlertModalClose.addEventListener("click", () => {
       cerrarModalSistema(false);
     });
   }
 
-  if (sistemaAlertModalOverlay) {
-    sistemaAlertModalOverlay.addEventListener("click", function () {
+  if (elementos.sistemaAlertModalOverlay) {
+    elementos.sistemaAlertModalOverlay.addEventListener("click", () => {
       cerrarModalSistema(false);
     });
   }
@@ -628,29 +481,30 @@ document.addEventListener("DOMContentLoaded", async function () {
   // =========================================================
 
   async function cargarUsuarios() {
-    const response = await fetchAutenticado("/api/usuarios");
+    const response = await solicitar("/api/usuarios");
 
     if (!response) {
       return false;
     }
 
     if (response.status === 403) {
-      usuariosMessage.textContent = "No tienes permisos para ver los usuarios.";
-
+      if (elementos.usuariosMessage) {
+        elementos.usuariosMessage.textContent =
+          "No tienes permisos para ver los usuarios.";
+      }
       return false;
     }
 
     if (!response.ok) {
-      const mensaje = await obtenerMensajeError(
-        response,
-        "No se pudieron obtener los usuarios.",
+      throw new Error(
+        await obtenerMensajeError(
+          response,
+          "No se pudieron obtener los usuarios.",
+        ),
       );
-
-      throw new Error(mensaje);
     }
 
     const datos = await leerJsonSeguro(response);
-
     usuarios = Array.isArray(datos) ? datos : [];
 
     return true;
@@ -661,33 +515,69 @@ document.addEventListener("DOMContentLoaded", async function () {
   // =========================================================
 
   async function cargarEstudiantes() {
-    const response = await fetchAutenticado("/api/estudiantes");
+    const response = await solicitar("/api/estudiantes");
 
     if (!response) {
       return false;
     }
 
     if (response.status === 403) {
-      estudiantesMessage.textContent =
-        "No tienes permisos para consultar estudiantes.";
-
+      if (elementos.estudiantesMessage) {
+        elementos.estudiantesMessage.textContent =
+          "No tienes permisos para consultar estudiantes.";
+      }
       return false;
     }
 
     if (!response.ok) {
-      const mensaje = await obtenerMensajeError(
-        response,
-        "No se pudieron obtener los estudiantes.",
+      throw new Error(
+        await obtenerMensajeError(
+          response,
+          "No se pudieron obtener los estudiantes.",
+        ),
       );
-
-      throw new Error(mensaje);
     }
 
     const datos = await leerJsonSeguro(response);
-
     estudiantes = Array.isArray(datos) ? datos : [];
 
     return true;
+  }
+
+  // =========================================================
+  // KPI DE USUARIOS
+  // =========================================================
+
+  function actualizarKpiUsuarios() {
+    const total = usuarios.length;
+
+    const activos = usuarios.filter(
+      (usuario) => usuario.estado === "ACTIVO",
+    ).length;
+
+    const pendientes = usuarios.filter(
+      (usuario) => usuario.estado === "PENDIENTE",
+    ).length;
+
+    const inactivos = usuarios.filter(
+      (usuario) => usuario.estado === "INACTIVO",
+    ).length;
+
+    if (elementos.usuariosTotal) {
+      elementos.usuariosTotal.textContent = total;
+    }
+
+    if (elementos.usuariosActivos) {
+      elementos.usuariosActivos.textContent = activos;
+    }
+
+    if (elementos.usuariosPendientes) {
+      elementos.usuariosPendientes.textContent = pendientes;
+    }
+
+    if (elementos.usuariosInactivos) {
+      elementos.usuariosInactivos.textContent = inactivos;
+    }
   }
 
   // =========================================================
@@ -696,9 +586,14 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   async function cargarDatos() {
     try {
-      usuariosMessage.textContent = "Cargando usuarios...";
+      if (elementos.usuariosMessage) {
+        elementos.usuariosMessage.textContent = "Cargando usuarios...";
+      }
 
-      estudiantesMessage.textContent = "Cargando estudiantes...";
+      if (elementos.estudiantesMessage) {
+        elementos.estudiantesMessage.textContent =
+          "Cargando estudiantes...";
+      }
 
       const usuariosCargados = await cargarUsuarios();
 
@@ -713,93 +608,136 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
 
       usuariosPaginaActual = 1;
-
       estudiantesPaginaActual = 1;
 
+      actualizarKpiUsuarios();
       renderizarUsuarios();
-
       renderizarEstudiantesSinCuenta();
     } catch (error) {
       console.error("Error cargando datos:", error);
 
-      usuariosMessage.textContent =
-        error.message || "No se pudieron cargar los usuarios.";
+      if (elementos.usuariosMessage) {
+        elementos.usuariosMessage.textContent =
+          error.message || "No se pudieron cargar los usuarios.";
+      }
 
-      estudiantesMessage.textContent = "No se pudieron cargar los estudiantes.";
+      if (elementos.estudiantesMessage) {
+        elementos.estudiantesMessage.textContent =
+          "No se pudieron cargar los estudiantes.";
+      }
     }
   }
 
   // =========================================================
-  // PAGINACIÓN GENÉRICA
+  // PAGINACIÓN
   // =========================================================
 
-  function obtenerPagina(lista, paginaActual, registrosPorPagina) {
+  function obtenerPagina(lista, paginaActual) {
     const totalPaginas = Math.max(
       1,
-      Math.ceil(lista.length / registrosPorPagina),
+      Math.ceil(lista.length / REGISTROS_POR_PAGINA),
     );
 
-    const paginaSegura = Math.min(Math.max(1, paginaActual), totalPaginas);
+    const paginaSegura = Math.min(
+      Math.max(1, paginaActual),
+      totalPaginas,
+    );
 
-    const inicio = (paginaSegura - 1) * registrosPorPagina;
-
-    const fin = inicio + registrosPorPagina;
+    const inicio = (paginaSegura - 1) * REGISTROS_POR_PAGINA;
 
     return {
-      elementos: lista.slice(inicio, fin),
+      elementos: lista.slice(
+        inicio,
+        inicio + REGISTROS_POR_PAGINA,
+      ),
       paginaActual: paginaSegura,
       totalPaginas,
     };
   }
 
-  // =========================================================
-  // ACTUALIZAR PAGINACIÓN USUARIOS
-  // =========================================================
-
-  function actualizarPaginacionUsuarios(totalRegistros, totalPaginas) {
+  function actualizarPaginacionUsuarios(total, totalPaginas) {
     usuariosPaginaActual = Math.min(
       Math.max(1, usuariosPaginaActual),
       totalPaginas,
     );
 
-    if (usuariosPageInfo) {
-      usuariosPageInfo.textContent = `Página ${usuariosPaginaActual} de ${totalPaginas}`;
+    if (elementos.usuariosPageInfo) {
+      elementos.usuariosPageInfo.textContent =
+        `Página ${usuariosPaginaActual} de ${totalPaginas}`;
     }
 
-    if (usuariosPreviousPage) {
-      usuariosPreviousPage.disabled =
-        usuariosPaginaActual <= 1 || totalRegistros === 0;
+    if (elementos.usuariosPreviousPage) {
+      elementos.usuariosPreviousPage.disabled =
+        usuariosPaginaActual <= 1 || total === 0;
     }
 
-    if (usuariosNextPage) {
-      usuariosNextPage.disabled =
-        usuariosPaginaActual >= totalPaginas || totalRegistros === 0;
+    if (elementos.usuariosNextPage) {
+      elementos.usuariosNextPage.disabled =
+        usuariosPaginaActual >= totalPaginas || total === 0;
     }
   }
 
-  // =========================================================
-  // ACTUALIZAR PAGINACIÓN ESTUDIANTES
-  // =========================================================
-
-  function actualizarPaginacionEstudiantes(totalRegistros, totalPaginas) {
+  function actualizarPaginacionEstudiantes(total, totalPaginas) {
     estudiantesPaginaActual = Math.min(
       Math.max(1, estudiantesPaginaActual),
       totalPaginas,
     );
 
-    if (estudiantesPageInfo) {
-      estudiantesPageInfo.textContent = `Página ${estudiantesPaginaActual} de ${totalPaginas}`;
+    if (elementos.estudiantesPageInfo) {
+      elementos.estudiantesPageInfo.textContent =
+        `Página ${estudiantesPaginaActual} de ${totalPaginas}`;
     }
 
-    if (estudiantesPreviousPage) {
-      estudiantesPreviousPage.disabled =
-        estudiantesPaginaActual <= 1 || totalRegistros === 0;
+    if (elementos.estudiantesPreviousPage) {
+      elementos.estudiantesPreviousPage.disabled =
+        estudiantesPaginaActual <= 1 || total === 0;
     }
 
-    if (estudiantesNextPage) {
-      estudiantesNextPage.disabled =
-        estudiantesPaginaActual >= totalPaginas || totalRegistros === 0;
+    if (elementos.estudiantesNextPage) {
+      elementos.estudiantesNextPage.disabled =
+        estudiantesPaginaActual >= totalPaginas || total === 0;
     }
+  }
+
+  // =========================================================
+  // FILTRAR USUARIOS
+  // =========================================================
+
+  function obtenerUsuariosFiltrados() {
+    const texto = normalizarTexto(
+      elementos.usuariosSearch?.value,
+    );
+
+    const estado = elementos.estadoFiltro?.value || "";
+    const rolSeleccionado = elementos.rolFiltro?.value || "";
+
+    return usuarios.filter((usuario) => {
+      if (estado && usuario.estado !== estado) {
+        return false;
+      }
+
+      if (rolSeleccionado && usuario.rol !== rolSeleccionado) {
+        return false;
+      }
+
+      if (!texto) {
+        return true;
+      }
+
+      const nombre = normalizarTexto(nombreCompletoUsuario(usuario));
+      const usernameUsuario = normalizarTexto(usuario.username);
+      const correo = normalizarTexto(usuario.correo);
+      const rolUsuario = normalizarTexto(usuario.rol);
+      const documento = normalizarTexto(obtenerDocumentoUsuario(usuario));
+
+      return (
+        nombre.includes(texto) ||
+        usernameUsuario.includes(texto) ||
+        correo.includes(texto) ||
+        rolUsuario.includes(texto) ||
+        documento.includes(texto)
+      );
+    });
   }
 
   // =========================================================
@@ -807,152 +745,120 @@ document.addEventListener("DOMContentLoaded", async function () {
   // =========================================================
 
   function renderizarUsuarios() {
-    const textoBusqueda = usuariosSearch.value.trim().toLowerCase();
+    const tbody = elementos.usuariosTableBody;
 
-    const estadoSeleccionado = estadoFiltro.value;
+    if (!tbody) {
+      return;
+    }
 
-    const usuariosFiltrados = usuarios.filter(function (usuario) {
-      if (estadoSeleccionado && usuario.estado !== estadoSeleccionado) {
-        return false;
-      }
-
-      if (!textoBusqueda) {
-        return true;
-      }
-
-      const nombre = nombreCompletoUsuario(usuario).toLowerCase();
-
-      const usernameUsuario = (usuario.username || "").toLowerCase();
-
-      const correo = (usuario.correo || "").toLowerCase();
-
-      const rolUsuario = (usuario.rol || "").toLowerCase();
-
-      return (
-        nombre.includes(textoBusqueda) ||
-        usernameUsuario.includes(textoBusqueda) ||
-        correo.includes(textoBusqueda) ||
-        rolUsuario.includes(textoBusqueda)
-      );
-    });
+    const usuariosFiltrados = obtenerUsuariosFiltrados();
 
     const pagina = obtenerPagina(
       usuariosFiltrados,
       usuariosPaginaActual,
-      REGISTROS_POR_PAGINA,
     );
 
     usuariosPaginaActual = pagina.paginaActual;
 
-    usuariosTableBody.innerHTML = "";
+    tbody.innerHTML = "";
 
-    actualizarPaginacionUsuarios(usuariosFiltrados.length, pagina.totalPaginas);
+    actualizarPaginacionUsuarios(
+      usuariosFiltrados.length,
+      pagina.totalPaginas,
+    );
 
     if (usuariosFiltrados.length === 0) {
-      usuariosMessage.textContent = "No se encontraron usuarios.";
-
+      if (elementos.usuariosMessage) {
+        elementos.usuariosMessage.textContent =
+          "No se encontraron usuarios con los filtros seleccionados.";
+      }
       return;
     }
 
-    usuariosMessage.textContent = `Usuarios encontrados: ${usuariosFiltrados.length}`;
+    if (elementos.usuariosMessage) {
+      elementos.usuariosMessage.textContent =
+        `Usuarios encontrados: ${usuariosFiltrados.length}`;
+    }
 
-    pagina.elementos.forEach(function (usuario) {
+    pagina.elementos.forEach((usuario) => {
       const fila = document.createElement("tr");
 
+      const nombre = nombreCompletoUsuario(usuario);
       const fotoUrl = obtenerFotoUsuario(usuario);
 
-      let botonEstado;
-
-      if (usuario.estado === "ACTIVO") {
-        botonEstado = `
-          <button
-            type="button"
-            class="btn btn--logout btn-estado"
-            data-id="${usuario.id}"
-            data-estado="INACTIVO"
-          >
-            Desactivar
-          </button>
-        `;
-      } else {
-        botonEstado = `
-          <button
-            type="button"
-            class="btn btn--primary btn-estado"
-            data-id="${usuario.id}"
-            data-estado="ACTIVO"
-          >
-            Activar
-          </button>
-        `;
-      }
-
-      const acciones = `
-        <div class="usuarios-actions">
-
-          ${botonEstado}
-
-          <button
-            type="button"
-            class="btn btn--accent btn-editar"
-            data-id="${usuario.id}"
-          >
-            Editar
-          </button>
-
-          <button
-            type="button"
-            class="btn btn--logout btn-eliminar"
-            data-id="${usuario.id}"
-          >
-            Eliminar
-          </button>
-
-        </div>
-      `;
+      const botonEstado =
+        usuario.estado === "ACTIVO"
+          ? `
+            <button
+              type="button"
+              class="btn btn--logout btn-estado"
+              data-id="${escaparHtml(usuario.id)}"
+              data-estado="INACTIVO"
+            >
+              Desactivar
+            </button>
+          `
+          : `
+            <button
+              type="button"
+              class="btn btn--primary btn-estado"
+              data-id="${escaparHtml(usuario.id)}"
+              data-estado="ACTIVO"
+            >
+              Activar
+            </button>
+          `;
 
       fila.innerHTML = `
         <td>
-          ${generarFotoHtml(fotoUrl, nombreCompletoUsuario(usuario))}
+          ${generarFotoHtml(fotoUrl, nombre)}
         </td>
 
-        <td>
-          ${escaparHtml(usuario.username)}
-        </td>
+        <td>${escaparHtml(usuario.username)}</td>
+
+        <td>${escaparHtml(nombre)}</td>
+
+        <td>${escaparHtml(usuario.correo)}</td>
+
+        <td>${escaparHtml(usuario.rol)}</td>
+
+        <td>${escaparHtml(usuario.estado)}</td>
 
         <td>
-          ${escaparHtml(nombreCompletoUsuario(usuario))}
-        </td>
+          <div class="usuarios-actions">
+            ${botonEstado}
 
-        <td>
-          ${escaparHtml(usuario.correo)}
-        </td>
+            <button
+              type="button"
+              class="btn btn--accent btn-editar"
+              data-id="${escaparHtml(usuario.id)}"
+            >
+              Editar
+            </button>
 
-        <td>
-          ${escaparHtml(usuario.rol)}
-        </td>
-
-        <td>
-          ${escaparHtml(usuario.estado)}
-        </td>
-
-        <td>
-          ${acciones}
+            <button
+              type="button"
+              class="btn btn--logout btn-eliminar"
+              data-id="${escaparHtml(usuario.id)}"
+            >
+              Eliminar
+            </button>
+          </div>
         </td>
       `;
 
-      usuariosTableBody.appendChild(fila);
+      tbody.appendChild(fila);
     });
 
-    document.querySelectorAll(".btn-estado").forEach(function (boton) {
+    tbody.querySelectorAll(".btn-estado").forEach((boton) => {
       boton.addEventListener("click", cambiarEstadoUsuario);
     });
 
-    document.querySelectorAll(".btn-editar").forEach(function (boton) {
+    tbody.querySelectorAll(".btn-editar").forEach((boton) => {
       boton.addEventListener("click", editarUsuario);
     });
 
-    document.querySelectorAll(".btn-eliminar").forEach(function (boton) {
+    tbody.querySelectorAll(".btn-eliminar").forEach((boton) => {
       boton.addEventListener("click", eliminarUsuario);
     });
   }
@@ -964,58 +870,65 @@ document.addEventListener("DOMContentLoaded", async function () {
   function obtenerEstudiantesSinCuenta() {
     const estudiantesConCuenta = new Set();
 
-    usuarios.forEach(function (usuario) {
+    usuarios.forEach((usuario) => {
       if (usuario.estudianteId) {
         estudiantesConCuenta.add(Number(usuario.estudianteId));
       }
     });
 
-    return estudiantes.filter(function (estudiante) {
-      return !estudiantesConCuenta.has(Number(estudiante.id));
+    return estudiantes.filter(
+      (estudiante) =>
+        !estudiantesConCuenta.has(Number(estudiante.id)),
+    );
+  }
+
+  function obtenerEstudiantesFiltrados() {
+    const texto = normalizarTexto(
+      elementos.estudiantesSearch?.value,
+    );
+
+    return obtenerEstudiantesSinCuenta().filter((estudiante) => {
+      if (!texto) {
+        return true;
+      }
+
+      const nombre = normalizarTexto(
+        nombreCompletoEstudiante(estudiante),
+      );
+
+      const documento = normalizarTexto(
+        obtenerDocumentoEstudiante(estudiante),
+      );
+
+      const correo = normalizarTexto(estudiante.correo);
+      const telefono = normalizarTexto(estudiante.telefono);
+
+      return (
+        nombre.includes(texto) ||
+        documento.includes(texto) ||
+        correo.includes(texto) ||
+        telefono.includes(texto)
+      );
     });
   }
 
-  // =========================================================
-  // RENDERIZAR ESTUDIANTES
-  // =========================================================
-
   function renderizarEstudiantesSinCuenta() {
-    const textoBusqueda = estudiantesSearch.value.trim().toLowerCase();
+    const tbody = elementos.estudiantesSinCuentaTableBody;
 
-    const estudiantesSinCuenta = obtenerEstudiantesSinCuenta();
+    if (!tbody) {
+      return;
+    }
 
-    const estudiantesFiltrados = estudiantesSinCuenta.filter(
-      function (estudiante) {
-        if (!textoBusqueda) {
-          return true;
-        }
-
-        const nombre = nombreCompletoEstudiante(estudiante).toLowerCase();
-
-        const documento = (estudiante.documento || "").toLowerCase();
-
-        const correo = (estudiante.correo || "").toLowerCase();
-
-        const telefono = (estudiante.telefono || "").toLowerCase();
-
-        return (
-          nombre.includes(textoBusqueda) ||
-          documento.includes(textoBusqueda) ||
-          correo.includes(textoBusqueda) ||
-          telefono.includes(textoBusqueda)
-        );
-      },
-    );
+    const estudiantesFiltrados = obtenerEstudiantesFiltrados();
 
     const pagina = obtenerPagina(
       estudiantesFiltrados,
       estudiantesPaginaActual,
-      REGISTROS_POR_PAGINA,
     );
 
     estudiantesPaginaActual = pagina.paginaActual;
 
-    estudiantesSinCuentaTableBody.innerHTML = "";
+    tbody.innerHTML = "";
 
     actualizarPaginacionEstudiantes(
       estudiantesFiltrados.length,
@@ -1023,142 +936,129 @@ document.addEventListener("DOMContentLoaded", async function () {
     );
 
     if (estudiantesFiltrados.length === 0) {
-      estudiantesMessage.textContent = textoBusqueda
-        ? "No se encontraron estudiantes."
-        : "Todos los estudiantes tienen una cuenta.";
-
+      if (elementos.estudiantesMessage) {
+        elementos.estudiantesMessage.textContent =
+          elementos.estudiantesSearch?.value.trim()
+            ? "No se encontraron estudiantes."
+            : "Todos los estudiantes tienen una cuenta.";
+      }
       return;
     }
 
-    estudiantesMessage.textContent = `Estudiantes encontrados: ${estudiantesFiltrados.length}`;
+    if (elementos.estudiantesMessage) {
+      elementos.estudiantesMessage.textContent =
+        `Estudiantes encontrados: ${estudiantesFiltrados.length}`;
+    }
 
-    pagina.elementos.forEach(function (estudiante) {
+    pagina.elementos.forEach((estudiante) => {
       const fila = document.createElement("tr");
 
+      const nombre = nombreCompletoEstudiante(estudiante);
       const fotoUrl = estudiante.fotoUrl || estudiante.foto || null;
 
       fila.innerHTML = `
-        <td>
-          ${generarFotoHtml(fotoUrl, nombreCompletoEstudiante(estudiante))}
-        </td>
+        <td>${generarFotoHtml(fotoUrl, nombre)}</td>
 
-        <td>
-          ${escaparHtml(nombreCompletoEstudiante(estudiante))}
-        </td>
+        <td>${escaparHtml(nombre)}</td>
 
-        <td>
-          ${escaparHtml(estudiante.documento)}
-        </td>
+        <td>${escaparHtml(obtenerDocumentoEstudiante(estudiante))}</td>
 
-        <td>
-          ${escaparHtml(estudiante.correo)}
-        </td>
+        <td>${escaparHtml(estudiante.correo)}</td>
 
-        <td>
-          ${escaparHtml(estudiante.telefono)}
-        </td>
+        <td>${escaparHtml(estudiante.telefono)}</td>
 
         <td>
           <button
             type="button"
             class="btn btn--primary btn-crear-cuenta"
-            data-id="${estudiante.id}"
+            data-id="${escaparHtml(estudiante.id)}"
           >
             Crear usuario
           </button>
         </td>
       `;
 
-      estudiantesSinCuentaTableBody.appendChild(fila);
+      tbody.appendChild(fila);
     });
 
-    document.querySelectorAll(".btn-crear-cuenta").forEach(function (boton) {
+    tbody.querySelectorAll(".btn-crear-cuenta").forEach((boton) => {
       boton.addEventListener("click", abrirModalCrearUsuario);
     });
   }
 
   // =========================================================
-  // ABRIR MODAL CREAR CUENTA
+  // MODAL CREAR CUENTA DE ESTUDIANTE
   // =========================================================
 
   function abrirModalCrearUsuario(event) {
     const estudianteId = Number(event.currentTarget.dataset.id);
 
-    const estudiante = estudiantes.find(function (item) {
-      return Number(item.id) === estudianteId;
-    });
+    const estudiante = estudiantes.find(
+      (item) => Number(item.id) === estudianteId,
+    );
 
     if (!estudiante) {
       mostrarError(
         "Estudiante no encontrado",
         "No fue posible encontrar el estudiante seleccionado.",
       );
-
       return;
     }
 
-    modalEstudianteId.value = estudiante.id;
+    elementos.modalEstudianteId.value = estudiante.id;
 
-    modalEstudianteNombre.textContent = nombreCompletoEstudiante(estudiante);
+    elementos.modalEstudianteNombre.textContent =
+      nombreCompletoEstudiante(estudiante);
 
-    modalEstudianteDocumento.textContent = `Documento: ${estudiante.documento || "-"}`;
+    elementos.modalEstudianteDocumento.textContent =
+      `Documento: ${obtenerDocumentoEstudiante(estudiante) || "-"}`;
 
-    modalEstudianteCorreo.textContent = `Correo: ${estudiante.correo || "-"}`;
+    elementos.modalEstudianteCorreo.textContent =
+      `Correo: ${estudiante.correo || "-"}`;
 
-    modalUsername.value = "";
+    elementos.modalUsername.value = "";
+    elementos.modalPassword.value = "";
+    elementos.modalGenero.value = "";
 
-    modalPassword.value = "";
+    elementos.crearUsuarioMessage.textContent = "";
+    elementos.crearUsuarioMessage.hidden = true;
 
-    modalGenero.value = "";
+    elementos.crearUsuarioModal.hidden = false;
 
-    crearUsuarioMessage.textContent = "";
-
-    crearUsuarioMessage.hidden = true;
-
-    crearUsuarioModal.hidden = false;
-
-    setTimeout(function () {
-      modalUsername.focus();
-    }, 50);
+    setTimeout(() => elementos.modalUsername.focus(), 50);
   }
-
-  // =========================================================
-  // CERRAR MODAL CREAR
-  // =========================================================
 
   function cerrarModalCrearUsuario() {
-    crearUsuarioModal.hidden = true;
+    if (!elementos.crearUsuarioModal) {
+      return;
+    }
 
-    crearUsuarioForm.reset();
+    elementos.crearUsuarioModal.hidden = true;
+    elementos.crearUsuarioForm?.reset();
 
-    modalEstudianteId.value = "";
+    if (elementos.modalEstudianteId) {
+      elementos.modalEstudianteId.value = "";
+    }
 
-    crearUsuarioMessage.textContent = "";
-
-    crearUsuarioMessage.hidden = true;
+    if (elementos.crearUsuarioMessage) {
+      elementos.crearUsuarioMessage.textContent = "";
+      elementos.crearUsuarioMessage.hidden = true;
+    }
   }
-
-  // =========================================================
-  // CREAR CUENTA ESTUDIANTE
-  // =========================================================
 
   async function crearCuentaParaEstudiante(event) {
     event.preventDefault();
 
-    const estudianteId = Number(modalEstudianteId.value);
-
-    const nuevoUsername = modalUsername.value.trim();
-
-    const nuevaPassword = modalPassword.value;
-
-    const nuevoGenero = modalGenero.value;
+    const estudianteId = Number(elementos.modalEstudianteId.value);
+    const nuevoUsername = elementos.modalUsername.value.trim();
+    const nuevaPassword = elementos.modalPassword.value;
+    const nuevoGenero = elementos.modalGenero.value;
 
     if (!estudianteId) {
       await mostrarError(
         "Datos incompletos",
         "No se ha seleccionado un estudiante.",
       );
-
       return;
     }
 
@@ -1167,9 +1067,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         "Usuario inválido",
         "El usuario debe tener entre 4 y 30 caracteres.",
       );
-
-      modalUsername.focus();
-
+      elementos.modalUsername.focus();
       return;
     }
 
@@ -1178,9 +1076,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         "Usuario inválido",
         "El usuario solo puede contener letras, números, punto, guion y guion bajo.",
       );
-
-      modalUsername.focus();
-
+      elementos.modalUsername.focus();
       return;
     }
 
@@ -1189,17 +1085,16 @@ document.addEventListener("DOMContentLoaded", async function () {
         "Contraseña inválida",
         "La contraseña debe tener entre 8 y 72 caracteres.",
       );
-
-      modalPassword.focus();
-
+      elementos.modalPassword.focus();
       return;
     }
 
     if (!nuevoGenero) {
-      await mostrarError("Datos incompletos", "Selecciona el género.");
-
-      modalGenero.focus();
-
+      await mostrarError(
+        "Datos incompletos",
+        "Selecciona el género.",
+      );
+      elementos.modalGenero.focus();
       return;
     }
 
@@ -1213,23 +1108,30 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
-    crearUsuarioSubmit.disabled = true;
+    const boton = elementos.crearUsuarioSubmit;
+    const textoOriginal = boton?.textContent || "Crear usuario";
 
-    crearUsuarioSubmit.textContent = "Creando...";
+    if (boton) {
+      boton.disabled = true;
+      boton.textContent = "Creando...";
+    }
 
     try {
-      const response = await fetchAutenticado("/api/usuarios/estudiante", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await solicitar(
+        "/api/usuarios/estudiante",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            estudianteId,
+            username: nuevoUsername,
+            password: nuevaPassword,
+            genero: nuevoGenero,
+          }),
         },
-        body: JSON.stringify({
-          estudianteId,
-          username: nuevoUsername,
-          password: nuevaPassword,
-          genero: nuevoGenero,
-        }),
-      });
+      );
 
       if (!response) {
         return;
@@ -1240,36 +1142,34 @@ document.addEventListener("DOMContentLoaded", async function () {
           "Acceso denegado",
           "No tienes permisos para crear esta cuenta.",
         );
-
         return;
       }
 
       if (response.status === 409) {
-        const mensaje = await obtenerMensajeError(
-          response,
-          "Los datos proporcionados ya están registrados.",
+        await mostrarError(
+          "No se pudo crear la cuenta",
+          await obtenerMensajeError(
+            response,
+            "Los datos proporcionados ya están registrados.",
+          ),
         );
-
-        await mostrarError("No se pudo crear la cuenta", mensaje);
-
         return;
       }
 
       if (!response.ok) {
-        const mensaje = await obtenerMensajeError(
-          response,
-          "No se pudo crear la cuenta.",
+        await mostrarError(
+          "No se pudo crear la cuenta",
+          await obtenerMensajeError(
+            response,
+            "No se pudo crear la cuenta.",
+          ),
         );
-
-        await mostrarError("No se pudo crear la cuenta", mensaje);
-
         return;
       }
 
       await leerJsonSeguro(response);
 
       cerrarModalCrearUsuario();
-
       await cargarDatos();
 
       await mostrarExito(
@@ -1284,43 +1184,30 @@ document.addEventListener("DOMContentLoaded", async function () {
         "No se pudo conectar con el servidor.",
       );
     } finally {
-      crearUsuarioSubmit.disabled = false;
-
-      crearUsuarioSubmit.textContent = "Crear usuario";
+      if (boton) {
+        boton.disabled = false;
+        boton.textContent = textoOriginal;
+      }
     }
   }
 
   // =========================================================
-  // MENSAJE CREAR
-  // =========================================================
-
-  function mostrarMensajeModal(mensaje) {
-    crearUsuarioMessage.textContent = mensaje;
-
-    crearUsuarioMessage.hidden = false;
-  }
-
-  // =========================================================
-  // CAMBIAR ESTADO
+  // CAMBIAR ESTADO DE USUARIO
   // =========================================================
 
   async function cambiarEstadoUsuario(event) {
     const boton = event.currentTarget;
-
-    const usuarioId = boton.dataset.id;
-
+    const usuarioId = Number(boton.dataset.id);
     const nuevoEstado = boton.dataset.estado;
+
+    const textoOriginal = boton.textContent;
 
     try {
       boton.disabled = true;
 
-      const response = await fetchAutenticado(
-        `/api/usuarios/${usuarioId}/estado?estado=${encodeURIComponent(
-          nuevoEstado,
-        )}`,
-        {
-          method: "PATCH",
-        },
+      const response = await solicitar(
+        `/api/usuarios/${usuarioId}/estado?estado=${encodeURIComponent(nuevoEstado)}`,
+        { method: "PATCH" },
       );
 
       if (!response) {
@@ -1332,38 +1219,26 @@ document.addEventListener("DOMContentLoaded", async function () {
           "Acceso denegado",
           "No tienes permisos para cambiar el estado.",
         );
-
-        boton.disabled = false;
-
         return;
       }
 
       if (!response.ok) {
-        const mensaje = await obtenerMensajeError(
-          response,
-          "No se pudo cambiar el estado del usuario.",
+        await mostrarError(
+          "No se pudo cambiar el estado",
+          await obtenerMensajeError(
+            response,
+            "No se pudo cambiar el estado del usuario.",
+          ),
         );
-
-        await mostrarError("No se pudo cambiar el estado", mensaje);
-
-        boton.disabled = false;
-
         return;
       }
 
       await leerJsonSeguro(response);
-
-      await cargarUsuarios();
-
-      renderizarUsuarios();
-
-      renderizarEstudiantesSinCuenta();
+      await cargarDatos();
 
       await mostrarExito(
         "Estado actualizado",
-        `El usuario fue ${
-          nuevoEstado === "ACTIVO" ? "activado" : "desactivado"
-        } correctamente.`,
+        `El usuario fue ${nuevoEstado === "ACTIVO" ? "activado" : "desactivado"} correctamente.`,
       );
     } catch (error) {
       console.error("Error cambiando estado:", error);
@@ -1372,8 +1247,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         "Error de conexión",
         "No se pudo conectar con el servidor.",
       );
-
+    } finally {
       boton.disabled = false;
+      boton.textContent = textoOriginal;
     }
   }
 
@@ -1384,189 +1260,253 @@ document.addEventListener("DOMContentLoaded", async function () {
   function editarUsuario(event) {
     const usuarioId = Number(event.currentTarget.dataset.id);
 
-    if (!usuarioId) {
-      return;
-    }
-
-    const usuario = usuarios.find(function (item) {
-      return Number(item.id) === usuarioId;
-    });
+    const usuario = usuarios.find(
+      (item) => Number(item.id) === usuarioId,
+    );
 
     if (!usuario) {
       mostrarError(
         "Usuario no encontrado",
         "No fue posible encontrar el usuario seleccionado.",
       );
-
       return;
     }
 
-    editarUsuarioMessage.hidden = true;
-
-    editarUsuarioMessage.textContent = "";
+    elementos.editarUsuarioMessage.hidden = true;
+    elementos.editarUsuarioMessage.textContent = "";
 
     cargarDatosEditarUsuario(usuario);
 
-    editarUsuarioModal.hidden = false;
+    elementos.editarUsuarioModal.hidden = false;
 
-    setTimeout(function () {
-      editarUsername.focus();
+    setTimeout(() => {
+      elementos.editarUsername.focus();
     }, 50);
   }
 
   // =========================================================
-  // CARGAR DATOS MODAL EDITAR
+  // REGLAS DE TELÉFONO
+  // =========================================================
+
+  const reglasTelefonoEditar = {
+    "+51": { nombre: "Perú", min: 9, max: 9 },
+    "+57": { nombre: "Colombia", min: 10, max: 10 },
+    "+56": { nombre: "Chile", min: 9, max: 9 },
+    "+54": { nombre: "Argentina", min: 10, max: 10 },
+    "+55": { nombre: "Brasil", min: 10, max: 11 },
+    "+52": { nombre: "México", min: 10, max: 10 },
+    "+1": { nombre: "Estados Unidos / Canadá", min: 10, max: 10 },
+    "+34": { nombre: "España", min: 9, max: 9 },
+  };
+
+  function obtenerCodigoPais(telefono) {
+    const codigos = [
+      "+51", "+57", "+56", "+54",
+      "+55", "+52", "+1", "+34",
+    ];
+
+    return codigos.find((codigo) => telefono.startsWith(codigo)) || "+51";
+  }
+
+  function actualizarReglasTelefonoEditar() {
+    if (!elementos.editarCodigoPais || !elementos.editarTelefono) {
+      return;
+    }
+
+    const regla =
+      reglasTelefonoEditar[elementos.editarCodigoPais.value];
+
+    if (!regla) {
+      return;
+    }
+
+    elementos.editarTelefono.maxLength = regla.max;
+
+    elementos.editarTelefono.placeholder =
+      regla.min === regla.max
+        ? `${regla.min} dígitos`
+        : `${regla.min}-${regla.max} dígitos`;
+  }
+
+  // =========================================================
+  // REGLAS DE DOCUMENTO
+  // =========================================================
+
+  function actualizarReglasDocumentoEditar() {
+    if (
+      !elementos.editarTipoDocumento ||
+      !elementos.editarNumeroDocumento
+    ) {
+      return;
+    }
+
+    const tipo = elementos.editarTipoDocumento.value;
+    const input = elementos.editarNumeroDocumento;
+
+    if (tipo === "DNI") {
+      input.maxLength = 8;
+      input.inputMode = "numeric";
+      input.pattern = "[0-9]{8}";
+      input.placeholder = "8 dígitos";
+      return;
+    }
+
+    if (tipo === "CE" || tipo === "PASAPORTE") {
+      input.maxLength = 12;
+      input.inputMode = "text";
+      input.pattern = "[A-Za-z0-9]{1,12}";
+      input.placeholder = "Hasta 12 caracteres";
+      return;
+    }
+
+    input.removeAttribute("maxlength");
+    input.removeAttribute("pattern");
+    input.placeholder = "Selecciona el tipo de documento";
+  }
+
+  // =========================================================
+  // CARGAR DATOS EN MODAL EDITAR
   // =========================================================
 
   function cargarDatosEditarUsuario(usuario) {
-    editarUsuarioId.value = usuario.id || "";
-
-    editarFoto.value = usuario.foto || "";
+    elementos.editarUsuarioId.value = usuario.id || "";
+    elementos.editarFoto.value = usuario.foto || "";
 
     editarFotoSeleccionada = null;
 
-    if (editarFotoInput) {
-      editarFotoInput.value = "";
+    if (elementos.editarFotoInput) {
+      elementos.editarFotoInput.value = "";
     }
 
     const fotoMostrar = obtenerFotoUsuario(usuario);
 
-    if (editarUsuarioFoto) {
+    if (elementos.editarUsuarioFoto) {
       if (fotoMostrar) {
-        editarUsuarioFoto.innerHTML = `
+        elementos.editarUsuarioFoto.innerHTML = `
           <img
             src="${escaparHtml(fotoMostrar)}"
             alt="Foto de ${escaparHtml(nombreCompletoUsuario(usuario))}"
-            style="
-              width:100%;
-              height:100%;
-              object-fit:cover;
-              border-radius:50%;
-            "
+            style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
           >
         `;
       } else {
-        editarUsuarioFoto.innerHTML = `
+        elementos.editarUsuarioFoto.innerHTML = `
           <span>
             ${escaparHtml(
-              (nombreCompletoUsuario(usuario) || "U").charAt(0).toUpperCase(),
-            )}
+          (nombreCompletoUsuario(usuario) || "U")
+            .charAt(0)
+            .toUpperCase(),
+        )}
           </span>
         `;
       }
     }
 
-    editarUsername.value = usuario.username || "";
+    elementos.editarUsername.value = usuario.username || "";
 
-    editarRol.value = ROLES_VALIDOS.includes(usuario.rol) ? usuario.rol : "";
+    elementos.editarRol.value = ROLES_VALIDOS.includes(usuario.rol)
+      ? usuario.rol
+      : "";
 
-    editarPassword.value = "";
+    elementos.editarPassword.value = "";
+    elementos.editarPasswordConfirmacion.value = "";
 
-    editarPasswordConfirmacion.value = "";
+    elementos.editarNombre.value = usuario.nombre || "";
+    elementos.editarApellido.value = usuario.apellido || "";
 
-    editarNombre.value = usuario.nombre || "";
-
-    editarApellido.value = usuario.apellido || "";
-
-    editarTipoDocumento.value = usuario.tipoDocumento || "";
+    elementos.editarTipoDocumento.value = usuario.tipoDocumento || "";
 
     actualizarReglasDocumentoEditar();
 
-    editarNumeroDocumento.value = usuario.numeroDocumento || "";
+    elementos.editarNumeroDocumento.value =
+      usuario.numeroDocumento || "";
 
     const telefono = usuario.telefono || "";
-
     const codigoPais = obtenerCodigoPais(telefono);
 
-    editarCodigoPais.value = codigoPais;
+    elementos.editarCodigoPais.value = codigoPais;
 
-    editarTelefono.value = telefono.startsWith(codigoPais)
+    elementos.editarTelefono.value = telefono.startsWith(codigoPais)
       ? telefono.substring(codigoPais.length)
       : telefono;
 
     actualizarReglasTelefonoEditar();
 
-    editarFechaNacimiento.value = usuario.fechaNacimiento || "";
+    elementos.editarFechaNacimiento.value =
+      usuario.fechaNacimiento || "";
 
-    editarGenero.value = usuario.genero || "";
-
-    editarCorreo.value = usuario.correo || "";
+    elementos.editarGenero.value = usuario.genero || "";
+    elementos.editarCorreo.value = usuario.correo || "";
   }
 
   // =========================================================
-  // TOGGLE CONTRASEÑA EDITAR
+  // MENSAJE MODAL EDITAR
   // =========================================================
 
-  function alternarVisibilidadPasswordEditar() {
-    const mostrar = editarPassword.type === "password";
+  function mostrarMensajeEditar(mensaje) {
+    if (!elementos.editarUsuarioMessage) {
+      return;
+    }
 
-    editarPassword.type = mostrar ? "text" : "password";
+    elementos.editarUsuarioMessage.textContent = mensaje;
+    elementos.editarUsuarioMessage.hidden = false;
+  }
 
-    editarPasswordConfirmacion.type = mostrar ? "text" : "password";
+  // =========================================================
+  // EVENTOS DE CAMPOS DEL MODAL EDITAR
+  // =========================================================
 
-    if (toggleEditarPassword) {
-      toggleEditarPassword.setAttribute(
+  if (elementos.toggleEditarPassword) {
+    elementos.toggleEditarPassword.addEventListener("click", () => {
+      const mostrar =
+        elementos.editarPassword.type === "password";
+
+      elementos.editarPassword.type = mostrar ? "text" : "password";
+
+      elementos.editarPasswordConfirmacion.type =
+        mostrar ? "text" : "password";
+
+      elementos.toggleEditarPassword.setAttribute(
         "aria-label",
         mostrar ? "Ocultar contraseña" : "Mostrar contraseña",
       );
 
-      toggleEditarPassword.textContent = mostrar ? "🙈" : "👁️";
-    }
+      elementos.toggleEditarPassword.textContent =
+        mostrar ? "🙈" : "👁️";
+    });
   }
 
-  if (toggleEditarPassword) {
-    toggleEditarPassword.addEventListener(
-      "click",
-      alternarVisibilidadPasswordEditar,
-    );
+  if (elementos.cambiarEditarFotoBtn) {
+    elementos.cambiarEditarFotoBtn.addEventListener("click", () => {
+      elementos.editarFotoInput?.click();
+    });
   }
 
-  // =========================================================
-  // FOTO EDITAR
-  // =========================================================
-
-  function seleccionarNuevaFotoEditar() {
-    if (!editarFotoInput) {
-      return;
-    }
-
-    editarFotoInput.click();
-  }
-
-  if (cambiarEditarFotoBtn) {
-    cambiarEditarFotoBtn.addEventListener("click", seleccionarNuevaFotoEditar);
-  }
-
-  if (editarFotoInput) {
-    editarFotoInput.addEventListener("change", function () {
-      const archivo =
-        editarFotoInput.files && editarFotoInput.files.length > 0
-          ? editarFotoInput.files[0]
-          : null;
+  if (elementos.editarFotoInput) {
+    elementos.editarFotoInput.addEventListener("change", function () {
+      const archivo = this.files?.[0];
 
       if (!archivo) {
         return;
       }
 
-      const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
+      const tiposPermitidos = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+      ];
 
       if (!tiposPermitidos.includes(archivo.type)) {
         mostrarMensajeEditar("La foto debe ser JPG, PNG o WEBP.");
-
-        editarFotoInput.value = "";
-
+        this.value = "";
         editarFotoSeleccionada = null;
-
         return;
       }
 
       if (archivo.size > 5 * 1024 * 1024) {
         mostrarMensajeEditar("La foto no puede superar los 5 MB.");
-
-        editarFotoInput.value = "";
-
+        this.value = "";
         editarFotoSeleccionada = null;
-
         return;
       }
 
@@ -1574,274 +1514,115 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       const reader = new FileReader();
 
-      reader.onload = function (evento) {
-        if (!editarUsuarioFoto) {
+      reader.onload = (evento) => {
+        if (!elementos.editarUsuarioFoto) {
           return;
         }
 
-        editarUsuarioFoto.innerHTML = `
-            <img
-              src="${evento.target.result}"
-              alt="Nueva foto"
-              style="
-                width:100%;
-                height:100%;
-                object-fit:cover;
-                border-radius:50%;
-              "
-            >
-          `;
+        elementos.editarUsuarioFoto.innerHTML = `
+          <img
+            src="${evento.target.result}"
+            alt="Nueva foto"
+            style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+          >
+        `;
       };
 
-      reader.onerror = function () {
+      reader.onerror = () => {
         editarFotoSeleccionada = null;
-
-        editarFotoInput.value = "";
-
-        mostrarMensajeEditar("No se pudo cargar la imagen seleccionada.");
+        this.value = "";
+        mostrarMensajeEditar(
+          "No se pudo cargar la imagen seleccionada.",
+        );
       };
 
       reader.readAsDataURL(archivo);
-
-      editarUsuarioMessage.textContent = "";
-
-      editarUsuarioMessage.hidden = true;
     });
   }
 
-  // =========================================================
-  // REGLAS TELEFONO
-  // =========================================================
-
-  const reglasTelefonoEditar = {
-    "+51": {
-      nombre: "Perú",
-      min: 9,
-      max: 9,
-    },
-
-    "+57": {
-      nombre: "Colombia",
-      min: 10,
-      max: 10,
-    },
-
-    "+56": {
-      nombre: "Chile",
-      min: 9,
-      max: 9,
-    },
-
-    "+54": {
-      nombre: "Argentina",
-      min: 10,
-      max: 10,
-    },
-
-    "+55": {
-      nombre: "Brasil",
-      min: 10,
-      max: 11,
-    },
-
-    "+52": {
-      nombre: "México",
-      min: 10,
-      max: 10,
-    },
-
-    "+1": {
-      nombre: "Estados Unidos / Canadá",
-      min: 10,
-      max: 10,
-    },
-
-    "+34": {
-      nombre: "España",
-      min: 9,
-      max: 9,
-    },
-  };
-
-  // =========================================================
-  // OBTENER CÓDIGO PAIS
-  // =========================================================
-
-  function obtenerCodigoPais(telefono) {
-    const codigos = ["+51", "+57", "+56", "+54", "+55", "+52", "+1", "+34"];
-
-    const encontrado = codigos.find(function (codigo) {
-      return telefono.startsWith(codigo);
-    });
-
-    return encontrado || "+51";
-  }
-
-  // =========================================================
-  // ACTUALIZAR REGLAS TELEFONO
-  // =========================================================
-
-  function actualizarReglasTelefonoEditar() {
-    const regla = reglasTelefonoEditar[editarCodigoPais.value];
-
-    if (!regla) {
-      return;
-    }
-
-    editarTelefono.maxLength = regla.max;
-
-    if (regla.min === regla.max) {
-      editarTelefono.placeholder = `${regla.min} dígitos`;
-    } else {
-      editarTelefono.placeholder = `${regla.min}-${regla.max} dígitos`;
-    }
-  }
-
-  // =========================================================
-  // CAMBIO PAIS
-  // =========================================================
-
-  if (editarCodigoPais) {
-    editarCodigoPais.addEventListener("change", function () {
-      editarTelefono.value = "";
-
+  if (elementos.editarCodigoPais) {
+    elementos.editarCodigoPais.addEventListener("change", () => {
+      elementos.editarTelefono.value = "";
       actualizarReglasTelefonoEditar();
     });
   }
 
-  // =========================================================
-  // SANITIZAR TELEFONO
-  // =========================================================
-
-  if (editarTelefono) {
-    editarTelefono.addEventListener("input", function () {
-      const regla = reglasTelefonoEditar[editarCodigoPais.value];
+  if (elementos.editarTelefono) {
+    elementos.editarTelefono.addEventListener("input", () => {
+      const regla =
+        reglasTelefonoEditar[elementos.editarCodigoPais.value];
 
       if (!regla) {
         return;
       }
 
-      editarTelefono.value = editarTelefono.value
-        .replace(/\D/g, "")
-        .slice(0, regla.max);
+      elementos.editarTelefono.value =
+        elementos.editarTelefono.value
+          .replace(/\D/g, "")
+          .slice(0, regla.max);
     });
   }
 
-  // =========================================================
-  // REGLAS DOCUMENTO
-  // =========================================================
-
-  function actualizarReglasDocumentoEditar() {
-    const tipo = editarTipoDocumento.value;
-
-    if (tipo === "DNI") {
-      editarNumeroDocumento.maxLength = 8;
-
-      editarNumeroDocumento.inputMode = "numeric";
-
-      editarNumeroDocumento.pattern = "[0-9]{8}";
-
-      editarNumeroDocumento.placeholder = "8 dígitos";
-
-      return;
-    }
-
-    if (tipo === "CE" || tipo === "PASAPORTE") {
-      editarNumeroDocumento.maxLength = 12;
-
-      editarNumeroDocumento.inputMode = "text";
-
-      editarNumeroDocumento.pattern = "[A-Za-z0-9]{1,12}";
-
-      editarNumeroDocumento.placeholder = "Hasta 12 caracteres";
-
-      return;
-    }
-
-    editarNumeroDocumento.removeAttribute("maxlength");
-
-    editarNumeroDocumento.removeAttribute("pattern");
-
-    editarNumeroDocumento.placeholder = "Selecciona el tipo de documento";
+  if (elementos.editarTipoDocumento) {
+    elementos.editarTipoDocumento.addEventListener("change", () => {
+      actualizarReglasDocumentoEditar();
+      elementos.editarNumeroDocumento.value = "";
+    });
   }
 
-  // =========================================================
-  // SANITIZAR DOCUMENTO
-  // =========================================================
+  if (elementos.editarNumeroDocumento) {
+    elementos.editarNumeroDocumento.addEventListener("input", () => {
+      const tipo = elementos.editarTipoDocumento.value;
 
-  if (editarNumeroDocumento) {
-    editarNumeroDocumento.addEventListener("input", function () {
-      if (editarTipoDocumento.value === "DNI") {
-        editarNumeroDocumento.value = editarNumeroDocumento.value
-          .replace(/\D/g, "")
-          .slice(0, 8);
-      } else if (
-        editarTipoDocumento.value === "CE" ||
-        editarTipoDocumento.value === "PASAPORTE"
-      ) {
-        editarNumeroDocumento.value = editarNumeroDocumento.value
-          .replace(/[^a-zA-Z0-9]/g, "")
-          .slice(0, 12);
+      if (tipo === "DNI") {
+        elementos.editarNumeroDocumento.value =
+          elementos.editarNumeroDocumento.value
+            .replace(/\D/g, "")
+            .slice(0, 8);
+      } else if (tipo === "CE" || tipo === "PASAPORTE") {
+        elementos.editarNumeroDocumento.value =
+          elementos.editarNumeroDocumento.value
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .slice(0, 12);
       }
     });
   }
 
-  // =========================================================
-  // SANITIZAR NOMBRE
-  // =========================================================
+  if (elementos.editarNombre) {
+    elementos.editarNombre.addEventListener("input", () => {
+      elementos.editarNombre.value =
+        elementos.editarNombre.value
+          .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "")
+          .slice(0, 50);
+    });
+  }
 
-  if (editarNombre) {
-    editarNombre.addEventListener("input", function () {
-      editarNombre.value = editarNombre.value
-        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "")
-        .slice(0, 50);
+  if (elementos.editarApellido) {
+    elementos.editarApellido.addEventListener("input", () => {
+      elementos.editarApellido.value =
+        elementos.editarApellido.value
+          .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "")
+          .slice(0, 50);
+    });
+  }
+
+  if (elementos.editarUsername) {
+    elementos.editarUsername.addEventListener("input", () => {
+      elementos.editarUsername.value =
+        elementos.editarUsername.value
+          .replace(/[^a-zA-Z0-9._-]/g, "")
+          .slice(0, 30);
     });
   }
 
   // =========================================================
-  // SANITIZAR APELLIDO
-  // =========================================================
-
-  if (editarApellido) {
-    editarApellido.addEventListener("input", function () {
-      editarApellido.value = editarApellido.value
-        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "")
-        .slice(0, 50);
-    });
-  }
-
-  // =========================================================
-  // SANITIZAR USERNAME
-  // =========================================================
-
-  if (editarUsername) {
-    editarUsername.addEventListener("input", function () {
-      editarUsername.value = editarUsername.value
-        .replace(/[^a-zA-Z0-9._-]/g, "")
-        .slice(0, 30);
-    });
-  }
-
-  // =========================================================
-  // CAMBIO TIPO DOCUMENTO
-  // =========================================================
-
-  if (editarTipoDocumento) {
-    editarTipoDocumento.addEventListener("change", function () {
-      actualizarReglasDocumentoEditar();
-
-      editarNumeroDocumento.value = "";
-    });
-  }
-
-  // =========================================================
-  // VALIDAR CONTRASEÑA
+  // VALIDACIONES DEL MODAL EDITAR
   // =========================================================
 
   function validarPasswordEditar() {
-    const password = editarPassword.value;
-
-    const confirmacion = editarPasswordConfirmacion.value;
+    const password = elementos.editarPassword.value;
+    const confirmacion =
+      elementos.editarPasswordConfirmacion.value;
 
     if (!password && !confirmacion) {
       return true;
@@ -1851,163 +1632,134 @@ document.addEventListener("DOMContentLoaded", async function () {
       mostrarMensajeEditar(
         "La nueva contraseña debe tener entre 8 y 72 caracteres.",
       );
-
-      editarPassword.focus();
-
+      elementos.editarPassword.focus();
       return false;
     }
 
     if (!confirmacion) {
-      mostrarMensajeEditar("Debes confirmar la nueva contraseña.");
-
-      editarPasswordConfirmacion.focus();
-
+      mostrarMensajeEditar(
+        "Debes confirmar la nueva contraseña.",
+      );
+      elementos.editarPasswordConfirmacion.focus();
       return false;
     }
 
     if (password !== confirmacion) {
       mostrarMensajeEditar("Las contraseñas no coinciden.");
-
-      editarPasswordConfirmacion.focus();
-
+      elementos.editarPasswordConfirmacion.focus();
       return false;
     }
 
     return true;
   }
-
-  // =========================================================
-  // VALIDAR ROL
-  // =========================================================
 
   function validarRolEditar() {
-    if (!ROLES_VALIDOS.includes(editarRol.value)) {
+    if (!ROLES_VALIDOS.includes(elementos.editarRol.value)) {
       mostrarMensajeEditar("Debes seleccionar un rol válido.");
-
-      editarRol.focus();
-
+      elementos.editarRol.focus();
       return false;
     }
 
     return true;
   }
-
-  // =========================================================
-  // VALIDAR FECHA
-  // =========================================================
 
   function validarFechaNacimiento(fechaNacimiento) {
     if (!fechaNacimiento) {
-      mostrarMensajeEditar("La fecha de nacimiento es obligatoria.");
-
-      editarFechaNacimiento.focus();
-
+      mostrarMensajeEditar(
+        "La fecha de nacimiento es obligatoria.",
+      );
+      elementos.editarFechaNacimiento.focus();
       return false;
     }
 
+    const [anio, mes, dia] = fechaNacimiento.split("-").map(Number);
+
+    const fechaSeleccionada = new Date(anio, mes - 1, dia);
     const hoy = new Date();
 
-    const fechaSeleccionada = new Date(fechaNacimiento + "T00:00:00");
+    hoy.setHours(0, 0, 0, 0);
 
-    hoy.setHours(23, 59, 59, 999);
-
-    if (Number.isNaN(fechaSeleccionada.getTime())) {
+    if (
+      Number.isNaN(fechaSeleccionada.getTime()) ||
+      fechaSeleccionada.getFullYear() !== anio ||
+      fechaSeleccionada.getMonth() !== mes - 1 ||
+      fechaSeleccionada.getDate() !== dia
+    ) {
       mostrarMensajeEditar("La fecha de nacimiento no es válida.");
-
-      editarFechaNacimiento.focus();
-
+      elementos.editarFechaNacimiento.focus();
       return false;
     }
 
     if (fechaSeleccionada > hoy) {
-      mostrarMensajeEditar("La fecha de nacimiento no puede ser futura.");
-
-      editarFechaNacimiento.focus();
-
+      mostrarMensajeEditar(
+        "La fecha de nacimiento no puede ser futura.",
+      );
+      elementos.editarFechaNacimiento.focus();
       return false;
     }
 
     return true;
   }
 
-  // =========================================================
-  // VALIDAR TELEFONO
-  // =========================================================
-
   function validarTelefonoEditar() {
-    const telefono = editarTelefono.value.trim();
+    const telefono = elementos.editarTelefono.value.trim();
 
     if (!telefono) {
       return true;
     }
 
-    const regla = reglasTelefonoEditar[editarCodigoPais.value];
+    const regla =
+      reglasTelefonoEditar[elementos.editarCodigoPais.value];
 
     if (!regla) {
-      mostrarMensajeEditar("Selecciona un código de país válido.");
-
-      editarCodigoPais.focus();
-
+      mostrarMensajeEditar(
+        "Selecciona un código de país válido.",
+      );
+      elementos.editarCodigoPais.focus();
       return false;
     }
 
     if (!/^\d+$/.test(telefono)) {
-      mostrarMensajeEditar("El teléfono solo puede contener números.");
-
-      editarTelefono.focus();
-
+      mostrarMensajeEditar(
+        "El teléfono solo puede contener números.",
+      );
+      elementos.editarTelefono.focus();
       return false;
     }
 
-    const cantidadDigitos = telefono.length;
+    if (
+      telefono.length < regla.min ||
+      telefono.length > regla.max
+    ) {
+      mostrarMensajeEditar(
+        regla.min === regla.max
+          ? `El número de ${regla.nombre} debe contener exactamente ${regla.min} dígitos.`
+          : `El número de ${regla.nombre} debe contener entre ${regla.min} y ${regla.max} dígitos.`,
+      );
 
-    if (regla.min === regla.max) {
-      if (cantidadDigitos !== regla.min) {
-        mostrarMensajeEditar(
-          `El número de ${regla.nombre} debe contener exactamente ${regla.min} dígitos.`,
-        );
-
-        editarTelefono.focus();
-
-        return false;
-      }
-    } else {
-      if (cantidadDigitos < regla.min || cantidadDigitos > regla.max) {
-        mostrarMensajeEditar(
-          `El número de ${regla.nombre} debe contener entre ${regla.min} y ${regla.max} dígitos.`,
-        );
-
-        editarTelefono.focus();
-
-        return false;
-      }
+      elementos.editarTelefono.focus();
+      return false;
     }
 
     return true;
   }
-
-  // =========================================================
-  // VALIDAR CORREO
-  // =========================================================
 
   function validarCorreoEditar() {
-    const correo = editarCorreo.value.trim();
+    const correo = elementos.editarCorreo.value.trim();
 
     if (!correo) {
-      mostrarMensajeEditar("El correo electrónico es obligatorio.");
-
-      editarCorreo.focus();
-
+      mostrarMensajeEditar(
+        "El correo electrónico es obligatorio.",
+      );
+      elementos.editarCorreo.focus();
       return false;
     }
 
-    const patronCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!patronCorreo.test(correo)) {
-      mostrarMensajeEditar("Ingresa un correo electrónico válido.");
-
-      editarCorreo.focus();
-
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+      mostrarMensajeEditar(
+        "Ingresa un correo electrónico válido.",
+      );
+      elementos.editarCorreo.focus();
       return false;
     }
 
@@ -2015,64 +1767,50 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   // =========================================================
-  // GUARDAR CAMBIOS
+  // GUARDAR CAMBIOS DEL USUARIO
   // =========================================================
 
   async function guardarCambiosUsuario(event) {
     event.preventDefault();
 
-    const usuarioId = Number(editarUsuarioId.value);
+    const usuarioId = Number(elementos.editarUsuarioId.value);
 
     if (!usuarioId) {
       await mostrarError(
         "Usuario no encontrado",
         "No se encontró el usuario que deseas modificar.",
       );
-
       return;
     }
 
-    const usernameEditado = editarUsername.value.trim();
+    const usernameEditado =
+      elementos.editarUsername.value.trim();
 
-    const rolEditado = editarRol.value;
+    const rolEditado = elementos.editarRol.value;
+    const passwordEditado = elementos.editarPassword.value;
+    const nombreEditado = elementos.editarNombre.value.trim();
+    const apellidoEditado = elementos.editarApellido.value.trim();
+    const tipoDocumento = elementos.editarTipoDocumento.value;
+    const numeroDocumento =
+      elementos.editarNumeroDocumento.value.trim();
+    const telefono = elementos.editarTelefono.value.trim();
+    const fechaNacimiento =
+      elementos.editarFechaNacimiento.value;
+    const genero = elementos.editarGenero.value;
+    const correo = elementos.editarCorreo.value.trim();
 
-    const passwordEditado = editarPassword.value;
+    elementos.editarUsuarioMessage.hidden = true;
+    elementos.editarUsuarioMessage.textContent = "";
 
-    const passwordConfirmacion = editarPasswordConfirmacion.value;
-
-    const nombreEditado = editarNombre.value.trim();
-
-    const apellidoEditado = editarApellido.value.trim();
-
-    const tipoDocumento = editarTipoDocumento.value;
-
-    const numeroDocumento = editarNumeroDocumento.value.trim();
-
-    const telefono = editarTelefono.value.trim();
-
-    const fechaNacimiento = editarFechaNacimiento.value;
-
-    const genero = editarGenero.value;
-
-    const correo = editarCorreo.value.trim();
-
-    // =====================================================
-    // LIMPIAR MENSAJE
-    // =====================================================
-
-    editarUsuarioMessage.hidden = true;
-
-    editarUsuarioMessage.textContent = "";
-
-    // =====================================================
-    // USERNAME
-    // =====================================================
-
-    if (usernameEditado.length < 4 || usernameEditado.length > 30) {
-      mostrarMensajeEditar("El usuario debe tener entre 4 y 30 caracteres.");
-
-      editarUsername.focus();
-
+    // Username
+    if (
+      usernameEditado.length < 4 ||
+      usernameEditado.length > 30
+    ) {
+      mostrarMensajeEditar(
+        "El usuario debe tener entre 4 y 30 caracteres.",
+      );
+      elementos.editarUsername.focus();
       return;
     }
 
@@ -2080,171 +1818,121 @@ document.addEventListener("DOMContentLoaded", async function () {
       mostrarMensajeEditar(
         "El usuario solo puede contener letras, números, punto, guion y guion bajo.",
       );
-
-      editarUsername.focus();
-
+      elementos.editarUsername.focus();
       return;
     }
 
-    // =====================================================
-    // ROL
-    // =====================================================
-
+    // Rol
     if (!validarRolEditar()) {
       return;
     }
 
-    // =====================================================
-    // CONTRASEÑA
-    // =====================================================
-
+    // Contraseña
     if (!validarPasswordEditar()) {
       return;
     }
 
-    // =====================================================
-    // NOMBRE
-    // =====================================================
-
+    // Nombre
     if (!nombreEditado) {
       mostrarMensajeEditar("El nombre es obligatorio.");
-
-      editarNombre.focus();
-
+      elementos.editarNombre.focus();
       return;
     }
 
-    if (nombreEditado.length > 50) {
-      mostrarMensajeEditar("El nombre no puede superar los 50 caracteres.");
-
-      editarNombre.focus();
-
+    if (
+      nombreEditado.length > 50 ||
+      !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombreEditado)
+    ) {
+      mostrarMensajeEditar(
+        "El nombre debe contener solamente letras y espacios, con un máximo de 50 caracteres.",
+      );
+      elementos.editarNombre.focus();
       return;
     }
 
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombreEditado)) {
-      mostrarMensajeEditar("El nombre solo puede contener letras y espacios.");
-
-      editarNombre.focus();
-
-      return;
-    }
-
-    // =====================================================
-    // APELLIDO
-    // =====================================================
-
+    // Apellido
     if (!apellidoEditado) {
       mostrarMensajeEditar("El apellido es obligatorio.");
-
-      editarApellido.focus();
-
+      elementos.editarApellido.focus();
       return;
     }
 
-    if (apellidoEditado.length > 50) {
-      mostrarMensajeEditar("El apellido no puede superar los 50 caracteres.");
-
-      editarApellido.focus();
-
-      return;
-    }
-
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(apellidoEditado)) {
+    if (
+      apellidoEditado.length > 50 ||
+      !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(apellidoEditado)
+    ) {
       mostrarMensajeEditar(
-        "El apellido solo puede contener letras y espacios.",
+        "El apellido debe contener solamente letras y espacios, con un máximo de 50 caracteres.",
       );
-
-      editarApellido.focus();
-
+      elementos.editarApellido.focus();
       return;
     }
 
-    // =====================================================
-    // DOCUMENTO
-    // =====================================================
-
+    // Documento
     if (!tipoDocumento) {
-      mostrarMensajeEditar("Debes seleccionar un tipo de documento.");
-
-      editarTipoDocumento.focus();
-
+      mostrarMensajeEditar(
+        "Debes seleccionar un tipo de documento.",
+      );
+      elementos.editarTipoDocumento.focus();
       return;
     }
 
     if (!numeroDocumento) {
-      mostrarMensajeEditar("El número de documento es obligatorio.");
-
-      editarNumeroDocumento.focus();
-
+      mostrarMensajeEditar(
+        "El número de documento es obligatorio.",
+      );
+      elementos.editarNumeroDocumento.focus();
       return;
     }
 
-    if (tipoDocumento === "DNI") {
-      if (!/^\d{8}$/.test(numeroDocumento)) {
-        mostrarMensajeEditar("El DNI debe tener exactamente 8 dígitos.");
-
-        editarNumeroDocumento.focus();
-
-        return;
-      }
-    } else if (tipoDocumento === "CE" || tipoDocumento === "PASAPORTE") {
-      if (!/^[A-Za-z0-9]{1,12}$/.test(numeroDocumento)) {
-        mostrarMensajeEditar(
-          "El documento debe contener entre 1 y 12 caracteres alfanuméricos.",
-        );
-
-        editarNumeroDocumento.focus();
-
-        return;
-      }
+    if (
+      tipoDocumento === "DNI" &&
+      !/^\d{8}$/.test(numeroDocumento)
+    ) {
+      mostrarMensajeEditar(
+        "El DNI debe tener exactamente 8 dígitos.",
+      );
+      elementos.editarNumeroDocumento.focus();
+      return;
     }
 
-    // =====================================================
-    // TELEFONO
-    // =====================================================
+    if (
+      (tipoDocumento === "CE" ||
+        tipoDocumento === "PASAPORTE") &&
+      !/^[A-Za-z0-9]{1,12}$/.test(numeroDocumento)
+    ) {
+      mostrarMensajeEditar(
+        "El documento debe contener entre 1 y 12 caracteres alfanuméricos.",
+      );
+      elementos.editarNumeroDocumento.focus();
+      return;
+    }
 
+    // Teléfono
     if (!validarTelefonoEditar()) {
       return;
     }
 
-    // =====================================================
-    // FECHA
-    // =====================================================
-
+    // Fecha
     if (!validarFechaNacimiento(fechaNacimiento)) {
       return;
     }
 
-    // =====================================================
-    // GENERO
-    // =====================================================
-
+    // Género
     if (!genero) {
       mostrarMensajeEditar("Debes seleccionar el género.");
-
-      editarGenero.focus();
-
+      elementos.editarGenero.focus();
       return;
     }
 
-    // =====================================================
-    // CORREO
-    // =====================================================
-
+    // Correo
     if (!validarCorreoEditar()) {
       return;
     }
 
-    // =====================================================
-    // TELEFONO COMPLETO
-    // =====================================================
-
-    const telefonoCompleto = telefono ? editarCodigoPais.value + telefono : "";
-
-    // =====================================================
-    // CONFIRMAR CAMBIOS
-    // =====================================================
+    const telefonoCompleto = telefono
+      ? elementos.editarCodigoPais.value + telefono
+      : "";
 
     const confirmar = await mostrarConfirmacion(
       "Confirmar cambios",
@@ -2256,34 +1944,18 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
-    // =====================================================
-    // FORMDATA
-    // =====================================================
-
     const formData = new FormData();
 
     formData.append("username", usernameEditado);
-
     formData.append("rol", rolEditado);
-
     formData.append("nombre", nombreEditado);
-
     formData.append("apellido", apellidoEditado);
-
     formData.append("tipoDocumento", tipoDocumento);
-
     formData.append("numeroDocumento", numeroDocumento);
-
     formData.append("telefono", telefonoCompleto);
-
     formData.append("fechaNacimiento", fechaNacimiento);
-
     formData.append("genero", genero);
-
     formData.append("correo", correo);
-
-    // Solo mandar contraseña
-    // si realmente se quiere cambiar.
 
     if (passwordEditado) {
       formData.append("password", passwordEditado);
@@ -2293,75 +1965,60 @@ document.addEventListener("DOMContentLoaded", async function () {
       formData.append("foto", editarFotoSeleccionada);
     }
 
-    // =====================================================
-    // ESTADO BOTÓN
-    // =====================================================
+    const boton = elementos.editarUsuarioSubmit;
+    const textoOriginal = boton?.textContent || "Guardar cambios";
 
-    editarUsuarioSubmit.disabled = true;
-
-    editarUsuarioSubmit.textContent = "Guardando...";
+    if (boton) {
+      boton.disabled = true;
+      boton.textContent = "Guardando...";
+    }
 
     try {
-      const response = await fetchAutenticado(`/api/usuarios/${usuarioId}`, {
-        method: "PUT",
-        body: formData,
-      });
+      const response = await solicitar(
+        `/api/usuarios/${usuarioId}`,
+        {
+          method: "PUT",
+          body: formData,
+        },
+      );
 
       if (!response) {
         return;
       }
-
-      // ===================================================
-      // 403
-      // ===================================================
 
       if (response.status === 403) {
         await mostrarError(
           "Acceso denegado",
           "No tienes permisos para editar este usuario.",
         );
-
         return;
       }
-
-      // ===================================================
-      // 409
-      // ===================================================
 
       if (response.status === 409) {
-        const mensaje = await obtenerMensajeError(
-          response,
-          "Ya existe un usuario con alguno de los datos proporcionados.",
+        await mostrarError(
+          "No se pudieron guardar los cambios",
+          await obtenerMensajeError(
+            response,
+            "Ya existe un usuario con alguno de los datos proporcionados.",
+          ),
         );
-
-        await mostrarError("No se pudieron guardar los cambios", mensaje);
-
         return;
       }
-
-      // ===================================================
-      // OTROS ERRORES
-      // ===================================================
 
       if (!response.ok) {
-        const mensaje = await obtenerMensajeError(
-          response,
-          "No se pudieron guardar los cambios.",
+        await mostrarError(
+          "No se pudieron guardar los cambios",
+          await obtenerMensajeError(
+            response,
+            "No se pudieron guardar los cambios.",
+          ),
         );
-
-        await mostrarError("No se pudieron guardar los cambios", mensaje);
-
         return;
       }
-
-      // ===================================================
-      // ÉXITO
-      // ===================================================
 
       await leerJsonSeguro(response);
 
       cerrarModalEditarUsuario();
-
       await cargarDatos();
 
       await mostrarExito(
@@ -2376,20 +2033,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         "No se pudo conectar con el servidor.",
       );
     } finally {
-      editarUsuarioSubmit.disabled = false;
-
-      editarUsuarioSubmit.textContent = "Guardar cambios";
+      if (boton) {
+        boton.disabled = false;
+        boton.textContent = textoOriginal;
+      }
     }
-  }
-
-  // =========================================================
-  // MENSAJE EDITAR
-  // =========================================================
-
-  function mostrarMensajeEditar(mensaje) {
-    editarUsuarioMessage.textContent = mensaje;
-
-    editarUsuarioMessage.hidden = false;
   }
 
   // =========================================================
@@ -2397,44 +2045,41 @@ document.addEventListener("DOMContentLoaded", async function () {
   // =========================================================
 
   function cerrarModalEditarUsuario() {
-    editarUsuarioModal.hidden = true;
+    if (!elementos.editarUsuarioModal) {
+      return;
+    }
 
-    editarUsuarioForm.reset();
+    elementos.editarUsuarioModal.hidden = true;
+    elementos.editarUsuarioForm?.reset();
 
-    editarUsuarioId.value = "";
-
-    editarFoto.value = "";
+    elementos.editarUsuarioId.value = "";
+    elementos.editarFoto.value = "";
 
     editarFotoSeleccionada = null;
 
-    if (editarFotoInput) {
-      editarFotoInput.value = "";
+    if (elementos.editarFotoInput) {
+      elementos.editarFotoInput.value = "";
     }
 
-    if (editarUsuarioFoto) {
-      editarUsuarioFoto.innerHTML = "";
+    if (elementos.editarUsuarioFoto) {
+      elementos.editarUsuarioFoto.innerHTML = "";
     }
 
-    editarUsuarioMessage.textContent = "";
+    elementos.editarUsuarioMessage.textContent = "";
+    elementos.editarUsuarioMessage.hidden = true;
 
-    editarUsuarioMessage.hidden = true;
+    elementos.editarPassword.type = "password";
+    elementos.editarPasswordConfirmacion.type = "password";
 
-    if (editarPassword) {
-      editarPassword.type = "password";
-    }
-
-    if (editarPasswordConfirmacion) {
-      editarPasswordConfirmacion.type = "password";
-    }
-
-    if (toggleEditarPassword) {
-      toggleEditarPassword.textContent = "👁️";
-
-      toggleEditarPassword.setAttribute("aria-label", "Mostrar contraseña");
+    if (elementos.toggleEditarPassword) {
+      elementos.toggleEditarPassword.textContent = "👁️";
+      elementos.toggleEditarPassword.setAttribute(
+        "aria-label",
+        "Mostrar contraseña",
+      );
     }
 
     actualizarReglasDocumentoEditar();
-
     actualizarReglasTelefonoEditar();
   }
 
@@ -2444,19 +2089,17 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   async function eliminarUsuario(event) {
     const boton = event.currentTarget;
-
     const usuarioId = Number(boton.dataset.id);
 
-    const usuario = usuarios.find(function (item) {
-      return Number(item.id) === usuarioId;
-    });
+    const usuario = usuarios.find(
+      (item) => Number(item.id) === usuarioId,
+    );
 
     if (!usuario) {
       await mostrarError(
         "Usuario no encontrado",
         "No fue posible encontrar el usuario seleccionado.",
       );
-
       return;
     }
 
@@ -2470,12 +2113,16 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
+    const textoOriginal = boton.textContent;
+
     try {
       boton.disabled = true;
+      boton.textContent = "Eliminando...";
 
-      const response = await fetchAutenticado(`/api/usuarios/${usuarioId}`, {
-        method: "DELETE",
-      });
+      const response = await solicitar(
+        `/api/usuarios/${usuarioId}`,
+        { method: "DELETE" },
+      );
 
       if (!response) {
         return;
@@ -2486,40 +2133,32 @@ document.addEventListener("DOMContentLoaded", async function () {
           "Acceso denegado",
           "No tienes permisos para eliminar usuarios.",
         );
-
-        boton.disabled = false;
-
         return;
       }
 
       if (response.status === 409) {
-        const mensaje = await obtenerMensajeError(
-          response,
-          "No se puede eliminar el usuario porque tiene información relacionada.",
+        await mostrarError(
+          "No se pudo eliminar el usuario",
+          await obtenerMensajeError(
+            response,
+            "No se puede eliminar el usuario porque tiene información relacionada.",
+          ),
         );
-
-        await mostrarError("No se pudo eliminar el usuario", mensaje);
-
-        boton.disabled = false;
-
         return;
       }
 
       if (!response.ok) {
-        const mensaje = await obtenerMensajeError(
-          response,
-          "No se pudo eliminar el usuario.",
+        await mostrarError(
+          "No se pudo eliminar el usuario",
+          await obtenerMensajeError(
+            response,
+            "No se pudo eliminar el usuario.",
+          ),
         );
-
-        await mostrarError("No se pudo eliminar el usuario", mensaje);
-
-        boton.disabled = false;
-
         return;
       }
 
       await leerJsonSeguro(response);
-
       await cargarDatos();
 
       await mostrarExito(
@@ -2533,8 +2172,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         "Error de conexión",
         "No se pudo conectar con el servidor.",
       );
-
+    } finally {
       boton.disabled = false;
+      boton.textContent = textoOriginal;
     }
   }
 
@@ -2543,350 +2183,307 @@ document.addEventListener("DOMContentLoaded", async function () {
   // =========================================================
 
   function abrirModalRegistrarUsuario() {
-    if (!registrarUsuarioModal) {
-      console.error("No se encontró el modal registrarUsuarioModal.");
-
+    if (!elementos.registrarUsuarioModal) {
+      console.error(
+        "No se encontró el modal registrarUsuarioModal.",
+      );
       return;
     }
 
-    registrarUsuarioModal.hidden = false;
+    elementos.registrarUsuarioModal.hidden = false;
 
-    setTimeout(function () {
-      const usernameInput = registroUsuarioForm
-        ? registroUsuarioForm.querySelector("#username")
-        : null;
+    setTimeout(() => {
+      const input = elementos.registroUsuarioForm?.querySelector(
+        "#username",
+      );
 
-      if (usernameInput) {
-        usernameInput.focus();
-      }
+      input?.focus();
     }, 50);
   }
 
-  // =========================================================
-  // CERRAR MODAL REGISTRAR
-  // =========================================================
-
   function cerrarModalRegistrarUsuario() {
-    if (!registrarUsuarioModal) {
+    if (!elementos.registrarUsuarioModal) {
       return;
     }
 
-    registrarUsuarioModal.hidden = true;
+    elementos.registrarUsuarioModal.hidden = true;
 
     if (
       window.registroFormularioModal &&
       typeof window.registroFormularioModal.reset === "function"
     ) {
       window.registroFormularioModal.reset();
-    } else if (registroUsuarioForm) {
-      registroUsuarioForm.reset();
+    } else {
+      elementos.registroUsuarioForm?.reset();
     }
   }
-
-  // =========================================================
-  // INICIALIZAR REGISTRO
-  // =========================================================
 
   function inicializarRegistroUsuarioModal() {
-    if (!registroUsuarioForm) {
+    if (!elementos.registroUsuarioForm) {
       console.error("No se encontró registroUsuarioForm.");
-
       return;
     }
 
-    if (typeof window.inicializarFormularioRegistro !== "function") {
-      console.error("No está disponible inicializarFormularioRegistro().");
-
+    if (
+      typeof window.inicializarFormularioRegistro !== "function"
+    ) {
+      console.error(
+        "No está disponible inicializarFormularioRegistro().",
+      );
       return;
     }
 
-    window.registroFormularioModal = window.inicializarFormularioRegistro(
-      registroUsuarioForm,
-      {
-        modo: "modal",
+    window.registroFormularioModal =
+      window.inicializarFormularioRegistro(
+        elementos.registroUsuarioForm,
+        {
+          modo: "modal",
 
-        alCrearUsuario: async function (usuario) {
-          console.log("Usuario creado desde modal:", usuario);
+          alCrearUsuario: async function (usuario) {
+            const usernameCreado =
+              usuario?.username || "El usuario";
 
-          const usernameCreado =
-            usuario && usuario.username ? usuario.username : "El usuario";
+            cerrarModalRegistrarUsuario();
+            await cargarDatos();
 
-          cerrarModalRegistrarUsuario();
-
-          await cargarDatos();
-
-          await mostrarExito(
-            "Usuario registrado",
-            `${usernameCreado} fue registrado correctamente.`,
-          );
+            await mostrarExito(
+              "Usuario registrado",
+              `${usernameCreado} fue registrado correctamente.`,
+            );
+          },
         },
-      },
-    );
+      );
   }
 
   // =========================================================
-  // PAGINACIÓN USUARIOS
+  // EVENTOS DE PAGINACIÓN
   // =========================================================
 
-  if (usuariosPreviousPage) {
-    usuariosPreviousPage.addEventListener("click", function () {
+  if (elementos.usuariosPreviousPage) {
+    elementos.usuariosPreviousPage.addEventListener("click", () => {
       if (usuariosPaginaActual <= 1) {
         return;
       }
 
       usuariosPaginaActual--;
-
       renderizarUsuarios();
     });
   }
 
-  if (usuariosNextPage) {
-    usuariosNextPage.addEventListener("click", function () {
-      const textoBusqueda = usuariosSearch.value.trim().toLowerCase();
-
-      const estadoSeleccionado = estadoFiltro.value;
-
-      const filtrados = usuarios.filter(function (usuario) {
-        if (estadoSeleccionado && usuario.estado !== estadoSeleccionado) {
-          return false;
-        }
-
-        if (!textoBusqueda) {
-          return true;
-        }
-
-        const nombre = nombreCompletoUsuario(usuario).toLowerCase();
-
-        const usernameUsuario = (usuario.username || "").toLowerCase();
-
-        const correo = (usuario.correo || "").toLowerCase();
-
-        const rolUsuario = (usuario.rol || "").toLowerCase();
-
-        return (
-          nombre.includes(textoBusqueda) ||
-          usernameUsuario.includes(textoBusqueda) ||
-          correo.includes(textoBusqueda) ||
-          rolUsuario.includes(textoBusqueda)
-        );
-      });
-
+  if (elementos.usuariosNextPage) {
+    elementos.usuariosNextPage.addEventListener("click", () => {
       const totalPaginas = Math.max(
         1,
-        Math.ceil(filtrados.length / REGISTROS_POR_PAGINA),
+        Math.ceil(
+          obtenerUsuariosFiltrados().length /
+          REGISTROS_POR_PAGINA,
+        ),
       );
 
       if (usuariosPaginaActual < totalPaginas) {
         usuariosPaginaActual++;
-
         renderizarUsuarios();
       }
     });
   }
 
-  // =========================================================
-  // PAGINACIÓN ESTUDIANTES
-  // =========================================================
-
-  if (estudiantesPreviousPage) {
-    estudiantesPreviousPage.addEventListener("click", function () {
+  if (elementos.estudiantesPreviousPage) {
+    elementos.estudiantesPreviousPage.addEventListener("click", () => {
       if (estudiantesPaginaActual <= 1) {
         return;
       }
 
       estudiantesPaginaActual--;
-
       renderizarEstudiantesSinCuenta();
     });
   }
 
-  if (estudiantesNextPage) {
-    estudiantesNextPage.addEventListener("click", function () {
-      const textoBusqueda = estudiantesSearch.value.trim().toLowerCase();
-
-      const estudiantesSinCuenta = obtenerEstudiantesSinCuenta();
-
-      const filtrados = estudiantesSinCuenta.filter(function (estudiante) {
-        if (!textoBusqueda) {
-          return true;
-        }
-
-        const nombre = nombreCompletoEstudiante(estudiante).toLowerCase();
-
-        const documento = (estudiante.documento || "").toLowerCase();
-
-        const correo = (estudiante.correo || "").toLowerCase();
-
-        const telefono = (estudiante.telefono || "").toLowerCase();
-
-        return (
-          nombre.includes(textoBusqueda) ||
-          documento.includes(textoBusqueda) ||
-          correo.includes(textoBusqueda) ||
-          telefono.includes(textoBusqueda)
-        );
-      });
-
+  if (elementos.estudiantesNextPage) {
+    elementos.estudiantesNextPage.addEventListener("click", () => {
       const totalPaginas = Math.max(
         1,
-        Math.ceil(filtrados.length / REGISTROS_POR_PAGINA),
+        Math.ceil(
+          obtenerEstudiantesFiltrados().length /
+          REGISTROS_POR_PAGINA,
+        ),
       );
 
       if (estudiantesPaginaActual < totalPaginas) {
         estudiantesPaginaActual++;
-
         renderizarEstudiantesSinCuenta();
       }
     });
   }
 
   // =========================================================
-  // EVENTO REGISTRAR
+  // EVENTOS DE BÚSQUEDA Y FILTROS
   // =========================================================
 
-  if (registrarUsuarioButton) {
-    registrarUsuarioButton.addEventListener(
+  if (elementos.usuariosSearch) {
+    elementos.usuariosSearch.addEventListener("input", () => {
+      usuariosPaginaActual = 1;
+      renderizarUsuarios();
+    });
+  }
+
+  if (elementos.estadoFiltro) {
+    elementos.estadoFiltro.addEventListener("change", () => {
+      usuariosPaginaActual = 1;
+      renderizarUsuarios();
+    });
+  }
+
+  if (elementos.rolFiltro) {
+    elementos.rolFiltro.addEventListener("change", () => {
+      usuariosPaginaActual = 1;
+      renderizarUsuarios();
+    });
+  }
+
+  if (elementos.estudiantesSearch) {
+    elementos.estudiantesSearch.addEventListener("input", () => {
+      estudiantesPaginaActual = 1;
+      renderizarEstudiantesSinCuenta();
+    });
+  }
+
+  // =========================================================
+  // EVENTO REGISTRAR USUARIO
+  // =========================================================
+
+  if (elementos.registrarUsuarioButton) {
+    elementos.registrarUsuarioButton.addEventListener(
       "click",
       abrirModalRegistrarUsuario,
     );
   }
 
   // =========================================================
-  // BÚSQUEDA USUARIOS
+  // EVENTOS MODAL CREAR CUENTA
   // =========================================================
 
-  if (usuariosSearch) {
-    usuariosSearch.addEventListener("input", function () {
-      usuariosPaginaActual = 1;
+  if (elementos.crearUsuarioForm) {
+    elementos.crearUsuarioForm.addEventListener(
+      "submit",
+      crearCuentaParaEstudiante,
+    );
+  }
 
-      renderizarUsuarios();
-    });
+  if (elementos.cerrarCrearUsuarioModal) {
+    elementos.cerrarCrearUsuarioModal.addEventListener(
+      "click",
+      cerrarModalCrearUsuario,
+    );
+  }
+
+  if (elementos.cancelarCrearUsuario) {
+    elementos.cancelarCrearUsuario.addEventListener(
+      "click",
+      cerrarModalCrearUsuario,
+    );
+  }
+
+  if (elementos.crearUsuarioModalOverlay) {
+    elementos.crearUsuarioModalOverlay.addEventListener(
+      "click",
+      cerrarModalCrearUsuario,
+    );
   }
 
   // =========================================================
-  // FILTRO ESTADO
+  // EVENTOS MODAL REGISTRAR
   // =========================================================
 
-  if (estadoFiltro) {
-    estadoFiltro.addEventListener("change", function () {
-      usuariosPaginaActual = 1;
-
-      renderizarUsuarios();
-    });
-  }
-
-  // =========================================================
-  // BÚSQUEDA ESTUDIANTES
-  // =========================================================
-
-  if (estudiantesSearch) {
-    estudiantesSearch.addEventListener("input", function () {
-      estudiantesPaginaActual = 1;
-
-      renderizarEstudiantesSinCuenta();
-    });
-  }
-
-  // =========================================================
-  // MODAL CREAR CUENTA
-  // =========================================================
-
-  if (crearUsuarioForm) {
-    crearUsuarioForm.addEventListener("submit", crearCuentaParaEstudiante);
-  }
-
-  if (cerrarCrearUsuarioModal) {
-    cerrarCrearUsuarioModal.addEventListener("click", cerrarModalCrearUsuario);
-  }
-
-  if (cancelarCrearUsuario) {
-    cancelarCrearUsuario.addEventListener("click", cerrarModalCrearUsuario);
-  }
-
-  if (crearUsuarioModalOverlay) {
-    crearUsuarioModalOverlay.addEventListener("click", cerrarModalCrearUsuario);
-  }
-
-  // =========================================================
-  // MODAL REGISTRAR
-  // =========================================================
-
-  if (cerrarRegistrarUsuarioModal) {
-    cerrarRegistrarUsuarioModal.addEventListener(
+  if (elementos.cerrarRegistrarUsuarioModal) {
+    elementos.cerrarRegistrarUsuarioModal.addEventListener(
       "click",
       cerrarModalRegistrarUsuario,
     );
   }
 
-  if (cancelarRegistrarUsuario) {
-    cancelarRegistrarUsuario.addEventListener(
+  if (elementos.cancelarRegistrarUsuario) {
+    elementos.cancelarRegistrarUsuario.addEventListener(
       "click",
       cerrarModalRegistrarUsuario,
     );
   }
 
-  if (registrarUsuarioModalOverlay) {
-    registrarUsuarioModalOverlay.addEventListener(
+  if (elementos.registrarUsuarioModalOverlay) {
+    elementos.registrarUsuarioModalOverlay.addEventListener(
       "click",
       cerrarModalRegistrarUsuario,
     );
   }
 
   // =========================================================
-  // MODAL EDITAR
+  // EVENTOS MODAL EDITAR
   // =========================================================
 
-  if (cerrarEditarUsuarioModal) {
-    cerrarEditarUsuarioModal.addEventListener(
+  if (elementos.cerrarEditarUsuarioModal) {
+    elementos.cerrarEditarUsuarioModal.addEventListener(
       "click",
       cerrarModalEditarUsuario,
     );
   }
 
-  if (cancelarEditarUsuario) {
-    cancelarEditarUsuario.addEventListener("click", cerrarModalEditarUsuario);
-  }
-
-  if (editarUsuarioModalOverlay) {
-    editarUsuarioModalOverlay.addEventListener(
+  if (elementos.cancelarEditarUsuario) {
+    elementos.cancelarEditarUsuario.addEventListener(
       "click",
       cerrarModalEditarUsuario,
     );
   }
 
-  if (editarUsuarioForm) {
-    editarUsuarioForm.addEventListener("submit", guardarCambiosUsuario);
+  if (elementos.editarUsuarioModalOverlay) {
+    elementos.editarUsuarioModalOverlay.addEventListener(
+      "click",
+      cerrarModalEditarUsuario,
+    );
+  }
+
+  if (elementos.editarUsuarioForm) {
+    elementos.editarUsuarioForm.addEventListener(
+      "submit",
+      guardarCambiosUsuario,
+    );
   }
 
   // =========================================================
-  // ESCAPE
+  // CERRAR MODALES CON ESCAPE
   // =========================================================
 
-  document.addEventListener("keydown", function (event) {
+  document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") {
       return;
     }
 
-    // Primero cerrar el modal de alerta.
-    if (sistemaAlertModal && !sistemaAlertModal.hidden) {
+    if (
+      elementos.sistemaAlertModal &&
+      !elementos.sistemaAlertModal.hidden
+    ) {
       cerrarModalSistema(false);
-
       return;
     }
 
-    if (editarUsuarioModal && !editarUsuarioModal.hidden) {
+    if (
+      elementos.editarUsuarioModal &&
+      !elementos.editarUsuarioModal.hidden
+    ) {
       cerrarModalEditarUsuario();
-
       return;
     }
 
-    if (registrarUsuarioModal && !registrarUsuarioModal.hidden) {
+    if (
+      elementos.registrarUsuarioModal &&
+      !elementos.registrarUsuarioModal.hidden
+    ) {
       cerrarModalRegistrarUsuario();
-
       return;
     }
 
-    if (crearUsuarioModal && !crearUsuarioModal.hidden) {
+    if (
+      elementos.crearUsuarioModal &&
+      !elementos.crearUsuarioModal.hidden
+    ) {
       cerrarModalCrearUsuario();
     }
   });

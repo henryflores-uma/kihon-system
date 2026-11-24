@@ -1,77 +1,286 @@
+
 document.addEventListener("DOMContentLoaded", function () {
-  const auth = sessionStorage.getItem("kihonAuth");
 
-  if (!auth) {
+  // ==========================================
+  // AUTENTICACIÓN Y AUTORIZACIÓN
+  // ==========================================
+
+  const username = sessionStorage.getItem("kihonUsername");
+  const rol = sessionStorage.getItem("kihonRol");
+
+  const rolesPermitidos = [
+    "ADMIN",
+    "SECRETARIA",
+    "SENSEI"
+  ];
+
+  if (!username || !rol) {
     window.location.href = "/login";
-
     return;
   }
 
-  const tipoReporte = document.getElementById("tipoReporte");
+  if (!rolesPermitidos.includes(rol.toUpperCase())) {
+    window.location.href = "/login";
+    return;
+  }
 
-  const reporteFiltros = document.getElementById("reporteFiltros");
 
-  const generarReporteBtn = document.getElementById("generarReporteBtn");
+  // ==========================================
+  // ELEMENTOS DEL DOM
+  // ==========================================
 
-  const reporteMessage = document.getElementById("reporteMessage");
+  const elementos = {
 
-  const reporteResultado = document.getElementById("reporteResultado");
+    tipoReporte: document.getElementById("tipoReporte"),
+    reporteFiltros: document.getElementById("reporteFiltros"),
+    generarReporteBtn: document.getElementById("generarReporteBtn"),
+    reporteMessage: document.getElementById("reporteMessage"),
+    reporteResultado: document.getElementById("reporteResultado"),
+    reportePeriodo: document.getElementById("reportePeriodo"),
+    reporteResumen: document.getElementById("reporteResumen"),
+    reporteDetalle: document.getElementById("reporteDetalle"),
 
-  const reportePeriodo = document.getElementById("reportePeriodo");
+    distribucionCanvas: document.getElementById(
+      "reporteDistribucionChart"
+    ),
 
-  const reporteResumen = document.getElementById("reporteResumen");
+    evolucionCanvas: document.getElementById(
+      "reporteEvolucionChart"
+    ),
 
-  const reporteDetalle = document.getElementById("reporteDetalle");
+    evolucionTitulo: document.getElementById(
+      "reporteEvolucionTitulo"
+    ),
+
+    evolucionDescripcion: document.getElementById(
+      "reporteEvolucionDescripcion"
+    )
+
+  };
+
+
+  // ==========================================
+  // VALIDAR ELEMENTOS PRINCIPALES
+  // ==========================================
+
+  const elementosObligatorios = [
+    "tipoReporte",
+    "reporteFiltros",
+    "generarReporteBtn",
+    "reporteMessage",
+    "reporteResultado",
+    "reportePeriodo",
+    "reporteResumen",
+    "reporteDetalle"
+  ];
+
+  const elementosFaltantes = elementosObligatorios.filter(
+    (elemento) => !elementos[elemento]
+  );
+
+  if (elementosFaltantes.length > 0) {
+
+    console.error(
+      "No se encontraron los siguientes elementos del DOM:",
+      elementosFaltantes
+    );
+
+    return;
+
+  }
+
+
+  // ==========================================
+  // ESTADO
+  // ==========================================
 
   let estudiantes = [];
-
   let grupos = [];
 
   let estudianteSeleccionado = null;
-
   let grupoSeleccionado = null;
 
-  /* ================================
-       UTILIDADES
-    ================================= */
+  let estudiantesCargados = false;
+  let gruposCargados = false;
+
+  let distribucionChart = null;
+  let evolucionChart = null;
+
+
+  // ==========================================
+  // CONFIGURACIÓN DE GRÁFICOS
+  // ==========================================
+
+  const colores = {
+
+    presente: "#22C55E",
+    tardanza: "#F59E0B",
+    ausente: "#EF4444",
+    justificado: "#3B82F6",
+
+    rojo: "#FF2400",
+    amarillo: "#FFD700",
+
+    texto: "#64748B",
+    grid: "rgba(148, 163, 184, 0.15)"
+
+  };
+
+  const estados = [
+
+    {
+      clave: "PRESENTE",
+      nombre: "Presentes",
+      color: colores.presente
+    },
+
+    {
+      clave: "TARDANZA",
+      nombre: "Tardanzas",
+      color: colores.tardanza
+    },
+
+    {
+      clave: "AUSENTE",
+      nombre: "Ausentes",
+      color: colores.ausente
+    },
+
+    {
+      clave: "JUSTIFICADO",
+      nombre: "Justificados",
+      color: colores.justificado
+    }
+
+  ];
+
+
+  // ==========================================
+  // AUTENTICACIÓN DE SESIÓN Y CSRF
+  // ==========================================
+
+  function cerrarSesion() {
+
+    sessionStorage.removeItem("kihonUsername");
+    sessionStorage.removeItem("kihonRol");
+    sessionStorage.removeItem("kihonAuth");
+
+    window.location.href = "/login";
+
+  }
+
+
+  async function obtenerTokenCSRF() {
+
+    const response = await fetch("/api/auth/csrf", {
+
+      method: "GET",
+
+      credentials: "same-origin",
+
+      headers: {
+        Accept: "application/json"
+      }
+
+    });
+
+    if (response.status === 401) {
+      cerrarSesion();
+      throw new Error("Sesión expirada.");
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        "No se pudo obtener el token CSRF."
+      );
+
+    }
+
+    const data = await response.json();
+
+    return data.token;
+
+  }
+
+
+  async function solicitar(url, opciones = {}) {
+
+    const metodo = (opciones.method || "GET").toUpperCase();
+
+    const headers = new Headers(opciones.headers || {});
+
+    headers.delete("Authorization");
+
+    headers.set("Accept", "application/json");
+
+    const metodosSeguros = [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "TRACE"
+    ];
+
+    if (!metodosSeguros.includes(metodo)) {
+
+      const csrfToken = await obtenerTokenCSRF();
+
+      headers.set("X-CSRF-TOKEN", csrfToken);
+
+    }
+
+    const response = await fetch(url, {
+
+      ...opciones,
+
+      method: metodo,
+
+      credentials: "same-origin",
+
+      headers
+
+    });
+
+    if (response.status === 401) {
+
+      cerrarSesion();
+
+      throw new Error("Sesión expirada.");
+
+    }
+
+    return response;
+
+  }
+
+
+  // ==========================================
+  // UTILIDADES
+  // ==========================================
 
   function mostrarMensaje(mensaje, tipo = "error") {
-    reporteMessage.textContent = mensaje;
 
-    reporteMessage.hidden = false;
+    elementos.reporteMessage.textContent = mensaje;
 
-    reporteMessage.className = `reportes-message reportes-message--${tipo}`;
+    elementos.reporteMessage.hidden = false;
+
+    elementos.reporteMessage.className =
+      `reportes-message reportes-message--${tipo}`;
+
   }
+
 
   function ocultarMensaje() {
-    reporteMessage.textContent = "";
 
-    reporteMessage.hidden = true;
+    elementos.reporteMessage.textContent = "";
+
+    elementos.reporteMessage.hidden = true;
+
   }
 
-  function formatoFecha(fecha) {
-    if (!fecha) {
-      return "-";
-    }
-
-    const partes = fecha.split("-");
-
-    if (partes.length !== 3) {
-      return fecha;
-    }
-
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
-  }
-
-  function formatoPorcentaje(valor) {
-    if (valor === null || valor === undefined) {
-      return "0%";
-    }
-
-    return `${Number(valor).toFixed(2)}%`;
-  }
 
   function obtenerFechaActual() {
+
     const ahora = new Date();
 
     const anio = ahora.getFullYear();
@@ -81,77 +290,83 @@ document.addEventListener("DOMContentLoaded", function () {
     const dia = String(ahora.getDate()).padStart(2, "0");
 
     return `${anio}-${mes}-${dia}`;
+
   }
 
-  /* ================================
-       CARGAR ESTUDIANTES
-    ================================= */
 
-  async function cargarEstudiantes() {
-    try {
-      const response = await fetch("/api/estudiantes?estado=ACTIVO", {
-        method: "GET",
+  function formatoFecha(fecha) {
 
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
-      });
-
-      if (response.status === 401) {
-        sessionStorage.clear();
-
-        window.location.href = "/login";
-
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error("No se pudieron cargar los estudiantes.");
-      }
-
-      estudiantes = await response.json();
-    } catch (error) {
-      console.error(error);
+    if (!fecha) {
+      return "-";
     }
-  }
 
-  /* ================================
-       CARGAR GRUPOS
-    ================================= */
+    const partes = String(fecha).split("-");
 
-  async function cargarGrupos() {
-    try {
-      const response = await fetch("/api/grupos?estado=ACTIVO", {
-        method: "GET",
-
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
-      });
-
-      if (response.status === 401) {
-        sessionStorage.clear();
-
-        window.location.href = "/login";
-
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error("No se pudieron cargar los grupos.");
-      }
-
-      grupos = await response.json();
-    } catch (error) {
-      console.error(error);
+    if (partes.length !== 3) {
+      return fecha;
     }
+
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+
   }
 
-  /* ================================
-       NOMBRE ESTUDIANTE
-    ================================= */
+
+  function formatoPorcentaje(valor) {
+
+    if (
+      valor === null ||
+      valor === undefined ||
+      !Number.isFinite(Number(valor))
+    ) {
+      return "0.00%";
+    }
+
+    return `${Number(valor).toFixed(2)}%`;
+
+  }
+
+
+  function escaparHTML(valor) {
+
+    return String(valor ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  function normalizarEstado(estado) {
+
+    return String(estado || "")
+      .trim()
+      .toUpperCase();
+
+  }
+
+
+  function obtenerEstado(asistencia) {
+
+    return normalizarEstado(asistencia.estado);
+
+  }
+
+
+  function obtenerFechaOrdenable(fecha) {
+
+    if (!fecha) {
+      return "";
+    }
+
+    return String(fecha);
+
+  }
+
 
   function obtenerNombreEstudiante(estudiante) {
+
     if (estudiante.nombreCompleto) {
       return estudiante.nombreCompleto;
     }
@@ -161,896 +376,2157 @@ document.addEventListener("DOMContentLoaded", function () {
     const apellido = estudiante.apellido || "";
 
     return `${nombre} ${apellido}`.trim();
+
   }
 
-  /* ================================
-       NOMBRE GRUPO
-    ================================= */
 
   function obtenerNombreGrupo(grupo) {
+
     return grupo.nombre || "";
+
   }
 
-  /* ================================
-       CARGAR FILTROS
-    ================================= */
+
+  function obtenerAsistencias(data) {
+
+    return Array.isArray(data.asistencias)
+      ? data.asistencias
+      : [];
+
+  }
+
+
+  function contarEstados(asistencias) {
+
+    const conteo = {
+      total: asistencias.length,
+      presentes: 0,
+      tardanzas: 0,
+      ausentes: 0,
+      justificados: 0
+    };
+
+    asistencias.forEach((asistencia) => {
+
+      const estado = obtenerEstado(asistencia);
+
+      switch (estado) {
+
+        case "PRESENTE":
+          conteo.presentes++;
+          break;
+
+        case "TARDANZA":
+          conteo.tardanzas++;
+          break;
+
+        case "AUSENTE":
+          conteo.ausentes++;
+          break;
+
+        case "JUSTIFICADO":
+          conteo.justificados++;
+          break;
+
+      }
+
+    });
+
+    return conteo;
+
+  }
+
+
+  // ==========================================
+  // PORCENTAJE DE ASISTENCIA
+  // ==========================================
+
+  function obtenerPorcentaje(data, conteo) {
+
+    const totalComputable =
+      conteo.total - conteo.justificados;
+
+    if (totalComputable <= 0) {
+      return 0;
+    }
+
+    return (
+      (conteo.presentes + conteo.tardanzas) /
+      totalComputable
+    ) * 100;
+
+  }
+
+
+  function obtenerEtiquetaEstado(estado) {
+
+    const etiquetas = {
+
+      PRESENTE: "Presente",
+      TARDANZA: "Tardanza",
+      AUSENTE: "Ausente",
+      JUSTIFICADO: "Justificado"
+
+    };
+
+    return etiquetas[normalizarEstado(estado)] || "Sin estado";
+
+  }
+
+
+  // ==========================================
+  // CARGAR ESTUDIANTES
+  // ==========================================
+
+  async function cargarEstudiantes() {
+
+    if (estudiantesCargados) {
+      return;
+    }
+
+    const response = await solicitar(
+      "/api/estudiantes?estado=ACTIVO",
+      {
+        method: "GET"
+      }
+    );
+
+    if (response.status === 403) {
+
+      throw new Error(
+        "No tienes permisos para consultar los estudiantes."
+      );
+
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        "No se pudieron cargar los estudiantes."
+      );
+
+    }
+
+    const data = await response.json();
+
+    estudiantes = Array.isArray(data) ? data : [];
+
+    estudiantesCargados = true;
+
+  }
+
+
+  // ==========================================
+  // CARGAR GRUPOS
+  // ==========================================
+
+  async function cargarGrupos() {
+
+    if (gruposCargados) {
+      return;
+    }
+
+    const response = await solicitar(
+      "/api/grupos?estado=ACTIVO",
+      {
+        method: "GET"
+      }
+    );
+
+    if (response.status === 403) {
+
+      throw new Error(
+        "No tienes permisos para consultar los grupos."
+      );
+
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        "No se pudieron cargar los grupos."
+      );
+
+    }
+
+    const data = await response.json();
+
+    grupos = Array.isArray(data) ? data : [];
+
+    gruposCargados = true;
+
+  }
+
+
+  // ==========================================
+  // CARGAR FILTROS DINÁMICOS
+  // ==========================================
 
   async function cargarFiltros() {
-    const tipo = tipoReporte.value;
 
-    reporteFiltros.innerHTML = "";
+    const tipo = elementos.tipoReporte.value;
+
+    elementos.reporteFiltros.innerHTML = "";
 
     estudianteSeleccionado = null;
 
     grupoSeleccionado = null;
 
-    /* ================================
-           DIARIO
-        ================================= */
+    elementos.reporteResultado.hidden = true;
+
+    ocultarMensaje();
+
+    destruirGraficos();
+
+
+    // ======================================
+    // DIARIO
+    // ======================================
 
     if (tipo === "diario") {
-      reporteFiltros.innerHTML = `
 
-                <div class="form-group">
+      elementos.reporteFiltros.innerHTML = `
 
-                    <label
-                        for="fechaReporte"
-                        class="form-label"
-                    >
-                        Fecha
-                    </label>
+        <div class="form-group">
 
-                    <input
-                        type="date"
-                        id="fechaReporte"
-                        class="form-input"
-                        required
-                    >
+          <label
+            for="fechaReporte"
+            class="form-label"
+          >
+            Fecha
+          </label>
 
-                </div>
+          <input
+            type="date"
+            id="fechaReporte"
+            class="form-input"
+            required
+          >
 
-            `;
+        </div>
 
-      document.getElementById("fechaReporte").value = obtenerFechaActual();
+      `;
+
+      document.getElementById(
+        "fechaReporte"
+      ).value = obtenerFechaActual();
+
     }
 
-    /* ================================
-           SEMANAL
-        ================================= */
+
+    // ======================================
+    // SEMANAL
+    // ======================================
 
     if (tipo === "semanal") {
-      reporteFiltros.innerHTML = `
 
-                <div class="grid grid--2">
+      elementos.reporteFiltros.innerHTML = `
 
-                    <div class="form-group">
+        <div class="grid grid--2">
 
-                        <label
-                            for="fechaInicio"
-                            class="form-label"
-                        >
-                            Fecha de inicio
-                        </label>
+          <div class="form-group">
 
-                        <input
-                            type="date"
-                            id="fechaInicio"
-                            class="form-input"
-                            required
-                        >
+            <label
+              for="fechaInicio"
+              class="form-label"
+            >
+              Fecha de inicio
+            </label>
 
-                    </div>
+            <input
+              type="date"
+              id="fechaInicio"
+              class="form-input"
+              required
+            >
 
+          </div>
 
-                    <div class="form-group">
+          <div class="form-group">
 
-                        <label
-                            for="fechaFin"
-                            class="form-label"
-                        >
-                            Fecha de fin
-                        </label>
+            <label
+              for="fechaFin"
+              class="form-label"
+            >
+              Fecha de fin
+            </label>
 
-                        <input
-                            type="date"
-                            id="fechaFin"
-                            class="form-input"
-                            required
-                        >
+            <input
+              type="date"
+              id="fechaFin"
+              class="form-input"
+              required
+            >
 
-                    </div>
+          </div>
 
-                </div>
+        </div>
 
-            `;
+      `;
 
       const hoy = obtenerFechaActual();
 
       document.getElementById("fechaInicio").value = hoy;
 
       document.getElementById("fechaFin").value = hoy;
+
     }
 
-    /* ================================
-           MENSUAL
-        ================================= */
+
+    // ======================================
+    // MENSUAL
+    // ======================================
 
     if (tipo === "mensual") {
+
       const fechaActual = new Date();
 
       const anioActual = fechaActual.getFullYear();
 
       const mesActual = fechaActual.getMonth() + 1;
 
-      reporteFiltros.innerHTML = `
+      elementos.reporteFiltros.innerHTML = `
 
-                <div class="grid grid--2">
+        <div class="grid grid--2">
 
-                    <div class="form-group">
+          <div class="form-group">
 
-                        <label
-                            for="anioReporte"
-                            class="form-label"
-                        >
-                            Año
-                        </label>
+            <label
+              for="anioReporte"
+              class="form-label"
+            >
+              Año
+            </label>
 
-                        <input
-                            type="number"
-                            id="anioReporte"
-                            class="form-input"
-                            min="2000"
-                            max="2100"
-                            required
-                        >
+            <input
+              type="number"
+              id="anioReporte"
+              class="form-input"
+              min="2000"
+              max="2100"
+              required
+            >
 
-                    </div>
+          </div>
 
+          <div class="form-group">
 
-                    <div class="form-group">
+            <label
+              for="mesReporte"
+              class="form-label"
+            >
+              Mes
+            </label>
 
-                        <label
-                            for="mesReporte"
-                            class="form-label"
-                        >
-                            Mes
-                        </label>
+            <select
+              id="mesReporte"
+              class="form-select"
+              required
+            >
 
-                        <select
-                            id="mesReporte"
-                            class="form-select"
-                            required
-                        >
+              <option value="1">Enero</option>
+              <option value="2">Febrero</option>
+              <option value="3">Marzo</option>
+              <option value="4">Abril</option>
+              <option value="5">Mayo</option>
+              <option value="6">Junio</option>
+              <option value="7">Julio</option>
+              <option value="8">Agosto</option>
+              <option value="9">Septiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
 
-                            <option value="1">
-                                Enero
-                            </option>
+            </select>
 
-                            <option value="2">
-                                Febrero
-                            </option>
+          </div>
 
-                            <option value="3">
-                                Marzo
-                            </option>
+        </div>
 
-                            <option value="4">
-                                Abril
-                            </option>
+      `;
 
-                            <option value="5">
-                                Mayo
-                            </option>
+      document.getElementById(
+        "anioReporte"
+      ).value = anioActual;
 
-                            <option value="6">
-                                Junio
-                            </option>
+      document.getElementById(
+        "mesReporte"
+      ).value = mesActual;
 
-                            <option value="7">
-                                Julio
-                            </option>
-
-                            <option value="8">
-                                Agosto
-                            </option>
-
-                            <option value="9">
-                                Septiembre
-                            </option>
-
-                            <option value="10">
-                                Octubre
-                            </option>
-
-                            <option value="11">
-                                Noviembre
-                            </option>
-
-                            <option value="12">
-                                Diciembre
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-            `;
-
-      document.getElementById("anioReporte").value = anioActual;
-
-      document.getElementById("mesReporte").value = mesActual;
     }
 
-    /* ================================
-           ESTUDIANTE
-        ================================= */
+
+    // ======================================
+    // ESTUDIANTE
+    // ======================================
 
     if (tipo === "estudiante") {
-      await cargarEstudiantes();
 
-      reporteFiltros.innerHTML = `
+      try {
 
-                <div class="form-group">
+        await cargarEstudiantes();
 
-                    <label
-                        for="buscarEstudiante"
-                        class="form-label"
-                    >
-                        Buscar estudiante
-                    </label>
+      } catch (error) {
 
-                    <input
-                        type="text"
-                        id="buscarEstudiante"
-                        class="form-input"
-                        placeholder="Escribe el nombre del estudiante..."
-                        autocomplete="off"
-                    >
+        mostrarMensaje(error.message);
 
-                </div>
+        return;
 
+      }
 
-                <div
-                    id="estudiantesResultados"
-                    class="reporte-busqueda-resultados"
-                ></div>
+      elementos.reporteFiltros.innerHTML = `
 
+        <div class="form-group">
 
-                <div
-                    id="estudianteSeleccionado"
-                    class="reporte-seleccion"
-                >
-                    Ningún estudiante seleccionado.
-                </div>
+          <label
+            for="buscarEstudiante"
+            class="form-label"
+          >
+            Buscar estudiante
+          </label>
 
-            `;
+          <input
+            type="text"
+            id="buscarEstudiante"
+            class="form-input"
+            placeholder="Escribe el nombre del estudiante..."
+            autocomplete="off"
+          >
 
-      const buscar = document.getElementById("buscarEstudiante");
+        </div>
 
-      buscar.addEventListener("focus", filtrarEstudiantes);
+        <div
+          id="estudiantesResultados"
+          class="reporte-busqueda-resultados"
+        ></div>
 
-      buscar.addEventListener("input", filtrarEstudiantes);
+        <div
+          id="estudianteSeleccionado"
+          class="reporte-seleccion"
+        >
+          Ningún estudiante seleccionado.
+        </div>
+
+      `;
+
+      const buscar = document.getElementById(
+        "buscarEstudiante"
+      );
+
+      buscar.addEventListener(
+        "focus",
+        filtrarEstudiantes
+      );
+
+      buscar.addEventListener(
+        "input",
+        filtrarEstudiantes
+      );
+
     }
 
-    /* ================================
-           GRUPO
-        ================================= */
+
+    // ======================================
+    // GRUPO
+    // ======================================
 
     if (tipo === "grupo") {
-      await cargarGrupos();
 
-      reporteFiltros.innerHTML = `
+      try {
 
-                <div class="form-group">
+        await cargarGrupos();
 
-                    <label
-                        for="buscarGrupo"
-                        class="form-label"
-                    >
-                        Buscar grupo
-                    </label>
+      } catch (error) {
 
-                    <input
-                        type="text"
-                        id="buscarGrupo"
-                        class="form-input"
-                        placeholder="Escribe el nombre del grupo..."
-                        autocomplete="off"
-                    >
+        mostrarMensaje(error.message);
 
-                </div>
+        return;
 
+      }
 
-                <div
-                    id="gruposResultados"
-                    class="reporte-busqueda-resultados"
-                ></div>
+      elementos.reporteFiltros.innerHTML = `
 
+        <div class="form-group">
 
-                <div
-                    id="grupoSeleccionado"
-                    class="reporte-seleccion"
-                >
-                    Ningún grupo seleccionado.
-                </div>
+          <label
+            for="buscarGrupo"
+            class="form-label"
+          >
+            Buscar grupo
+          </label>
 
-            `;
+          <input
+            type="text"
+            id="buscarGrupo"
+            class="form-input"
+            placeholder="Escribe el nombre del grupo..."
+            autocomplete="off"
+          >
 
-      const buscar = document.getElementById("buscarGrupo");
+        </div>
 
-      buscar.addEventListener("focus", filtrarGrupos);
+        <div
+          id="gruposResultados"
+          class="reporte-busqueda-resultados"
+        ></div>
 
-      buscar.addEventListener("input", filtrarGrupos);
+        <div
+          id="grupoSeleccionado"
+          class="reporte-seleccion"
+        >
+          Ningún grupo seleccionado.
+        </div>
+
+      `;
+
+      const buscar = document.getElementById(
+        "buscarGrupo"
+      );
+
+      buscar.addEventListener(
+        "focus",
+        filtrarGrupos
+      );
+
+      buscar.addEventListener(
+        "input",
+        filtrarGrupos
+      );
+
     }
+
   }
 
-  /* ================================
-       FILTRAR ESTUDIANTES
-    ================================= */
+
+  // ==========================================
+  // FILTRAR ESTUDIANTES
+  // ==========================================
 
   function filtrarEstudiantes() {
-    const input = document.getElementById("buscarEstudiante");
 
-    const resultados = document.getElementById("estudiantesResultados");
+    const input = document.getElementById(
+      "buscarEstudiante"
+    );
+
+    const resultados = document.getElementById(
+      "estudiantesResultados"
+    );
 
     const texto = input.value.trim().toLowerCase();
 
     estudianteSeleccionado = null;
 
-    document.getElementById("estudianteSeleccionado").textContent =
-      "Ningún estudiante seleccionado.";
+    document.getElementById(
+      "estudianteSeleccionado"
+    ).textContent = "Ningún estudiante seleccionado.";
 
     const encontrados = texto
       ? estudiantes.filter((estudiante) => {
-          const nombre = obtenerNombreEstudiante(estudiante).toLowerCase();
 
-          return nombre.includes(texto);
-        })
+        const nombre = obtenerNombreEstudiante(
+          estudiante
+        ).toLowerCase();
+
+        const documento = String(
+          estudiante.numeroDocumento || ""
+        ).toLowerCase();
+
+        return (
+          nombre.includes(texto) ||
+          documento.includes(texto)
+        );
+
+      })
       : estudiantes;
 
     if (encontrados.length === 0) {
+
       resultados.innerHTML = `
 
-                <div class="reporte-busqueda-vacio">
+        <div class="reporte-busqueda-vacio">
 
-                    No se encontraron estudiantes.
+          No se encontraron estudiantes.
 
-                </div>
+        </div>
 
-            `;
+      `;
 
       return;
+
     }
 
-    resultados.innerHTML = encontrados
-      .map(
-        (estudiante) => `
+    resultados.innerHTML = encontrados.map(
+      (estudiante) => `
 
-                        <button
-                            type="button"
-                            class="reporte-busqueda-item"
-                            data-estudiante-id="${estudiante.id}"
-                        >
-                            ${obtenerNombreEstudiante(estudiante)}
-                        </button>
+        <button
+          type="button"
+          class="reporte-busqueda-item"
+          data-estudiante-id="${Number(estudiante.id)}"
+        >
+          ${escaparHTML(obtenerNombreEstudiante(estudiante))}
+        </button>
 
-                    `,
-      )
-      .join("");
+      `
+    ).join("");
 
-    resultados.querySelectorAll(".reporte-busqueda-item").forEach((boton) => {
+    resultados.querySelectorAll(
+      ".reporte-busqueda-item"
+    ).forEach((boton) => {
+
       boton.addEventListener("click", () => {
-        seleccionarEstudiante(Number(boton.dataset.estudianteId));
+
+        seleccionarEstudiante(
+          Number(boton.dataset.estudianteId)
+        );
+
       });
+
     });
+
   }
 
-  /* ================================
-       SELECCIONAR ESTUDIANTE
-    ================================= */
+
+  // ==========================================
+  // SELECCIONAR ESTUDIANTE
+  // ==========================================
 
   function seleccionarEstudiante(id) {
+
     estudianteSeleccionado = estudiantes.find(
-      (estudiante) => estudiante.id === id,
+      (estudiante) => Number(estudiante.id) === id
     );
 
     if (!estudianteSeleccionado) {
       return;
     }
 
-    const nombre = obtenerNombreEstudiante(estudianteSeleccionado);
+    const nombre = obtenerNombreEstudiante(
+      estudianteSeleccionado
+    );
 
-    document.getElementById("buscarEstudiante").value = nombre;
+    document.getElementById(
+      "buscarEstudiante"
+    ).value = nombre;
 
-    document.getElementById("estudianteSeleccionado").textContent =
-      `Estudiante seleccionado: ${nombre}`;
+    document.getElementById(
+      "estudianteSeleccionado"
+    ).textContent = `Estudiante seleccionado: ${nombre}`;
 
-    document.getElementById("estudiantesResultados").innerHTML = "";
+    document.getElementById(
+      "estudiantesResultados"
+    ).innerHTML = "";
+
   }
 
-  /* ================================
-       FILTRAR GRUPOS
-    ================================= */
+
+  // ==========================================
+  // FILTRAR GRUPOS
+  // ==========================================
 
   function filtrarGrupos() {
-    const input = document.getElementById("buscarGrupo");
 
-    const resultados = document.getElementById("gruposResultados");
+    const input = document.getElementById(
+      "buscarGrupo"
+    );
+
+    const resultados = document.getElementById(
+      "gruposResultados"
+    );
 
     const texto = input.value.trim().toLowerCase();
 
     grupoSeleccionado = null;
 
-    document.getElementById("grupoSeleccionado").textContent =
-      "Ningún grupo seleccionado.";
+    document.getElementById(
+      "grupoSeleccionado"
+    ).textContent = "Ningún grupo seleccionado.";
 
     const encontrados = texto
       ? grupos.filter((grupo) => {
-          const nombre = obtenerNombreGrupo(grupo).toLowerCase();
 
-          return nombre.includes(texto);
-        })
+        const nombre = obtenerNombreGrupo(
+          grupo
+        ).toLowerCase();
+
+        return nombre.includes(texto);
+
+      })
       : grupos;
 
     if (encontrados.length === 0) {
+
       resultados.innerHTML = `
 
-                <div class="reporte-busqueda-vacio">
+        <div class="reporte-busqueda-vacio">
 
-                    No se encontraron grupos.
+          No se encontraron grupos.
 
-                </div>
+        </div>
 
-            `;
+      `;
 
       return;
+
     }
 
-    resultados.innerHTML = encontrados
-      .map(
-        (grupo) => `
+    resultados.innerHTML = encontrados.map(
+      (grupo) => `
 
-                        <button
-                            type="button"
-                            class="reporte-busqueda-item"
-                            data-grupo-id="${grupo.id}"
-                        >
-                            ${obtenerNombreGrupo(grupo)}
-                        </button>
+        <button
+          type="button"
+          class="reporte-busqueda-item"
+          data-grupo-id="${Number(grupo.id)}"
+        >
+          ${escaparHTML(obtenerNombreGrupo(grupo))}
+        </button>
 
-                    `,
-      )
-      .join("");
+      `
+    ).join("");
 
-    resultados.querySelectorAll(".reporte-busqueda-item").forEach((boton) => {
+    resultados.querySelectorAll(
+      ".reporte-busqueda-item"
+    ).forEach((boton) => {
+
       boton.addEventListener("click", () => {
-        seleccionarGrupo(Number(boton.dataset.grupoId));
+
+        seleccionarGrupo(
+          Number(boton.dataset.grupoId)
+        );
+
       });
+
     });
+
   }
 
-  /* ================================
-       SELECCIONAR GRUPO
-    ================================= */
+
+  // ==========================================
+  // SELECCIONAR GRUPO
+  // ==========================================
 
   function seleccionarGrupo(id) {
-    grupoSeleccionado = grupos.find((grupo) => grupo.id === id);
+
+    grupoSeleccionado = grupos.find(
+      (grupo) => Number(grupo.id) === id
+    );
 
     if (!grupoSeleccionado) {
       return;
     }
 
-    const nombre = obtenerNombreGrupo(grupoSeleccionado);
+    const nombre = obtenerNombreGrupo(
+      grupoSeleccionado
+    );
 
-    document.getElementById("buscarGrupo").value = nombre;
+    document.getElementById(
+      "buscarGrupo"
+    ).value = nombre;
 
-    document.getElementById("grupoSeleccionado").textContent =
-      `Grupo seleccionado: ${nombre}`;
+    document.getElementById(
+      "grupoSeleccionado"
+    ).textContent = `Grupo seleccionado: ${nombre}`;
 
-    document.getElementById("gruposResultados").innerHTML = "";
+    document.getElementById(
+      "gruposResultados"
+    ).innerHTML = "";
+
   }
 
-  /* ================================
-       GENERAR REPORTE
-    ================================= */
 
-  async function generarReporte() {
-    ocultarMensaje();
+  // ==========================================
+  // GENERAR URL DEL REPORTE
+  // ==========================================
 
-    reporteResultado.hidden = true;
+  function obtenerURLReporte() {
 
-    const tipo = tipoReporte.value;
+    const tipo = elementos.tipoReporte.value;
 
     let url = "";
 
-    /* ================================
-           DIARIO
-        ================================= */
+
+    // ======================================
+    // DIARIO
+    // ======================================
 
     if (tipo === "diario") {
-      const fecha = document.getElementById("fechaReporte").value;
+
+      const fecha = document.getElementById(
+        "fechaReporte"
+      ).value;
 
       if (!fecha) {
-        mostrarMensaje("Selecciona una fecha.");
 
-        return;
+        throw new Error(
+          "Selecciona una fecha."
+        );
+
       }
 
-      url = `/api/reportes/asistencias/diario?fecha=${fecha}`;
+      url = `/api/reportes/asistencias/diario?fecha=${encodeURIComponent(fecha)}`;
+
     }
 
-    /* ================================
-           SEMANAL
-        ================================= */
+
+    // ======================================
+    // SEMANAL
+    // ======================================
 
     if (tipo === "semanal") {
-      const inicio = document.getElementById("fechaInicio").value;
 
-      const fin = document.getElementById("fechaFin").value;
+      const inicio = document.getElementById(
+        "fechaInicio"
+      ).value;
+
+      const fin = document.getElementById(
+        "fechaFin"
+      ).value;
 
       if (!inicio || !fin) {
-        mostrarMensaje("Selecciona las fechas de inicio y fin.");
 
-        return;
+        throw new Error(
+          "Selecciona las fechas de inicio y fin."
+        );
+
       }
 
       if (inicio > fin) {
+
+        throw new Error(
+          "La fecha de inicio no puede ser posterior a la fecha de fin."
+        );
+
+      }
+
+      url =
+        `/api/reportes/asistencias/semanal?inicio=${encodeURIComponent(inicio)}&fin=${encodeURIComponent(fin)}`;
+
+    }
+
+
+    // ======================================
+    // MENSUAL
+    // ======================================
+
+    if (tipo === "mensual") {
+
+      const anio = Number(
+        document.getElementById("anioReporte").value
+      );
+
+      const mes = Number(
+        document.getElementById("mesReporte").value
+      );
+
+      if (!anio || !mes) {
+
+        throw new Error(
+          "Selecciona el año y el mes."
+        );
+
+      }
+
+      if (
+        !Number.isInteger(anio) ||
+        anio < 2000 ||
+        anio > 2100
+      ) {
+
+        throw new Error(
+          "Ingresa un año válido."
+        );
+
+      }
+
+      if (
+        !Number.isInteger(mes) ||
+        mes < 1 ||
+        mes > 12
+      ) {
+
+        throw new Error(
+          "Selecciona un mes válido."
+        );
+
+      }
+
+      url =
+        `/api/reportes/asistencias/mensual?anio=${anio}&mes=${mes}`;
+
+    }
+
+
+    // ======================================
+    // ESTUDIANTE
+    // ======================================
+
+    if (tipo === "estudiante") {
+
+      if (!estudianteSeleccionado) {
+
+        throw new Error(
+          "Selecciona un estudiante de la lista."
+        );
+
+      }
+
+      url =
+        `/api/reportes/asistencias/estudiante/${estudianteSeleccionado.id}`;
+
+    }
+
+
+    // ======================================
+    // GRUPO
+    // ======================================
+
+    if (tipo === "grupo") {
+
+      if (!grupoSeleccionado) {
+
+        throw new Error(
+          "Selecciona un grupo de la lista."
+        );
+
+      }
+
+      url =
+        `/api/reportes/asistencias/grupo/${grupoSeleccionado.id}`;
+
+    }
+
+    return url;
+
+  }
+
+
+  // ==========================================
+  // GENERAR REPORTE
+  // ==========================================
+
+  async function generarReporte() {
+
+    ocultarMensaje();
+
+    let url;
+
+    try {
+
+      url = obtenerURLReporte();
+
+    } catch (error) {
+
+      mostrarMensaje(error.message);
+
+      return;
+
+    }
+
+    const tipo = elementos.tipoReporte.value;
+
+    elementos.generarReporteBtn.disabled = true;
+
+    elementos.generarReporteBtn.textContent = "Generando...";
+
+    try {
+
+      const response = await solicitar(url, {
+        method: "GET"
+      });
+
+      if (response.status === 403) {
+
         mostrarMensaje(
-          "La fecha de inicio no puede ser posterior a la fecha de fin.",
+          "No tienes permisos para consultar este reporte."
         );
 
         return;
-      }
 
-      url = `/api/reportes/asistencias/semanal?inicio=${inicio}&fin=${fin}`;
-    }
-
-    /* ================================
-           MENSUAL
-        ================================= */
-
-    if (tipo === "mensual") {
-      const anio = document.getElementById("anioReporte").value;
-
-      const mes = document.getElementById("mesReporte").value;
-
-      if (!anio || !mes) {
-        mostrarMensaje("Selecciona el año y el mes.");
-
-        return;
-      }
-
-      url = `/api/reportes/asistencias/mensual?anio=${anio}&mes=${mes}`;
-    }
-
-    /* ================================
-           ESTUDIANTE
-        ================================= */
-
-    if (tipo === "estudiante") {
-      if (!estudianteSeleccionado) {
-        mostrarMensaje("Selecciona un estudiante de la lista.");
-
-        return;
-      }
-
-      url = `/api/reportes/asistencias/estudiante/${estudianteSeleccionado.id}`;
-    }
-
-    /* ================================
-           GRUPO
-        ================================= */
-
-    if (tipo === "grupo") {
-      if (!grupoSeleccionado) {
-        mostrarMensaje("Selecciona un grupo de la lista.");
-
-        return;
-      }
-
-      url = `/api/reportes/asistencias/grupo/${grupoSeleccionado.id}`;
-    }
-
-    generarReporteBtn.disabled = true;
-
-    generarReporteBtn.textContent = "Generando...";
-
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
-      });
-
-      if (response.status === 401) {
-        sessionStorage.clear();
-
-        window.location.href = "/login";
-
-        return;
-      }
-
-      if (response.status === 403) {
-        mostrarMensaje("No tienes permisos para consultar este reporte.");
-
-        return;
       }
 
       if (!response.ok) {
+
         let mensaje = "No se pudo generar el reporte.";
 
         try {
+
           const error = await response.json();
 
-          if (error.mensaje) {
-            mensaje = error.mensaje;
-          }
-        } catch (e) {
-          // Sin respuesta JSON
+          mensaje =
+            error.mensaje ||
+            error.message ||
+            mensaje;
+
+        } catch (error) {
+          // La respuesta no contiene JSON válido.
         }
 
         mostrarMensaje(mensaje);
 
         return;
+
       }
 
       const data = await response.json();
 
       mostrarReporte(data, tipo);
+
     } catch (error) {
-      console.error(error);
 
-      mostrarMensaje("Error de conexión con el servidor.");
+      console.error(
+        "Error al generar el reporte:",
+        error
+      );
+
+      mostrarMensaje(
+        error.message === "Sesión expirada."
+          ? error.message
+          : "Error de conexión con el servidor."
+      );
+
     } finally {
-      generarReporteBtn.disabled = false;
 
-      generarReporteBtn.textContent = "Generar reporte";
+      elementos.generarReporteBtn.disabled = false;
+
+      elementos.generarReporteBtn.textContent =
+        "Generar reporte";
+
     }
+
   }
 
-  /* ================================
-       MOSTRAR REPORTE
-    ================================= */
+
+  // ==========================================
+  // MOSTRAR REPORTE
+  // ==========================================
 
   function mostrarReporte(data, tipo) {
-    reporteResultado.hidden = false;
+
+    if (!data || typeof data !== "object") {
+
+      mostrarMensaje(
+        "El servidor devolvió una respuesta inválida."
+      );
+
+      return;
+
+    }
+
+    const asistencias = obtenerAsistencias(data);
+
+    const conteo = contarEstados(asistencias);
+
+    const porcentaje = obtenerPorcentaje(
+      data,
+      conteo
+    );
+
+    mostrarPeriodo(data, tipo);
+
+    mostrarResumen(conteo, porcentaje);
+
+    mostrarGraficos(asistencias, tipo);
+
+    mostrarDetalle(asistencias);
+
+    elementos.reporteResultado.hidden = false;
+
+  }
+
+
+  // ==========================================
+  // MOSTRAR PERIODO
+  // ==========================================
+
+  function mostrarPeriodo(data, tipo) {
 
     let periodo = "";
 
     if (tipo === "diario") {
-      periodo = `Fecha: ${formatoFecha(data.fecha)}`;
+
+      periodo =
+        `Fecha: ${formatoFecha(data.fechaInicio)}`;
+
     } else if (tipo === "semanal") {
-      periodo = `Periodo: ${formatoFecha(data.fechaInicio)} - ${formatoFecha(data.fechaFin)}`;
+
+      periodo =
+        `Periodo: ${formatoFecha(data.fechaInicio)} - ${formatoFecha(data.fechaFin)}`;
+
     } else if (tipo === "mensual") {
-      periodo = `Periodo: ${data.mes}/${data.anio}`;
+
+      periodo =
+        `Periodo: ${formatoFecha(data.fechaInicio)} - ${formatoFecha(data.fechaFin)}`;
+
     } else if (tipo === "estudiante") {
-      periodo = `Estudiante: ${
-        estudianteSeleccionado
-          ? obtenerNombreEstudiante(estudianteSeleccionado)
-          : data.estudianteId
-      }`;
+
+      const nombre = estudianteSeleccionado
+        ? obtenerNombreEstudiante(estudianteSeleccionado)
+        : "Estudiante";
+
+      if (data.fechaInicio && data.fechaFin) {
+
+        periodo =
+          `${nombre} · ${formatoFecha(data.fechaInicio)} - ${formatoFecha(data.fechaFin)}`;
+
+      } else {
+
+        periodo = nombre;
+
+      }
+
     } else if (tipo === "grupo") {
-      periodo = `Grupo: ${
-        grupoSeleccionado ? obtenerNombreGrupo(grupoSeleccionado) : data.grupoId
-      }`;
+
+      const nombre = grupoSeleccionado
+        ? obtenerNombreGrupo(grupoSeleccionado)
+        : "Grupo";
+
+      if (data.fechaInicio && data.fechaFin) {
+
+        periodo =
+          `${nombre} · ${formatoFecha(data.fechaInicio)} - ${formatoFecha(data.fechaFin)}`;
+
+      } else {
+
+        periodo = nombre;
+
+      }
+
     }
 
-    reportePeriodo.textContent = periodo;
+    elementos.reportePeriodo.textContent = periodo || "-";
 
-    /* ================================
-           RESUMEN
-        ================================= */
-
-    reporteResumen.innerHTML = `
-
-            <div class="reporte-stat">
-
-                <span class="reporte-stat__label">
-                    Total
-                </span>
-
-                <strong class="reporte-stat__value">
-                    ${data.total}
-                </strong>
-
-            </div>
-
-
-            <div class="reporte-stat">
-
-                <span class="reporte-stat__label">
-                    Presentes
-                </span>
-
-                <strong class="reporte-stat__value">
-                    ${data.presentes}
-                </strong>
-
-            </div>
-
-
-            <div class="reporte-stat">
-
-                <span class="reporte-stat__label">
-                    Tardanzas
-                </span>
-
-                <strong class="reporte-stat__value">
-                    ${data.tardanzas}
-                </strong>
-
-            </div>
-
-
-            <div class="reporte-stat">
-
-                <span class="reporte-stat__label">
-                    Ausentes
-                </span>
-
-                <strong class="reporte-stat__value">
-                    ${data.ausentes}
-                </strong>
-
-            </div>
-
-
-            <div class="reporte-stat reporte-stat--percentage">
-
-                <span class="reporte-stat__label">
-                    Porcentaje de asistencia
-                </span>
-
-                <strong class="reporte-stat__value">
-                    ${formatoPorcentaje(data.porcentajeAsistencia)}
-                </strong>
-
-            </div>
-
-        `;
-
-    /* ================================
-           DETALLE
-        ================================= */
-
-    const asistencias = data.asistencias || [];
-
-    if (asistencias.length === 0) {
-      reporteDetalle.innerHTML = `
-
-                <div class="reportes-empty">
-
-                    No existen registros de asistencia
-                    para el periodo seleccionado.
-
-                </div>
-
-            `;
-
-      return;
-    }
-
-    let filas = "";
-
-    asistencias.forEach((asistencia) => {
-      filas += `
-
-                    <tr>
-
-                        <td>
-                            ${
-                              asistencia.estudianteNombre ||
-                              asistencia.estudianteId ||
-                              "-"
-                            }
-                        </td>
-
-
-                        <td>
-                            ${
-                              asistencia.grupoNombre ||
-                              asistencia.grupoId ||
-                              "-"
-                            }
-                        </td>
-
-
-                        <td>
-                            ${formatoFecha(asistencia.fecha)}
-                        </td>
-
-
-                        <td>
-                            ${asistencia.horaLlegada || "-"}
-                        </td>
-
-
-                        <td>
-
-                            <span class="
-                                reporte-estado
-                                reporte-estado--${asistencia.estado.toLowerCase()}
-                            ">
-
-                                ${asistencia.estado}
-
-                            </span>
-
-                        </td>
-
-
-                        <td>
-                            ${asistencia.observacion || "-"}
-                        </td>
-
-                    </tr>
-
-                `;
-    });
-
-    reporteDetalle.innerHTML = `
-
-            <table class="reportes-table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Estudiante
-                        </th>
-
-                        <th>
-                            Grupo
-                        </th>
-
-                        <th>
-                            Fecha
-                        </th>
-
-                        <th>
-                            Hora
-                        </th>
-
-                        <th>
-                            Estado
-                        </th>
-
-                        <th>
-                            Observación
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                    ${filas}
-
-                </tbody>
-
-            </table>
-
-        `;
   }
 
-  /* ================================
-       EVENTOS
-    ================================= */
 
-  tipoReporte.addEventListener("change", cargarFiltros);
+  // ==========================================
+  // MOSTRAR INDICADORES KPI
+  // ==========================================
 
-  generarReporteBtn.addEventListener("click", generarReporte);
+  function mostrarResumen(conteo, porcentaje) {
 
-  /* ================================
-       INICIALIZACIÓN
-    ================================= */
+    const indicadores = [
+
+      {
+        clase: "total",
+        etiqueta: "Total de registros",
+        valor: conteo.total
+      },
+
+      {
+        clase: "presente",
+        etiqueta: "Presentes",
+        valor: conteo.presentes
+      },
+
+      {
+        clase: "tardanza",
+        etiqueta: "Tardanzas",
+        valor: conteo.tardanzas
+      },
+
+      {
+        clase: "ausente",
+        etiqueta: "Ausentes",
+        valor: conteo.ausentes
+      },
+
+      {
+        clase: "justificado",
+        etiqueta: "Justificados",
+        valor: conteo.justificados
+      },
+
+      {
+        clase: "percentage",
+        etiqueta: "Porcentaje de asistencia",
+        valor: formatoPorcentaje(porcentaje)
+      }
+
+    ];
+
+    elementos.reporteResumen.innerHTML = indicadores.map(
+      (indicador) => `
+
+        <article class="
+          reporte-stat
+          reporte-stat--${indicador.clase}
+        ">
+
+          <span class="reporte-stat__label">
+            ${escaparHTML(indicador.etiqueta)}
+          </span>
+
+          <strong class="reporte-stat__value">
+            ${escaparHTML(indicador.valor)}
+          </strong>
+
+        </article>
+
+      `
+    ).join("");
+
+  }
+
+
+  // ==========================================
+  // DESTRUIR GRÁFICOS ANTERIORES
+  // ==========================================
+
+  function destruirGraficos() {
+
+    if (distribucionChart) {
+
+      distribucionChart.destroy();
+
+      distribucionChart = null;
+
+    }
+
+    if (evolucionChart) {
+
+      evolucionChart.destroy();
+
+      evolucionChart = null;
+
+    }
+
+  }
+
+
+  // ==========================================
+  // CONFIGURACIÓN COMÚN DE GRÁFICOS
+  // ==========================================
+
+  function opcionesGrafico() {
+
+    return {
+
+      responsive: true,
+
+      maintainAspectRatio: false,
+
+      plugins: {
+
+        legend: {
+
+          position: "bottom",
+
+          labels: {
+
+            usePointStyle: true,
+
+            padding: 18,
+
+            color: colores.texto,
+
+            font: {
+              family: "Inter",
+              size: 12
+            }
+
+          }
+
+        },
+
+        tooltip: {
+
+          enabled: true
+
+        }
+
+      }
+
+    };
+
+  }
+
+
+  // ==========================================
+  // GRÁFICO DE DISTRIBUCIÓN
+  // ==========================================
+
+  function crearGraficoDistribucion(asistencias) {
+
+    const conteo = contarEstados(asistencias);
+
+    const datos = [
+
+      conteo.presentes,
+      conteo.tardanzas,
+      conteo.ausentes,
+      conteo.justificados
+
+    ];
+
+    const configuracion = {
+
+      type: "doughnut",
+
+      data: {
+
+        labels: [
+          "Presentes",
+          "Tardanzas",
+          "Ausentes",
+          "Justificados"
+        ],
+
+        datasets: [{
+
+          data: datos,
+
+          backgroundColor: [
+
+            colores.presente,
+            colores.tardanza,
+            colores.ausente,
+            colores.justificado
+
+          ],
+
+          borderWidth: 0,
+
+          hoverOffset: 8
+
+        }]
+
+      },
+
+      options: {
+
+        ...opcionesGrafico(),
+
+        cutout: "68%"
+
+      }
+
+    };
+
+    distribucionChart = new Chart(
+      elementos.distribucionCanvas,
+      configuracion
+    );
+
+  }
+
+
+  // ==========================================
+  // AGRUPAR ASISTENCIAS POR FECHA
+  // ==========================================
+
+  function agruparPorFecha(asistencias) {
+
+    const agrupados = new Map();
+
+    asistencias.forEach((asistencia) => {
+
+      const fecha = asistencia.fecha;
+
+      if (!fecha) {
+        return;
+      }
+
+      if (!agrupados.has(fecha)) {
+
+        agrupados.set(fecha, {
+
+          fecha,
+          presentes: 0,
+          tardanzas: 0,
+          ausentes: 0,
+          justificados: 0
+
+        });
+
+      }
+
+      const registro = agrupados.get(fecha);
+
+      switch (obtenerEstado(asistencia)) {
+
+        case "PRESENTE":
+          registro.presentes++;
+          break;
+
+        case "TARDANZA":
+          registro.tardanzas++;
+          break;
+
+        case "AUSENTE":
+          registro.ausentes++;
+          break;
+
+        case "JUSTIFICADO":
+          registro.justificados++;
+          break;
+
+      }
+
+    });
+
+    return Array.from(agrupados.values()).sort(
+      (a, b) => a.fecha.localeCompare(b.fecha)
+    );
+
+  }
+
+
+  // ==========================================
+  // GRÁFICO DIARIO
+  // ==========================================
+
+  function crearGraficoDiario(asistencias) {
+
+    const conteo = contarEstados(asistencias);
+
+    elementos.evolucionTitulo.textContent =
+      "Comparación por estado";
+
+    elementos.evolucionDescripcion.textContent =
+      "Cantidad de registros según el estado de asistencia.";
+
+    evolucionChart = new Chart(
+      elementos.evolucionCanvas,
+      {
+
+        type: "bar",
+
+        data: {
+
+          labels: [
+            "Presentes",
+            "Tardanzas",
+            "Ausentes",
+            "Justificados"
+          ],
+
+          datasets: [{
+
+            label: "Registros",
+
+            data: [
+
+              conteo.presentes,
+              conteo.tardanzas,
+              conteo.ausentes,
+              conteo.justificados
+
+            ],
+
+            backgroundColor: [
+
+              colores.presente,
+              colores.tardanza,
+              colores.ausente,
+              colores.justificado
+
+            ],
+
+            borderRadius: 7,
+
+            maxBarThickness: 55
+
+          }]
+
+        },
+
+        options: {
+
+          ...opcionesGrafico(),
+
+          indexAxis: "y",
+
+          plugins: {
+
+            ...opcionesGrafico().plugins,
+
+            legend: {
+              display: false
+            }
+
+          },
+
+          scales: {
+
+            x: {
+
+              beginAtZero: true,
+
+              ticks: {
+                precision: 0,
+                color: colores.texto
+              },
+
+              grid: {
+                color: colores.grid
+              }
+
+            },
+
+            y: {
+
+              ticks: {
+                color: colores.texto
+              },
+
+              grid: {
+                display: false
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // GRÁFICO SEMANAL Y MENSUAL
+  // ==========================================
+
+  function crearGraficoTemporal(asistencias, tipo) {
+
+    const registros = agruparPorFecha(asistencias);
+
+    elementos.evolucionTitulo.textContent =
+      tipo === "semanal"
+        ? "Evolución semanal"
+        : "Evolución mensual";
+
+    elementos.evolucionDescripcion.textContent =
+      "Cantidad de asistencias registradas por día.";
+
+    evolucionChart = new Chart(
+      elementos.evolucionCanvas,
+      {
+
+        type: "line",
+
+        data: {
+
+          labels: registros.map(
+            (registro) => formatoFecha(registro.fecha)
+          ),
+
+          datasets: estados.map((estado) => {
+
+            const clave = {
+
+              PRESENTE: "presentes",
+              TARDANZA: "tardanzas",
+              AUSENTE: "ausentes",
+              JUSTIFICADO: "justificados"
+
+            }[estado.clave];
+
+            return {
+
+              label: estado.nombre,
+
+              data: registros.map(
+                (registro) => registro[clave]
+              ),
+
+              borderColor: estado.color,
+
+              backgroundColor: estado.color,
+
+              tension: 0.3,
+
+              fill: false,
+
+              pointRadius: 4,
+
+              pointHoverRadius: 6
+
+            };
+
+          })
+
+        },
+
+        options: {
+
+          ...opcionesGrafico(),
+
+          interaction: {
+
+            intersect: false,
+
+            mode: "index"
+
+          },
+
+          scales: {
+
+            x: {
+
+              ticks: {
+                color: colores.texto
+              },
+
+              grid: {
+                display: false
+              }
+
+            },
+
+            y: {
+
+              beginAtZero: true,
+
+              ticks: {
+                precision: 0,
+                color: colores.texto
+              },
+
+              grid: {
+                color: colores.grid
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // GRÁFICO POR ESTUDIANTE
+  // ==========================================
+
+  function crearGraficoEstudiante(asistencias) {
+
+    const registros = agruparPorFecha(asistencias);
+
+    elementos.evolucionTitulo.textContent =
+      "Evolución de asistencia";
+
+    elementos.evolucionDescripcion.textContent =
+      "Historial de registros del estudiante por fecha.";
+
+    evolucionChart = new Chart(
+      elementos.evolucionCanvas,
+      {
+
+        type: "line",
+
+        data: {
+
+          labels: registros.map(
+            (registro) => formatoFecha(registro.fecha)
+          ),
+
+          datasets: estados.map((estado) => {
+
+            const clave = {
+
+              PRESENTE: "presentes",
+              TARDANZA: "tardanzas",
+              AUSENTE: "ausentes",
+              JUSTIFICADO: "justificados"
+
+            }[estado.clave];
+
+            return {
+
+              label: estado.nombre,
+
+              data: registros.map(
+                (registro) => registro[clave]
+              ),
+
+              borderColor: estado.color,
+
+              backgroundColor: estado.color,
+
+              tension: 0.3,
+
+              pointRadius: 4,
+
+              pointHoverRadius: 6
+
+            };
+
+          })
+
+        },
+
+        options: {
+
+          ...opcionesGrafico(),
+
+          interaction: {
+
+            intersect: false,
+
+            mode: "index"
+
+          },
+
+          scales: {
+
+            x: {
+
+              ticks: {
+                color: colores.texto
+              },
+
+              grid: {
+                display: false
+              }
+
+            },
+
+            y: {
+
+              beginAtZero: true,
+
+              ticks: {
+                precision: 0,
+                color: colores.texto,
+                stepSize: 1
+              },
+
+              grid: {
+                color: colores.grid
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // AGRUPAR ASISTENCIAS POR ESTUDIANTE
+  // ==========================================
+
+  function agruparPorEstudiante(asistencias) {
+
+    const agrupados = new Map();
+
+    asistencias.forEach((asistencia) => {
+
+      const id = asistencia.estudianteId;
+
+      const nombre =
+        asistencia.estudianteNombre ||
+        `Estudiante ${id || ""}`;
+
+      const clave = id ?? nombre;
+
+      if (!agrupados.has(clave)) {
+
+        agrupados.set(clave, {
+
+          nombre,
+
+          presentes: 0,
+          tardanzas: 0,
+          ausentes: 0,
+          justificados: 0
+
+        });
+
+      }
+
+      const registro = agrupados.get(clave);
+
+      switch (obtenerEstado(asistencia)) {
+
+        case "PRESENTE":
+          registro.presentes++;
+          break;
+
+        case "TARDANZA":
+          registro.tardanzas++;
+          break;
+
+        case "AUSENTE":
+          registro.ausentes++;
+          break;
+
+        case "JUSTIFICADO":
+          registro.justificados++;
+          break;
+
+      }
+
+    });
+
+    return Array.from(agrupados.values()).sort(
+      (a, b) => a.nombre.localeCompare(b.nombre)
+    );
+
+  }
+
+
+  // ==========================================
+  // GRÁFICO POR GRUPO
+  // ==========================================
+
+  function crearGraficoGrupo(asistencias) {
+
+    const registros = agruparPorEstudiante(asistencias);
+
+    elementos.evolucionTitulo.textContent =
+      "Comparación por estudiante";
+
+    elementos.evolucionDescripcion.textContent =
+      "Distribución de asistencias de cada estudiante del grupo.";
+
+    evolucionChart = new Chart(
+      elementos.evolucionCanvas,
+      {
+
+        type: "bar",
+
+        data: {
+
+          labels: registros.map(
+            (registro) => registro.nombre
+          ),
+
+          datasets: estados.map((estado) => {
+
+            const clave = {
+
+              PRESENTE: "presentes",
+              TARDANZA: "tardanzas",
+              AUSENTE: "ausentes",
+              JUSTIFICADO: "justificados"
+
+            }[estado.clave];
+
+            return {
+
+              label: estado.nombre,
+
+              data: registros.map(
+                (registro) => registro[clave]
+              ),
+
+              backgroundColor: estado.color,
+
+              borderRadius: 4
+
+            };
+
+          })
+
+        },
+
+        options: {
+
+          ...opcionesGrafico(),
+
+          indexAxis: "y",
+
+          scales: {
+
+            x: {
+
+              beginAtZero: true,
+
+              stacked: true,
+
+              ticks: {
+                precision: 0,
+                color: colores.texto
+              },
+
+              grid: {
+                color: colores.grid
+              }
+
+            },
+
+            y: {
+
+              stacked: true,
+
+              ticks: {
+                color: colores.texto
+              },
+
+              grid: {
+                display: false
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // MOSTRAR GRÁFICOS
+  // ==========================================
+
+  function mostrarGraficos(asistencias, tipo) {
+
+    destruirGraficos();
+
+    if (typeof Chart === "undefined") {
+
+      mostrarMensaje(
+        "No se pudo cargar la librería de gráficos."
+      );
+
+      return;
+
+    }
+
+    if (
+      !elementos.distribucionCanvas ||
+      !elementos.evolucionCanvas
+    ) {
+
+      console.error(
+        "No se encontraron los canvas de los gráficos."
+      );
+
+      mostrarMensaje(
+        "No se encontraron los elementos necesarios para mostrar los gráficos."
+      );
+
+      return;
+
+    }
+
+    try {
+
+      crearGraficoDistribucion(asistencias);
+
+      switch (tipo) {
+
+        case "diario":
+
+          crearGraficoDiario(asistencias);
+
+          break;
+
+        case "semanal":
+        case "mensual":
+
+          crearGraficoTemporal(
+            asistencias,
+            tipo
+          );
+
+          break;
+
+        case "estudiante":
+
+          crearGraficoEstudiante(
+            asistencias
+          );
+
+          break;
+
+        case "grupo":
+
+          crearGraficoGrupo(
+            asistencias
+          );
+
+          break;
+
+        default:
+
+          throw new Error(
+            "Tipo de reporte no reconocido."
+          );
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Error al construir los gráficos:",
+        error
+      );
+
+      destruirGraficos();
+
+      mostrarMensaje(
+        "El reporte se generó, pero ocurrió un error al mostrar los gráficos.",
+        "warning"
+      );
+
+    }
+
+  }
+
+
+  // ==========================================
+  // MOSTRAR DETALLE DE ASISTENCIAS
+  // ==========================================
+
+  function mostrarDetalle(asistencias) {
+
+    if (asistencias.length === 0) {
+
+      elementos.reporteDetalle.innerHTML = `
+
+        <div class="reportes-empty">
+
+          No existen registros de asistencia
+          para el periodo seleccionado.
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+    const filas = asistencias.map((asistencia) => {
+
+      const estado = obtenerEstado(asistencia);
+
+      const estadoClase = estados.some(
+        (item) => item.clave === estado
+      )
+        ? estado.toLowerCase()
+        : "sin-estado";
+
+      return `
+
+        <tr>
+
+          <td>
+            ${escaparHTML(
+        asistencia.estudianteNombre ||
+        asistencia.estudianteId ||
+        "-"
+      )}
+          </td>
+
+          <td>
+            ${escaparHTML(
+        asistencia.grupoNombre ||
+        asistencia.grupoId ||
+        "-"
+      )}
+          </td>
+
+          <td>
+            ${formatoFecha(asistencia.fecha)}
+          </td>
+
+          <td>
+            ${escaparHTML(
+        asistencia.horaLlegada || "-"
+      )}
+          </td>
+
+          <td>
+
+            <span class="
+              reporte-estado
+              reporte-estado--${estadoClase}
+            ">
+
+              ${escaparHTML(
+        obtenerEtiquetaEstado(estado)
+      )}
+
+            </span>
+
+          </td>
+
+          <td>
+            ${escaparHTML(
+        asistencia.observacion || "-"
+      )}
+          </td>
+
+        </tr>
+
+      `;
+
+    }).join("");
+
+    elementos.reporteDetalle.innerHTML = `
+
+      <table class="reportes-table">
+
+        <thead>
+
+          <tr>
+
+            <th>Estudiante</th>
+
+            <th>Grupo</th>
+
+            <th>Fecha</th>
+
+            <th>Hora</th>
+
+            <th>Estado</th>
+
+            <th>Observación</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${filas}
+
+        </tbody>
+
+      </table>
+
+    `;
+
+  }
+
+
+  // ==========================================
+  // EVENTOS
+  // ==========================================
+
+  elementos.tipoReporte.addEventListener(
+    "change",
+    cargarFiltros
+  );
+
+  elementos.generarReporteBtn.addEventListener(
+    "click",
+    generarReporte
+  );
+
+
+  // ==========================================
+  // INICIALIZACIÓN
+  // ==========================================
 
   cargarFiltros();
+
 });

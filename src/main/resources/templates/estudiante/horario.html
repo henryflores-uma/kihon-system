@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Horario de clases de karate del estudiante de Kihon.">
+
+    <title>Kihon | Mi horario</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+
+    <main class="app-layout estudiante-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar" id="sidebarMenu">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav" aria-label="Navegación principal"></nav>
+
+        </aside>
+
+
+        <!-- OVERLAY MENÚ MÓVIL -->
+
+        <div id="mobileMenuOverlay" class="mobile-menu-overlay" hidden></div>
+
+
+        <!-- CONTENIDO PRINCIPAL -->
+
+        <section class="main-content">
+
+            <!-- NAVEGACIÓN MÓVIL -->
+
+            <div class="mobile-nav">
+
+                <button type="button" class="mobile-menu-button" id="mobileMenuButton" aria-label="Abrir menú"
+                    aria-expanded="false" aria-controls="sidebarMenu">
+
+                    <span id="mobileMenuIcon">☰</span>
+
+                </button>
+
+                <strong class="mobile-nav__logo">
+                    KIHON
+                </strong>
+
+            </div>
+
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <div class="topbar__role">
+
+                    <span class="topbar__role-label">
+                        Rol
+                    </span>
+
+                    <strong id="roleDisplay">
+                        Estudiante
+                    </strong>
+
+                </div>
+
+
+                <div class="topbar__actions">
+
+                    <!-- NOTIFICACIONES -->
+
+                    <button type="button" class="topbar__notification" id="notificationButton"
+                        aria-label="Notificaciones">
+
+                        <span class="topbar__notification-icon">
+                            🔔
+                        </span>
+
+                        <span id="notificationCount" class="topbar__notification-count" hidden>
+                            0
+                        </span>
+
+                    </button>
+
+
+                    <!-- PERFIL -->
+
+                    <div class="topbar__profile" id="profileMenuContainer">
+
+                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
+                            aria-expanded="false" aria-controls="profileMenu">
+
+                            <div class="topbar__avatar" id="userProfileAvatar">
+
+                                <span id="userAvatarInitial">
+                                    U
+                                </span>
+
+                            </div>
+
+                            <div class="topbar__profile-info">
+
+                                <strong id="usernameDisplay">
+                                    Usuario
+                                </strong>
+
+                                <span id="profileRoleDisplay">
+                                    Estudiante
+                                </span>
+
+                            </div>
+
+                            <span class="topbar__profile-arrow">
+                                ▼
+                            </span>
+
+                        </button>
+
+
+                        <div class="topbar__profile-menu" id="profileMenu" hidden>
+
+                            <a href="/estudiante/perfil" class="topbar__profile-menu-item">
+                                Mi perfil
+                            </a>
+
+                            <button type="button" id="topbarLogoutButton"
+                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+
+                                Cerrar sesión
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- HEADER DE LA PÁGINA -->
+
+            <section class="dashboard-header estudiante-header">
+
+                <div>
+
+                    <span class="section-kicker">
+                        Mi espacio personal
+                    </span>
+
+                    <h1>
+                        Mi horario
+                    </h1>
+
+                    <p>
+                        Consulta los días y horarios de tus clases de karate.
+                        Organiza tu semana y prepárate para cada entrenamiento.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- MENSAJE DE ESTADO -->
+
+            <div id="horarioStatusMessage" class="estudiante-status-message" role="status" aria-live="polite" hidden>
+            </div>
+
+
+            <!-- RESUMEN DEL HORARIO -->
+
+            <section class="dashboard-section estudiante-section">
+
+                <div class="section-header">
+
+                    <span class="section-kicker">
+                        Mi información
+                    </span>
+
+                    <h2>
+                        Resumen semanal
+                    </h2>
+
+                    <p>
+                        Conoce cómo están distribuidas tus clases durante la semana.
+                    </p>
+
+                </div>
+
+
+                <div class="dashboard-kpis estudiante-kpis">
+
+                    <!-- GRUPOS -->
+
+                    <article class="dashboard-kpi">
+
+                        <div class="dashboard-kpi__icon">
+                            🥋
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Mis grupos
+                            </span>
+
+                            <strong id="horarioTotalGrupos">
+                                0
+                            </strong>
+
+                            <small>
+                                Grupos activos
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- CLASES SEMANALES -->
+
+                    <article class="dashboard-kpi dashboard-kpi--accent">
+
+                        <div class="dashboard-kpi__icon">
+                            📅
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Clases semanales
+                            </span>
+
+                            <strong id="horarioTotalClases">
+                                0
+                            </strong>
+
+                            <small>
+                                Sesiones programadas
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- DÍAS DE ENTRENAMIENTO -->
+
+                    <article class="dashboard-kpi">
+
+                        <div class="dashboard-kpi__icon">
+                            🗓️
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Días de entrenamiento
+                            </span>
+
+                            <strong id="horarioTotalDias">
+                                0
+                            </strong>
+
+                            <small>
+                                Días por semana
+                            </small>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- HORARIO SEMANAL -->
+
+            <section class="dashboard-section estudiante-section">
+
+                <div class="section-header estudiante-section__heading">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            Organización semanal
+                        </span>
+
+                        <h2>
+                            Mis clases programadas
+                        </h2>
+
+                        <p>
+                            Estos son los horarios correspondientes a tus grupos activos.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="estudiante-panel">
+
+                    <div class="estudiante-panel__content">
+
+                        <div class="horario-week-header">
+
+                            <div>
+
+                                <h3>
+                                    Horario de entrenamiento
+                                </h3>
+
+                                <span>
+                                    Distribución de lunes a domingo
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- CONTENEDOR DE DÍAS -->
+
+                        <div id="horarioSemanaContainer" class="horario-week">
+
+                            <div class="horario-loading">
+                                Cargando horario...
+                            </div>
+
+                        </div>
+
+
+                        <!-- MENSAJE SIN HORARIOS -->
+
+                        <div id="horarioEmptyMessage" class="estudiante-empty-message" hidden>
+
+                            <p>
+                                Todavía no tienes horarios de entrenamiento asignados.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- INFORMACIÓN -->
+
+            <section class="dashboard-section estudiante-section">
+
+                <div class="section-header">
+
+                    <span class="section-kicker">
+                        Información importante
+                    </span>
+
+                    <h2>
+                        Sobre tu horario
+                    </h2>
+
+                    <p>
+                        Los horarios mostrados corresponden a los grupos en los que
+                        tienes una inscripción activa. Si necesitas cambiar de grupo
+                        o tienes alguna consulta, comunícate con la secretaría o con tu sensei.
+                    </p>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+
+    <!-- SCRIPTS -->
+
+    <script src="/js/topbar.js"></script>
+
+    <script src="/js/nav-acordeon.js"></script>
+
+    <script src="/js/horario-estudiante.js"></script>
+
+</body>
+
+</html>
