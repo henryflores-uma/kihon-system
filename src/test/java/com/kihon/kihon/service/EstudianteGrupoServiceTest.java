@@ -1,10 +1,13 @@
+
 package com.kihon.kihon.service;
 
 import com.kihon.kihon.model.Estudiante;
+import com.kihon.kihon.model.EstudianteGrupo;
 import com.kihon.kihon.model.Grupo;
 import com.kihon.kihon.repository.EstudianteGrupoRepository;
 import com.kihon.kihon.repository.EstudianteRepository;
 import com.kihon.kihon.repository.GrupoRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,154 +24,175 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class EstudianteGrupoServiceTest {
 
-    @Mock
-    private EstudianteGrupoRepository estudianteGrupoRepository;
+        @Mock
+        private EstudianteGrupoRepository estudianteGrupoRepository;
 
-    @Mock
-    private EstudianteRepository estudianteRepository;
+        @Mock
+        private EstudianteRepository estudianteRepository;
 
-    @Mock
-    private GrupoRepository grupoRepository;
+        @Mock
+        private GrupoRepository grupoRepository;
 
-    @InjectMocks
-    private EstudianteGrupoService estudianteGrupoService;
+        @InjectMocks
+        private EstudianteGrupoService estudianteGrupoService;
 
-    private Estudiante estudiante;
-    private Grupo grupo;
+        private Estudiante estudiante;
+        private Grupo grupo;
 
-    @BeforeEach
-    void setUp() {
+        @BeforeEach
+        void setUp() {
 
-        estudiante = new Estudiante();
-        estudiante.setEstado("ACTIVO");
+                estudiante = new Estudiante();
+                estudiante.setId(1L);
+                estudiante.setEstado("ACTIVO");
 
-        grupo = new Grupo();
-        grupo.setEstado("ACTIVO");
-        grupo.setCapacidad(20);
-    }
+                grupo = mock(Grupo.class);
+        }
 
-    @Test
-    void noDebeAsignarSiEstudianteNoExiste() {
+        // ==========================================
+        // ESTUDIANTE INEXISTENTE
+        // ==========================================
 
-        when(estudianteRepository.findById(1L))
-                .thenReturn(Optional.empty());
+        @Test
+        void noDebeAsignarSiEstudianteNoExiste() {
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> estudianteGrupoService
-                        .asignarEstudianteAGrupo(1L, 1L));
+                when(estudianteRepository.findById(1L))
+                                .thenReturn(Optional.empty());
 
-        assertEquals(
-                "Estudiante no encontrado",
-                exception.getMessage());
+                RuntimeException exception = assertThrows(
+                                RuntimeException.class,
+                                () -> estudianteGrupoService
+                                                .asignarEstudianteAGrupo(1L, 1L));
 
-        verify(grupoRepository, never())
-                .findById(anyLong());
+                assertEquals(
+                                "No se encontró el estudiante",
+                                exception.getMessage());
 
-        verify(estudianteGrupoRepository, never())
-                .save(any());
-    }
+                verify(grupoRepository, never()).findById(anyLong());
 
-    @Test
-    void noDebeAsignarSiEstudianteEstaInactivo() {
+                verify(estudianteGrupoRepository, never()).save(any());
+        }
 
-        estudiante.setEstado("INACTIVO");
+        // ==========================================
+        // ESTUDIANTE INACTIVO
+        // ==========================================
 
-        when(estudianteRepository.findById(1L))
-                .thenReturn(Optional.of(estudiante));
+        @Test
+        void noDebeAsignarSiEstudianteEstaInactivo() {
 
-        when(grupoRepository.findById(1L))
-                .thenReturn(Optional.of(grupo));
+                estudiante.setEstado("INACTIVO");
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> estudianteGrupoService
-                        .asignarEstudianteAGrupo(1L, 1L));
+                when(estudianteRepository.findById(1L))
+                                .thenReturn(Optional.of(estudiante));
 
-        assertEquals(
-                "No se puede asignar un estudiante inactivo",
-                exception.getMessage());
+                when(grupoRepository.findById(1L))
+                                .thenReturn(Optional.of(grupo));
 
-        verify(estudianteGrupoRepository, never())
-                .save(any());
-    }
+                RuntimeException exception = assertThrows(
+                                RuntimeException.class,
+                                () -> estudianteGrupoService
+                                                .asignarEstudianteAGrupo(1L, 1L));
 
-    @Test
-    void noDebeAsignarSiGrupoEstaInactivo() {
+                assertEquals(
+                                "El estudiante no se encuentra activo",
+                                exception.getMessage());
 
-        grupo.setEstado("INACTIVO");
+                verify(estudianteGrupoRepository, never()).save(any());
+        }
 
-        when(estudianteRepository.findById(1L))
-                .thenReturn(Optional.of(estudiante));
+        // ==========================================
+        // GRUPO INACTIVO
+        // ==========================================
 
-        when(grupoRepository.findById(1L))
-                .thenReturn(Optional.of(grupo));
+        @Test
+        void noDebeAsignarSiGrupoEstaInactivo() {
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> estudianteGrupoService
-                        .asignarEstudianteAGrupo(1L, 1L));
+                when(grupo.getEstado()).thenReturn("INACTIVO");
 
-        assertEquals(
-                "No se puede asignar un estudiante a un grupo inactivo",
-                exception.getMessage());
+                when(estudianteRepository.findById(1L))
+                                .thenReturn(Optional.of(estudiante));
 
-        verify(estudianteGrupoRepository, never())
-                .save(any());
-    }
+                when(grupoRepository.findById(1L))
+                                .thenReturn(Optional.of(grupo));
 
-    @Test
-    void noDebePermitirAsignacionDuplicada() {
+                RuntimeException exception = assertThrows(
+                                RuntimeException.class,
+                                () -> estudianteGrupoService
+                                                .asignarEstudianteAGrupo(1L, 1L));
 
-        when(estudianteRepository.findById(1L))
-                .thenReturn(Optional.of(estudiante));
+                assertEquals(
+                                "El grupo no se encuentra activo",
+                                exception.getMessage());
 
-        when(grupoRepository.findById(1L))
-                .thenReturn(Optional.of(grupo));
+                verify(estudianteGrupoRepository, never()).save(any());
+        }
 
-        when(estudianteGrupoRepository
-                .existsByEstudianteIdAndGrupoIdAndEstado(
-                        1L,
-                        1L,
-                        "ACTIVO"))
-                .thenReturn(true);
+        // ==========================================
+        // ASIGNACIÓN DUPLICADA
+        // ==========================================
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> estudianteGrupoService
-                        .asignarEstudianteAGrupo(1L, 1L));
+        @Test
+        void noDebePermitirAsignacionDuplicada() {
 
-        assertEquals(
-                "El estudiante ya está activo en este grupo",
-                exception.getMessage());
+                when(grupo.getEstado()).thenReturn("ACTIVO");
 
-        verify(estudianteGrupoRepository, never())
-                .save(any());
-    }
+                when(estudianteRepository.findById(1L))
+                                .thenReturn(Optional.of(estudiante));
 
-    @Test
-    void noDebeCambiarAUnGrupoInactivo() {
+                when(grupoRepository.findById(1L))
+                                .thenReturn(Optional.of(grupo));
 
-        Grupo nuevoGrupo = new Grupo();
-        nuevoGrupo.setEstado("INACTIVO");
-        nuevoGrupo.setCapacidad(20);
+                when(estudianteGrupoRepository
+                                .existsByEstudianteIdAndGrupoIdAndEstado(
+                                                1L,
+                                                1L,
+                                                "ACTIVO"))
+                                .thenReturn(true);
 
-        when(estudianteRepository.findById(1L))
-                .thenReturn(Optional.of(estudiante));
+                RuntimeException exception = assertThrows(
+                                RuntimeException.class,
+                                () -> estudianteGrupoService
+                                                .asignarEstudianteAGrupo(1L, 1L));
 
-        when(grupoRepository.findById(2L))
-                .thenReturn(Optional.of(nuevoGrupo));
+                assertEquals(
+                                "El estudiante ya está activo en este grupo",
+                                exception.getMessage());
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> estudianteGrupoService
-                        .cambiarGrupo(1L, 2L));
+                verify(estudianteGrupoRepository, never()).save(any());
+        }
 
-        assertEquals(
-                "No se puede cambiar a un grupo inactivo",
-                exception.getMessage());
+        // ==========================================
+        // CAMBIAR A GRUPO INACTIVO
+        // ==========================================
 
-        verify(estudianteGrupoRepository, never())
-                .save(any());
-    }
+        @Test
+        void noDebeCambiarAUnGrupoInactivo() {
+
+                EstudianteGrupo asignacion = new EstudianteGrupo();
+
+                asignacion.setEstudiante(estudiante);
+                asignacion.setGrupo(grupo);
+                asignacion.setEstado("ACTIVO");
+
+                Grupo nuevoGrupo = mock(Grupo.class);
+
+                when(nuevoGrupo.getEstado()).thenReturn("INACTIVO");
+
+                when(estudianteGrupoRepository.findById(1L))
+                                .thenReturn(Optional.of(asignacion));
+
+                when(grupoRepository.findById(2L))
+                                .thenReturn(Optional.of(nuevoGrupo));
+
+                RuntimeException exception = assertThrows(
+                                RuntimeException.class,
+                                () -> estudianteGrupoService
+                                                .cambiarGrupo(1L, 2L));
+
+                assertEquals(
+                                "El grupo no se encuentra activo",
+                                exception.getMessage());
+
+                verify(estudianteGrupoRepository, never()).save(any());
+        }
 }

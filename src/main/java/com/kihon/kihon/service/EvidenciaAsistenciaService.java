@@ -1,9 +1,15 @@
+
 package com.kihon.kihon.service;
 
+import com.kihon.kihon.model.Asistencia;
 import com.kihon.kihon.model.EvidenciaAsistencia;
 import com.kihon.kihon.model.JustificacionAsistencia;
+import com.kihon.kihon.model.Usuario;
 import com.kihon.kihon.repository.EvidenciaAsistenciaRepository;
 import com.kihon.kihon.repository.JustificacionAsistenciaRepository;
+import com.kihon.kihon.repository.UsuarioRepository;
+
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,318 +22,415 @@ import java.util.UUID;
 @Service
 public class EvidenciaAsistenciaService {
 
-    private static final int MIN_SEGUNDOS_URL = 60;
-    private static final int MAX_SEGUNDOS_URL = 3600;
+        private static final int MIN_SEGUNDOS_URL = 60;
+        private static final int MAX_SEGUNDOS_URL = 3600;
 
-    private final EvidenciaAsistenciaRepository evidenciaRepository;
-    private final JustificacionAsistenciaRepository justificacionRepository;
-    private final SupabaseStorageService supabaseStorageService;
+        private final EvidenciaAsistenciaRepository evidenciaRepository;
+        private final JustificacionAsistenciaRepository justificacionRepository;
+        private final UsuarioRepository usuarioRepository;
+        private final SupabaseStorageService supabaseStorageService;
 
-    public EvidenciaAsistenciaService(
-            EvidenciaAsistenciaRepository evidenciaRepository,
-            JustificacionAsistenciaRepository justificacionRepository,
-            SupabaseStorageService supabaseStorageService) {
+        public EvidenciaAsistenciaService(
+                        EvidenciaAsistenciaRepository evidenciaRepository,
+                        JustificacionAsistenciaRepository justificacionRepository,
+                        UsuarioRepository usuarioRepository,
+                        SupabaseStorageService supabaseStorageService) {
 
-        this.evidenciaRepository = evidenciaRepository;
-        this.justificacionRepository = justificacionRepository;
-        this.supabaseStorageService = supabaseStorageService;
-    }
-
-    // ==========================================
-    // SUBIR EVIDENCIA
-    // ==========================================
-
-    @Transactional
-    public EvidenciaAsistencia subirEvidencia(
-            Long justificacionId,
-            MultipartFile archivo) {
-
-        if (justificacionId == null) {
-
-            throw new RuntimeException(
-                    "La justificación es obligatoria");
+                this.evidenciaRepository = evidenciaRepository;
+                this.justificacionRepository = justificacionRepository;
+                this.usuarioRepository = usuarioRepository;
+                this.supabaseStorageService = supabaseStorageService;
         }
 
-        JustificacionAsistencia justificacion = justificacionRepository.findById(justificacionId)
-                .orElseThrow(() -> new RuntimeException(
-                        "La justificación no existe"));
+        // ==========================================
+        // SUBIR EVIDENCIA
+        // ==========================================
 
-        if (archivo == null || archivo.isEmpty()) {
+        @Transactional
+        public EvidenciaAsistencia subirEvidencia(
+                        Long justificacionId,
+                        MultipartFile archivo,
+                        String username) {
 
-            throw new RuntimeException(
-                    "El archivo está vacío");
+                if (justificacionId == null) {
+                        throw new RuntimeException(
+                                        "La justificación es obligatoria");
+                }
+
+                JustificacionAsistencia justificacion = justificacionRepository
+                                .findById(justificacionId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "La justificación no existe"));
+
+                validarAccesoJustificacion(justificacion, username);
+
+                if (archivo == null || archivo.isEmpty()) {
+                        throw new RuntimeException(
+                                        "El archivo está vacío");
+                }
+
+                String nombreOriginal = archivo.getOriginalFilename();
+
+                if (nombreOriginal == null || nombreOriginal.isBlank()) {
+                        throw new RuntimeException(
+                                        "El archivo no tiene un nombre válido");
+                }
+
+                String nombreArchivo = obtenerNombreSeguro(nombreOriginal);
+
+                String tipoMime = archivo.getContentType();
+
+                if (tipoMime == null || tipoMime.isBlank()) {
+                        throw new RuntimeException(
+                                        "No se pudo determinar el tipo del archivo");
+                }
+
+                /*
+                 * Creamos primero el registro para obtener su ID.
+                 */
+
+                EvidenciaAsistencia evidencia = new EvidenciaAsistencia();
+
+                evidencia.setJustificacion(justificacion);
+                evidencia.setNombreArchivo(nombreArchivo);
+                evidencia.setTipoMime(tipoMime);
+                evidencia.setFechaSubida(LocalDateTime.now());
+                evidencia.setRutaArchivo("PENDIENTE");
+
+                evidencia = evidenciaRepository.save(evidencia);
+
+                /*
+                 * La ruta física de Storage no utiliza directamente
+                 * el nombre original del archivo.
+                 */
+
+                String nombreStorage = generarNombreStorage(nombreArchivo);
+
+                String ruta = "justificaciones/"
+                                + justificacionId
+                                + "/"
+                                + evidencia.getId()
+                                + "-"
+                                + nombreStorage;
+
+                try {
+
+                        supabaseStorageService.subirEvidencia(
+                                        archivo,
+                                        ruta);
+
+                        evidencia.setRutaArchivo(ruta);
+
+                        return evidenciaRepository.save(evidencia);
+
+                } catch (Exception e) {
+
+                        /*
+                         * Si Storage falla, intentamos eliminar
+                         * cualquier archivo que pudiera haberse creado.
+                         */
+
+                        try {
+                                supabaseStorageService.eliminarEvidencia(ruta);
+                        } catch (Exception ignored) {
+                        }
+
+                        /*
+                         * Eliminamos también el registro temporal.
+                         */
+
+                        evidenciaRepository.delete(evidencia);
+
+                        throw new RuntimeException(
+                                        "No se pudo subir la evidencia",
+                                        e);
+                }
         }
 
-        String nombreOriginal = archivo.getOriginalFilename();
+        // ==========================================
+        // LISTAR POR JUSTIFICACIÓN
+        // ==========================================
 
-        if (nombreOriginal == null
-                || nombreOriginal.isBlank()) {
+        @Transactional(readOnly = true)
+        public List<EvidenciaAsistencia> listarPorJustificacion(
+                        Long justificacionId,
+                        String username) {
 
-            throw new RuntimeException(
-                    "El archivo no tiene un nombre válido");
+                if (justificacionId == null) {
+                        throw new RuntimeException(
+                                        "La justificación es obligatoria");
+                }
+
+                JustificacionAsistencia justificacion = justificacionRepository
+                                .findById(justificacionId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "La justificación no existe"));
+
+                validarAccesoJustificacion(justificacion, username);
+
+                return evidenciaRepository.findByJustificacionId(justificacionId);
         }
 
-        /*
-         * Conservamos el nombre original para mostrarlo
-         * al usuario.
-         */
-        String nombreArchivo = obtenerNombreSeguro(nombreOriginal);
+        // ==========================================
+        // BUSCAR POR ID
+        // ==========================================
 
-        String tipoMime = archivo.getContentType();
+        @Transactional(readOnly = true)
+        public EvidenciaAsistencia buscarPorId(
+                        Long id,
+                        String username) {
 
-        if (tipoMime == null
-                || tipoMime.isBlank()) {
+                if (id == null) {
+                        throw new RuntimeException(
+                                        "El ID de la evidencia es obligatorio");
+                }
 
-            throw new RuntimeException(
-                    "No se pudo determinar el tipo del archivo");
+                EvidenciaAsistencia evidencia = evidenciaRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "La evidencia no existe"));
+
+                validarAccesoEvidencia(evidencia, username);
+
+                return evidencia;
         }
 
-        /*
-         * Primero creamos el registro para obtener
-         * su ID.
-         */
-        EvidenciaAsistencia evidencia = new EvidenciaAsistencia();
+        // ==========================================
+        // GENERAR URL FIRMADA
+        // ==========================================
 
-        evidencia.setJustificacion(justificacion);
-        evidencia.setNombreArchivo(nombreArchivo);
-        evidencia.setTipoMime(tipoMime);
-        evidencia.setFechaSubida(LocalDateTime.now());
-        evidencia.setRutaArchivo("PENDIENTE");
+        @Transactional(readOnly = true)
+        public String generarUrlFirmada(
+                        Long id,
+                        int segundos,
+                        String username) {
 
-        evidencia = evidenciaRepository.save(evidencia);
+                if (segundos < MIN_SEGUNDOS_URL
+                                || segundos > MAX_SEGUNDOS_URL) {
 
-        /*
-         * La ruta física de Storage no utiliza
-         * directamente el nombre original.
-         */
-        String nombreStorage = generarNombreStorage(nombreArchivo);
+                        throw new RuntimeException(
+                                        "La duración de la URL debe estar entre "
+                                                        + MIN_SEGUNDOS_URL
+                                                        + " y "
+                                                        + MAX_SEGUNDOS_URL
+                                                        + " segundos");
+                }
 
-        String ruta = "justificaciones/"
-                + justificacionId
-                + "/"
-                + evidencia.getId()
-                + "-"
-                + nombreStorage;
+                EvidenciaAsistencia evidencia = buscarPorId(id, username);
 
-        try {
+                if (evidencia.getRutaArchivo() == null
+                                || evidencia.getRutaArchivo().isBlank()
+                                || "PENDIENTE".equals(evidencia.getRutaArchivo())) {
 
-            supabaseStorageService.subirEvidencia(
-                    archivo,
-                    ruta);
+                        throw new RuntimeException(
+                                        "La evidencia no tiene un archivo almacenado");
+                }
 
-            evidencia.setRutaArchivo(ruta);
+                try {
 
-            return evidenciaRepository.save(evidencia);
+                        return supabaseStorageService.generarUrlFirmadaEvidencia(
+                                        evidencia.getRutaArchivo(),
+                                        segundos);
 
-        } catch (Exception e) {
+                } catch (InterruptedException e) {
 
-            /*
-             * Si Storage falló, intentamos eliminar
-             * cualquier archivo que pudiera haberse creado.
-             */
-            try {
+                        Thread.currentThread().interrupt();
 
-                supabaseStorageService
-                        .eliminarEvidencia(ruta);
+                        throw new RuntimeException(
+                                        "La generación de la URL fue interrumpida",
+                                        e);
 
-            } catch (Exception ignored) {
-            }
+                } catch (IOException e) {
 
-            /*
-             * También eliminamos el registro temporal.
-             */
-            evidenciaRepository.delete(evidencia);
-
-            throw new RuntimeException(
-                    "No se pudo subir la evidencia",
-                    e);
-        }
-    }
-
-    // ==========================================
-    // LISTAR POR JUSTIFICACIÓN
-    // ==========================================
-
-    public List<EvidenciaAsistencia> listarPorJustificacion(
-            Long justificacionId) {
-
-        if (justificacionId == null) {
-
-            throw new RuntimeException(
-                    "La justificación es obligatoria");
+                        throw new RuntimeException(
+                                        "No se pudo generar la URL firmada",
+                                        e);
+                }
         }
 
-        if (!justificacionRepository.existsById(
-                justificacionId)) {
+        // ==========================================
+        // ELIMINAR EVIDENCIA
+        // ==========================================
 
-            throw new RuntimeException(
-                    "La justificación no existe");
+        @Transactional
+        public void eliminarEvidencia(
+                        Long id,
+                        String username) {
+
+                EvidenciaAsistencia evidencia = buscarPorId(id, username);
+
+                String ruta = evidencia.getRutaArchivo();
+
+                try {
+
+                        if (ruta != null
+                                        && !ruta.isBlank()
+                                        && !"PENDIENTE".equals(ruta)) {
+
+                                supabaseStorageService.eliminarEvidencia(ruta);
+                        }
+
+                } catch (InterruptedException e) {
+
+                        Thread.currentThread().interrupt();
+
+                        throw new RuntimeException(
+                                        "La eliminación del archivo fue interrumpida",
+                                        e);
+
+                } catch (IOException e) {
+
+                        throw new RuntimeException(
+                                        "No se pudo eliminar el archivo de Supabase Storage",
+                                        e);
+                }
+
+                evidenciaRepository.delete(evidencia);
         }
 
-        return evidenciaRepository
-                .findByJustificacionId(justificacionId);
-    }
+        // ==========================================
+        // VALIDAR ACCESO A JUSTIFICACIÓN
+        // ==========================================
 
-    // ==========================================
-    // BUSCAR POR ID
-    // ==========================================
+        private void validarAccesoJustificacion(
+                        JustificacionAsistencia justificacion,
+                        String username) {
 
-    public EvidenciaAsistencia buscarPorId(
-            Long id) {
+                Usuario usuario = obtenerUsuarioAutenticado(username);
 
-        if (id == null) {
+                String nombreRol = usuario.getRol().getNombre();
 
-            throw new RuntimeException(
-                    "El ID de la evidencia es obligatorio");
+                /*
+                 * ADMIN y SECRETARIA pueden acceder a todas
+                 * las justificaciones y evidencias.
+                 */
+
+                if ("ADMIN".equals(nombreRol)
+                                || "SECRETARIA".equals(nombreRol)) {
+                        return;
+                }
+
+                /*
+                 * El Sensei solo puede acceder a las evidencias
+                 * de asistencias de sus propios grupos.
+                 */
+
+                if (!"SENSEI".equals(nombreRol)) {
+                        throw new AccessDeniedException(
+                                        "No tienes permisos para acceder a esta evidencia");
+                }
+
+                Asistencia asistencia = justificacion.getAsistencia();
+
+                if (asistencia == null
+                                || asistencia.getGrupo() == null
+                                || asistencia.getGrupo().getSensei() == null) {
+
+                        throw new AccessDeniedException(
+                                        "No se pudo validar el grupo de la asistencia");
+                }
+
+                Long senseiId = asistencia.getGrupo().getSensei().getId();
+
+                if (senseiId == null
+                                || !senseiId.equals(usuario.getId())) {
+
+                        throw new AccessDeniedException(
+                                        "No tienes acceso a evidencias de grupos asignados a otro Sensei");
+                }
         }
 
-        return evidenciaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "La evidencia no existe"));
-    }
+        // ==========================================
+        // VALIDAR ACCESO A EVIDENCIA
+        // ==========================================
 
-    // ==========================================
-    // GENERAR URL FIRMADA
-    // ==========================================
+        private void validarAccesoEvidencia(
+                        EvidenciaAsistencia evidencia,
+                        String username) {
 
-    public String generarUrlFirmada(
-            Long id,
-            int segundos) {
+                if (evidencia.getJustificacion() == null) {
+                        throw new AccessDeniedException(
+                                        "La evidencia no tiene una justificación asociada");
+                }
 
-        if (segundos < MIN_SEGUNDOS_URL
-                || segundos > MAX_SEGUNDOS_URL) {
-
-            throw new RuntimeException(
-                    "La duración de la URL debe estar entre "
-                            + MIN_SEGUNDOS_URL
-                            + " y "
-                            + MAX_SEGUNDOS_URL
-                            + " segundos");
+                validarAccesoJustificacion(
+                                evidencia.getJustificacion(),
+                                username);
         }
 
-        EvidenciaAsistencia evidencia = buscarPorId(id);
+        // ==========================================
+        // OBTENER USUARIO AUTENTICADO
+        // ==========================================
 
-        if (evidencia.getRutaArchivo() == null
-                || evidencia.getRutaArchivo().isBlank()
-                || "PENDIENTE".equals(
-                        evidencia.getRutaArchivo())) {
+        private Usuario obtenerUsuarioAutenticado(String username) {
 
-            throw new RuntimeException(
-                    "La evidencia no tiene un archivo almacenado");
+                if (username == null || username.isBlank()) {
+                        throw new AccessDeniedException(
+                                        "No se pudo identificar al usuario autenticado");
+                }
+
+                Usuario usuario = usuarioRepository.findByUsername(username)
+                                .orElseThrow(() -> new AccessDeniedException(
+                                                "El usuario autenticado no existe"));
+
+                if (usuario.getRol() == null
+                                || usuario.getRol().getNombre() == null) {
+
+                        throw new AccessDeniedException(
+                                        "El usuario no tiene un rol válido");
+                }
+
+                if (!"ACTIVO".equals(usuario.getEstado())) {
+                        throw new AccessDeniedException(
+                                        "El usuario no se encuentra activo");
+                }
+
+                return usuario;
         }
 
-        try {
+        // ==========================================
+        // OBTENER NOMBRE SEGURO
+        // ==========================================
 
-            return supabaseStorageService
-                    .generarUrlFirmadaEvidencia(
-                            evidencia.getRutaArchivo(),
-                            segundos);
+        private String obtenerNombreSeguro(String nombreOriginal) {
 
-        } catch (InterruptedException e) {
+                String nombre = nombreOriginal.trim();
 
-            Thread.currentThread().interrupt();
+                nombre = nombre.replace("\\", "/");
 
-            throw new RuntimeException(
-                    "La generación de la URL fue interrumpida",
-                    e);
+                int ultimaBarra = nombre.lastIndexOf("/");
 
-        } catch (IOException e) {
+                if (ultimaBarra >= 0) {
+                        nombre = nombre.substring(ultimaBarra + 1);
+                }
 
-            throw new RuntimeException(
-                    "No se pudo generar la URL firmada",
-                    e);
-        }
-    }
+                if (nombre.isBlank()) {
+                        throw new RuntimeException(
+                                        "El nombre del archivo no es válido");
+                }
 
-    // ==========================================
-    // ELIMINAR EVIDENCIA
-    // ==========================================
-
-    @Transactional
-    public void eliminarEvidencia(
-            Long id) {
-
-        EvidenciaAsistencia evidencia = buscarPorId(id);
-
-        String ruta = evidencia.getRutaArchivo();
-
-        try {
-
-            if (ruta != null
-                    && !ruta.isBlank()
-                    && !"PENDIENTE".equals(ruta)) {
-
-                supabaseStorageService
-                        .eliminarEvidencia(ruta);
-            }
-
-        } catch (InterruptedException e) {
-
-            Thread.currentThread().interrupt();
-
-            throw new RuntimeException(
-                    "La eliminación del archivo fue interrumpida",
-                    e);
-
-        } catch (IOException e) {
-
-            throw new RuntimeException(
-                    "No se pudo eliminar el archivo de Supabase Storage",
-                    e);
+                return nombre;
         }
 
-        evidenciaRepository.delete(evidencia);
-    }
+        // ==========================================
+        // GENERAR NOMBRE STORAGE
+        // ==========================================
 
-    // ==========================================
-    // OBTENER NOMBRE SEGURO
-    // ==========================================
+        private String generarNombreStorage(String nombreArchivo) {
 
-    private String obtenerNombreSeguro(
-            String nombreOriginal) {
+                String extension = "";
 
-        String nombre = nombreOriginal.trim();
+                int punto = nombreArchivo.lastIndexOf(".");
 
-        nombre = nombre.replace("\\", "/");
+                if (punto > 0
+                                && punto < nombreArchivo.length() - 1) {
 
-        int ultimaBarra = nombre.lastIndexOf("/");
+                        extension = nombreArchivo.substring(punto);
+                }
 
-        if (ultimaBarra >= 0) {
+                String uuid = UUID.randomUUID()
+                                .toString()
+                                .replace("-", "");
 
-            nombre = nombre.substring(
-                    ultimaBarra + 1);
+                return uuid + extension;
         }
-
-        if (nombre.isBlank()) {
-
-            throw new RuntimeException(
-                    "El nombre del archivo no es válido");
-        }
-
-        return nombre;
-    }
-
-    // ==========================================
-    // GENERAR NOMBRE STORAGE
-    // ==========================================
-
-    private String generarNombreStorage(
-            String nombreArchivo) {
-
-        String extension = "";
-
-        int punto = nombreArchivo.lastIndexOf(".");
-
-        if (punto > 0
-                && punto < nombreArchivo.length() - 1) {
-
-            extension = nombreArchivo.substring(punto);
-        }
-
-        String uuid = UUID.randomUUID()
-                .toString()
-                .replace("-", "");
-
-        return uuid + extension;
-    }
 }

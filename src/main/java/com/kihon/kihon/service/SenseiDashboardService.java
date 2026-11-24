@@ -1,3 +1,4 @@
+
 package com.kihon.kihon.service;
 
 import com.kihon.kihon.dto.SenseiDashboardResponse;
@@ -98,14 +99,15 @@ public class SenseiDashboardService {
         // 3. OBTENER GRUPOS ASIGNADOS AL SENSEI
         // -----------------------------------------------------
 
-        List<Grupo> gruposAsignados = grupoRepository
-                .findBySenseiId(usuario.getId())
-                .stream()
+        List<Grupo> gruposEncontrados = grupoRepository
+                .findBySenseiId(usuario.getId());
+
+        List<Grupo> gruposAsignados = gruposEncontrados.stream()
                 .filter(grupo -> grupo != null
                         && "ACTIVO".equalsIgnoreCase(grupo.getEstado()))
                 .sorted(Comparator.comparing(
-                        Grupo::getNombre,
-                        String.CASE_INSENSITIVE_ORDER))
+                        grupo -> grupo.getNombre(),
+                        Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
                 .toList();
 
         // -----------------------------------------------------
@@ -251,7 +253,8 @@ public class SenseiDashboardService {
 
         clasesHoy.sort(
                 Comparator.comparing(
-                        ClaseHoyResponse::horaInicio));
+                        clase -> clase.horaInicio(),
+                        Comparator.nullsLast(Comparator.naturalOrder())));
 
         // -----------------------------------------------------
         // 7. CONSTRUIR RESPUESTA

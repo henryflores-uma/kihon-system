@@ -1,11 +1,15 @@
+
 package com.kihon.kihon.controller;
 
 import com.kihon.kihon.dto.GrupoRequest;
 import com.kihon.kihon.dto.GrupoResponse;
 import com.kihon.kihon.model.Grupo;
 import com.kihon.kihon.service.GrupoService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,11 +20,16 @@ public class GrupoController {
 
         private final GrupoService grupoService;
 
-        public GrupoController(
-                        GrupoService grupoService) {
-
+        public GrupoController(GrupoService grupoService) {
                 this.grupoService = grupoService;
         }
+
+        /*
+         * =============================================================
+         * CREAR GRUPO
+         * ADMIN / SECRETARIA
+         * =============================================================
+         */
 
         @PostMapping
         public ResponseEntity<GrupoResponse> crearGrupo(
@@ -33,27 +42,43 @@ public class GrupoController {
                                 request.getSenseiId(),
                                 request.getFrecuenciaId());
 
-                GrupoResponse response = convertirAResponse(grupo);
-
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
-                                .body(response);
+                                .body(convertirAResponse(grupo));
         }
+
+        /*
+         * =============================================================
+         * LISTAR GRUPOS
+         * ADMIN / SECRETARIA: todos los grupos
+         * SENSEI: solamente sus grupos asignados
+         * =============================================================
+         */
 
         @GetMapping
         public ResponseEntity<List<GrupoResponse>> listarGrupos(
-                        @RequestParam(required = false) String estado) {
+                        @RequestParam(required = false) String estado,
+                        Authentication authentication) {
 
                 List<Grupo> grupos;
 
-                if (estado == null || estado.isBlank()) {
+                if (esSensei(authentication)) {
 
-                        grupos = grupoService.listarGrupos();
+                        grupos = grupoService.listarPorSensei(
+                                        authentication.getName(),
+                                        estado);
 
                 } else {
 
-                        grupos = grupoService.listarPorEstado(
-                                        estado.toUpperCase());
+                        if (estado == null || estado.isBlank()) {
+
+                                grupos = grupoService.listarGrupos();
+
+                        } else {
+
+                                grupos = grupoService.listarPorEstado(
+                                                estado.toUpperCase());
+                        }
                 }
 
                 List<GrupoResponse> response = grupos
@@ -64,15 +89,42 @@ public class GrupoController {
                 return ResponseEntity.ok(response);
         }
 
+        /*
+         * =============================================================
+         * BUSCAR GRUPO POR ID
+         * ADMIN / SECRETARIA: cualquier grupo
+         * SENSEI: solamente sus grupos asignados
+         * =============================================================
+         */
+
         @GetMapping("/{id}")
         public ResponseEntity<GrupoResponse> buscarPorId(
-                        @PathVariable Long id) {
+                        @PathVariable Long id,
+                        Authentication authentication) {
 
-                Grupo grupo = grupoService.buscarPorId(id);
+                Grupo grupo;
+
+                if (esSensei(authentication)) {
+
+                        grupo = grupoService.buscarPorIdDeSensei(
+                                        id,
+                                        authentication.getName());
+
+                } else {
+
+                        grupo = grupoService.buscarPorId(id);
+                }
 
                 return ResponseEntity.ok(
                                 convertirAResponse(grupo));
         }
+
+        /*
+         * =============================================================
+         * ACTUALIZAR GRUPO
+         * ADMIN / SECRETARIA
+         * =============================================================
+         */
 
         @PutMapping("/{id}")
         public ResponseEntity<GrupoResponse> actualizarGrupo(
@@ -91,6 +143,13 @@ public class GrupoController {
                                 convertirAResponse(grupo));
         }
 
+        /*
+         * =============================================================
+         * CAMBIAR ESTADO
+         * ADMIN / SECRETARIA
+         * =============================================================
+         */
+
         @PatchMapping("/{id}/estado")
         public ResponseEntity<GrupoResponse> cambiarEstado(
                         @PathVariable Long id,
@@ -104,6 +163,13 @@ public class GrupoController {
                                 convertirAResponse(grupo));
         }
 
+        /*
+         * =============================================================
+         * ELIMINAR GRUPO
+         * ADMIN / SECRETARIA
+         * =============================================================
+         */
+
         @DeleteMapping("/{id}")
         public ResponseEntity<Void> eliminarGrupo(
                         @PathVariable Long id) {
@@ -115,12 +181,40 @@ public class GrupoController {
                                 .build();
         }
 
-        private GrupoResponse convertirAResponse(
-                        Grupo grupo) {
+        /*
+         * =============================================================
+         * IDENTIFICAR ROL DEL USUARIO AUTENTICADO
+         * =============================================================
+         */
+
+        private boolean esSensei(Authentication authentication) {
+
+                if (authentication == null
+                                || authentication.getAuthorities() == null) {
+                        return false;
+                }
+
+                for (GrantedAuthority authority : authentication.getAuthorities()) {
+
+                        if (authority != null
+                                        && "ROLE_SENSEI".equals(authority.getAuthority())) {
+                                return true;
+                        }
+                }
+
+                return false;
+        }
+
+        /*
+         * =============================================================
+         * CONVERTIR ENTIDAD A RESPONSE
+         * =============================================================
+         */
+
+        private GrupoResponse convertirAResponse(Grupo grupo) {
 
                 long estudiantesActivos = grupoService
-                                .contarEstudiantesActivos(
-                                                grupo.getId());
+                                .contarEstudiantesActivos(grupo.getId());
 
                 long cuposDisponibles = grupo.getCapacidad()
                                 - estudiantesActivos;
@@ -158,8 +252,7 @@ public class GrupoController {
                                                 ? grupo.getFrecuencia().getNombre()
                                                 : null,
                                 grupo.getFrecuencia() != null
-                                                ? grupo.getFrecuencia()
-                                                                .getFrecuenciaSemanal()
+                                                ? grupo.getFrecuencia().getFrecuenciaSemanal()
                                                 : null);
         }
 }

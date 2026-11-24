@@ -236,8 +236,17 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/estudiante")
                                                 .hasAnyRole("ADMIN", "ESTUDIANTE")
 
-                                                // Estudiantes
-                                                .requestMatchers("/api/estudiantes/**")
+                                                // Consultar estudiantes
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/estudiantes",
+                                                                "/api/estudiantes/**")
+                                                .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
+
+                                                // Crear, actualizar y cambiar estado de estudiantes
+                                                .requestMatchers(
+                                                                "/api/estudiantes",
+                                                                "/api/estudiantes/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
                                                 // Apoderados
@@ -246,7 +255,18 @@ public class SecurityConfig {
                                                                 "/api/apoderados/estudiante/*")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                // Grupos
+                                                // =====================================================
+                                                // GRUPOS
+                                                // =====================================================
+
+                                                // Consulta de grupos
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/grupos",
+                                                                "/api/grupos/**")
+                                                .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
+
+                                                // Cualquier otra operación sobre grupos
                                                 .requestMatchers("/api/grupos/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
