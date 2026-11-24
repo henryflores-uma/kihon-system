@@ -1,3 +1,4 @@
+
 package com.kihon.kihon.controller;
 
 import org.springframework.stereotype.Controller;
@@ -75,7 +76,7 @@ public class ViewController {
     }
 
     // ==========================================
-    // SECRETARIA
+    // SECRETARÍA
     // ==========================================
 
     @GetMapping("/secretaria/secretaria")
@@ -83,9 +84,41 @@ public class ViewController {
         return "secretaria/secretaria";
     }
 
+    // Vistas compartidas con ADMIN
+
+    @GetMapping("/secretaria/estudiantes")
+    public String estudiantesSecretaria() {
+        return "admin/estudiantes";
+    }
+
+    @GetMapping("/secretaria/grupos")
+    public String gruposSecretaria() {
+        return "admin/grupos";
+    }
+
+    @GetMapping("/secretaria/asistencia")
+    public String asistenciaSecretaria() {
+        return "admin/asistencia";
+    }
+
+    @GetMapping("/secretaria/horario")
+    public String horarioSecretaria() {
+        return "admin/horario";
+    }
+
+    @GetMapping("/secretaria/inscripciones")
+    public String inscripcionesSecretaria() {
+        return "admin/inscripciones";
+    }
+
+    @GetMapping("/secretaria/reportes")
+    public String reportesSecretaria() {
+        return "admin/reportes";
+    }
+
     @GetMapping("/secretaria/perfil")
     public String perfilSecretaria() {
-        return "secretaria/perfil";
+        return "admin/perfil";
     }
 
     // ==========================================
@@ -99,7 +132,7 @@ public class ViewController {
 
     @GetMapping("/sensei/perfil")
     public String perfilSensei() {
-        return "sensei/perfil";
+        return "admin/perfil";
     }
 
     // ==========================================
@@ -108,7 +141,7 @@ public class ViewController {
 
     @GetMapping("/estudiante/perfil")
     public String perfilEstudiante() {
-        return "estudiante/perfil";
+        return "admin/perfil";
     }
 
     @GetMapping("/estudiante/grupos")

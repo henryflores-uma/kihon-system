@@ -254,10 +254,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     // ======================================
-    // SECRETARIA
+    // SECRETARÍA
     // ======================================
 
-    if (rol === "SECRETARIA") {
+    else if (rol === "SECRETARIA") {
       navegacion += generarEnlace(
         "/secretaria/secretaria",
         "Dashboard"
@@ -266,22 +266,22 @@ document.addEventListener("DOMContentLoaded", async function () {
       navegacion += generarAcordeon(
         "secretariaGestionSubmenu",
         "Gestión",
-        generarEnlace("/admin/estudiantes", "Estudiantes") +
-        generarEnlace("/admin/inscripciones", "Inscripciones") +
-        generarEnlace("/admin/grupos", "Grupos")
+        generarEnlace("/secretaria/estudiantes", "Estudiantes") +
+        generarEnlace("/secretaria/inscripciones", "Inscripciones") +
+        generarEnlace("/secretaria/grupos", "Grupos")
       );
 
       navegacion += generarAcordeon(
         "secretariaControlSubmenu",
         "Control",
-        generarEnlace("/admin/asistencia", "Asistencia") +
-        generarEnlace("/admin/horario", "Horario")
+        generarEnlace("/secretaria/asistencia", "Asistencia") +
+        generarEnlace("/secretaria/horario", "Horario")
       );
 
       navegacion += generarAcordeon(
         "secretariaAdministracionSubmenu",
         "Administración",
-        generarEnlace("/admin/reportes", "Reportes")
+        generarEnlace("/secretaria/reportes", "Reportes")
       );
     }
 
@@ -289,7 +289,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // SENSEI
     // ======================================
 
-    if (rol === "SENSEI") {
+    else if (rol === "SENSEI") {
       navegacion += generarEnlace(
         "/sensei/sensei",
         "Dashboard"
@@ -314,7 +314,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // ESTUDIANTE
     // ======================================
 
-    if (rol === "ESTUDIANTE") {
+    else if (rol === "ESTUDIANTE") {
       navegacion += generarEnlace(
         "/estudiante/grupos",
         "Mis grupos"
@@ -333,6 +333,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     sidebarNav.innerHTML = navegacion;
   }
+
 
   // ==========================================
   // MOSTRAR DATOS DEL ROL

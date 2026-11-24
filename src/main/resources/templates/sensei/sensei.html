@@ -2,176 +2,626 @@
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Kihon | Dashboard</title>
+    <meta name="description" content="Panel de gestión del Sensei de Kihon.">
+
+    <title>Kihon | Dashboard Sensei</title>
 
     <link rel="stylesheet" href="/css/main.css">
+
 </head>
 
 <body>
 
-    <div class="app-layout">
+    <main class="app-layout sensei-layout">
 
-        <aside class="sidebar">
+        <!-- ==================================================
+             SIDEBAR
+             ================================================== -->
+
+        <aside class="sidebar" id="sidebarMenu">
 
             <div class="sidebar__logo">
                 KIHON
             </div>
 
-            <nav class="sidebar__nav">
+            <!-- La navegación se genera desde topbar.js -->
 
-                <a href="/dashboard" class="sidebar__link sidebar__link--active">
-                    Dashboard
-                </a>
-
-                <a href="/estudiantes" class="sidebar__link">
-                    Estudiantes
-                </a>
-
-                <a href="/grupos" class="sidebar__link">
-                    Grupos
-                </a>
-
-                <a href="/asistencias" class="sidebar__link">
-                    Asistencias
-                </a>
-
-                <a href="/reportes" class="sidebar__link">
-                    Reportes
-                </a>
-
-                <a href="#" id="logoutButton" class="btn btn--logout">
-                    Cerrar sesión
-                </a>
-
-            </nav>
+            <nav class="sidebar__nav" aria-label="Navegación principal"></nav>
 
         </aside>
 
-        <main class="main-content">
 
-            <div class="container">
+        <!-- ==================================================
+             OVERLAY DEL MENÚ MÓVIL
+             ================================================== -->
 
-                <header class="dashboard-header">
+        <div id="mobileMenuOverlay" class="mobile-menu-overlay" hidden></div>
 
-                    <div>
-                        <h1>Dashboard</h1>
 
-                        <p>
-                            Sistema de Gestión del Dojo
-                        </p>
-                    </div>
+        <!-- ==================================================
+             CONTENIDO PRINCIPAL
+             ================================================== -->
 
-                    <div class="dashboard-user">
-                        <span id="usernameDisplay">
-                            Usuario
-                        </span>
-                    </div>
+        <section class="main-content">
 
-                </header>
+            <!-- ==========================================
+                 NAVEGACIÓN MÓVIL
+                 ========================================== -->
 
-                <section class="dashboard-welcome">
+            <div class="mobile-nav">
 
-                    <h2>
-                        Bienvenido a Kihon
-                    </h2>
+                <button type="button" class="mobile-menu-button" id="mobileMenuButton" aria-label="Abrir menú"
+                    aria-expanded="false" aria-controls="sidebarMenu">
 
-                    <p>
-                        Administra estudiantes, grupos y asistencias
-                        desde un solo lugar.
-                    </p>
+                    <span id="mobileMenuIcon">
+                        ☰
+                    </span>
 
-                </section>
+                </button>
 
-                <section class="grid grid--4 dashboard-stats">
+                <strong class="mobile-nav__logo">
+                    KIHON
+                </strong>
 
-                    <article class="card dashboard-stat">
+            </div>
 
-                        <span class="dashboard-stat__label">
-                            Estudiantes
-                        </span>
 
-                        <strong class="dashboard-stat__value">
-                            --
-                        </strong>
+            <!-- ==========================================
+                 TOPBAR
+                 ========================================== -->
 
-                    </article>
+            <header class="topbar">
 
-                    <article class="card dashboard-stat">
+                <div class="topbar__role">
 
-                        <span class="dashboard-stat__label">
-                            Grupos activos
-                        </span>
+                    <span class="topbar__role-label">
+                        Rol
+                    </span>
 
-                        <strong class="dashboard-stat__value">
-                            --
-                        </strong>
+                    <strong id="roleDisplay">
+                        Sensei
+                    </strong>
 
-                    </article>
+                </div>
 
-                    <article class="card dashboard-stat">
 
-                        <span class="dashboard-stat__label">
-                            Asistencias de hoy
-                        </span>
+                <div class="topbar__actions">
 
-                        <strong class="dashboard-stat__value">
-                            --
-                        </strong>
+                    <!-- NOTIFICACIONES -->
 
-                    </article>
+                    <button type="button" class="topbar__notification" id="notificationButton"
+                        aria-label="Notificaciones">
 
-                    <article class="card dashboard-stat dashboard-stat--accent">
-
-                        <span class="dashboard-stat__label">
-                            Estado
+                        <span class="topbar__notification-icon">
+                            🔔
                         </span>
 
-                        <strong class="dashboard-stat__value">
-                            ACTIVO
-                        </strong>
+                        <span id="notificationCount" class="topbar__notification-count" hidden>
+                            0
+                        </span>
 
-                    </article>
+                    </button>
 
-                </section>
 
-                <section class="dashboard-section">
+                    <!-- PERFIL -->
 
-                    <div class="card">
+                    <div class="topbar__profile" id="profileMenuContainer">
 
-                        <h2>
-                            Acciones rápidas
-                        </h2>
+                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
+                            aria-expanded="false" aria-controls="profileMenu">
 
-                        <div class="dashboard-actions">
+                            <div class="topbar__avatar" id="userProfileAvatar">
 
-                            <button class="btn btn--primary">
-                                Nuevo estudiante
-                            </button>
+                                <span id="userAvatarInitial">
+                                    U
+                                </span>
 
-                            <button class="btn btn--secondary">
-                                Nuevo grupo
-                            </button>
+                            </div>
 
-                            <button class="btn btn--accent">
-                                Registrar asistencia
+
+                            <div class="topbar__profile-info">
+
+                                <strong id="usernameDisplay">
+                                    Usuario
+                                </strong>
+
+                                <span id="profileRoleDisplay">
+                                    Sensei
+                                </span>
+
+                            </div>
+
+
+                            <span class="topbar__profile-arrow">
+                                ▼
+                            </span>
+
+                        </button>
+
+
+                        <div class="topbar__profile-menu" id="profileMenu" hidden>
+
+                            <a href="/sensei/perfil" class="topbar__profile-menu-item">
+
+                                Editar perfil
+
+                            </a>
+
+
+                            <button type="button" id="topbarLogoutButton"
+                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+
+                                Cerrar sesión
+
                             </button>
 
                         </div>
 
                     </div>
 
-                </section>
+                </div>
 
+            </header>
+
+
+            <!-- ==========================================
+                 HEADER DEL DASHBOARD
+                 ========================================== -->
+
+            <section class="dashboard-header sensei-header">
+
+                <div>
+
+                    <span class="section-kicker">
+                        Panel de enseñanza
+                    </span>
+
+                    <h1>
+                        Mi dashboard
+                    </h1>
+
+                    <p>
+                        Consulta tus grupos, estudiantes y clases programadas.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==========================================
+                 BIENVENIDA
+                 ========================================== -->
+
+            <section class="dashboard-section sensei-welcome">
+
+                <div class="sensei-welcome__content">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            Academia de Karate Sunkku Sinchi
+                        </span>
+
+                        <h2 id="welcomeTitle">
+                            Bienvenido a Kihon
+                        </h2>
+
+                        <p>
+                            Desde este panel puedes consultar tus actividades
+                            y gestionar el seguimiento de tus estudiantes.
+                        </p>
+
+                    </div>
+
+                    <div class="sensei-welcome__icon" aria-hidden="true">
+                        🥋
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==========================================
+                 MENSAJES DEL DASHBOARD
+                 ========================================== -->
+
+            <div id="senseiStatusMessage" class="sensei-status-message" role="status" aria-live="polite" hidden>
             </div>
 
-        </main>
 
-    </div>
-    <script src="/js/dashboard.js"></script>
-    <script src="/js/logout.js"></script>
+            <!-- ==========================================
+                 INDICADORES
+                 ========================================== -->
+
+            <section class="dashboard-section sensei-section">
+
+                <div class="section-header">
+
+                    <span class="section-kicker">
+                        Resumen general
+                    </span>
+
+                    <h2>
+                        Mi actividad
+                    </h2>
+
+                    <p>
+                        Indicadores de tus grupos y actividades del día.
+                    </p>
+
+                </div>
+
+
+                <div class="dashboard-kpis sensei-kpis">
+
+                    <!-- ESTUDIANTES -->
+
+                    <article class="dashboard-kpi">
+
+                        <div class="dashboard-kpi__icon">
+                            👥
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Mis estudiantes
+                            </span>
+
+                            <strong id="totalEstudiantes">
+                                —
+                            </strong>
+
+                            <small>
+                                Estudiantes activos
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- GRUPOS -->
+
+                    <article class="dashboard-kpi dashboard-kpi--primary">
+
+                        <div class="dashboard-kpi__icon">
+                            🥋
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Mis grupos
+                            </span>
+
+                            <strong id="totalGrupos">
+                                —
+                            </strong>
+
+                            <small>
+                                Grupos asignados
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- CLASES DE HOY -->
+
+                    <article class="dashboard-kpi dashboard-kpi--accent">
+
+                        <div class="dashboard-kpi__icon">
+                            📅
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Clases de hoy
+                            </span>
+
+                            <strong id="totalClasesHoy">
+                                —
+                            </strong>
+
+                            <small>
+                                Clases programadas
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- ASISTENCIAS -->
+
+                    <article class="dashboard-kpi sensei-kpi--attendance">
+
+                        <div class="dashboard-kpi__icon">
+                            📋
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Asistencias de hoy
+                            </span>
+
+                            <strong id="totalAsistenciasHoy">
+                                —
+                            </strong>
+
+                            <small>
+                                Registros del día
+                            </small>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==========================================
+                 CLASES DE HOY
+                 ========================================== -->
+
+            <section class="dashboard-section sensei-section">
+
+                <div class="section-header">
+
+                    <span class="section-kicker">
+                        Planificación diaria
+                    </span>
+
+                    <h2>
+                        Mis clases de hoy
+                    </h2>
+
+                    <p>
+                        Consulta los grupos y horarios de tus clases programadas.
+                    </p>
+
+                </div>
+
+
+                <div class="sensei-panel">
+
+                    <div id="clasesHoyContainer" class="sensei-panel__content" aria-live="polite">
+
+                        <p>
+                            Cargando clases...
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==========================================
+                 MIS GRUPOS
+                 ========================================== -->
+
+            <section class="dashboard-section sensei-section">
+
+                <div class="section-header sensei-section__heading">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            Gestión de grupos
+                        </span>
+
+                        <h2>
+                            Mis grupos
+                        </h2>
+
+                        <p>
+                            Consulta los grupos que tienes asignados.
+                        </p>
+
+                    </div>
+
+
+                    <a href="/sensei/grupos" class="btn btn--secondary">
+
+                        Ver todos los grupos
+
+                    </a>
+
+                </div>
+
+
+                <div class="sensei-panel">
+
+                    <div id="gruposContainer" class="sensei-panel__content" aria-live="polite">
+
+                        <p>
+                            Cargando grupos...
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==========================================
+                 ACCIONES RÁPIDAS
+                 ========================================== -->
+
+            <section class="dashboard-section sensei-section">
+
+                <div class="section-header">
+
+                    <span class="section-kicker">
+                        Accesos directos
+                    </span>
+
+                    <h2>
+                        Acciones rápidas
+                    </h2>
+
+                    <p>
+                        Accede directamente a las funciones principales.
+                    </p>
+
+                </div>
+
+
+                <div class="dashboard-actions sensei-actions">
+
+                    <!-- ASISTENCIAS -->
+
+                    <a href="/sensei/asistencias" class="dashboard-card dashboard-card--accent">
+
+                        <div class="dashboard-card__icon">
+                            📋
+                        </div>
+
+                        <div class="dashboard-card__content">
+
+                            <strong>
+                                Registrar asistencia
+                            </strong>
+
+                            <small>
+                                Registrar y consultar la asistencia de tus grupos.
+                            </small>
+
+                        </div>
+
+                    </a>
+
+
+                    <!-- ESTUDIANTES -->
+
+                    <a href="/sensei/estudiantes" class="dashboard-card dashboard-card--primary">
+
+                        <div class="dashboard-card__icon">
+                            👥
+                        </div>
+
+                        <div class="dashboard-card__content">
+
+                            <strong>
+                                Mis estudiantes
+                            </strong>
+
+                            <small>
+                                Consultar la información de tus estudiantes.
+                            </small>
+
+                        </div>
+
+                    </a>
+
+
+                    <!-- HORARIO -->
+
+                    <a href="/sensei/horario" class="dashboard-card">
+
+                        <div class="dashboard-card__icon">
+                            📅
+                        </div>
+
+                        <div class="dashboard-card__content">
+
+                            <strong>
+                                Mi horario
+                            </strong>
+
+                            <small>
+                                Consultar tus horarios de entrenamiento.
+                            </small>
+
+                        </div>
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==========================================
+                 INFORMACIÓN DE LA SESIÓN
+                 ========================================== -->
+
+            <section class="dashboard-section sensei-session">
+
+                <div>
+
+                    <span class="section-kicker">
+                        Sesión actual
+                    </span>
+
+                    <h2>
+                        Tu espacio de enseñanza
+                    </h2>
+
+                    <p>
+                        Gestiona tus clases y realiza el seguimiento
+                        del progreso de tus estudiantes desde Kihon.
+                    </p>
+
+                </div>
+
+
+                <div class="sensei-session__user">
+
+                    <div class="sensei-session__avatar">
+
+                        <span id="senseiSessionInitial">
+                            U
+                        </span>
+
+                    </div>
+
+                    <div>
+
+                        <strong id="senseiSessionUsername">
+                            Usuario
+                        </strong>
+
+                        <span>
+                            Sensei
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+
+    <!-- ======================================================
+         SCRIPTS
+         ====================================================== -->
+
+    <script src="/js/topbar.js"></script>
+
+    <script src="/js/nav-acordeon.js"></script>
+
+    <script src="/js/sensei.js"></script>
+
 </body>
 
 </html>

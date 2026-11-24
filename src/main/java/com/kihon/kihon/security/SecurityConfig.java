@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,10 +23,46 @@ import java.util.Map;
 @Configuration
 public class SecurityConfig {
 
+        /*
+         * =============================================================
+         * PASSWORD ENCODER
+         * =============================================================
+         */
+
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
+
+        /*
+         * =============================================================
+         * AUTENTICACIÓN CON USUARIOS DE LA BASE DE DATOS
+         * =============================================================
+         */
+
+        @Bean
+        public AuthenticationProvider authenticationProvider(
+                        CustomUserDetailsService userDetailsService,
+                        PasswordEncoder passwordEncoder) {
+
+                DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+
+                provider.setPasswordEncoder(passwordEncoder);
+
+                return provider;
+        }
+
+        /*
+         * =============================================================
+         * CONFIGURACIÓN PRINCIPAL DE SEGURIDAD
+         * =============================================================
+         */
+
         @Bean
         public SecurityFilterChain securityFilterChain(
                         HttpSecurity http,
-                        ObjectMapper objectMapper) throws Exception {
+                        ObjectMapper objectMapper,
+                        AuthenticationProvider authenticationProvider) throws Exception {
 
                 /*
                  * =====================================================
@@ -63,9 +101,17 @@ public class SecurityConfig {
                 http
 
                                 /*
-                                 * =================================================
+                                 * =========================================
+                                 * PROVEEDOR DE AUTENTICACIÓN
+                                 * =========================================
+                                 */
+
+                                .authenticationProvider(authenticationProvider)
+
+                                /*
+                                 * =========================================
                                  * CSRF
-                                 * =================================================
+                                 * =========================================
                                  */
 
                                 .csrf(csrf -> csrf
@@ -73,9 +119,9 @@ public class SecurityConfig {
                                                 .csrfTokenRequestHandler(csrfRequestHandler))
 
                                 /*
-                                 * =================================================
+                                 * =========================================
                                  * SESIONES HTTP
-                                 * =================================================
+                                 * =========================================
                                  */
 
                                 .sessionManagement(session -> session
@@ -83,19 +129,14 @@ public class SecurityConfig {
                                                 .sessionFixation(fixation -> fixation.migrateSession()))
 
                                 /*
-                                 * =================================================
+                                 * =========================================
                                  * AUTORIZACIÓN
-                                 * =================================================
+                                 * =========================================
                                  */
 
                                 .authorizeHttpRequests(auth -> auth
 
-                                                /*
-                                                 * =========================================
-                                                 * RECURSOS PÚBLICOS
-                                                 * =========================================
-                                                 */
-
+                                                // Recursos públicos
                                                 .requestMatchers(
                                                                 "/",
                                                                 "/login",
@@ -106,123 +147,64 @@ public class SecurityConfig {
                                                                 "/favicon.ico")
                                                 .permitAll()
 
-                                                /*
-                                                 * =========================================
-                                                 * CSRF
-                                                 * =========================================
-                                                 */
-
+                                                // CSRF
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/auth/csrf")
                                                 .permitAll()
 
-                                                /*
-                                                 * =========================================
-                                                 * INICIO DE SESIÓN
-                                                 * =========================================
-                                                 */
-
+                                                // Inicio de sesión
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/auth/login")
                                                 .permitAll()
 
-                                                /*
-                                                 * =========================================
-                                                 * REGISTRO PÚBLICO
-                                                 * =========================================
-                                                 */
-
+                                                // Registro público
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/usuarios")
                                                 .permitAll()
 
-                                                /*
-                                                 * =========================================
-                                                 * VISTAS ADMINISTRATIVAS
-                                                 * =========================================
-                                                 */
-
+                                                // Vistas administrativas
                                                 .requestMatchers(
                                                                 "/admin/usuarios",
                                                                 "/admin/usuarios/**")
                                                 .hasRole("ADMIN")
 
-                                                .requestMatchers(
-                                                                "/admin/**")
+                                                .requestMatchers("/admin/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                /*
-                                                 * =========================================
-                                                 * VISTAS DE SECRETARÍA
-                                                 * =========================================
-                                                 */
-
-                                                .requestMatchers(
-                                                                "/secretaria/**")
+                                                // Vistas de secretaría
+                                                .requestMatchers("/secretaria/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                /*
-                                                 * =========================================
-                                                 * VISTAS DEL SENSEI
-                                                 * =========================================
-                                                 */
-
-                                                .requestMatchers(
-                                                                "/sensei/**")
+                                                // Vistas del Sensei
+                                                .requestMatchers("/sensei/**")
                                                 .hasAnyRole("ADMIN", "SENSEI")
 
-                                                /*
-                                                 * =========================================
-                                                 * VISTAS DEL ESTUDIANTE
-                                                 * =========================================
-                                                 */
-
-                                                .requestMatchers(
-                                                                "/estudiante/**")
+                                                // Vistas del estudiante
+                                                .requestMatchers("/estudiante/**")
                                                 .hasAnyRole("ADMIN", "ESTUDIANTE")
 
-                                                /*
-                                                 * =========================================
-                                                 * CUENTAS DE ESTUDIANTES
-                                                 * =========================================
-                                                 */
-
+                                                // Cuentas de estudiantes
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/usuarios/estudiante")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                /*
-                                                 * =========================================
-                                                 * USUARIO ACTUAL
-                                                 * =========================================
-                                                 */
-
+                                                // Usuario actual
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/usuarios/me")
                                                 .authenticated()
 
-                                                /*
-                                                 * =========================================
-                                                 * CONSULTA DE SENSEIS
-                                                 * =========================================
-                                                 */
-
+                                                // Consulta de Senseis
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/usuarios/senseis")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                /*
-                                                 * =========================================
-                                                 * MÓDULO DE USUARIOS
-                                                 * =========================================
-                                                 */
-
+                                                // Módulo de usuarios
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/usuarios")
@@ -234,137 +216,72 @@ public class SecurityConfig {
                                                                 "/api/usuarios/*/rol")
                                                 .hasRole("ADMIN")
 
-                                                /*
-                                                 * =========================================
-                                                 * AUTENTICACIÓN Y PERFIL
-                                                 * =========================================
-                                                 */
-
+                                                // Autenticación y perfil
                                                 .requestMatchers(
                                                                 "/api/auth/me",
                                                                 "/api/auth/perfil",
                                                                 "/api/auth/perfil/password")
                                                 .authenticated()
 
-                                                /*
-                                                 * =========================================
-                                                 * PANELES POR ROL
-                                                 * =========================================
-                                                 */
-
+                                                // Paneles por rol
                                                 .requestMatchers("/api/admin")
                                                 .hasRole("ADMIN")
 
                                                 .requestMatchers("/api/secretaria")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                .requestMatchers("/api/sensei")
+                                                .requestMatchers("/api/sensei", "/api/sensei/**")
                                                 .hasAnyRole("ADMIN", "SENSEI")
 
                                                 .requestMatchers("/api/estudiante")
                                                 .hasAnyRole("ADMIN", "ESTUDIANTE")
 
-                                                /*
-                                                 * =========================================
-                                                 * ESTUDIANTES
-                                                 * =========================================
-                                                 */
-
-                                                .requestMatchers(
-                                                                "/api/estudiantes/**")
+                                                // Estudiantes
+                                                .requestMatchers("/api/estudiantes/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                /*
-                                                 * =========================================
-                                                 * APODERADOS
-                                                 * =========================================
-                                                 */
-
+                                                // Apoderados
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/apoderados/estudiante/*")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                /*
-                                                 * =========================================
-                                                 * GRUPOS
-                                                 * =========================================
-                                                 */
-
-                                                .requestMatchers(
-                                                                "/api/grupos/**")
+                                                // Grupos
+                                                .requestMatchers("/api/grupos/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                /*
-                                                 * =========================================
-                                                 * ESTUDIANTES - GRUPOS
-                                                 * =========================================
-                                                 */
-
-                                                .requestMatchers(
-                                                                "/api/estudiantes-grupos/**")
+                                                // Estudiantes - grupos
+                                                .requestMatchers("/api/estudiantes-grupos/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                /*
-                                                 * =========================================
-                                                 * ASISTENCIAS
-                                                 * =========================================
-                                                 */
-
-                                                .requestMatchers(
-                                                                "/api/asistencias/**")
+                                                // Asistencias
+                                                .requestMatchers("/api/asistencias/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
-                                                /*
-                                                 * =========================================
-                                                 * JUSTIFICACIONES
-                                                 * =========================================
-                                                 */
-
+                                                // Justificaciones
                                                 .requestMatchers(
                                                                 "/api/justificaciones-asistencia/**",
                                                                 "/api/evidencias-asistencia/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
-                                                /*
-                                                 * =========================================
-                                                 * MOTIVOS DE JUSTIFICACIÓN
-                                                 * =========================================
-                                                 */
-
+                                                // Motivos de justificación
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/motivos-justificacion")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
-                                                /*
-                                                 * =========================================
-                                                 * REPORTES
-                                                 * =========================================
-                                                 */
-
-                                                .requestMatchers(
-                                                                "/api/reportes/asistencias/**")
+                                                // Reportes
+                                                .requestMatchers("/api/reportes/asistencias/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
-                                                /*
-                                                 * =========================================
-                                                 * EVENTOS - CONSULTA
-                                                 * =========================================
-                                                 */
-
+                                                // Eventos - consulta
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/eventos",
                                                                 "/api/eventos/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
-                                                /*
-                                                 * =========================================
-                                                 * EVENTOS - MODIFICACIÓN
-                                                 * =========================================
-                                                 */
-
+                                                // Eventos - modificación
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/eventos")
@@ -385,22 +302,11 @@ public class SecurityConfig {
                                                                 "/api/eventos/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                /*
-                                                 * =========================================
-                                                 * PORTAL DEL ESTUDIANTE
-                                                 * =========================================
-                                                 */
-
-                                                .requestMatchers(
-                                                                "/api/estudiante/**")
+                                                // Portal del estudiante
+                                                .requestMatchers("/api/estudiante/**")
                                                 .hasAnyRole("ADMIN", "ESTUDIANTE")
 
-                                                /*
-                                                 * =========================================
-                                                 * CUALQUIER OTRA SOLICITUD
-                                                 * =========================================
-                                                 */
-
+                                                // Cualquier otra solicitud
                                                 .anyRequest().authenticated())
 
                                 /*
@@ -411,21 +317,14 @@ public class SecurityConfig {
 
                                 .formLogin(form -> form
 
-                                                // Utilizar el login.html personalizado.
                                                 .loginPage("/login")
 
-                                                // Endpoint que procesa las credenciales.
                                                 .loginProcessingUrl("/api/auth/login")
 
                                                 .usernameParameter("username")
                                                 .passwordParameter("password")
 
-                                                /*
-                                                 * =========================================
-                                                 * LOGIN EXITOSO
-                                                 * =========================================
-                                                 */
-
+                                                // Login exitoso
                                                 .successHandler((request, response, authentication) -> {
 
                                                         String rol = authentication.getAuthorities()
@@ -447,12 +346,7 @@ public class SecurityConfig {
                                                                                         "rol", rol));
                                                 })
 
-                                                /*
-                                                 * =========================================
-                                                 * LOGIN FALLIDO
-                                                 * =========================================
-                                                 */
-
+                                                // Login fallido
                                                 .failureHandler((request, response, exception) -> {
 
                                                         response.setStatus(HttpStatus.UNAUTHORIZED.value());
@@ -481,8 +375,9 @@ public class SecurityConfig {
                                                 .deleteCookies("JSESSIONID")
                                                 .logoutSuccessHandler(
                                                                 (request, response, authentication) -> response
-                                                                                .setStatus(HttpStatus.NO_CONTENT
-                                                                                                .value())))
+                                                                                .setStatus(
+                                                                                                HttpStatus.NO_CONTENT
+                                                                                                                .value())))
 
                                 /*
                                  * =================================================
@@ -494,7 +389,8 @@ public class SecurityConfig {
 
                                                 .defaultAuthenticationEntryPointFor(
                                                                 apiAuthenticationEntryPoint,
-                                                                request -> request.getServletPath().startsWith("/api/"))
+                                                                request -> request.getServletPath()
+                                                                                .startsWith("/api/"))
 
                                                 .authenticationEntryPoint(
                                                                 new LoginUrlAuthenticationEntryPoint("/login"))
@@ -513,16 +409,5 @@ public class SecurityConfig {
                                                 }));
 
                 return http.build();
-        }
-
-        /*
-         * =============================================================
-         * PASSWORD ENCODER
-         * =============================================================
-         */
-
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-                return new BCryptPasswordEncoder();
         }
 }
