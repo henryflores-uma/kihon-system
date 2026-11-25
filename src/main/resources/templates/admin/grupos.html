@@ -453,178 +453,128 @@
         </div>
 
         <!-- =====================================================
-               EDITAR GRUPO
-               ADMIN / SECRETARIA
-               ===================================================== -->
+             MODAL EDITAR GRUPO
+             ADMIN / SECRETARIA
+             ===================================================== -->
 
-        <section id="editGroupSection" class="card grupos-form-card grupos-edit-card" th:if="${puedeGestionarGrupos}"
-          hidden>
-          <div class="grupos-form-header">
-            <div>
-              <span class="grupos-form-header__kicker">
-                EDICIÓN
-              </span>
+        <div id="editGroupSection" class="grupo-modal grupo-modal--editar" th:if="${puedeGestionarGrupos}" hidden>
 
-              <h2>Editar grupo</h2>
+          <div class="grupo-modal__overlay" id="editGroupModalOverlay"></div>
 
-              <p>
-                Actualiza los datos del grupo y administra sus horarios
-                habituales.
-              </p>
-            </div>
-          </div>
+          <div class="grupo-modal__content" role="dialog" aria-modal="true" aria-labelledby="editGroupModalTitle">
 
-          <form id="editGroupForm">
-            <input type="hidden" id="editId" />
+            <div class="grupo-modal__header">
+              <div>
+                <span class="grupo-modal__kicker">EDICIÓN</span>
 
-            <div class="grid grid--2">
-              <!-- NOMBRE -->
+                <h2 id="editGroupModalTitle">Editar grupo</h2>
 
-              <div class="form-group">
-                <label for="editNombre">
-                  Nombre del grupo
-                </label>
-
-                <input type="text" id="editNombre" required />
+                <p>
+                  Actualiza los datos del grupo y administra sus horarios habituales.
+                </p>
               </div>
 
-              <!-- CAPACIDAD -->
-
-              <div class="form-group">
-                <label for="editCapacidad">
-                  Capacidad
-                </label>
-
-                <input type="number" id="editCapacidad" min="1" required />
-              </div>
-
-              <!-- FRECUENCIA -->
-
-              <div class="form-group">
-                <label for="editFrecuenciaId">
-                  Frecuencia semanal
-                </label>
-
-                <select id="editFrecuenciaId" required>
-                  <option value="">
-                    Selecciona una frecuencia
-                  </option>
-                </select>
-              </div>
-
-              <!-- SENSEI -->
-
-              <div class="form-group">
-                <label for="editSenseiId">
-                  Sensei
-                </label>
-
-                <select id="editSenseiId" required>
-                  <option value="">
-                    Selecciona un sensei
-                  </option>
-                </select>
-              </div>
-
-              <!-- DESCRIPCIÓN -->
-
-              <div class="form-group grupos-form-full">
-                <label for="editDescripcion">
-                  Descripción
-                </label>
-
-                <textarea id="editDescripcion" rows="4" placeholder="Descripción del grupo..."></textarea>
-              </div>
+              <button type="button" id="closeEditGroupModalButton" class="grupo-modal__close" aria-label="Cerrar">
+                ×
+              </button>
             </div>
 
-            <!-- =================================================
-                   HORARIOS HABITUALES
-                   ================================================= -->
+            <form id="editGroupForm" class="grupos-form">
+              <input type="hidden" id="editId" />
 
-            <div class="grupos-horarios-section">
-              <div class="grupos-horarios-header">
-                <div>
-                  <span class="grupos-form-header__kicker">
-                    HORARIOS
-                  </span>
-
-                  <h3>Horarios habituales</h3>
-
-                  <p>
-                    Agrega los días y horarios en los que normalmente
-                    entrena el grupo.
-                  </p>
-                </div>
-              </div>
-
-              <div id="groupSchedulesList" class="grupos-horarios-list"></div>
-
-              <div class="grupos-horario-form">
+              <div class="grid grid--2">
                 <div class="form-group">
-                  <label for="scheduleDay">
-                    Día
-                  </label>
+                  <label for="editNombre">Nombre del grupo</label>
+                  <input type="text" id="editNombre" required />
+                </div>
 
-                  <select id="scheduleDay">
-                    <option value="">
-                      Selecciona un día
-                    </option>
+                <div class="form-group">
+                  <label for="editCapacidad">Capacidad</label>
+                  <input type="number" id="editCapacidad" min="1" required />
+                </div>
 
-                    <option value="LUNES">Lunes</option>
-
-                    <option value="MARTES">Martes</option>
-
-                    <option value="MIERCOLES">Miércoles</option>
-
-                    <option value="JUEVES">Jueves</option>
-
-                    <option value="VIERNES">Viernes</option>
-
-                    <option value="SABADO">Sábado</option>
-
-                    <option value="DOMINGO">Domingo</option>
+                <div class="form-group">
+                  <label for="editFrecuenciaId">Frecuencia semanal</label>
+                  <select id="editFrecuenciaId" required>
+                    <option value="">Selecciona una frecuencia</option>
                   </select>
                 </div>
 
                 <div class="form-group">
-                  <label for="scheduleStart">
-                    Hora inicio
-                  </label>
-
-                  <input type="time" id="scheduleStart" />
+                  <label for="editSenseiId">Sensei</label>
+                  <select id="editSenseiId" required>
+                    <option value="">Selecciona un sensei</option>
+                  </select>
                 </div>
 
-                <div class="form-group">
-                  <label for="scheduleEnd">
-                    Hora fin
-                  </label>
-
-                  <input type="time" id="scheduleEnd" />
-                </div>
-
-                <div class="grupos-horario-form__action">
-                  <button type="button" id="addScheduleButton" class="btn btn--secondary">
-                    + Agregar horario
-                  </button>
+                <div class="form-group grupos-form-full">
+                  <label for="editDescripcion">Descripción</label>
+                  <textarea id="editDescripcion" rows="4" placeholder="Descripción del grupo..."></textarea>
                 </div>
               </div>
 
-              <div id="scheduleMessage" class="grupos-message" hidden></div>
-            </div>
+              <div class="grupos-horarios-section">
+                <div class="grupos-horarios-header">
+                  <div>
+                    <span class="grupos-form-header__kicker">HORARIOS</span>
+                    <h3>Horarios habituales</h3>
+                    <p>
+                      Agrega los días y horarios en los que normalmente entrena el grupo.
+                    </p>
+                  </div>
+                </div>
 
-            <div id="editGroupMessage" class="grupos-message" hidden></div>
+                <div id="groupSchedulesList" class="grupos-horarios-list"></div>
 
-            <div class="grupos-form-actions">
-              <button type="button" id="cancelEditButton" class="btn btn--secondary">
-                Cancelar
-              </button>
+                <div class="grupos-horario-form">
+                  <div class="form-group">
+                    <label for="scheduleDay">Día</label>
+                    <select id="scheduleDay">
+                      <option value="">Selecciona un día</option>
+                      <option value="LUNES">Lunes</option>
+                      <option value="MARTES">Martes</option>
+                      <option value="MIERCOLES">Miércoles</option>
+                      <option value="JUEVES">Jueves</option>
+                      <option value="VIERNES">Viernes</option>
+                      <option value="SABADO">Sábado</option>
+                      <option value="DOMINGO">Domingo</option>
+                    </select>
+                  </div>
 
-              <button type="submit" class="btn btn--primary">
-                Guardar cambios
-              </button>
-            </div>
-          </form>
-        </section>
+                  <div class="form-group">
+                    <label for="scheduleStart">Hora inicio</label>
+                    <input type="time" id="scheduleStart" />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="scheduleEnd">Hora fin</label>
+                    <input type="time" id="scheduleEnd" />
+                  </div>
+
+                  <div class="grupos-horario-form__action">
+                    <button type="button" id="addScheduleButton" class="btn btn--secondary">
+                      + Agregar horario
+                    </button>
+                  </div>
+                </div>
+
+                <div id="scheduleMessage" class="grupos-message" hidden></div>
+              </div>
+
+              <div id="editGroupMessage" class="grupos-message" hidden></div>
+
+              <div class="grupos-form-actions">
+                <button type="button" id="cancelEditButton" class="btn btn--secondary">
+                  Cancelar
+                </button>
+
+                <button type="submit" class="btn btn--primary">
+                  Guardar cambios
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
 
         <!-- =====================================================
                LISTA DE GRUPOS

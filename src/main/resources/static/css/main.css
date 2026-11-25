@@ -3423,6 +3423,123 @@ body.modal-open {
     width: 100%;
   }
 }
+.grupo-modal--editar .grupo-modal__content {
+  max-width: 950px;
+  max-height: 92vh;
+}
+.grupo-modal--editar .grupos-form {
+  gap: 1.25rem;
+}
+.grupo-modal--editar .grupos-form > .grid {
+  row-gap: 1rem;
+}
+.grupo-modal--editar .grupos-horarios-section {
+  margin-top: 0.25rem;
+  padding-top: 1.25rem;
+}
+.grupo-modal--editar .grupos-horarios-header {
+  margin-bottom: 1rem;
+}
+.grupo-modal--editar .grupos-horarios-header h3 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.grupo-modal--editar .grupos-horarios-header p {
+  margin: 0.35rem 0 0;
+  color: #666666;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.grupo-modal--editar .grupos-horarios-list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+.grupo-modal--editar .grupo-horario-item {
+  background-color: #f5f5f5;
+}
+.grupo-modal--editar .grupo-horario-acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.grupo-modal--editar .grupo-horario-acciones .btn {
+  min-height: 34px;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.75rem;
+}
+.grupo-modal--editar .grupo-horario-edicion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.grupo-modal--editar .grupo-horario-edicion input {
+  min-width: 110px;
+}
+.grupo-modal--editar .grupos-horario-form {
+  grid-template-columns: 1.2fr 1fr 1fr auto;
+}
+.grupo-modal--editar .grupos-horario-form__action {
+  display: flex;
+  align-items: flex-end;
+}
+.grupo-modal--editar .grupos-horario-form__action .btn {
+  min-height: 42px;
+  white-space: nowrap;
+}
+.grupo-modal--editar .grupos-form-actions {
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 800px) {
+  .grupo-modal--editar .grupo-modal__content {
+    max-height: 94vh;
+  }
+  .grupo-modal--editar .grupos-horario-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .grupo-modal--editar .grupos-horario-form__action {
+    grid-column: 1/-1;
+  }
+  .grupo-modal--editar .grupos-horario-form__action .btn {
+    width: 100%;
+  }
+}
+@media (max-width: 600px) {
+  .grupo-modal--editar .grupos-horario-form {
+    grid-template-columns: 1fr;
+  }
+  .grupo-modal--editar .grupos-horario-form__action {
+    grid-column: auto;
+  }
+  .grupo-modal--editar .grupo-horario-item {
+    align-items: stretch;
+  }
+  .grupo-modal--editar .grupo-horario-info {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .grupo-modal--editar .grupo-horario-acciones {
+    width: 100%;
+  }
+  .grupo-modal--editar .grupo-horario-acciones .btn {
+    flex: 1;
+  }
+  .grupo-modal--editar .grupo-horario-edicion {
+    width: 100%;
+  }
+  .grupo-modal--editar .grupo-horario-edicion input {
+    min-width: 0;
+    width: 100%;
+  }
+  .grupo-modal--editar .grupos-horarios-list {
+    max-height: 220px;
+  }
+}
 .asistencia-page {
   width: 100%;
 }

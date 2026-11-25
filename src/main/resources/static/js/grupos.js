@@ -10,9 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const response = await window.fetch("/api/auth/csrf", {
       method: "GET",
       credentials: "same-origin",
-      headers: {
-        Accept: "application/json",
-      },
+      headers: { Accept: "application/json" },
     });
 
     if (!response.ok) {
@@ -20,24 +18,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const data = await response.json();
-
     return data.token;
   }
 
   async function apiFetch(url, options = {}) {
     const method = (options.method || "GET").toUpperCase();
-
     const headers = new Headers(options.headers || {});
 
-    // Se elimina cualquier autenticación Basic Auth antigua.
     headers.delete("Authorization");
-
     headers.set("Accept", "application/json");
 
-    // Las operaciones que modifican datos requieren CSRF.
     if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
       const csrfToken = await obtenerTokenCSRF();
-
       headers.set("X-CSRF-TOKEN", csrfToken);
     }
 
@@ -55,68 +47,43 @@ document.addEventListener("DOMContentLoaded", function () {
    * =========================================================
    */
 
-  /*
-   * FORMULARIO DE GRUPO
-   */
-
   const groupForm = document.getElementById("groupForm");
-
   const groupMessage = document.getElementById("groupMessage");
 
-  /*
-   * LISTA DE GRUPOS
-   */
-
   const groupsList = document.getElementById("groupsList");
-
   const groupsCount = document.getElementById("groupsCount");
-
   const groupsMessage = document.getElementById("groupsMessage");
 
-  /*
-   * EDICIÓN
-   */
-
+  // EDICIÓN
   const editGroupSection = document.getElementById("editGroupSection");
-
   const editGroupForm = document.getElementById("editGroupForm");
-
   const editGroupMessage = document.getElementById("editGroupMessage");
-
   const cancelEditButton = document.getElementById("cancelEditButton");
 
-  /*
-   * SENSEIS
-   */
+  // MODAL DE EDICIÓN
+  const editGroupModalOverlay = document.getElementById(
+    "editGroupModalOverlay",
+  );
+  const closeEditGroupModalButton = document.getElementById(
+    "closeEditGroupModalButton",
+  );
 
+  // SENSEIS
   const senseiSelect = document.getElementById("groupSenseiId");
-
   const editSenseiSelect = document.getElementById("editSenseiId");
 
-  /*
-   * FRECUENCIAS
-   */
-
+  // FRECUENCIAS
   const frecuenciaSelect = document.getElementById("groupFrecuenciaId");
-
   const editFrecuenciaSelect = document.getElementById("editFrecuenciaId");
 
   let frecuenciasDisponibles = [];
 
-  /*
-   * HORARIOS
-   */
-
+  // HORARIOS
   const groupSchedulesList = document.getElementById("groupSchedulesList");
-
   const scheduleDay = document.getElementById("scheduleDay");
-
   const scheduleStart = document.getElementById("scheduleStart");
-
   const scheduleEnd = document.getElementById("scheduleEnd");
-
   const addScheduleButton = document.getElementById("addScheduleButton");
-
   const scheduleMessage = document.getElementById("scheduleMessage");
 
   /*
@@ -127,7 +94,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const groupModal = document.getElementById("groupModal");
 
-  const openGroupModalButton = document.getElementById("openGroupModalButton");
+  const openGroupModalButton = document.getElementById(
+    "openGroupModalButton",
+  );
 
   const closeGroupModalButton = document.getElementById(
     "closeGroupModalButton",
@@ -146,28 +115,21 @@ document.addEventListener("DOMContentLoaded", function () {
    */
 
   function mostrarMensaje(elemento, mensaje, tipo) {
-    if (!elemento) {
-      return;
-    }
+    if (!elemento) return;
 
     elemento.textContent = mensaje;
-
     elemento.hidden = false;
 
-    if (tipo === "success") {
-      elemento.className = "grupos-message grupos-message--success";
-    } else {
-      elemento.className = "grupos-message grupos-message--error";
-    }
+    elemento.className =
+      tipo === "success"
+        ? "grupos-message grupos-message--success"
+        : "grupos-message grupos-message--error";
   }
 
   function ocultarMensaje(elemento) {
-    if (!elemento) {
-      return;
-    }
+    if (!elemento) return;
 
     elemento.hidden = true;
-
     elemento.textContent = "";
   }
 
@@ -178,16 +140,13 @@ document.addEventListener("DOMContentLoaded", function () {
    */
 
   function formatearHora(hora) {
-    if (!hora) {
-      return "-";
-    }
-
+    if (!hora) return "-";
     return hora.substring(0, 5);
   }
 
   /*
    * =========================================================
-   * NOMBRE DEL DÍA
+   * NOMBRE Y ORDEN DEL DÍA
    * =========================================================
    */
 
@@ -204,12 +163,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     return dias[dia] || dia;
   }
-
-  /*
-   * =========================================================
-   * ORDEN DE LOS DÍAS
-   * =========================================================
-   */
 
   function obtenerOrdenDia(dia) {
     const orden = {
@@ -238,7 +191,6 @@ document.addEventListener("DOMContentLoaded", function () {
       sessionStorage.removeItem("kihonAuth");
 
       window.location.replace("/login");
-
       return true;
     }
 
@@ -254,7 +206,6 @@ document.addEventListener("DOMContentLoaded", function () {
   async function obtenerMensajeError(response, mensajeDefecto) {
     try {
       const errorData = await response.json();
-
       return errorData.mensaje || errorData.message || mensajeDefecto;
     } catch (error) {
       return mensajeDefecto;
@@ -263,84 +214,167 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /*
    * =========================================================
-   * MODAL - ABRIR
+   * CONTROL DEL SCROLL DE LOS MODALES
+   * =========================================================
+   */
+
+  function actualizarScrollModales() {
+    const modalRegistroAbierto =
+      groupModal && !groupModal.hidden;
+
+    const modalEdicionAbierto =
+      editGroupSection && !editGroupSection.hidden;
+
+    document.body.classList.toggle(
+      "modal-open",
+      Boolean(modalRegistroAbierto || modalEdicionAbierto),
+    );
+  }
+
+  /*
+   * =========================================================
+   * MODAL REGISTRAR - ABRIR Y CERRAR
    * =========================================================
    */
 
   function abrirModalGrupo() {
-    if (!groupModal) {
-      return;
-    }
+    if (!groupModal) return;
+
+    // Evitar que ambos modales estén abiertos al mismo tiempo.
+    cerrarModalEdicion();
 
     groupModal.hidden = false;
-
-    document.body.classList.add("modal-open");
+    actualizarScrollModales();
 
     ocultarMensaje(groupMessage);
 
     const nombreInput = document.getElementById("groupNombre");
 
     if (nombreInput) {
-      setTimeout(function () {
-        nombreInput.focus();
-      }, 100);
+      setTimeout(() => nombreInput.focus(), 100);
     }
+  }
+
+  function cerrarModalGrupo() {
+    if (!groupModal) return;
+
+    groupModal.hidden = true;
+    actualizarScrollModales();
   }
 
   /*
    * =========================================================
-   * MODAL - CERRAR
+   * MODAL EDICIÓN - ABRIR Y CERRAR
    * =========================================================
    */
 
-  function cerrarModalGrupo() {
-    if (!groupModal) {
-      return;
+  function abrirModalEdicion() {
+    if (!editGroupSection) return;
+
+    // Evitar que ambos modales estén abiertos al mismo tiempo.
+    cerrarModalGrupo();
+
+    editGroupSection.hidden = false;
+    actualizarScrollModales();
+
+    ocultarMensaje(editGroupMessage);
+    ocultarMensaje(scheduleMessage);
+
+    const nombreInput = document.getElementById("editNombre");
+
+    if (nombreInput) {
+      setTimeout(() => nombreInput.focus(), 100);
     }
+  }
 
-    groupModal.hidden = true;
+  function cerrarModalEdicion() {
+    if (!editGroupSection) return;
 
-    document.body.classList.remove("modal-open");
+    editGroupSection.hidden = true;
+    actualizarScrollModales();
   }
 
   /*
    * =========================================================
-   * MODAL - BOTONES
+   * LIMPIAR FORMULARIO DE EDICIÓN
+   * =========================================================
+   */
+
+  function limpiarFormularioEdicion() {
+    cerrarModalEdicion();
+
+    if (editGroupForm) {
+      editGroupForm.reset();
+    }
+
+    ocultarMensaje(editGroupMessage);
+    ocultarMensaje(scheduleMessage);
+
+    if (groupSchedulesList) {
+      groupSchedulesList.innerHTML = `
+        <div class="grupos-empty">
+          Selecciona un grupo para gestionar sus horarios.
+        </div>
+      `;
+    }
+
+    if (scheduleDay) scheduleDay.value = "";
+    if (scheduleStart) scheduleStart.value = "";
+    if (scheduleEnd) scheduleEnd.value = "";
+  }
+
+  /*
+   * =========================================================
+   * EVENTOS DE LOS MODALES
    * =========================================================
    */
 
   if (openGroupModalButton) {
-    openGroupModalButton.addEventListener("click", function () {
-      abrirModalGrupo();
-    });
+    openGroupModalButton.addEventListener("click", abrirModalGrupo);
   }
 
   if (closeGroupModalButton) {
-    closeGroupModalButton.addEventListener("click", function () {
-      cerrarModalGrupo();
-    });
+    closeGroupModalButton.addEventListener("click", cerrarModalGrupo);
   }
 
   if (cancelGroupModalButton) {
-    cancelGroupModalButton.addEventListener("click", function () {
-      cerrarModalGrupo();
-    });
+    cancelGroupModalButton.addEventListener("click", cerrarModalGrupo);
   }
 
   if (groupModalOverlay) {
-    groupModalOverlay.addEventListener("click", function () {
-      cerrarModalGrupo();
-    });
+    groupModalOverlay.addEventListener("click", cerrarModalGrupo);
   }
 
-  /*
-   * =========================================================
-   * CERRAR MODAL CON ESC
-   * =========================================================
-   */
+  if (closeEditGroupModalButton) {
+    closeEditGroupModalButton.addEventListener(
+      "click",
+      limpiarFormularioEdicion,
+    );
+  }
+
+  if (cancelEditButton) {
+    cancelEditButton.addEventListener(
+      "click",
+      limpiarFormularioEdicion,
+    );
+  }
+
+  if (editGroupModalOverlay) {
+    editGroupModalOverlay.addEventListener(
+      "click",
+      limpiarFormularioEdicion,
+    );
+  }
 
   document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && groupModal && !groupModal.hidden) {
+    if (event.key !== "Escape") return;
+
+    if (editGroupSection && !editGroupSection.hidden) {
+      limpiarFormularioEdicion();
+      return;
+    }
+
+    if (groupModal && !groupModal.hidden) {
       cerrarModalGrupo();
     }
   });
@@ -352,16 +386,12 @@ document.addEventListener("DOMContentLoaded", function () {
    */
 
   function obtenerDiasSeleccionados() {
-    const checkboxes = document.querySelectorAll('input[name="dias"]:checked');
+    const checkboxes = document.querySelectorAll(
+      'input[name="dias"]:checked',
+    );
 
     return Array.from(checkboxes).map((checkbox) => checkbox.value);
   }
-
-  /*
-   * =========================================================
-   * LIMPIAR DÍAS
-   * =========================================================
-   */
 
   function limpiarDiasSeleccionados() {
     const checkboxes = document.querySelectorAll('input[name="dias"]');
@@ -383,12 +413,12 @@ document.addEventListener("DOMContentLoaded", function () {
         method: "GET",
       });
 
-      if (manejarNoAutorizado(response)) {
-        return;
-      }
+      if (manejarNoAutorizado(response)) return;
 
       if (response.status === 403) {
-        throw new Error("No tienes permisos para consultar las frecuencias.");
+        throw new Error(
+          "No tienes permisos para consultar las frecuencias.",
+        );
       }
 
       if (!response.ok) {
@@ -396,51 +426,28 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       const frecuencias = await response.json();
-
       frecuenciasDisponibles = frecuencias;
 
-      if (frecuenciaSelect) {
-        frecuenciaSelect.innerHTML = `
-          <option value="">
-            Selecciona una frecuencia
-          </option>
+      [frecuenciaSelect, editFrecuenciaSelect].forEach((select) => {
+        if (!select) return;
+
+        select.innerHTML = `
+          <option value="">Selecciona una frecuencia</option>
         `;
 
         frecuencias.forEach((frecuencia) => {
           const option = document.createElement("option");
 
           option.value = frecuencia.id;
-
           option.textContent = frecuencia.nombre;
+          option.dataset.frecuenciaSemanal =
+            frecuencia.frecuenciaSemanal;
 
-          option.dataset.frecuenciaSemanal = frecuencia.frecuenciaSemanal;
-
-          frecuenciaSelect.appendChild(option);
+          select.appendChild(option);
         });
-      }
-
-      if (editFrecuenciaSelect) {
-        editFrecuenciaSelect.innerHTML = `
-          <option value="">
-            Selecciona una frecuencia
-          </option>
-        `;
-
-        frecuencias.forEach((frecuencia) => {
-          const option = document.createElement("option");
-
-          option.value = frecuencia.id;
-
-          option.textContent = frecuencia.nombre;
-
-          option.dataset.frecuenciaSemanal = frecuencia.frecuenciaSemanal;
-
-          editFrecuenciaSelect.appendChild(option);
-        });
-      }
+      });
     } catch (error) {
       console.error("Error cargando frecuencias:", error);
-
       mostrarMensaje(groupMessage, error.message, "error");
     }
   }
@@ -459,27 +466,25 @@ document.addEventListener("DOMContentLoaded", function () {
     const option =
       editFrecuenciaSelect.options[editFrecuenciaSelect.selectedIndex];
 
-    if (!option) {
-      return null;
-    }
+    if (!option) return null;
 
     return {
       id: Number(editFrecuenciaSelect.value),
-
       frecuenciaSemanal: Number(option.dataset.frecuenciaSemanal),
     };
   }
 
   /*
    * =========================================================
-   * OBTENER FRECUENCIA AUTOMÁTICA
+   * OBTENER FRECUENCIA POR CANTIDAD DE DÍAS
    * =========================================================
    */
 
   function obtenerFrecuenciaPorCantidadDias(cantidadDias) {
     return (
       frecuenciasDisponibles.find(
-        (frecuencia) => Number(frecuencia.frecuenciaSemanal) === cantidadDias,
+        (frecuencia) =>
+          Number(frecuencia.frecuenciaSemanal) === cantidadDias,
       ) || null
     );
   }
@@ -496,12 +501,12 @@ document.addEventListener("DOMContentLoaded", function () {
         method: "GET",
       });
 
-      if (manejarNoAutorizado(response)) {
-        return;
-      }
+      if (manejarNoAutorizado(response)) return;
 
       if (response.status === 403) {
-        throw new Error("No tienes permisos para consultar los senseis.");
+        throw new Error(
+          "No tienes permisos para consultar los senseis.",
+        );
       }
 
       if (!response.ok) {
@@ -510,48 +515,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const senseis = await response.json();
 
-      if (senseiSelect) {
-        senseiSelect.innerHTML = `
-          <option value="">
-            Sin asignar
-          </option>
+      [senseiSelect, editSenseiSelect].forEach((select) => {
+        if (!select) return;
+
+        select.innerHTML = `
+          <option value="">Sin asignar</option>
         `;
 
         senseis.forEach((sensei) => {
-          const nombreCompleto = `${sensei.nombre} ${sensei.apellido}`;
-
           const option = document.createElement("option");
 
           option.value = sensei.id;
+          option.textContent = `${sensei.nombre} ${sensei.apellido}`;
 
-          option.textContent = nombreCompleto;
-
-          senseiSelect.appendChild(option);
+          select.appendChild(option);
         });
-      }
-
-      if (editSenseiSelect) {
-        editSenseiSelect.innerHTML = `
-          <option value="">
-            Sin asignar
-          </option>
-        `;
-
-        senseis.forEach((sensei) => {
-          const nombreCompleto = `${sensei.nombre} ${sensei.apellido}`;
-
-          const option = document.createElement("option");
-
-          option.value = sensei.id;
-
-          option.textContent = nombreCompleto;
-
-          editSenseiSelect.appendChild(option);
-        });
-      }
+      });
     } catch (error) {
       console.error("Error cargando senseis:", error);
-
       mostrarMensaje(groupMessage, error.message, "error");
     }
   }
@@ -585,16 +566,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const grupos = await response.json();
-
-    const gruposActivos = grupos.filter((grupo) => grupo.estado === "ACTIVO");
+    const gruposActivos = grupos.filter(
+      (grupo) => grupo.estado === "ACTIVO",
+    );
 
     const gruposConHorarios = await Promise.all(
       gruposActivos.map(async (grupo) => {
         const horariosResponse = await apiFetch(
           `/api/grupo-horarios/grupo/${grupo.id}`,
-          {
-            method: "GET",
-          },
+          { method: "GET" },
         );
 
         if (manejarNoAutorizado(horariosResponse)) {
@@ -616,11 +596,9 @@ document.addEventListener("DOMContentLoaded", function () {
           );
         }
 
-        const horarios = await horariosResponse.json();
-
         return {
-          grupo: grupo,
-          horarios: horarios,
+          grupo,
+          horarios: await horariosResponse.json(),
         };
       }),
     );
@@ -628,26 +606,26 @@ document.addEventListener("DOMContentLoaded", function () {
     const cruces = [];
 
     gruposConHorarios.forEach((grupoData) => {
-      const grupo = grupoData.grupo;
-
       grupoData.horarios.forEach((horario) => {
-        const diaExistente = String(horario.diaSemana || "").toUpperCase();
+        const diaExistente = String(
+          horario.diaSemana || "",
+        ).toUpperCase();
 
         const coincideDia = dias.some(
           (dia) => String(dia).toUpperCase() === diaExistente,
         );
 
-        if (!coincideDia) {
-          return;
-        }
+        if (!coincideDia) return;
 
         const inicioExistente = formatearHora(horario.horaInicio);
-
         const finExistente = formatearHora(horario.horaFin);
 
-        if (horaInicio < finExistente && horaFin > inicioExistente) {
+        if (
+          horaInicio < finExistente &&
+          horaFin > inicioExistente
+        ) {
           cruces.push({
-            grupoNombre: grupo.nombre,
+            grupoNombre: grupoData.grupo.nombre,
             dia: diaExistente,
             horaInicio: inicioExistente,
             horaFin: finExistente,
@@ -668,23 +646,25 @@ document.addEventListener("DOMContentLoaded", function () {
   if (groupForm) {
     groupForm.addEventListener("submit", async function (event) {
       event.preventDefault();
-
       ocultarMensaje(groupMessage);
 
-      const nombre = document.getElementById("groupNombre").value.trim();
+      const nombre = document
+        .getElementById("groupNombre").value.trim();
 
       const descripcion = document
-        .getElementById("groupDescripcion")
-        .value.trim();
+        .getElementById("groupDescripcion").value.trim();
 
-      const horaInicio = document.getElementById("groupHoraInicio").value;
+      const horaInicio =
+        document.getElementById("groupHoraInicio").value;
 
-      const horaFin = document.getElementById("groupHoraFin").value;
+      const horaFin =
+        document.getElementById("groupHoraFin").value;
 
-      const capacidad = Number(document.getElementById("groupCapacidad").value);
+      const capacidad = Number(
+        document.getElementById("groupCapacidad").value,
+      );
 
       const senseiValue = senseiSelect ? senseiSelect.value : "";
-
       const diasSeleccionados = obtenerDiasSeleccionados();
 
       if (diasSeleccionados.length === 0) {
@@ -693,7 +673,6 @@ document.addEventListener("DOMContentLoaded", function () {
           "Debes seleccionar al menos un día de entrenamiento.",
           "error",
         );
-
         return;
       }
 
@@ -707,7 +686,6 @@ document.addEventListener("DOMContentLoaded", function () {
           `No existe una frecuencia configurada para ${diasSeleccionados.length} día${diasSeleccionados.length !== 1 ? "s" : ""} por semana.`,
           "error",
         );
-
         return;
       }
 
@@ -717,7 +695,6 @@ document.addEventListener("DOMContentLoaded", function () {
           "Debes seleccionar la hora de inicio y la hora de fin.",
           "error",
         );
-
         return;
       }
 
@@ -727,7 +704,6 @@ document.addEventListener("DOMContentLoaded", function () {
           "La hora de inicio debe ser anterior a la hora de fin.",
           "error",
         );
-
         return;
       }
 
@@ -737,19 +713,20 @@ document.addEventListener("DOMContentLoaded", function () {
           "La capacidad debe ser mayor que 0.",
           "error",
         );
-
         return;
       }
 
       const grupo = {
-        nombre: nombre,
-        descripcion: descripcion,
-        capacidad: capacidad,
+        nombre,
+        descripcion,
+        capacidad,
         senseiId: senseiValue ? Number(senseiValue) : null,
         frecuenciaId: frecuencia.id,
       };
 
-      const submitButton = groupForm.querySelector('button[type="submit"]');
+      const submitButton = groupForm.querySelector(
+        'button[type="submit"]',
+      );
 
       if (submitButton) {
         submitButton.disabled = true;
@@ -769,7 +746,10 @@ document.addEventListener("DOMContentLoaded", function () {
               (cruce) =>
                 `${cruce.grupoNombre} — ${obtenerNombreDia(cruce.dia)} ${cruce.horaInicio} - ${cruce.horaFin}`,
             )
-            .filter((detalle, index, array) => array.indexOf(detalle) === index)
+            .filter(
+              (detalle, index, array) =>
+                array.indexOf(detalle) === index,
+            )
             .join("; ");
 
           mostrarMensaje(
@@ -777,7 +757,6 @@ document.addEventListener("DOMContentLoaded", function () {
             `El horario seleccionado entra en conflicto con: ${detallesCruces}.`,
             "error",
           );
-
           return;
         }
 
@@ -787,17 +766,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const response = await apiFetch("/api/grupos", {
           method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(grupo),
         });
 
-        if (manejarNoAutorizado(response)) {
-          return;
-        }
+        if (manejarNoAutorizado(response)) return;
 
         if (response.status === 403) {
           throw new Error("No tienes permisos para registrar grupos.");
@@ -822,7 +795,6 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
         groupForm.reset();
-
         limpiarDiasSeleccionados();
 
         if (frecuenciaSelect) {
@@ -837,19 +809,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         await cargarGrupos();
 
-        setTimeout(function () {
+        setTimeout(() => {
           cerrarModalGrupo();
-
           ocultarMensaje(groupMessage);
         }, 800);
       } catch (error) {
         console.error("Error registrando grupo:", error);
-
         mostrarMensaje(groupMessage, error.message, "error");
       } finally {
         if (submitButton) {
           submitButton.disabled = false;
-
           submitButton.textContent = "Registrar grupo";
         }
       }
@@ -863,9 +832,7 @@ document.addEventListener("DOMContentLoaded", function () {
    */
 
   async function cargarGrupos() {
-    if (!groupsList) {
-      return;
-    }
+    if (!groupsList) return;
 
     groupsList.innerHTML = `
       <div class="grupos-loading">
@@ -879,9 +846,7 @@ document.addEventListener("DOMContentLoaded", function () {
         method: "GET",
       });
 
-      if (manejarNoAutorizado(response)) {
-        return;
-      }
+      if (manejarNoAutorizado(response)) return;
 
       if (response.status === 403) {
         throw new Error("No tienes permisos para consultar grupos.");
@@ -894,7 +859,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const grupos = await response.json();
 
       if (groupsCount) {
-        groupsCount.textContent = `${grupos.length} grupo${grupos.length !== 1 ? "s" : ""}`;
+        groupsCount.textContent =
+          `${grupos.length} grupo${grupos.length !== 1 ? "s" : ""}`;
       }
 
       if (grupos.length === 0) {
@@ -903,45 +869,29 @@ document.addEventListener("DOMContentLoaded", function () {
             No hay grupos registrados.
           </div>
         `;
-
         return;
       }
 
-      /*
-       * OBTENER HORARIOS
-       */
-
+      // Obtener horarios de cada grupo.
       const gruposConHorarios = await Promise.all(
         grupos.map(async (grupo) => {
           try {
             const horariosResponse = await apiFetch(
               `/api/grupo-horarios/grupo/${grupo.id}`,
-              {
-                method: "GET",
-              },
+              { method: "GET" },
             );
 
-            if (horariosResponse.status === 401) {
-              manejarNoAutorizado(horariosResponse);
-
-              return {
-                ...grupo,
-                horarios: [],
-              };
+            if (manejarNoAutorizado(horariosResponse)) {
+              return { ...grupo, horarios: [] };
             }
 
             if (!horariosResponse.ok) {
-              return {
-                ...grupo,
-                horarios: [],
-              };
+              return { ...grupo, horarios: [] };
             }
-
-            const horarios = await horariosResponse.json();
 
             return {
               ...grupo,
-              horarios: horarios,
+              horarios: await horariosResponse.json(),
             };
           } catch (error) {
             console.error(
@@ -949,18 +899,12 @@ document.addEventListener("DOMContentLoaded", function () {
               error,
             );
 
-            return {
-              ...grupo,
-              horarios: [],
-            };
+            return { ...grupo, horarios: [] };
           }
         }),
       );
 
-      /*
-       * AGRUPAR POR FRECUENCIA
-       */
-
+      // Agrupar por frecuencia.
       const gruposPorFrecuencia = new Map();
 
       gruposConHorarios.forEach((grupo) => {
@@ -981,37 +925,28 @@ document.addEventListener("DOMContentLoaded", function () {
         gruposPorFrecuencia.get(frecuenciaId).grupos.push(grupo);
       });
 
-      /*
-       * ORDENAR CATEGORÍAS
-       */
+      // Ordenar categorías.
+      const categorias = Array.from(
+        gruposPorFrecuencia.values(),
+      ).sort((a, b) => {
+        if (a.frecuenciaSemanal == null) return 1;
+        if (b.frecuenciaSemanal == null) return -1;
 
-      const categorias = Array.from(gruposPorFrecuencia.values()).sort(
-        (a, b) => {
-          if (a.frecuenciaSemanal == null) {
-            return 1;
-          }
+        return a.frecuenciaSemanal - b.frecuenciaSemanal;
+      });
 
-          if (b.frecuenciaSemanal == null) {
-            return -1;
-          }
-
-          return a.frecuenciaSemanal - b.frecuenciaSemanal;
-        },
-      );
-
-      /*
-       * TABLA
-       */
-
+      // Construir tabla.
       groupsList.innerHTML = `
         <table class="grupos-table">
           <tbody>
             ${categorias
           .map((categoria, categoriaIndex) => {
-            const categoriaId = `frecuencia-${categoria.id ?? "sin"}-${categoriaIndex}`;
+            const categoriaId =
+              `frecuencia-${categoria.id ?? "sin"}-${categoriaIndex}`;
 
             const capacidadTotal = categoria.grupos.reduce(
-              (total, grupo) => total + (Number(grupo.capacidad) || 0),
+              (total, grupo) =>
+                total + (Number(grupo.capacidad) || 0),
               0,
             );
 
@@ -1087,7 +1022,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     DOMINGO: 7,
                   };
 
-                  const inicialesDias = {
+                  const nombresDias = {
                     LUNES: "Lunes",
                     MARTES: "Martes",
                     MIERCOLES: "Miércoles",
@@ -1106,27 +1041,26 @@ document.addEventListener("DOMContentLoaded", function () {
                   const diasIniciales = dias
                     .map(
                       (horario) =>
-                        inicialesDias[horario.diaSemana] ||
+                        nombresDias[horario.diaSemana] ||
                         horario.diaSemana,
                     )
                     .filter(
-                      (dia, index, array) => array.indexOf(dia) === index,
+                      (dia, index, array) =>
+                        array.indexOf(dia) === index,
                     )
                     .join(" - ");
 
-                  const diasMostrar = diasIniciales || "Sin días";
+                  const diasMostrar =
+                    diasIniciales || "Sin días";
 
                   let horarioMostrar = "Sin horario";
 
                   if (dias.length > 0) {
                     const horarios = dias.map((horario) => ({
                       dia:
-                        inicialesDias[horario.diaSemana] ||
+                        nombresDias[horario.diaSemana] ||
                         horario.diaSemana,
-
-                      hora: `${formatearHora(
-                        horario.horaInicio,
-                      )} - ${formatearHora(horario.horaFin)}`,
+                      hora: `${formatearHora(horario.horaInicio)} - ${formatearHora(horario.horaFin)}`,
                     }));
 
                     const primeraHora = horarios[0].hora;
@@ -1135,15 +1069,14 @@ document.addEventListener("DOMContentLoaded", function () {
                       (horario) => horario.hora === primeraHora,
                     );
 
-                    if (todosMismaHora) {
-                      horarioMostrar = primeraHora;
-                    } else {
-                      horarioMostrar = horarios
+                    horarioMostrar = todosMismaHora
+                      ? primeraHora
+                      : horarios
                         .map(
-                          (horario) => `${horario.dia}: ${horario.hora}`,
+                          (horario) =>
+                            `${horario.dia}: ${horario.hora}`,
                         )
                         .join(" / ");
-                    }
                   }
 
                   const cuposLlenos =
@@ -1212,8 +1145,7 @@ document.addEventListener("DOMContentLoaded", function () {
                               grupo-estado
                               ${grupoActivo
                       ? "grupo-estado--activo"
-                      : "grupo-estado--inactivo"
-                    }
+                      : "grupo-estado--inactivo"}
                             ">
                               ${grupo.estado}
                             </span>
@@ -1259,12 +1191,7 @@ document.addEventListener("DOMContentLoaded", function () {
         </table>
       `;
 
-      /*
-       * =====================================================
-       * EXPANDIR / CONTRAER CATEGORÍAS
-       * =====================================================
-       */
-
+      // Expandir / contraer categorías.
       document
         .querySelectorAll("[data-frecuencia-toggle]")
         .forEach((categoriaHeader) => {
@@ -1279,9 +1206,9 @@ document.addEventListener("DOMContentLoaded", function () {
               `[data-frecuencia-columnas="${categoriaId}"]`,
             );
 
-            const actualmenteVisible = Array.from(gruposCategoria).some(
-              (fila) => fila.hidden === false,
-            );
+            const actualmenteVisible = Array.from(
+              gruposCategoria,
+            ).some((fila) => fila.hidden === false);
 
             gruposCategoria.forEach((fila) => {
               fila.hidden = actualmenteVisible;
@@ -1309,20 +1236,21 @@ document.addEventListener("DOMContentLoaded", function () {
    * =========================================================
    */
 
-  async function crearHorariosGrupo(grupoId, dias, horaInicio, horaFin) {
+  async function crearHorariosGrupo(
+    grupoId,
+    dias,
+    horaInicio,
+    horaFin,
+  ) {
     for (const dia of dias) {
       const response = await apiFetch("/api/grupo-horarios", {
         method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-        },
-
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           grupoId: Number(grupoId),
           diaSemana: dia,
-          horaInicio: horaInicio,
-          horaFin: horaFin,
+          horaInicio,
+          horaFin,
         }),
       });
 
@@ -1352,9 +1280,7 @@ document.addEventListener("DOMContentLoaded", function () {
    */
 
   async function cargarHorariosGrupo(grupoId) {
-    if (!groupSchedulesList) {
-      return;
-    }
+    if (!groupSchedulesList) return;
 
     groupSchedulesList.innerHTML = `
       <div class="grupos-loading">
@@ -1366,17 +1292,15 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       const response = await apiFetch(
         `/api/grupo-horarios/grupo/${grupoId}`,
-        {
-          method: "GET",
-        },
+        { method: "GET" },
       );
 
-      if (manejarNoAutorizado(response)) {
-        return;
-      }
+      if (manejarNoAutorizado(response)) return;
 
       if (response.status === 403) {
-        throw new Error("No tienes permisos para consultar los horarios.");
+        throw new Error(
+          "No tienes permisos para consultar los horarios.",
+        );
       }
 
       if (!response.ok) {
@@ -1396,18 +1320,14 @@ document.addEventListener("DOMContentLoaded", function () {
             Este grupo todavía no tiene horarios registrados.
           </div>
         `;
-
         return;
       }
 
       horarios.sort((a, b) => {
         const diaA = obtenerOrdenDia(a.diaSemana);
-
         const diaB = obtenerOrdenDia(b.diaSemana);
 
-        if (diaA !== diaB) {
-          return diaA - diaB;
-        }
+        if (diaA !== diaB) return diaA - diaB;
 
         return a.horaInicio.localeCompare(b.horaInicio);
       });
@@ -1469,27 +1389,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /*
    * =========================================================
-   * EDITAR GRUPO
+   * EDITAR GRUPO - ABRIR MODAL
    * =========================================================
    */
 
   document.addEventListener("click", async function (event) {
     const botonEditar = event.target.closest(".btn-editar-grupo");
 
-    if (!botonEditar) {
-      return;
-    }
+    if (!botonEditar) return;
 
     const id = botonEditar.dataset.id;
+
+    botonEditar.disabled = true;
 
     try {
       const response = await apiFetch(`/api/grupos/${id}`, {
         method: "GET",
       });
 
-      if (manejarNoAutorizado(response)) {
-        return;
-      }
+      if (manejarNoAutorizado(response)) return;
 
       if (response.status === 403) {
         throw new Error("No tienes permisos para editar grupos.");
@@ -1497,20 +1415,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!response.ok) {
         throw new Error(
-          await obtenerMensajeError(response, "No se pudo obtener el grupo."),
+          await obtenerMensajeError(
+            response,
+            "No se pudo obtener el grupo.",
+          ),
         );
       }
 
       const grupo = await response.json();
 
       document.getElementById("editId").value = grupo.id;
-
       document.getElementById("editNombre").value = grupo.nombre;
 
       document.getElementById("editDescripcion").value =
         grupo.descripcion || "";
 
-      document.getElementById("editCapacidad").value = grupo.capacidad;
+      document.getElementById("editCapacidad").value =
+        grupo.capacidad;
 
       if (editFrecuenciaSelect) {
         editFrecuenciaSelect.value = grupo.frecuenciaId
@@ -1518,9 +1439,11 @@ document.addEventListener("DOMContentLoaded", function () {
           : "";
       }
 
-      const editHoraInicio = document.getElementById("editHoraInicio");
+      const editHoraInicio =
+        document.getElementById("editHoraInicio");
 
-      const editHoraFin = document.getElementById("editHoraFin");
+      const editHoraFin =
+        document.getElementById("editHoraFin");
 
       if (editHoraInicio) {
         editHoraInicio.value = "";
@@ -1533,40 +1456,35 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (editSenseiSelect) {
-        editSenseiSelect.value = grupo.senseiId ? String(grupo.senseiId) : "";
+        editSenseiSelect.value = grupo.senseiId
+          ? String(grupo.senseiId)
+          : "";
       }
 
-      if (scheduleDay) {
-        scheduleDay.value = "";
-      }
-
-      if (scheduleStart) {
-        scheduleStart.value = "";
-      }
-
-      if (scheduleEnd) {
-        scheduleEnd.value = "";
-      }
+      if (scheduleDay) scheduleDay.value = "";
+      if (scheduleStart) scheduleStart.value = "";
+      if (scheduleEnd) scheduleEnd.value = "";
 
       ocultarMensaje(scheduleMessage);
-
-      if (editGroupSection) {
-        editGroupSection.hidden = false;
-      }
-
       ocultarMensaje(editGroupMessage);
 
-      await cargarHorariosGrupo(grupo.id);
-
-      if (editGroupSection) {
-        editGroupSection.scrollIntoView({
-          behavior: "smooth",
-        });
+      if (groupSchedulesList) {
+        groupSchedulesList.innerHTML = `
+          <div class="grupos-loading">
+            <div class="grupos-loading__spinner"></div>
+            <span>Cargando horarios...</span>
+          </div>
+        `;
       }
+
+      abrirModalEdicion();
+
+      await cargarHorariosGrupo(grupo.id);
     } catch (error) {
       console.error("Error obteniendo grupo:", error);
-
       alert(error.message);
+    } finally {
+      botonEditar.disabled = false;
     }
   });
 
@@ -1579,9 +1497,7 @@ document.addEventListener("DOMContentLoaded", function () {
   async function obtenerHorariosGrupo(grupoId) {
     const response = await apiFetch(
       `/api/grupo-horarios/grupo/${grupoId}`,
-      {
-        method: "GET",
-      },
+      { method: "GET" },
     );
 
     if (manejarNoAutorizado(response)) {
@@ -1589,7 +1505,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (response.status === 403) {
-      throw new Error("No tienes permisos para consultar los horarios.");
+      throw new Error(
+        "No tienes permisos para consultar los horarios.",
+      );
     }
 
     if (!response.ok) {
@@ -1613,20 +1531,23 @@ document.addEventListener("DOMContentLoaded", function () {
   if (editGroupForm) {
     editGroupForm.addEventListener("submit", async function (event) {
       event.preventDefault();
-
       ocultarMensaje(editGroupMessage);
 
       const id = document.getElementById("editId").value;
 
-      const nombre = document.getElementById("editNombre").value.trim();
+      const nombre = document
+        .getElementById("editNombre").value.trim();
 
       const descripcion = document
-        .getElementById("editDescripcion")
-        .value.trim();
+        .getElementById("editDescripcion").value.trim();
 
-      const capacidad = Number(document.getElementById("editCapacidad").value);
+      const capacidad = Number(
+        document.getElementById("editCapacidad").value,
+      );
 
-      const senseiValue = editSenseiSelect ? editSenseiSelect.value : "";
+      const senseiValue = editSenseiSelect
+        ? editSenseiSelect.value
+        : "";
 
       const frecuencia = obtenerFrecuenciaEdicion();
 
@@ -1636,7 +1557,6 @@ document.addEventListener("DOMContentLoaded", function () {
           "Debes seleccionar la frecuencia semanal del grupo.",
           "error",
         );
-
         return;
       }
 
@@ -1646,39 +1566,39 @@ document.addEventListener("DOMContentLoaded", function () {
           "La capacidad debe ser mayor que 0.",
           "error",
         );
-
         return;
       }
 
       try {
         const horarios = await obtenerHorariosGrupo(Number(id));
 
-        if (horarios.length !== frecuencia.frecuenciaSemanal) {
+        if (
+          horarios.length !== frecuencia.frecuenciaSemanal
+        ) {
           mostrarMensaje(
             editGroupMessage,
             `La frecuencia seleccionada requiere exactamente ${frecuencia.frecuenciaSemanal} horario${frecuencia.frecuenciaSemanal !== 1 ? "s" : ""}. Actualmente el grupo tiene ${horarios.length}. Agrega o elimina horarios antes de guardar.`,
             "error",
           );
-
           return;
         }
       } catch (error) {
         console.error("Error validando horarios:", error);
-
         mostrarMensaje(editGroupMessage, error.message, "error");
-
         return;
       }
 
       const grupo = {
-        nombre: nombre,
-        descripcion: descripcion,
-        capacidad: capacidad,
+        nombre,
+        descripcion,
+        capacidad,
         senseiId: senseiValue ? Number(senseiValue) : null,
         frecuenciaId: frecuencia.id,
       };
 
-      const submitButton = editGroupForm.querySelector('button[type="submit"]');
+      const submitButton = editGroupForm.querySelector(
+        'button[type="submit"]',
+      );
 
       if (submitButton) {
         submitButton.disabled = true;
@@ -1688,17 +1608,11 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         const response = await apiFetch(`/api/grupos/${id}`, {
           method: "PUT",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(grupo),
         });
 
-        if (manejarNoAutorizado(response)) {
-          return;
-        }
+        if (manejarNoAutorizado(response)) return;
 
         if (response.status === 403) {
           throw new Error("No tienes permisos para editar grupos.");
@@ -1722,11 +1636,14 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
         await cargarGrupos();
-
         await cargarHorariosGrupo(Number(id));
+
+        // Cerrar el modal después de confirmar la actualización.
+        setTimeout(() => {
+          limpiarFormularioEdicion();
+        }, 800);
       } catch (error) {
         console.error("Error actualizando grupo:", error);
-
         mostrarMensaje(editGroupMessage, error.message, "error");
       } finally {
         if (submitButton) {
@@ -1748,11 +1665,8 @@ document.addEventListener("DOMContentLoaded", function () {
       ocultarMensaje(scheduleMessage);
 
       const grupoId = document.getElementById("editId").value;
-
       const dia = scheduleDay.value;
-
       const horaInicio = scheduleStart.value;
-
       const horaFin = scheduleEnd.value;
 
       if (!grupoId) {
@@ -1761,7 +1675,6 @@ document.addEventListener("DOMContentLoaded", function () {
           "No se ha seleccionado ningún grupo.",
           "error",
         );
-
         return;
       }
 
@@ -1771,7 +1684,6 @@ document.addEventListener("DOMContentLoaded", function () {
           "Selecciona un día de la semana.",
           "error",
         );
-
         return;
       }
 
@@ -1781,7 +1693,6 @@ document.addEventListener("DOMContentLoaded", function () {
           "Selecciona la hora de inicio y la hora de fin.",
           "error",
         );
-
         return;
       }
 
@@ -1791,7 +1702,6 @@ document.addEventListener("DOMContentLoaded", function () {
           "La hora de inicio debe ser anterior a la hora de fin.",
           "error",
         );
-
         return;
       }
 
@@ -1803,7 +1713,6 @@ document.addEventListener("DOMContentLoaded", function () {
           "El grupo no tiene una frecuencia semanal seleccionada.",
           "error",
         );
-
         return;
       }
 
@@ -1816,12 +1725,12 @@ document.addEventListener("DOMContentLoaded", function () {
             `Este grupo ya tiene ${horarios.length} horario${horarios.length !== 1 ? "s" : ""} registrado${horarios.length !== 1 ? "s" : ""}. La frecuencia permite un máximo de ${frecuencia.frecuenciaSemanal}.`,
             "error",
           );
-
           return;
         }
 
         const diaYaRegistrado = horarios.some(
-          (horario) => horario.diaSemana?.toUpperCase() === dia.toUpperCase(),
+          (horario) =>
+            horario.diaSemana?.toUpperCase() === dia.toUpperCase(),
         );
 
         if (diaYaRegistrado) {
@@ -1830,41 +1739,34 @@ document.addEventListener("DOMContentLoaded", function () {
             "El grupo ya tiene un horario registrado para ese día.",
             "error",
           );
-
           return;
         }
       } catch (error) {
         mostrarMensaje(scheduleMessage, error.message, "error");
-
         return;
       }
 
       addScheduleButton.disabled = true;
-
       addScheduleButton.textContent = "Guardando...";
 
       try {
         const response = await apiFetch("/api/grupo-horarios", {
           method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             grupoId: Number(grupoId),
             diaSemana: dia,
-            horaInicio: horaInicio,
-            horaFin: horaFin,
+            horaInicio,
+            horaFin,
           }),
         });
 
-        if (manejarNoAutorizado(response)) {
-          return;
-        }
+        if (manejarNoAutorizado(response)) return;
 
         if (response.status === 403) {
-          throw new Error("No tienes permisos para registrar horarios.");
+          throw new Error(
+            "No tienes permisos para registrar horarios.",
+          );
         }
 
         if (!response.ok) {
@@ -1877,9 +1779,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         scheduleDay.value = "";
-
         scheduleStart.value = "";
-
         scheduleEnd.value = "";
 
         mostrarMensaje(
@@ -1889,15 +1789,12 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
         await cargarHorariosGrupo(Number(grupoId));
-
         await cargarGrupos();
       } catch (error) {
         console.error("Error agregando horario:", error);
-
         mostrarMensaje(scheduleMessage, error.message, "error");
       } finally {
         addScheduleButton.disabled = false;
-
         addScheduleButton.textContent = "+ Agregar horario";
       }
     });
@@ -1913,33 +1810,22 @@ document.addEventListener("DOMContentLoaded", function () {
     groupSchedulesList.addEventListener("click", async function (event) {
       const botonEditar = event.target.closest(".btn-editar-horario");
 
-      if (!botonEditar) {
-        return;
-      }
+      if (!botonEditar) return;
 
       const horarioId = botonEditar.dataset.id;
-
       const grupoId = botonEditar.dataset.grupoId;
-
       const diaSemana = botonEditar.dataset.dia;
-
       const horaInicioActual = botonEditar.dataset.horaInicio;
-
       const horaFinActual = botonEditar.dataset.horaFin;
 
       const item = botonEditar.closest(".grupo-horario-item");
 
-      if (!item) {
-        return;
-      }
+      if (!item) return;
 
       const info = item.querySelector(".grupo-horario-info");
-
       const acciones = item.querySelector(".grupo-horario-acciones");
 
-      if (!info || !acciones) {
-        return;
-      }
+      if (!info || !acciones) return;
 
       info.innerHTML = `
         <strong>
@@ -1980,10 +1866,11 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
 
       const inputInicio = item.querySelector(".editar-hora-inicio");
-
       const inputFin = item.querySelector(".editar-hora-fin");
 
-      const botonGuardar = item.querySelector(".btn-guardar-horario");
+      const botonGuardar = item.querySelector(
+        ".btn-guardar-horario",
+      );
 
       const botonCancelar = item.querySelector(
         ".btn-cancelar-edicion-horario",
@@ -1995,7 +1882,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       botonGuardar.addEventListener("click", async function () {
         const horaInicio = inputInicio.value;
-
         const horaFin = inputFin.value;
 
         if (!horaInicio || !horaFin) {
@@ -2004,7 +1890,6 @@ document.addEventListener("DOMContentLoaded", function () {
             "Debes ingresar la hora de inicio y la hora de fin.",
             "error",
           );
-
           return;
         }
 
@@ -2014,12 +1899,10 @@ document.addEventListener("DOMContentLoaded", function () {
             "La hora de inicio debe ser anterior a la hora de fin.",
             "error",
           );
-
           return;
         }
 
         botonGuardar.disabled = true;
-
         botonCancelar.disabled = true;
 
         try {
@@ -2027,26 +1910,22 @@ document.addEventListener("DOMContentLoaded", function () {
             `/api/grupo-horarios/${horarioId}`,
             {
               method: "PUT",
-
-              headers: {
-                "Content-Type": "application/json",
-              },
-
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 grupoId: Number(grupoId),
-                diaSemana: diaSemana,
-                horaInicio: horaInicio,
-                horaFin: horaFin,
+                diaSemana,
+                horaInicio,
+                horaFin,
               }),
             },
           );
 
-          if (manejarNoAutorizado(response)) {
-            return;
-          }
+          if (manejarNoAutorizado(response)) return;
 
           if (response.status === 403) {
-            throw new Error("No tienes permisos para modificar este horario.");
+            throw new Error(
+              "No tienes permisos para modificar este horario.",
+            );
           }
 
           if (!response.ok) {
@@ -2065,15 +1944,12 @@ document.addEventListener("DOMContentLoaded", function () {
           );
 
           await cargarHorariosGrupo(Number(grupoId));
-
           await cargarGrupos();
         } catch (error) {
           console.error("Error actualizando horario:", error);
-
           mostrarMensaje(scheduleMessage, error.message, "error");
 
           botonGuardar.disabled = false;
-
           botonCancelar.disabled = false;
         }
       });
@@ -2089,38 +1965,30 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("click", async function (event) {
     const button = event.target.closest(".btn-eliminar-horario");
 
-    if (!button) {
-      return;
-    }
+    if (!button) return;
 
     const horarioId = button.dataset.id;
-
     const grupoId = document.getElementById("editId").value;
 
     const confirmar = confirm("¿Deseas eliminar este horario?");
 
-    if (!confirmar) {
-      return;
-    }
+    if (!confirmar) return;
 
     button.disabled = true;
-
     button.textContent = "Eliminando...";
 
     try {
       const response = await apiFetch(
         `/api/grupo-horarios/${horarioId}`,
-        {
-          method: "DELETE",
-        },
+        { method: "DELETE" },
       );
 
-      if (manejarNoAutorizado(response)) {
-        return;
-      }
+      if (manejarNoAutorizado(response)) return;
 
       if (response.status === 403) {
-        throw new Error("No tienes permisos para eliminar horarios.");
+        throw new Error(
+          "No tienes permisos para eliminar horarios.",
+        );
       }
 
       if (!response.ok) {
@@ -2139,15 +2007,12 @@ document.addEventListener("DOMContentLoaded", function () {
       );
 
       await cargarHorariosGrupo(Number(grupoId));
-
       await cargarGrupos();
     } catch (error) {
       console.error("Error eliminando horario:", error);
-
       mostrarMensaje(scheduleMessage, error.message, "error");
 
       button.disabled = false;
-
       button.textContent = "Eliminar";
     }
   });
@@ -2161,24 +2026,18 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("click", async function (event) {
     const button = event.target.closest(".btn-eliminar-grupo");
 
-    if (!button) {
-      return;
-    }
+    if (!button) return;
 
     const id = button.dataset.id;
-
     const nombre = button.dataset.nombre;
 
     const confirmar = confirm(
       `¿Deseas eliminar el grupo "${nombre}"?\n\nTambién se eliminarán sus horarios habituales.\n\nEsta acción no se puede deshacer.`,
     );
 
-    if (!confirmar) {
-      return;
-    }
+    if (!confirmar) return;
 
     button.disabled = true;
-
     button.textContent = "Eliminando...";
 
     try {
@@ -2186,42 +2045,28 @@ document.addEventListener("DOMContentLoaded", function () {
         method: "DELETE",
       });
 
-      if (manejarNoAutorizado(response)) {
-        return;
-      }
+      if (manejarNoAutorizado(response)) return;
 
       if (response.status === 403) {
-        throw new Error("No tienes permisos para eliminar grupos.");
+        throw new Error(
+          "No tienes permisos para eliminar grupos.",
+        );
       }
 
       if (!response.ok) {
         throw new Error(
-          await obtenerMensajeError(response, "No se pudo eliminar el grupo."),
+          await obtenerMensajeError(
+            response,
+            "No se pudo eliminar el grupo.",
+          ),
         );
       }
 
-      const grupoEditado = document.getElementById("editId").value;
+      const grupoEditado =
+        document.getElementById("editId")?.value;
 
       if (grupoEditado === String(id)) {
-        if (editGroupSection) {
-          editGroupSection.hidden = true;
-        }
-
-        if (editGroupForm) {
-          editGroupForm.reset();
-        }
-
-        ocultarMensaje(editGroupMessage);
-
-        ocultarMensaje(scheduleMessage);
-
-        if (groupSchedulesList) {
-          groupSchedulesList.innerHTML = `
-            <div class="grupos-empty">
-              Selecciona un grupo para gestionar sus horarios.
-            </div>
-          `;
-        }
+        limpiarFormularioEdicion();
       }
 
       await cargarGrupos();
@@ -2233,44 +2078,12 @@ document.addEventListener("DOMContentLoaded", function () {
       );
     } catch (error) {
       console.error("Error eliminando grupo:", error);
-
       mostrarMensaje(groupMessage, error.message, "error");
 
       button.disabled = false;
-
       button.textContent = "Eliminar";
     }
   });
-
-  /*
-   * =========================================================
-   * CANCELAR EDICIÓN
-   * =========================================================
-   */
-
-  if (cancelEditButton) {
-    cancelEditButton.addEventListener("click", function () {
-      if (editGroupSection) {
-        editGroupSection.hidden = true;
-      }
-
-      if (editGroupForm) {
-        editGroupForm.reset();
-      }
-
-      ocultarMensaje(editGroupMessage);
-
-      ocultarMensaje(scheduleMessage);
-
-      if (groupSchedulesList) {
-        groupSchedulesList.innerHTML = `
-          <div class="grupos-empty">
-            Selecciona un grupo para gestionar sus horarios.
-          </div>
-        `;
-      }
-    });
-  }
 
   /*
    * =========================================================
@@ -2281,32 +2094,28 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("click", async function (event) {
     const button = event.target.closest(".btn-estado-grupo");
 
-    if (!button) {
-      return;
-    }
+    if (!button) return;
 
     const id = button.dataset.id;
-
     const estadoActual = button.dataset.estado;
 
-    const nuevoEstado = estadoActual === "ACTIVO" ? "INACTIVO" : "ACTIVO";
+    const nuevoEstado =
+      estadoActual === "ACTIVO" ? "INACTIVO" : "ACTIVO";
 
     button.disabled = true;
 
     try {
       const response = await apiFetch(
         `/api/grupos/${id}/estado?estado=${nuevoEstado}`,
-        {
-          method: "PATCH",
-        },
+        { method: "PATCH" },
       );
 
-      if (manejarNoAutorizado(response)) {
-        return;
-      }
+      if (manejarNoAutorizado(response)) return;
 
       if (response.status === 403) {
-        throw new Error("No tienes permisos para cambiar el estado del grupo.");
+        throw new Error(
+          "No tienes permisos para cambiar el estado del grupo.",
+        );
       }
 
       if (!response.ok) {
@@ -2321,7 +2130,6 @@ document.addEventListener("DOMContentLoaded", function () {
       await cargarGrupos();
     } catch (error) {
       console.error("Error cambiando estado:", error);
-
       alert(error.message);
 
       button.disabled = false;
@@ -2334,9 +2142,11 @@ document.addEventListener("DOMContentLoaded", function () {
    * =========================================================
    */
 
-  const editHoraInicioInicial = document.getElementById("editHoraInicio");
+  const editHoraInicioInicial =
+    document.getElementById("editHoraInicio");
 
-  const editHoraFinInicial = document.getElementById("editHoraFin");
+  const editHoraFinInicial =
+    document.getElementById("editHoraFin");
 
   if (editHoraInicioInicial) {
     editHoraInicioInicial.required = false;
@@ -2353,8 +2163,6 @@ document.addEventListener("DOMContentLoaded", function () {
    */
 
   cargarFrecuencias();
-
   cargarSenseis();
-
   cargarGrupos();
 });
