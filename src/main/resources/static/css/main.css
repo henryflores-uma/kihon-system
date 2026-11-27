@@ -2007,12 +2007,14 @@ img {
   background-color: #000000;
   color: #FFFFFF;
 }
+
 .home-footer__inner {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
   gap: 2rem;
 }
+
 .home-footer__social {
   display: flex;
   align-items: center;
