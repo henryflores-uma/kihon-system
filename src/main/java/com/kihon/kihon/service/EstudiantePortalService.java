@@ -3,12 +3,17 @@ package com.kihon.kihon.service;
 import com.kihon.kihon.model.Asistencia;
 import com.kihon.kihon.model.Estudiante;
 import com.kihon.kihon.model.EstudianteGrupo;
+import com.kihon.kihon.model.Persona;
 import com.kihon.kihon.model.Usuario;
 import com.kihon.kihon.repository.EstudianteGrupoRepository;
+import com.kihon.kihon.repository.EstudianteRepository;
 import com.kihon.kihon.repository.UsuarioRepository;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.kihon.kihon.dto.EstudianteDashboardResponse;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,21 +21,40 @@ import java.util.List;
 public class EstudiantePortalService {
 
         private final UsuarioRepository usuarioRepository;
+        private final EstudianteRepository estudianteRepository;
         private final AsistenciaService asistenciaService;
         private final EstudianteGrupoRepository estudianteGrupoRepository;
         private final PasswordEncoder passwordEncoder;
 
         public EstudiantePortalService(
                         UsuarioRepository usuarioRepository,
+                        EstudianteRepository estudianteRepository,
                         AsistenciaService asistenciaService,
                         EstudianteGrupoRepository estudianteGrupoRepository,
                         PasswordEncoder passwordEncoder) {
 
                 this.usuarioRepository = usuarioRepository;
+                this.estudianteRepository = estudianteRepository;
                 this.asistenciaService = asistenciaService;
                 this.estudianteGrupoRepository = estudianteGrupoRepository;
                 this.passwordEncoder = passwordEncoder;
         }
+
+        /*
+         * =========================================================
+         * OBTENER ESTUDIANTE AUTENTICADO
+         * =========================================================
+         *
+         * Usuario ya no depende de estudiante_id.
+         *
+         * La relación canónica es:
+         *
+         * Usuario
+         * ↓
+         * Persona
+         * ↓
+         * Estudiante
+         */
 
         public Estudiante obtenerEstudianteAutenticado(
                         String username) {
@@ -39,15 +63,26 @@ public class EstudiantePortalService {
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Usuario no encontrado"));
 
-                Estudiante estudiante = usuario.getEstudiante();
+                Persona persona = usuario.getPersona();
 
-                if (estudiante == null) {
+                if (persona == null) {
                         throw new RuntimeException(
-                                        "El usuario no está vinculado a un estudiante");
+                                        "El usuario no tiene una persona asociada");
                 }
+
+                Estudiante estudiante = estudianteRepository
+                                .findByPersona(persona)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "El usuario no está vinculado a un estudiante"));
 
                 return estudiante;
         }
+
+        /*
+         * =========================================================
+         * ASISTENCIAS
+         * =========================================================
+         */
 
         public List<Asistencia> listarMisAsistencias(
                         String username) {
@@ -57,6 +92,12 @@ public class EstudiantePortalService {
                 return asistenciaService.listarPorEstudiante(
                                 estudiante.getId());
         }
+
+        /*
+         * =========================================================
+         * GRUPOS
+         * =========================================================
+         */
 
         public List<EstudianteGrupo> listarMisGrupos(
                         String username) {
@@ -68,6 +109,19 @@ public class EstudiantePortalService {
                                                 estudiante.getId(),
                                                 "ACTIVO");
         }
+
+        /*
+         * =========================================================
+         * ACTUALIZAR PERFIL
+         * =========================================================
+         *
+         * Los datos personales pertenecen a Persona.
+         *
+         * Estudiante solamente conserva información académica:
+         * - cinturón
+         * - estado
+         * - fechas
+         */
 
         public Estudiante actualizarPerfil(
                         String username,
@@ -105,15 +159,38 @@ public class EstudiantePortalService {
                                         "La dirección es obligatoria");
                 }
 
-                estudiante.setNombre(nombre);
-                estudiante.setApellido(apellido);
-                estudiante.setTelefono(telefono);
-                estudiante.setCorreo(correo);
-                estudiante.setDireccion(direccion);
-                estudiante.setFoto(foto);
+                Persona persona = estudiante.getPersona();
+
+                if (persona == null) {
+                        throw new RuntimeException(
+                                        "El estudiante no tiene una persona asociada");
+                }
+
+                persona.setNombre(nombre);
+                persona.setApellido(apellido);
+                persona.setTelefono(telefono);
+                persona.setCorreo(correo);
+                persona.setDireccion(direccion);
+                persona.setFoto(foto);
+
+                /*
+                 * Guardamos Persona porque los datos modificados
+                 * pertenecen a esta entidad.
+                 */
+                // La entidad Persona está administrada por JPA dentro
+                // de la misma transacción del servicio.
+                //
+                // No es necesario guardar Estudiante porque no
+                // modificamos ningún campo propio de Estudiante.
 
                 return estudiante;
         }
+
+        /*
+         * =========================================================
+         * CAMBIAR CONTRASEÑA
+         * =========================================================
+         */
 
         public void cambiarPassword(
                         String username,
@@ -151,5 +228,28 @@ public class EstudiantePortalService {
                                 passwordEncoder.encode(nuevaPassword));
 
                 usuarioRepository.save(usuario);
+        }
+
+        @Transactional(readOnly = true)
+        public EstudianteDashboardResponse obtenerDatosDashboard(String username) {
+
+                Estudiante estudiante = obtenerEstudianteAutenticado(username);
+
+                Persona persona = estudiante.getPersona();
+
+                return new EstudianteDashboardResponse(
+                                persona.getNombre(),
+                                persona.getApellido(),
+                                persona.getFoto(),
+                                estudiante.getCinturon().getNombre(),
+                                estudiante.getEstado());
+        }
+
+        public List<Asistencia> listarMisAsistenciasRecientes(String username) {
+
+                Estudiante estudiante = obtenerEstudianteAutenticado(username);
+
+                return asistenciaService.listarUltimasPorEstudiante(
+                                estudiante.getId());
         }
 }

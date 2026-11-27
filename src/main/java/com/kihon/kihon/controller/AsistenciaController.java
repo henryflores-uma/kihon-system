@@ -1,11 +1,15 @@
+
 package com.kihon.kihon.controller;
 
 import com.kihon.kihon.dto.AsistenciaRequest;
 import com.kihon.kihon.dto.AsistenciaResponse;
 import com.kihon.kihon.model.Asistencia;
 import com.kihon.kihon.service.AsistenciaService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -15,118 +19,261 @@ import java.util.List;
 @RequestMapping("/api/asistencias")
 public class AsistenciaController {
 
-    private final AsistenciaService asistenciaService;
+        private final AsistenciaService asistenciaService;
 
-    public AsistenciaController(
-            AsistenciaService asistenciaService) {
+        public AsistenciaController(AsistenciaService asistenciaService) {
+                this.asistenciaService = asistenciaService;
+        }
 
-        this.asistenciaService = asistenciaService;
-    }
+        // ==========================================
+        // REGISTRAR
+        // ==========================================
 
-    @PostMapping
-    public ResponseEntity<AsistenciaResponse> registrarAsistencia(
-            @RequestBody AsistenciaRequest request) {
+        @PostMapping
+        public ResponseEntity<AsistenciaResponse> registrarAsistencia(
+                        @RequestBody AsistenciaRequest request,
+                        Authentication authentication) {
 
-        Asistencia asistencia = asistenciaService.registrarAsistencia(
-                request.getEstudianteId(),
-                request.getGrupoId(),
-                request.getFecha(),
-                request.getHoraLlegada(),
-                request.getEstado(),
-                request.getObservacion());
+                Asistencia asistencia;
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(convertirAResponse(asistencia));
-    }
+                if (esSensei(authentication)) {
+                        asistencia = asistenciaService.registrarAsistenciaDeSensei(
+                                        request.getEstudianteId(),
+                                        request.getGrupoId(),
+                                        request.getFecha(),
+                                        request.getHoraLlegada(),
+                                        request.getEstado(),
+                                        request.getObservacion(),
+                                        authentication.getName());
+                } else {
+                        asistencia = asistenciaService.registrarAsistencia(
+                                        request.getEstudianteId(),
+                                        request.getGrupoId(),
+                                        request.getFecha(),
+                                        request.getHoraLlegada(),
+                                        request.getEstado(),
+                                        request.getObservacion());
+                }
 
-    @GetMapping("/estudiante/{estudianteId}")
-    public ResponseEntity<List<AsistenciaResponse>> listarPorEstudiante(
-            @PathVariable Long estudianteId) {
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(convertirAResponse(asistencia));
+        }
 
-        List<AsistenciaResponse> response = asistenciaService
-                .listarPorEstudiante(estudianteId)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
+        // ==========================================
+        // ACTUALIZAR
+        // ==========================================
 
-        return ResponseEntity.ok(response);
-    }
+        @PutMapping("/{id}")
+        public ResponseEntity<AsistenciaResponse> actualizarAsistencia(
+                        @PathVariable Long id,
+                        @RequestBody AsistenciaRequest request,
+                        Authentication authentication) {
 
-    @GetMapping("/grupo/{grupoId}")
-    public ResponseEntity<List<AsistenciaResponse>> listarPorGrupo(
-            @PathVariable Long grupoId) {
+                Asistencia asistencia;
 
-        List<AsistenciaResponse> response = asistenciaService
-                .listarPorGrupo(grupoId)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
+                if (esSensei(authentication)) {
+                        asistencia = asistenciaService.actualizarAsistenciaDeSensei(
+                                        id,
+                                        request.getEstudianteId(),
+                                        request.getGrupoId(),
+                                        request.getFecha(),
+                                        request.getHoraLlegada(),
+                                        request.getEstado(),
+                                        request.getObservacion(),
+                                        authentication.getName());
+                } else {
+                        asistencia = asistenciaService.actualizarAsistencia(
+                                        id,
+                                        request.getEstudianteId(),
+                                        request.getGrupoId(),
+                                        request.getFecha(),
+                                        request.getHoraLlegada(),
+                                        request.getEstado(),
+                                        request.getObservacion());
+                }
 
-        return ResponseEntity.ok(response);
-    }
+                return ResponseEntity.ok(convertirAResponse(asistencia));
+        }
 
-    @GetMapping("/fecha/{fecha}")
-    public ResponseEntity<List<AsistenciaResponse>> listarPorFecha(
-            @PathVariable LocalDate fecha) {
+        // ==========================================
+        // LISTAR POR ESTUDIANTE
+        // ==========================================
 
-        List<AsistenciaResponse> response = asistenciaService
-                .listarPorFecha(fecha)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
+        @GetMapping("/estudiante/{estudianteId}")
+        public ResponseEntity<List<AsistenciaResponse>> listarPorEstudiante(
+                        @PathVariable Long estudianteId,
+                        Authentication authentication) {
 
-        return ResponseEntity.ok(response);
-    }
+                List<Asistencia> asistencias;
 
-    @GetMapping("/estudiante/{estudianteId}/fecha/{fecha}")
-    public ResponseEntity<List<AsistenciaResponse>> listarPorEstudianteYFecha(
-            @PathVariable Long estudianteId,
-            @PathVariable LocalDate fecha) {
+                if (esSensei(authentication)) {
+                        asistencias = asistenciaService.listarPorEstudianteDeSensei(
+                                        estudianteId,
+                                        authentication.getName());
+                } else {
+                        asistencias = asistenciaService.listarPorEstudiante(estudianteId);
+                }
 
-        List<AsistenciaResponse> response = asistenciaService
-                .listarPorEstudianteYFecha(
-                        estudianteId,
-                        fecha)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
+                return ResponseEntity.ok(
+                                asistencias.stream()
+                                                .map(this::convertirAResponse)
+                                                .toList());
+        }
 
-        return ResponseEntity.ok(response);
-    }
+        // ==========================================
+        // LISTAR POR GRUPO
+        // ==========================================
 
-    @GetMapping("/grupo/{grupoId}/fecha/{fecha}")
-    public ResponseEntity<List<AsistenciaResponse>> listarPorGrupoYFecha(
-            @PathVariable Long grupoId,
-            @PathVariable LocalDate fecha) {
+        @GetMapping("/grupo/{grupoId}")
+        public ResponseEntity<List<AsistenciaResponse>> listarPorGrupo(
+                        @PathVariable Long grupoId,
+                        Authentication authentication) {
 
-        List<AsistenciaResponse> response = asistenciaService
-                .listarPorGrupoYFecha(
-                        grupoId,
-                        fecha)
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
+                List<Asistencia> asistencias;
 
-        return ResponseEntity.ok(response);
-    }
+                if (esSensei(authentication)) {
+                        asistencias = asistenciaService.listarPorGrupoDeSensei(
+                                        grupoId,
+                                        authentication.getName());
+                } else {
+                        asistencias = asistenciaService.listarPorGrupo(grupoId);
+                }
 
-    private AsistenciaResponse convertirAResponse(
-            Asistencia asistencia) {
+                return ResponseEntity.ok(
+                                asistencias.stream()
+                                                .map(this::convertirAResponse)
+                                                .toList());
+        }
 
-        String estudianteNombre = asistencia.getEstudiante().getNombre()
-                + " "
-                + asistencia.getEstudiante().getApellido();
+        // ==========================================
+        // LISTAR POR FECHA
+        // ==========================================
 
-        return new AsistenciaResponse(
-                asistencia.getId(),
-                asistencia.getEstudiante().getId(),
-                estudianteNombre,
-                asistencia.getGrupo().getId(),
-                asistencia.getGrupo().getNombre(),
-                asistencia.getFecha(),
-                asistencia.getHoraLlegada(),
-                asistencia.getEstado(),
-                asistencia.getObservacion());
-    }
+        @GetMapping("/fecha/{fecha}")
+        public ResponseEntity<List<AsistenciaResponse>> listarPorFecha(
+                        @PathVariable LocalDate fecha,
+                        Authentication authentication) {
+
+                List<Asistencia> asistencias;
+
+                if (esSensei(authentication)) {
+                        asistencias = asistenciaService.listarPorFechaDeSensei(
+                                        fecha,
+                                        authentication.getName());
+                } else {
+                        asistencias = asistenciaService.listarPorFecha(fecha);
+                }
+
+                return ResponseEntity.ok(
+                                asistencias.stream()
+                                                .map(this::convertirAResponse)
+                                                .toList());
+        }
+
+        // ==========================================
+        // ESTUDIANTE + FECHA
+        // ==========================================
+
+        @GetMapping("/estudiante/{estudianteId}/fecha/{fecha}")
+        public ResponseEntity<List<AsistenciaResponse>> listarPorEstudianteYFecha(
+                        @PathVariable Long estudianteId,
+                        @PathVariable LocalDate fecha,
+                        Authentication authentication) {
+
+                List<Asistencia> asistencias;
+
+                if (esSensei(authentication)) {
+                        asistencias = asistenciaService.listarPorEstudianteYFechaDeSensei(
+                                        estudianteId,
+                                        fecha,
+                                        authentication.getName());
+                } else {
+                        asistencias = asistenciaService.listarPorEstudianteYFecha(
+                                        estudianteId,
+                                        fecha);
+                }
+
+                return ResponseEntity.ok(
+                                asistencias.stream()
+                                                .map(this::convertirAResponse)
+                                                .toList());
+        }
+
+        // ==========================================
+        // GRUPO + FECHA
+        // ==========================================
+
+        @GetMapping("/grupo/{grupoId}/fecha/{fecha}")
+        public ResponseEntity<List<AsistenciaResponse>> listarPorGrupoYFecha(
+                        @PathVariable Long grupoId,
+                        @PathVariable LocalDate fecha,
+                        Authentication authentication) {
+
+                List<Asistencia> asistencias;
+
+                if (esSensei(authentication)) {
+                        asistencias = asistenciaService.listarPorGrupoYFechaDeSensei(
+                                        grupoId,
+                                        fecha,
+                                        authentication.getName());
+                } else {
+                        asistencias = asistenciaService.listarPorGrupoYFecha(
+                                        grupoId,
+                                        fecha);
+                }
+
+                return ResponseEntity.ok(
+                                asistencias.stream()
+                                                .map(this::convertirAResponse)
+                                                .toList());
+        }
+
+        // ==========================================
+        // IDENTIFICAR ROL
+        // ==========================================
+
+        private boolean esSensei(Authentication authentication) {
+
+                if (authentication == null
+                                || authentication.getAuthorities() == null) {
+                        return false;
+                }
+
+                for (GrantedAuthority authority : authentication.getAuthorities()) {
+
+                        if (authority != null
+                                        && "ROLE_SENSEI".equals(authority.getAuthority())) {
+                                return true;
+                        }
+                }
+
+                return false;
+        }
+
+        // ==========================================
+        // RESPONSE
+        // ==========================================
+
+        private AsistenciaResponse convertirAResponse(Asistencia asistencia) {
+
+                String estudianteNombre = asistencia.getEstudiante()
+                                .getPersona()
+                                .getNombre()
+                                + " "
+                                + asistencia.getEstudiante()
+                                                .getPersona()
+                                                .getApellido();
+
+                return new AsistenciaResponse(
+                                asistencia.getId(),
+                                asistencia.getEstudiante().getId(),
+                                estudianteNombre,
+                                asistencia.getGrupo().getId(),
+                                asistencia.getGrupo().getNombre(),
+                                asistencia.getFecha(),
+                                asistencia.getHoraLlegada(),
+                                asistencia.getEstado(),
+                                asistencia.getObservacion());
+        }
 }

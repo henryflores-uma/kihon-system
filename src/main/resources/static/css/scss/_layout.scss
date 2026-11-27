@@ -5,8 +5,26 @@
 .container {
     width: 100%;
     max-width: 1200px;
+
     margin: 0 auto;
+
     padding: 0 1.5rem;
+}
+
+
+// ==========================================
+// CONTENEDOR DE PÁGINA
+// ==========================================
+
+.page-container {
+    width: 100%;
+    max-width: 1400px;
+
+    min-height: 100vh;
+
+    margin: 0 auto;
+
+    padding: 1.5rem 2rem;
 }
 
 
@@ -16,11 +34,16 @@
 
 .app-layout {
     min-height: 100vh;
+
     display: flex;
 }
 
+
 .main-content {
     flex: 1;
+
+    min-width: 0;
+
     padding: 2rem;
 }
 
@@ -33,10 +56,17 @@
     width: 250px;
     min-height: 100vh;
 
+    flex-shrink: 0;
+
     background-color: $color-black;
     color: $color-white;
 
     padding: 1.5rem;
+
+
+    // --------------------------------------
+    // LOGO
+    // --------------------------------------
 
     &__logo {
         margin-bottom: 2rem;
@@ -45,25 +75,41 @@
         font-weight: 700;
     }
 
+
+    // --------------------------------------
+    // NAVEGACIÓN
+    // --------------------------------------
+
     &__nav {
         display: flex;
         flex-direction: column;
+
         gap: 0.5rem;
     }
 
+
+    // --------------------------------------
+    // ENLACES
+    // --------------------------------------
+
     &__link {
         display: block;
+
         padding: 0.75rem 1rem;
 
         border-radius: 6px;
 
         color: $color-white;
 
+        text-decoration: none;
+
         transition: 0.2s ease;
+
 
         &:hover {
             background-color: $color-gray-900;
         }
+
 
         &--active {
             background-color: $color-red;
@@ -73,16 +119,687 @@
 
 
 // ==========================================
-// CARDS
+// ACORDEÓN DEL SIDEBAR
+// ==========================================
+
+.sidebar__accordion {
+    width: 100%;
+}
+
+
+// ------------------------------------------
+// BOTÓN DEL ACORDEÓN
+// ------------------------------------------
+
+.sidebar__accordion-button {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0.75rem 1rem;
+
+    border: none;
+    border-radius: 6px;
+
+    background-color: transparent;
+
+    color: $color-white;
+
+    font-family: $font-family-base;
+    font-size: inherit;
+    font-weight: 400;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+
+
+    &:hover {
+        background-color: $color-gray-900;
+    }
+
+
+    &[aria-expanded="true"] {
+        background-color: $color-gray-900;
+    }
+
+
+    &--open {
+        background-color: $color-gray-900;
+    }
+
+
+    &--active {
+        background-color: $color-gray-900;
+    }
+}
+
+
+// ------------------------------------------
+// FLECHA
+// ------------------------------------------
+
+.sidebar__accordion-arrow {
+    flex-shrink: 0;
+
+    font-size: 0.65rem;
+
+    transition:
+        transform 0.2s ease;
+}
+
+
+.sidebar__accordion-button[aria-expanded="true"] .sidebar__accordion-arrow {
+    transform: rotate(0deg);
+}
+
+
+// ------------------------------------------
+// SUBMENÚ
+// ------------------------------------------
+
+.sidebar__submenu {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.25rem;
+
+    margin-left: 0.5rem;
+    margin-top: 0.25rem;
+
+    padding-left: 0.75rem;
+
+    border-left: 1px solid $color-gray-900;
+}
+
+
+.sidebar__submenu[hidden] {
+    display: none;
+}
+
+
+.sidebar__submenu--open {
+    animation: sidebarSubmenuOpen 0.2s ease;
+}
+
+
+.sidebar__submenu .sidebar__link {
+    font-size: 0.9rem;
+}
+
+
+// ------------------------------------------
+// ANIMACIÓN DEL SUBMENÚ
+// ------------------------------------------
+
+@keyframes sidebarSubmenuOpen {
+
+    from {
+        opacity: 0;
+
+        transform: translateY(-4px);
+    }
+
+
+    to {
+        opacity: 1;
+
+        transform: translateY(0);
+    }
+}
+
+
+// ==========================================
+// MENÚ MÓVIL
+// ==========================================
+
+.mobile-nav {
+    display: none;
+}
+
+
+.mobile-menu-button {
+    display: none;
+}
+
+
+.mobile-menu-overlay {
+    display: none;
+}
+
+
+// ==========================================
+// TOPBAR
+// ==========================================
+
+.topbar {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0.75rem 0;
+
+    margin-bottom: 2rem;
+
+    border-bottom: 1px solid $color-gray-200;
+
+
+    // --------------------------------------
+    // ROL
+    // --------------------------------------
+
+    &__role {
+        display: flex;
+        flex-direction: column;
+
+        gap: 0.15rem;
+    }
+
+
+    &__role-label {
+        font-size: 0.75rem;
+
+        color: $color-gray-600;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.05em;
+    }
+
+
+    // --------------------------------------
+    // ACCIONES
+    // --------------------------------------
+
+    &__actions {
+        display: flex;
+        align-items: center;
+
+        gap: 1rem;
+    }
+
+
+    // --------------------------------------
+    // NOTIFICACIONES
+    // --------------------------------------
+
+    &__notification {
+        position: relative;
+
+        width: 40px;
+        height: 40px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border: none;
+        border-radius: 50%;
+
+        background-color: $color-gray-100;
+
+        cursor: pointer;
+
+        font-size: 1rem;
+
+        transition: 0.2s ease;
+
+
+        &:hover {
+            background-color: $color-gray-200;
+        }
+    }
+
+
+    &__notification-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        line-height: 1;
+    }
+
+
+    &__notification-count {
+        position: absolute;
+
+        top: -2px;
+        right: -2px;
+
+        min-width: 18px;
+        height: 18px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 0 4px;
+
+        border-radius: 999px;
+
+        background-color: $color-red;
+        color: $color-white;
+
+        font-size: 0.65rem;
+        font-weight: 700;
+
+        line-height: 1;
+    }
+
+
+    // --------------------------------------
+    // PERFIL
+    // --------------------------------------
+
+    &__profile {
+        position: relative;
+    }
+
+
+    &__profile-button {
+        display: flex;
+        align-items: center;
+
+        gap: 0.75rem;
+
+        padding: 0.4rem 0.5rem;
+
+        border: none;
+        border-radius: 8px;
+
+        background-color: transparent;
+
+        cursor: pointer;
+
+        transition: 0.2s ease;
+
+
+        &:hover {
+            background-color: $color-gray-100;
+        }
+    }
+
+
+    // --------------------------------------
+    // AVATAR
+    // --------------------------------------
+
+    &__avatar {
+        width: 40px;
+        height: 40px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 50%;
+
+        background-color: $color-red;
+        color: $color-white;
+
+        font-weight: 700;
+    }
+
+
+    // --------------------------------------
+    // INFORMACIÓN DEL PERFIL
+    // --------------------------------------
+
+    &__profile-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+        line-height: 1.2;
+
+
+        strong {
+            font-size: 0.9rem;
+
+            color: $color-black;
+        }
+
+
+        span {
+            margin-top: 0.15rem;
+
+            font-size: 0.75rem;
+
+            color: $color-gray-600;
+        }
+    }
+
+
+    // --------------------------------------
+    // FLECHA
+    // --------------------------------------
+
+    &__profile-arrow {
+        font-size: 0.7rem;
+
+        color: $color-gray-600;
+    }
+
+
+    // --------------------------------------
+    // MENÚ DEL PERFIL
+    // --------------------------------------
+
+    &__profile-menu {
+        position: absolute;
+
+        top: calc(100% + 0.5rem);
+        right: 0;
+
+        min-width: 180px;
+
+        padding: 0.5rem;
+
+        background-color: $color-white;
+
+        border: 1px solid $color-gray-200;
+        border-radius: 8px;
+
+        box-shadow:
+            0 8px 24px rgba(0, 0, 0, 0.12);
+
+        z-index: 100;
+    }
+
+
+    &__profile-menu-item {
+        width: 100%;
+
+        display: block;
+
+        padding: 0.7rem 0.8rem;
+
+        border: none;
+        border-radius: 6px;
+
+        background-color: transparent;
+
+        color: $color-black;
+
+        text-align: left;
+        text-decoration: none;
+
+        font-family: $font-family-base;
+        font-size: 0.875rem;
+
+        cursor: pointer;
+
+        transition: 0.2s ease;
+
+
+        &:hover {
+            background-color: $color-gray-100;
+        }
+
+
+        &--danger {
+            color: $color-red;
+        }
+    }
+}
+
+
+// ==========================================
+// HEADER DE DASHBOARD
+// ==========================================
+
+.dashboard-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    margin-bottom: 2rem;
+
+
+    h1 {
+        margin: 0;
+
+        color: $color-black;
+
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+
+    p {
+        margin: 0.5rem 0 0;
+
+        color: $color-gray-600;
+
+        font-size: 0.95rem;
+    }
+}
+
+
+// ==========================================
+// ETIQUETA DE SECCIÓN
+// ==========================================
+
+.section-kicker {
+    display: block;
+
+    margin-bottom: 0.4rem;
+
+    color: $color-red;
+
+    font-size: 0.75rem;
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.08em;
+}
+
+
+// ==========================================
+// SECCIONES DEL DASHBOARD
+// ==========================================
+
+.dashboard-section {
+    margin-bottom: 2rem;
+
+    padding: 1.5rem;
+
+    background-color: $color-white;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.06);
+
+
+    h2 {
+        margin: 0;
+
+        color: $color-black;
+
+        font-size: 1.2rem;
+    }
+
+
+    p {
+        margin: 0.35rem 0 0;
+
+        color: $color-gray-600;
+
+        font-size: 0.875rem;
+    }
+
+
+    &--session {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 1rem;
+    }
+}
+
+
+// ==========================================
+// HEADER DE SECCIÓN
+// ==========================================
+
+.section-header {
+    margin-bottom: 1.5rem;
+}
+
+
+// ==========================================
+// ACCIONES DEL DASHBOARD
+// ==========================================
+
+.dashboard-actions {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 1rem;
+}
+
+
+// ==========================================
+// CARDS DEL DASHBOARD
+// ==========================================
+
+.dashboard-card {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 1rem;
+
+    min-height: 110px;
+
+    padding: 1.25rem;
+
+    background-color: $color-white;
+
+    border: 1px solid $color-gray-200;
+    border-radius: 10px;
+
+    color: $color-black;
+
+    text-decoration: none;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+
+
+    &:hover {
+        transform: translateY(-2px);
+
+        border-color: $color-gray-200;
+
+        box-shadow:
+            0 6px 18px rgba(0, 0, 0, 0.08);
+    }
+
+
+    &__icon {
+        width: 44px;
+        height: 44px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 8px;
+
+        background-color: $color-gray-100;
+
+        font-size: 1.25rem;
+    }
+
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+
+        gap: 0.35rem;
+
+
+        strong {
+            font-size: 0.95rem;
+
+            color: $color-black;
+        }
+
+
+        small {
+            color: $color-gray-600;
+
+            font-size: 0.78rem;
+
+            line-height: 1.4;
+        }
+    }
+
+
+    &--primary {
+        border-color: $color-red;
+
+
+        &:hover {
+            border-color: $color-red;
+        }
+
+
+        .dashboard-card__icon {
+            background-color: $color-red;
+
+            color: $color-white;
+        }
+    }
+
+
+    &--accent {
+        border-color: $color-yellow;
+
+
+        &:hover {
+            border-color: $color-yellow;
+        }
+
+
+        .dashboard-card__icon {
+            background-color: $color-yellow;
+
+            color: $color-black;
+        }
+    }
+}
+
+
+// ==========================================
+// CARDS GENERALES
 // ==========================================
 
 .card {
     background-color: $color-white;
+
     border-radius: 8px;
 
     padding: 1.5rem;
 
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 
@@ -92,15 +809,19 @@
 
 .grid {
     display: grid;
+
     gap: 1.5rem;
+
 
     &--2 {
         grid-template-columns: repeat(2, 1fr);
     }
 
+
     &--3 {
         grid-template-columns: repeat(3, 1fr);
     }
+
 
     &--4 {
         grid-template-columns: repeat(4, 1fr);
@@ -109,7 +830,19 @@
 
 
 // ==========================================
-// RESPONSIVE
+// RESPONSIVE GENERAL
+// ==========================================
+
+@media (max-width: 1100px) {
+
+    .dashboard-actions {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+
+// ==========================================
+// TABLET
 // ==========================================
 
 @media (max-width: 900px) {
@@ -118,29 +851,831 @@
         width: 210px;
     }
 
+
     .grid--4 {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
-@media (max-width: 700px) {
 
-    .app-layout {
-        flex-direction: column;
-    }
+// ==========================================
+// TABLET PEQUEÑA
+// ==========================================
 
-    .sidebar {
-        width: 100%;
-        min-height: auto;
-    }
+@media (max-width: 800px) {
 
-    .main-content {
+    .page-container {
         padding: 1rem;
     }
+
+
+    .dashboard-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+
+    .topbar__profile-info {
+        display: none;
+    }
+
+
+    .dashboard-section--session {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+}
+
+
+// ==========================================
+// MENÚ MÓVIL
+// ==========================================
+
+@media (max-width: 700px) {
+
+    // --------------------------------------
+    // LAYOUT
+    // --------------------------------------
+
+    .app-layout {
+        display: block;
+
+        min-height: 100vh;
+    }
+
+
+    .main-content {
+        width: 100%;
+
+        padding: 1rem;
+    }
+
+
+    // --------------------------------------
+    // CABECERA MÓVIL
+    // --------------------------------------
+
+    .mobile-nav {
+        width: 100%;
+
+        display: flex;
+        align-items: center;
+
+        gap: 0.75rem;
+
+        margin-bottom: 1rem;
+
+        position: relative;
+
+        z-index: 1002;
+    }
+
+
+    // --------------------------------------
+    // OCULTAR CABECERA AL ABRIR MENÚ
+    // --------------------------------------
+
+    .mobile-nav--hidden {
+        display: none;
+    }
+
+
+    .mobile-nav__logo {
+        font-size: 1.1rem;
+
+        font-weight: 700;
+
+        letter-spacing: 0.05em;
+    }
+
+
+    // --------------------------------------
+    // BOTÓN HAMBURGUESA
+    // --------------------------------------
+
+    .mobile-menu-button {
+        width: 44px;
+        height: 44px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 0;
+
+        border: none;
+        border-radius: 6px;
+
+        background-color: $color-black;
+
+        color: $color-white;
+
+        font-size: 1.35rem;
+
+        line-height: 1;
+
+        cursor: pointer;
+
+        transition: 0.2s ease;
+
+
+        &:hover {
+            background-color: $color-gray-900;
+        }
+
+
+        &:focus-visible {
+            outline: 2px solid $color-red;
+
+            outline-offset: 2px;
+        }
+    }
+
+
+    // --------------------------------------
+    // SIDEBAR MÓVIL
+    // --------------------------------------
+
+    .sidebar {
+        position: fixed;
+
+        top: 0;
+        left: 0;
+
+        z-index: 1000;
+
+        width: 280px;
+        height: 100vh;
+
+        min-height: 100vh;
+
+        padding: 1.5rem;
+
+        overflow-y: auto;
+
+        transform: translateX(-100%);
+
+        transition:
+            transform 0.25s ease;
+
+        box-shadow: none;
+    }
+
+
+    .sidebar.sidebar--open {
+        transform: translateX(0);
+
+        box-shadow:
+            8px 0 24px rgba(0, 0, 0, 0.18);
+    }
+
+
+    // --------------------------------------
+    // OVERLAY
+    // --------------------------------------
+
+    .mobile-menu-overlay {
+        position: fixed;
+
+        inset: 0;
+
+        z-index: 999;
+
+        display: block;
+
+        background-color:
+            rgba(0, 0, 0, 0.45);
+
+        opacity: 0;
+
+        pointer-events: none;
+
+        transition:
+            opacity 0.25s ease;
+    }
+
+
+    .mobile-menu-overlay[hidden] {
+        display: none;
+    }
+
+
+    .mobile-menu-overlay--visible {
+        opacity: 1;
+
+        pointer-events: auto;
+    }
+
+
+    // --------------------------------------
+    // SUBMENÚ MÓVIL
+    // --------------------------------------
+
+    .sidebar__submenu {
+        margin-left: 0.5rem;
+
+        padding-left: 0.5rem;
+    }
+
+
+    // --------------------------------------
+    // BLOQUEAR SCROLL
+    // --------------------------------------
+
+    body.mobile-menu-open {
+        overflow: hidden;
+    }
+
+
+    // --------------------------------------
+    // TOPBAR
+    // --------------------------------------
+
+    .topbar__profile-info {
+        display: none;
+    }
+
+
+    // --------------------------------------
+    // GRID GENERAL
+    // --------------------------------------
 
     .grid--2,
     .grid--3,
     .grid--4 {
         grid-template-columns: 1fr;
+    }
+}
+
+
+// ==========================================
+// MÓVIL PEQUEÑO
+// ==========================================
+
+@media (max-width: 600px) {
+
+    .dashboard-header {
+        flex-direction: column;
+    }
+
+
+    .dashboard-actions {
+        grid-template-columns: 1fr;
+    }
+
+
+    .topbar {
+        align-items: flex-start;
+    }
+
+
+    .topbar__role {
+        max-width: 50%;
+    }
+
+
+    .topbar__actions {
+        gap: 0.5rem;
+    }
+}
+
+
+// ==========================================
+// DASHBOARD ADMINISTRACIÓN
+// ==========================================
+
+.dashboard-kpis {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 1rem;
+}
+
+
+.dashboard-kpi {
+    display: flex;
+    align-items: center;
+
+    gap: 1rem;
+
+    min-height: 130px;
+
+    padding: 1.25rem;
+
+    background-color: $color-white;
+
+    border: 1px solid $color-gray-200;
+    border-radius: 10px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.05);
+
+
+    &__icon {
+        width: 52px;
+        height: 52px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 10px;
+
+        background-color: $color-gray-100;
+
+        font-size: 1.4rem;
+    }
+
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+
+        gap: 0.2rem;
+    }
+
+
+    &__label {
+        color: $color-gray-600;
+
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+
+    strong {
+        color: $color-black;
+
+        font-size: 2rem;
+
+        line-height: 1.1;
+    }
+
+
+    small {
+        color: $color-gray-600;
+
+        font-size: 0.75rem;
+    }
+
+
+    &--primary {
+        border-top: 3px solid $color-red;
+
+
+        .dashboard-kpi__icon {
+            background-color: $color-red;
+
+            color: $color-white;
+        }
+    }
+
+
+    &--accent {
+        border-top: 3px solid $color-yellow;
+
+
+        .dashboard-kpi__icon {
+            background-color: $color-yellow;
+
+            color: $color-black;
+        }
+    }
+}
+
+
+// ==========================================
+// GRID DE GRÁFICOS
+// ==========================================
+
+.dashboard-grid {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 2fr) minmax(320px, 1fr);
+
+    gap: 1.5rem;
+
+    margin-bottom: 2rem;
+}
+
+
+.dashboard-chart-card {
+    min-width: 0;
+}
+
+
+.dashboard-chart-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 1rem;
+}
+
+
+// ==========================================
+// FILTRO DEL GRÁFICO
+// ==========================================
+
+.dashboard-filter {
+    min-width: 180px;
+
+
+    .form-label {
+        display: block;
+
+        margin-bottom: 0.4rem;
+
+        color: $color-gray-600;
+
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+
+    .form-input {
+        width: 100%;
+
+        min-height: 38px;
+
+        padding: 0.5rem 0.7rem;
+
+        border: 1px solid $color-gray-200;
+        border-radius: 6px;
+
+        background-color: $color-white;
+
+        color: $color-black;
+
+        font-family: $font-family-base;
+        font-size: 0.85rem;
+
+        outline: none;
+
+        cursor: pointer;
+
+
+        &:focus {
+            border-color: $color-red;
+        }
+    }
+}
+
+
+// ==========================================
+// CONTENEDOR DE GRÁFICOS
+// ==========================================
+
+.dashboard-chart {
+    position: relative;
+
+    width: 100%;
+    height: 320px;
+
+    margin-top: 1rem;
+
+
+    canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+
+    &--donut {
+        height: 320px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+
+        canvas {
+            max-width: 320px;
+            max-height: 320px;
+        }
+    }
+}
+
+
+// ==========================================
+// ESTADO DE CLASES
+// ==========================================
+
+.class-status-grid {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 1rem;
+}
+
+
+.class-status-card {
+    padding: 1.25rem;
+
+    background-color: $color-white;
+
+    border: 1px solid $color-gray-200;
+    border-radius: 10px;
+
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 1rem;
+
+        margin-bottom: 1.25rem;
+    }
+
+
+    &__label {
+        color: $color-gray-600;
+
+        font-size: 0.75rem;
+        font-weight: 700;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.06em;
+    }
+
+
+    &__content {
+
+        h3 {
+            margin: 0 0 0.5rem;
+
+            color: $color-black;
+
+            font-size: 1.1rem;
+        }
+
+
+        p {
+            margin: 0 0 0.35rem;
+
+            color: $color-gray-600;
+
+            font-size: 0.85rem;
+        }
+
+
+        span {
+            color: $color-gray-600;
+
+            font-size: 0.8rem;
+        }
+    }
+}
+
+
+// ==========================================
+// ESTADO DE LA CLASE
+// ==========================================
+
+.class-status-badge {
+    display: inline-flex;
+    align-items: center;
+
+    min-height: 28px;
+
+    padding: 0.3rem 0.65rem;
+
+    border-radius: 999px;
+
+    font-size: 0.72rem;
+    font-weight: 700;
+
+
+    &--idle {
+        background-color: $color-gray-100;
+
+        color: $color-gray-600;
+    }
+
+
+    &--active {
+        background-color: #E8F7EE;
+
+        color: #16803C;
+    }
+}
+
+
+// ==========================================
+// HORARIO DEL DÍA
+// ==========================================
+
+.dashboard-schedule {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.75rem;
+}
+
+
+.dashboard-schedule__item {
+    display: grid;
+
+    grid-template-columns:
+        100px minmax(0, 1fr) auto;
+
+    align-items: center;
+
+    gap: 1rem;
+
+    padding: 1rem;
+
+    border: 1px solid $color-gray-200;
+    border-radius: 8px;
+
+    background-color: $color-white;
+
+    transition:
+        background-color 0.2s ease;
+
+
+    &:hover {
+        background-color: $color-gray-100;
+    }
+}
+
+
+.dashboard-schedule__time {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.15rem;
+
+
+    strong {
+        color: $color-black;
+
+        font-size: 0.9rem;
+    }
+
+
+    span {
+        color: $color-gray-600;
+
+        font-size: 0.75rem;
+    }
+}
+
+
+.dashboard-schedule__info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.2rem;
+
+    min-width: 0;
+
+
+    strong {
+        overflow: hidden;
+
+        color: $color-black;
+
+        font-size: 0.9rem;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+    }
+
+
+    span {
+        overflow: hidden;
+
+        color: $color-gray-600;
+
+        font-size: 0.78rem;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+    }
+}
+
+
+.dashboard-schedule__status {
+    padding: 0.3rem 0.6rem;
+
+    border-radius: 999px;
+
+    background-color: $color-gray-100;
+
+    color: $color-gray-600;
+
+    font-size: 0.7rem;
+    font-weight: 700;
+
+    text-transform: uppercase;
+}
+
+
+.dashboard-schedule__empty {
+    padding: 2rem;
+
+    border: 1px dashed $color-gray-200;
+
+    border-radius: 8px;
+
+    color: $color-gray-600;
+
+    text-align: center;
+
+    font-size: 0.85rem;
+}
+
+
+// ==========================================
+// RESPONSIVE DASHBOARD
+// ==========================================
+
+@media (max-width: 1000px) {
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .dashboard-chart--donut {
+        height: 300px;
+    }
+}
+
+
+// ==========================================
+// DASHBOARD TABLET
+// ==========================================
+
+@media (max-width: 800px) {
+
+    .dashboard-kpis {
+        grid-template-columns: 1fr;
+    }
+
+
+    .class-status-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .dashboard-chart-card__header {
+        flex-direction: column;
+    }
+
+
+    .dashboard-filter {
+        width: 100%;
+
+        min-width: 0;
+    }
+}
+
+
+// ==========================================
+// DASHBOARD MÓVIL
+// ==========================================
+
+@media (max-width: 600px) {
+
+    .dashboard-kpi {
+        min-height: 110px;
+    }
+
+
+    .dashboard-kpi strong {
+        font-size: 1.6rem;
+    }
+
+
+    .dashboard-chart {
+        height: 260px;
+    }
+
+
+    .dashboard-chart--donut {
+        height: 260px;
+    }
+
+
+    .dashboard-schedule__item {
+        grid-template-columns: 1fr;
+
+        gap: 0.6rem;
+    }
+
+
+    .dashboard-schedule__status {
+        width: fit-content;
     }
 }

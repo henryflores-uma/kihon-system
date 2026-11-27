@@ -1,29 +1,27 @@
 package com.kihon.kihon.dto;
 
 import java.time.LocalTime;
+import java.util.List;
 
 public class GrupoEstudianteResponse {
 
     private Long id;
     private String nombre;
     private String descripcion;
-    private LocalTime horaInicio;
-    private LocalTime horaFin;
+    private List<HorarioResponse> horarios;
     private String estado;
 
     public GrupoEstudianteResponse(
             Long id,
             String nombre,
             String descripcion,
-            LocalTime horaInicio,
-            LocalTime horaFin,
+            List<HorarioResponse> horarios,
             String estado) {
 
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
-        this.horaInicio = horaInicio;
-        this.horaFin = horaFin;
+        this.horarios = horarios;
         this.estado = estado;
     }
 
@@ -39,15 +37,17 @@ public class GrupoEstudianteResponse {
         return descripcion;
     }
 
-    public LocalTime getHoraInicio() {
-        return horaInicio;
-    }
-
-    public LocalTime getHoraFin() {
-        return horaFin;
+    public List<HorarioResponse> getHorarios() {
+        return horarios;
     }
 
     public String getEstado() {
         return estado;
+    }
+
+    public record HorarioResponse(
+            String diaSemana,
+            LocalTime horaInicio,
+            LocalTime horaFin) {
     }
 }

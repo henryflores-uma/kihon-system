@@ -1,8 +1,6 @@
 package com.kihon.kihon.model;
 
 import jakarta.persistence.*;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,41 +11,48 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /*
+     * =========================================================
+     * PERSONA
+     * =========================================================
+     *
+     * Los datos personales pertenecen a Persona.
+     */
+
+    @OneToOne
+    @JoinColumn(name = "persona_id", nullable = false, unique = true)
+    private Persona persona;
+
+    /*
+     * =========================================================
+     * AUTENTICACIÓN
+     * =========================================================
+     */
+
     @Column(nullable = false, unique = true)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private String nombre;
-
-    @Column(nullable = false)
-    private String apellido;
-
-    @Column(name = "tipo_documento", nullable = false)
-    private String tipoDocumento;
-
-    @Column(name = "numero_documento", nullable = false, unique = true)
-    private String numeroDocumento;
-
-    @Column(nullable = false)
-    private String telefono;
-
-    @Column(name = "fecha_nacimiento", nullable = false)
-    private LocalDate fechaNacimiento;
-
-    @Column(nullable = false)
-    private String genero;
-
-    @Column(nullable = false, unique = true)
-    private String correo;
+    /*
+     * =========================================================
+     * ESTADO
+     * =========================================================
+     *
+     * PENDIENTE
+     * ACTIVO
+     * INACTIVO
+     */
 
     @Column(nullable = false)
     private String estado = "PENDIENTE";
 
-    @Column
-    private String foto;
+    /*
+     * =========================================================
+     * DATOS DEL SISTEMA
+     * =========================================================
+     */
 
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro;
@@ -56,23 +61,20 @@ public class Usuario {
     @JoinColumn(name = "rol_id", nullable = false)
     private Rol rol;
 
-    @OneToOne
-    @JoinColumn(name = "estudiante_id", unique = true)
-    private Estudiante estudiante;
+    /*
+     * =========================================================
+     * CONSTRUCTOR
+     * =========================================================
+     */
 
     public Usuario() {
     }
 
-    @PrePersist
-    protected void alCrear() {
-        if (fechaRegistro == null) {
-            fechaRegistro = LocalDateTime.now();
-        }
-
-        if (estado == null) {
-            estado = "PENDIENTE";
-        }
-    }
+    /*
+     * =========================================================
+     * ID
+     * =========================================================
+     */
 
     public Long getId() {
         return id;
@@ -82,6 +84,26 @@ public class Usuario {
         this.id = id;
     }
 
+    /*
+     * =========================================================
+     * PERSONA
+     * =========================================================
+     */
+
+    public Persona getPersona() {
+        return persona;
+    }
+
+    public void setPersona(Persona persona) {
+        this.persona = persona;
+    }
+
+    /*
+     * =========================================================
+     * USERNAME
+     * =========================================================
+     */
+
     public String getUsername() {
         return username;
     }
@@ -89,6 +111,12 @@ public class Usuario {
     public void setUsername(String username) {
         this.username = username;
     }
+
+    /*
+     * =========================================================
+     * PASSWORD
+     * =========================================================
+     */
 
     public String getPassword() {
         return password;
@@ -98,69 +126,11 @@ public class Usuario {
         this.password = password;
     }
 
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getApellido() {
-        return apellido;
-    }
-
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
-    }
-
-    public String getTipoDocumento() {
-        return tipoDocumento;
-    }
-
-    public void setTipoDocumento(String tipoDocumento) {
-        this.tipoDocumento = tipoDocumento;
-    }
-
-    public String getNumeroDocumento() {
-        return numeroDocumento;
-    }
-
-    public void setNumeroDocumento(String numeroDocumento) {
-        this.numeroDocumento = numeroDocumento;
-    }
-
-    public String getTelefono() {
-        return telefono;
-    }
-
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
-    }
-
-    public LocalDate getFechaNacimiento() {
-        return fechaNacimiento;
-    }
-
-    public void setFechaNacimiento(LocalDate fechaNacimiento) {
-        this.fechaNacimiento = fechaNacimiento;
-    }
-
-    public String getGenero() {
-        return genero;
-    }
-
-    public void setGenero(String genero) {
-        this.genero = genero;
-    }
-
-    public String getCorreo() {
-        return correo;
-    }
-
-    public void setCorreo(String correo) {
-        this.correo = correo;
-    }
+    /*
+     * =========================================================
+     * ESTADO
+     * =========================================================
+     */
 
     public String getEstado() {
         return estado;
@@ -170,13 +140,11 @@ public class Usuario {
         this.estado = estado;
     }
 
-    public String getFoto() {
-        return foto;
-    }
-
-    public void setFoto(String foto) {
-        this.foto = foto;
-    }
+    /*
+     * =========================================================
+     * FECHA DE REGISTRO
+     * =========================================================
+     */
 
     public LocalDateTime getFechaRegistro() {
         return fechaRegistro;
@@ -186,6 +154,12 @@ public class Usuario {
         this.fechaRegistro = fechaRegistro;
     }
 
+    /*
+     * =========================================================
+     * ROL
+     * =========================================================
+     */
+
     public Rol getRol() {
         return rol;
     }
@@ -194,11 +168,21 @@ public class Usuario {
         this.rol = rol;
     }
 
-    public Estudiante getEstudiante() {
-        return estudiante;
-    }
+    /*
+     * =========================================================
+     * PRE-PERSIST
+     * =========================================================
+     */
 
-    public void setEstudiante(Estudiante estudiante) {
-        this.estudiante = estudiante;
+    @PrePersist
+    protected void alCrear() {
+
+        if (fechaRegistro == null) {
+            fechaRegistro = LocalDateTime.now();
+        }
+
+        if (estado == null) {
+            estado = "PENDIENTE";
+        }
     }
 }

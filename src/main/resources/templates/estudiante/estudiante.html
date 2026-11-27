@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Panel personal del estudiante de Kihon.">
+
+    <title>Kihon | Dashboard Estudiante</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+
+    <main class="app-layout estudiante-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar" id="sidebarMenu">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav" aria-label="Navegación principal"></nav>
+
+        </aside>
+
+
+        <!-- OVERLAY MENÚ MÓVIL -->
+
+        <div id="mobileMenuOverlay" class="mobile-menu-overlay" hidden></div>
+
+
+        <!-- CONTENIDO PRINCIPAL -->
+
+        <section class="main-content">
+
+            <!-- NAVEGACIÓN MÓVIL -->
+
+            <div class="mobile-nav">
+
+                <button type="button" class="mobile-menu-button" id="mobileMenuButton" aria-label="Abrir menú"
+                    aria-expanded="false" aria-controls="sidebarMenu">
+
+                    <span id="mobileMenuIcon">☰</span>
+
+                </button>
+
+                <strong class="mobile-nav__logo">
+                    KIHON
+                </strong>
+
+            </div>
+
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <div class="topbar__role">
+
+                    <span class="topbar__role-label">
+                        Rol
+                    </span>
+
+                    <strong id="roleDisplay">
+                        Estudiante
+                    </strong>
+
+                </div>
+
+
+                <div class="topbar__actions">
+
+                    <!-- NOTIFICACIONES -->
+
+                    <button type="button" class="topbar__notification" id="notificationButton"
+                        aria-label="Notificaciones">
+
+                        <span class="topbar__notification-icon">
+                            🔔
+                        </span>
+
+                        <span id="notificationCount" class="topbar__notification-count" hidden>
+                            0
+                        </span>
+
+                    </button>
+
+
+                    <!-- PERFIL -->
+
+                    <div class="topbar__profile" id="profileMenuContainer">
+
+                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
+                            aria-expanded="false" aria-controls="profileMenu">
+
+                            <div class="topbar__avatar" id="userProfileAvatar">
+
+                                <span id="userAvatarInitial">
+                                    U
+                                </span>
+
+                            </div>
+
+                            <div class="topbar__profile-info">
+
+                                <strong id="usernameDisplay">
+                                    Usuario
+                                </strong>
+
+                                <span id="profileRoleDisplay">
+                                    Estudiante
+                                </span>
+
+                            </div>
+
+                            <span class="topbar__profile-arrow">
+                                ▼
+                            </span>
+
+                        </button>
+
+
+                        <div class="topbar__profile-menu" id="profileMenu" hidden>
+
+                            <a href="/estudiante/perfil" class="topbar__profile-menu-item">
+
+                                Mi perfil
+
+                            </a>
+
+                            <button type="button" id="topbarLogoutButton"
+                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+
+                                Cerrar sesión
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- HEADER DASHBOARD -->
+
+            <section class="dashboard-header estudiante-header">
+
+                <div>
+
+                    <span class="section-kicker">
+                        Mi espacio personal
+                    </span>
+
+                    <h1>
+                        Mi dashboard
+                    </h1>
+
+                    <p>
+                        Consulta tu información, grupo de entrenamiento y progreso en karate.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- BIENVENIDA -->
+
+            <section class="dashboard-section estudiante-welcome">
+
+                <div class="estudiante-welcome__content">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            Academia de Karate Sunkku Sinchi
+                        </span>
+
+                        <h2 id="estudianteWelcomeTitle">
+                            Bienvenido a Kihon
+                        </h2>
+
+                        <p>
+                            Este es tu espacio personal. Aquí podrás consultar
+                            tus entrenamientos, asistencias y avance en karate.
+                        </p>
+
+                    </div>
+
+                    <div class="estudiante-welcome__icon" aria-hidden="true">
+                        🥋
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- MENSAJES -->
+
+            <div id="estudianteStatusMessage" class="estudiante-status-message" role="status" aria-live="polite" hidden>
+            </div>
+
+
+            <!-- RESUMEN PERSONAL -->
+
+            <section class="dashboard-section estudiante-section">
+
+                <div class="section-header">
+
+                    <span class="section-kicker">
+                        Mi información
+                    </span>
+
+                    <h2>
+                        Resumen personal
+                    </h2>
+
+                    <p>
+                        Información de tu actividad dentro de la academia.
+                    </p>
+
+                </div>
+
+
+                <div class="dashboard-kpis estudiante-kpis">
+
+                    <!-- GRUPO -->
+
+                    <article class="dashboard-kpi">
+
+                        <div class="dashboard-kpi__icon">
+                            👥
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Mi grupo
+                            </span>
+
+                            <strong id="estudianteGrupo">
+                                —
+                            </strong>
+
+                            <small>
+                                Grupo asignado
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- CINTURÓN -->
+
+                    <article class="dashboard-kpi dashboard-kpi--primary">
+
+                        <div class="dashboard-kpi__icon">
+                            🥋
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Mi cinturón
+                            </span>
+
+                            <strong id="estudianteCinturon">
+                                —
+                            </strong>
+
+                            <small>
+                                Grado actual
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- ASISTENCIAS -->
+
+                    <article class="dashboard-kpi dashboard-kpi--accent">
+
+                        <div class="dashboard-kpi__icon">
+                            📋
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Mis asistencias
+                            </span>
+
+                            <strong id="estudianteAsistencias">
+                                —
+                            </strong>
+
+                            <small>
+                                Registros de asistencia
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- PROGRESO -->
+
+                    <article class="dashboard-kpi estudiante-kpi--progress">
+
+                        <div class="dashboard-kpi__icon">
+                            📈
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Mi progreso
+                            </span>
+
+                            <strong id="estudianteProgreso">
+                                —
+                            </strong>
+
+                            <small>
+                                Seguimiento personal
+                            </small>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- MI GRUPO -->
+
+            <section class="dashboard-section estudiante-section">
+
+                <div class="section-header estudiante-section__heading">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            Mi entrenamiento
+                        </span>
+
+                        <h2>
+                            Mi grupo
+                        </h2>
+
+                        <p>
+                            Consulta la información y los horarios de tu grupo.
+                        </p>
+
+                    </div>
+
+                    <a href="/estudiante/grupos" class="btn btn--secondary">
+                        Ver mi grupo
+                    </a>
+
+                </div>
+
+
+                <div class="estudiante-panel">
+
+                    <div id="estudianteGrupoContainer" class="estudiante-panel__content" aria-live="polite">
+
+                        <p>
+                            La información de tu grupo aparecerá aquí.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- MI ACTIVIDAD -->
+
+            <section class="dashboard-section estudiante-section">
+
+                <div class="section-header estudiante-section__heading">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            Seguimiento personal
+                        </span>
+
+                        <h2>
+                            Mi actividad reciente
+                        </h2>
+
+                        <p>
+                            Consulta tus últimos registros de asistencia.
+                        </p>
+
+                    </div>
+
+                    <a href="/estudiante/asistencias" class="btn btn--secondary">
+                        Ver asistencias
+                    </a>
+
+                </div>
+
+
+                <div class="estudiante-panel">
+
+                    <div id="estudianteActividadContainer" class="estudiante-panel__content" aria-live="polite">
+
+                        <p>
+                            Tus registros recientes aparecerán aquí.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ACCIONES RÁPIDAS -->
+
+            <section class="dashboard-section estudiante-section">
+
+                <div class="section-header">
+
+                    <span class="section-kicker">
+                        Accesos directos
+                    </span>
+
+                    <h2>
+                        Mis accesos
+                    </h2>
+
+                    <p>
+                        Accede rápidamente a las principales secciones de tu portal.
+                    </p>
+
+                </div>
+
+
+                <div class="dashboard-actions estudiante-actions">
+
+                    <!-- GRUPOS -->
+
+                    <a href="/estudiante/grupos" class="dashboard-card dashboard-card--primary">
+
+                        <div class="dashboard-card__icon">
+                            🥋
+                        </div>
+
+                        <div class="dashboard-card__content">
+
+                            <strong>
+                                Mi grupo
+                            </strong>
+
+                            <small>
+                                Consulta tu grupo y horarios de entrenamiento.
+                            </small>
+
+                        </div>
+
+                    </a>
+
+
+                    <!-- ASISTENCIAS -->
+
+                    <a href="/estudiante/asistencias" class="dashboard-card dashboard-card--accent">
+
+                        <div class="dashboard-card__icon">
+                            📋
+                        </div>
+
+                        <div class="dashboard-card__content">
+
+                            <strong>
+                                Mis asistencias
+                            </strong>
+
+                            <small>
+                                Revisa tu historial de asistencia.
+                            </small>
+
+                        </div>
+
+                    </a>
+
+
+                    <!-- PERFIL -->
+
+                    <a href="/estudiante/perfil" class="dashboard-card">
+
+                        <div class="dashboard-card__icon">
+                            👤
+                        </div>
+
+                        <div class="dashboard-card__content">
+
+                            <strong>
+                                Mi perfil
+                            </strong>
+
+                            <small>
+                                Consulta tu información personal.
+                            </small>
+
+                        </div>
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- INFORMACIÓN DE SESIÓN -->
+
+            <section class="dashboard-section estudiante-session">
+
+                <div>
+
+                    <span class="section-kicker">
+                        Mi cuenta
+                    </span>
+
+                    <h2>
+                        Tu espacio en Kihon
+                    </h2>
+
+                    <p>
+                        Mantente al día con tus entrenamientos y continúa
+                        avanzando en tu formación en karate.
+                    </p>
+
+                </div>
+
+
+                <div class="estudiante-session__user">
+
+                    <div class="estudiante-session__avatar">
+
+                        <span id="estudianteSessionInitial">
+                            U
+                        </span>
+
+                    </div>
+
+                    <div>
+
+                        <strong id="estudianteSessionUsername">
+                            Usuario
+                        </strong>
+
+                        <span>
+                            Estudiante
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+
+    <!-- SCRIPTS -->
+
+    <script src="/js/topbar.js"></script>
+
+    <script src="/js/nav-acordeon.js"></script>
+
+    <script src="/js/estudiante.js"></script>
+
+</body>
+
+</html>

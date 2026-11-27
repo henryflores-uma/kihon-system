@@ -6,9 +6,16 @@ public class UsuarioResponse {
     private String username;
     private String nombre;
     private String apellido;
+    private String tipoDocumento;
+    private String numeroDocumento;
+    private String telefono;
+    private String fechaNacimiento;
+    private String genero;
     private String correo;
     private String rol;
     private String estado;
+    private String foto;
+    private Long estudianteId;
 
     public UsuarioResponse() {
     }
@@ -18,17 +25,31 @@ public class UsuarioResponse {
             String username,
             String nombre,
             String apellido,
+            String tipoDocumento,
+            String numeroDocumento,
+            String telefono,
+            String fechaNacimiento,
+            String genero,
             String correo,
             String rol,
-            String estado) {
+            String estado,
+            String foto,
+            Long estudianteId) {
 
         this.id = id;
         this.username = username;
         this.nombre = nombre;
         this.apellido = apellido;
+        this.tipoDocumento = tipoDocumento;
+        this.numeroDocumento = numeroDocumento;
+        this.telefono = telefono;
+        this.fechaNacimiento = fechaNacimiento;
+        this.genero = genero;
         this.correo = correo;
         this.rol = rol;
         this.estado = estado;
+        this.foto = foto;
+        this.estudianteId = estudianteId;
     }
 
     public Long getId() {
@@ -47,6 +68,26 @@ public class UsuarioResponse {
         return apellido;
     }
 
+    public String getTipoDocumento() {
+        return tipoDocumento;
+    }
+
+    public String getNumeroDocumento() {
+        return numeroDocumento;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public String getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public String getGenero() {
+        return genero;
+    }
+
     public String getCorreo() {
         return correo;
     }
@@ -57,5 +98,13 @@ public class UsuarioResponse {
 
     public String getEstado() {
         return estado;
+    }
+
+    public String getFoto() {
+        return foto;
+    }
+
+    public Long getEstudianteId() {
+        return estudianteId;
     }
 }

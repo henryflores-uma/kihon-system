@@ -4,6 +4,7 @@ import com.kihon.kihon.dto.EstudianteGrupoRequest;
 import com.kihon.kihon.dto.EstudianteGrupoResponse;
 import com.kihon.kihon.model.EstudianteGrupo;
 import com.kihon.kihon.service.EstudianteGrupoService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +24,9 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * ================================
+         * =========================================================
          * ASIGNAR ESTUDIANTE A GRUPO
-         * =================================
+         * =========================================================
          */
 
         @PostMapping
@@ -45,9 +46,9 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * ================================
+         * =========================================================
          * LISTAR TODAS LAS ASIGNACIONES
-         * =================================
+         * =========================================================
          */
 
         @GetMapping
@@ -63,18 +64,18 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * ================================
+         * =========================================================
          * CAMBIAR GRUPO
-         * =================================
+         * =========================================================
          */
 
-        @PatchMapping("/estudiante/{estudianteId}/grupo/{nuevoGrupoId}")
+        @PatchMapping("/asignacion/{asignacionId}/grupo/{nuevoGrupoId}")
         public ResponseEntity<EstudianteGrupoResponse> cambiarGrupo(
-                        @PathVariable Long estudianteId,
+                        @PathVariable Long asignacionId,
                         @PathVariable Long nuevoGrupoId) {
 
                 EstudianteGrupo estudianteGrupo = estudianteGrupoService.cambiarGrupo(
-                                estudianteId,
+                                asignacionId,
                                 nuevoGrupoId);
 
                 EstudianteGrupoResponse response = convertirAResponse(estudianteGrupo);
@@ -83,9 +84,9 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * ================================
+         * =========================================================
          * LISTAR POR ESTUDIANTE
-         * =================================
+         * =========================================================
          */
 
         @GetMapping("/estudiante/{estudianteId}")
@@ -93,8 +94,7 @@ public class EstudianteGrupoController {
                         @PathVariable Long estudianteId) {
 
                 List<EstudianteGrupoResponse> response = estudianteGrupoService
-                                .listarPorEstudiante(
-                                                estudianteId)
+                                .listarPorEstudiante(estudianteId)
                                 .stream()
                                 .map(this::convertirAResponse)
                                 .toList();
@@ -103,9 +103,9 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * ================================
+         * =========================================================
          * LISTAR POR GRUPO
-         * =================================
+         * =========================================================
          */
 
         @GetMapping("/grupo/{grupoId}")
@@ -122,9 +122,9 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * ================================
+         * =========================================================
          * CAMBIAR ESTADO
-         * =================================
+         * =========================================================
          */
 
         @PatchMapping("/{id}/estado")
@@ -142,9 +142,9 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * ================================
+         * =========================================================
          * CONVERTIR A RESPONSE
-         * =================================
+         * =========================================================
          */
 
         private EstudianteGrupoResponse convertirAResponse(
@@ -153,22 +153,18 @@ public class EstudianteGrupoController {
                 return new EstudianteGrupoResponse(
                                 estudianteGrupo.getId(),
 
-                                estudianteGrupo
-                                                .getEstudiante()
-                                                .getId(),
+                                estudianteGrupo.getEstudiante().getId(),
 
-                                estudianteGrupo
-                                                .getEstudiante()
+                                estudianteGrupo.getEstudiante()
+                                                .getPersona()
                                                 .getNombre(),
 
-                                estudianteGrupo
-                                                .getGrupo()
-                                                .getId(),
+                                estudianteGrupo.getGrupo().getId(),
 
-                                estudianteGrupo
-                                                .getGrupo()
-                                                .getNombre(),
+                                estudianteGrupo.getGrupo().getNombre(),
 
-                                estudianteGrupo.getEstado());
+                                estudianteGrupo.getEstado(),
+
+                                estudianteGrupo.getFechaInscripcion());
         }
 }

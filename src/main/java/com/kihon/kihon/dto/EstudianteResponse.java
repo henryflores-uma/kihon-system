@@ -14,6 +14,8 @@ public class EstudianteResponse {
     private LocalDate fechaNacimiento;
     private String direccion;
     private String foto;
+    private String fotoUrl;
+    private String cinturon;
     private String estado;
 
     public EstudianteResponse() {
@@ -30,6 +32,8 @@ public class EstudianteResponse {
             LocalDate fechaNacimiento,
             String direccion,
             String foto,
+            String fotoUrl,
+            String cinturon,
             String estado) {
 
         this.id = id;
@@ -42,6 +46,8 @@ public class EstudianteResponse {
         this.fechaNacimiento = fechaNacimiento;
         this.direccion = direccion;
         this.foto = foto;
+        this.fotoUrl = fotoUrl;
+        this.cinturon = cinturon;
         this.estado = estado;
     }
 
@@ -83,6 +89,14 @@ public class EstudianteResponse {
 
     public String getFoto() {
         return foto;
+    }
+
+    public String getFotoUrl() {
+        return fotoUrl;
+    }
+
+    public String getCinturon() {
+        return cinturon;
     }
 
     public String getEstado() {

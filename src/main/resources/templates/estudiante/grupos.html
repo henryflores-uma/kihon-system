@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Consulta tus grupos y horarios de entrenamiento en Kihon.">
+
+    <title>Kihon | Mis grupos</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+
+    <main class="app-layout estudiante-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar" id="sidebarMenu">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav" aria-label="Navegación principal"></nav>
+
+        </aside>
+
+        <!-- OVERLAY MENÚ MÓVIL -->
+
+        <div id="mobileMenuOverlay" class="mobile-menu-overlay" hidden></div>
+
+        <!-- CONTENIDO PRINCIPAL -->
+
+        <section class="main-content">
+
+            <!-- NAVEGACIÓN MÓVIL -->
+
+            <div class="mobile-nav">
+
+                <button type="button" class="mobile-menu-button" id="mobileMenuButton" aria-label="Abrir menú"
+                    aria-expanded="false" aria-controls="sidebarMenu">
+
+                    <span id="mobileMenuIcon">☰</span>
+
+                </button>
+
+                <strong class="mobile-nav__logo">
+                    KIHON
+                </strong>
+
+            </div>
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <div class="topbar__role">
+
+                    <span class="topbar__role-label">
+                        Rol
+                    </span>
+
+                    <strong id="roleDisplay">
+                        Estudiante
+                    </strong>
+
+                </div>
+
+                <div class="topbar__actions">
+
+                    <!-- NOTIFICACIONES -->
+
+                    <button type="button" class="topbar__notification" id="notificationButton"
+                        aria-label="Notificaciones">
+
+                        <span class="topbar__notification-icon">
+                            🔔
+                        </span>
+
+                        <span id="notificationCount" class="topbar__notification-count" hidden>
+                            0
+                        </span>
+
+                    </button>
+
+                    <!-- PERFIL -->
+
+                    <div class="topbar__profile" id="profileMenuContainer">
+
+                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
+                            aria-expanded="false" aria-controls="profileMenu">
+
+                            <div class="topbar__avatar" id="userProfileAvatar">
+
+                                <span id="userAvatarInitial">
+                                    U
+                                </span>
+
+                            </div>
+
+                            <div class="topbar__profile-info">
+
+                                <strong id="usernameDisplay">
+                                    Usuario
+                                </strong>
+
+                                <span id="profileRoleDisplay">
+                                    Estudiante
+                                </span>
+
+                            </div>
+
+                            <span class="topbar__profile-arrow">
+                                ▼
+                            </span>
+
+                        </button>
+
+                        <div class="topbar__profile-menu" id="profileMenu" hidden>
+
+                            <a href="/estudiante/perfil" class="topbar__profile-menu-item">
+                                Mi perfil
+                            </a>
+
+                            <button type="button" id="topbarLogoutButton"
+                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+                                Cerrar sesión
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+            <!-- ENCABEZADO DE LA VISTA -->
+
+            <section class="dashboard-header estudiante-header">
+
+                <div>
+
+                    <span class="section-kicker">
+                        Mi entrenamiento
+                    </span>
+
+                    <h1>
+                        Mis grupos
+                    </h1>
+
+                    <p>
+                        Consulta los grupos en los que estás inscrito
+                        y sus respectivos horarios de entrenamiento.
+                    </p>
+
+                </div>
+
+            </section>
+
+            <!-- MENSAJES -->
+
+            <div id="gruposStatusMessage" class="estudiante-status-message" role="status" aria-live="polite" hidden>
+            </div>
+
+            <!-- RESUMEN DE GRUPOS -->
+
+            <section class="dashboard-section estudiante-section">
+
+                <div class="section-header">
+
+                    <span class="section-kicker">
+                        Mi información
+                    </span>
+
+                    <h2>
+                        Resumen de grupos
+                    </h2>
+
+                    <p>
+                        Revisa tus grupos de entrenamiento activos.
+                    </p>
+
+                </div>
+
+                <div class="dashboard-kpis estudiante-grupos-kpis">
+
+                    <article class="dashboard-kpi">
+
+                        <div class="dashboard-kpi__icon">
+                            👥
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Grupos inscritos
+                            </span>
+
+                            <strong id="gruposTotal">
+                                —
+                            </strong>
+
+                            <small>
+                                Inscripciones activas
+                            </small>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+            <!-- LISTADO DE GRUPOS -->
+
+            <section class="dashboard-section estudiante-section">
+
+                <div class="section-header">
+
+                    <span class="section-kicker">
+                        Mis entrenamientos
+                    </span>
+
+                    <h2>
+                        Grupos asignados
+                    </h2>
+
+                    <p>
+                        Aquí encontrarás la información y los horarios
+                        de tus entrenamientos.
+                    </p>
+
+                </div>
+
+                <div class="estudiante-panel">
+
+                    <div id="gruposContainer" class="estudiante-panel__content estudiante-grupos-container"
+                        aria-live="polite">
+
+                        <p>
+                            Cargando tus grupos...
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- INFORMACIÓN ADICIONAL -->
+
+            <section class="dashboard-section estudiante-session">
+
+                <div>
+
+                    <span class="section-kicker">
+                        Mi entrenamiento
+                    </span>
+
+                    <h2>
+                        Sigue avanzando en karate
+                    </h2>
+
+                    <p>
+                        Recuerda asistir puntualmente a tus entrenamientos
+                        y mantenerte al día con tus horarios.
+                    </p>
+
+                </div>
+
+                <div class="estudiante-session__user">
+
+                    <div class="estudiante-session__avatar">
+                        🥋
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Academia Sunkku Sinchi
+                        </strong>
+
+                        <span>
+                            Formación en karate
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+    <!-- SCRIPTS -->
+    <script src="/js/topbar.js"></script>
+    <script src="/js/nav-acordeon.js"></script>
+    <script src="/js/grupos-estudiante.js"></script>
+
+</body>
+
+</html>

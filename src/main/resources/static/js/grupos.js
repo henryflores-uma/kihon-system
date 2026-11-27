@@ -1,1028 +1,2360 @@
+
 document.addEventListener("DOMContentLoaded", function () {
+  /*
+   * =========================================================
+   * AUTENTICACIÓN Y PETICIONES HTTP
+   * =========================================================
+   */
 
-    /*
-     * AUTENTICACIÓN
-     */
+  async function obtenerTokenCSRF() {
+    const response = await window.fetch("/api/auth/csrf", {
+      method: "GET",
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json",
+      },
+    });
 
-    const auth = sessionStorage.getItem("kihonAuth");
-    const username = sessionStorage.getItem("kihonUsername");
+    if (!response.ok) {
+      throw new Error("No se pudo obtener el token CSRF.");
+    }
 
+    const data = await response.json();
 
-    /*
-     * ELEMENTOS DEL DOM
-     */
+    return data.token;
+  }
 
-    const usernameDisplay =
-        document.getElementById("usernameDisplay");
+  async function apiFetch(url, options = {}) {
+    const method = (options.method || "GET").toUpperCase();
 
-    const groupForm =
-        document.getElementById("groupForm");
+    const headers = new Headers(options.headers || {});
 
-    const groupMessage =
-        document.getElementById("groupMessage");
+    // Se elimina cualquier autenticación Basic Auth antigua.
+    headers.delete("Authorization");
 
-    const groupsList =
-        document.getElementById("groupsList");
+    headers.set("Accept", "application/json");
 
-    const groupsCount =
-        document.getElementById("groupsCount");
+    // Las operaciones que modifican datos requieren CSRF.
+    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+      const csrfToken = await obtenerTokenCSRF();
 
-    const editGroupSection =
-        document.getElementById("editGroupSection");
+      headers.set("X-CSRF-TOKEN", csrfToken);
+    }
 
-    const editGroupForm =
-        document.getElementById("editGroupForm");
+    return window.fetch(url, {
+      ...options,
+      method,
+      credentials: "same-origin",
+      headers,
+    });
+  }
 
-    const editGroupMessage =
-        document.getElementById("editGroupMessage");
+  /*
+   * =========================================================
+   * ELEMENTOS DEL DOM
+   * =========================================================
+   */
 
-    const cancelEditButton =
-        document.getElementById("cancelEditButton");
+  /*
+   * FORMULARIO DE GRUPO
+   */
 
+  const groupForm = document.getElementById("groupForm");
 
-    /*
-     * VERIFICAR SESIÓN
-     */
+  const groupMessage = document.getElementById("groupMessage");
 
-    if (!auth || !username) {
+  /*
+   * LISTA DE GRUPOS
+   */
 
-        window.location.href = "/login";
+  const groupsList = document.getElementById("groupsList");
 
+  const groupsCount = document.getElementById("groupsCount");
+
+  const groupsMessage = document.getElementById("groupsMessage");
+
+  /*
+   * EDICIÓN
+   */
+
+  const editGroupSection = document.getElementById("editGroupSection");
+
+  const editGroupForm = document.getElementById("editGroupForm");
+
+  const editGroupMessage = document.getElementById("editGroupMessage");
+
+  const cancelEditButton = document.getElementById("cancelEditButton");
+
+  /*
+   * SENSEIS
+   */
+
+  const senseiSelect = document.getElementById("groupSenseiId");
+
+  const editSenseiSelect = document.getElementById("editSenseiId");
+
+  /*
+   * FRECUENCIAS
+   */
+
+  const frecuenciaSelect = document.getElementById("groupFrecuenciaId");
+
+  const editFrecuenciaSelect = document.getElementById("editFrecuenciaId");
+
+  let frecuenciasDisponibles = [];
+
+  /*
+   * HORARIOS
+   */
+
+  const groupSchedulesList = document.getElementById("groupSchedulesList");
+
+  const scheduleDay = document.getElementById("scheduleDay");
+
+  const scheduleStart = document.getElementById("scheduleStart");
+
+  const scheduleEnd = document.getElementById("scheduleEnd");
+
+  const addScheduleButton = document.getElementById("addScheduleButton");
+
+  const scheduleMessage = document.getElementById("scheduleMessage");
+
+  /*
+   * =========================================================
+   * MODAL REGISTRAR GRUPO
+   * =========================================================
+   */
+
+  const groupModal = document.getElementById("groupModal");
+
+  const openGroupModalButton = document.getElementById("openGroupModalButton");
+
+  const closeGroupModalButton = document.getElementById(
+    "closeGroupModalButton",
+  );
+
+  const cancelGroupModalButton = document.getElementById(
+    "cancelGroupModalButton",
+  );
+
+  const groupModalOverlay = document.getElementById("groupModalOverlay");
+
+  /*
+   * =========================================================
+   * FUNCIONES DE MENSAJES
+   * =========================================================
+   */
+
+  function mostrarMensaje(elemento, mensaje, tipo) {
+    if (!elemento) {
+      return;
+    }
+
+    elemento.textContent = mensaje;
+
+    elemento.hidden = false;
+
+    if (tipo === "success") {
+      elemento.className = "grupos-message grupos-message--success";
+    } else {
+      elemento.className = "grupos-message grupos-message--error";
+    }
+  }
+
+  function ocultarMensaje(elemento) {
+    if (!elemento) {
+      return;
+    }
+
+    elemento.hidden = true;
+
+    elemento.textContent = "";
+  }
+
+  /*
+   * =========================================================
+   * FORMATEAR HORA
+   * =========================================================
+   */
+
+  function formatearHora(hora) {
+    if (!hora) {
+      return "-";
+    }
+
+    return hora.substring(0, 5);
+  }
+
+  /*
+   * =========================================================
+   * NOMBRE DEL DÍA
+   * =========================================================
+   */
+
+  function obtenerNombreDia(dia) {
+    const dias = {
+      LUNES: "Lunes",
+      MARTES: "Martes",
+      MIERCOLES: "Miércoles",
+      JUEVES: "Jueves",
+      VIERNES: "Viernes",
+      SABADO: "Sábado",
+      DOMINGO: "Domingo",
+    };
+
+    return dias[dia] || dia;
+  }
+
+  /*
+   * =========================================================
+   * ORDEN DE LOS DÍAS
+   * =========================================================
+   */
+
+  function obtenerOrdenDia(dia) {
+    const orden = {
+      LUNES: 1,
+      MARTES: 2,
+      MIERCOLES: 3,
+      JUEVES: 4,
+      VIERNES: 5,
+      SABADO: 6,
+      DOMINGO: 7,
+    };
+
+    return orden[dia] || 99;
+  }
+
+  /*
+   * =========================================================
+   * MANEJAR 401
+   * =========================================================
+   */
+
+  function manejarNoAutorizado(response) {
+    if (response.status === 401) {
+      sessionStorage.removeItem("kihonUsername");
+      sessionStorage.removeItem("kihonRol");
+      sessionStorage.removeItem("kihonAuth");
+
+      window.location.replace("/login");
+
+      return true;
+    }
+
+    return false;
+  }
+
+  /*
+   * =========================================================
+   * OBTENER MENSAJE DE ERROR
+   * =========================================================
+   */
+
+  async function obtenerMensajeError(response, mensajeDefecto) {
+    try {
+      const errorData = await response.json();
+
+      return errorData.mensaje || errorData.message || mensajeDefecto;
+    } catch (error) {
+      return mensajeDefecto;
+    }
+  }
+
+  /*
+   * =========================================================
+   * MODAL - ABRIR
+   * =========================================================
+   */
+
+  function abrirModalGrupo() {
+    if (!groupModal) {
+      return;
+    }
+
+    groupModal.hidden = false;
+
+    document.body.classList.add("modal-open");
+
+    ocultarMensaje(groupMessage);
+
+    const nombreInput = document.getElementById("groupNombre");
+
+    if (nombreInput) {
+      setTimeout(function () {
+        nombreInput.focus();
+      }, 100);
+    }
+  }
+
+  /*
+   * =========================================================
+   * MODAL - CERRAR
+   * =========================================================
+   */
+
+  function cerrarModalGrupo() {
+    if (!groupModal) {
+      return;
+    }
+
+    groupModal.hidden = true;
+
+    document.body.classList.remove("modal-open");
+  }
+
+  /*
+   * =========================================================
+   * MODAL - BOTONES
+   * =========================================================
+   */
+
+  if (openGroupModalButton) {
+    openGroupModalButton.addEventListener("click", function () {
+      abrirModalGrupo();
+    });
+  }
+
+  if (closeGroupModalButton) {
+    closeGroupModalButton.addEventListener("click", function () {
+      cerrarModalGrupo();
+    });
+  }
+
+  if (cancelGroupModalButton) {
+    cancelGroupModalButton.addEventListener("click", function () {
+      cerrarModalGrupo();
+    });
+  }
+
+  if (groupModalOverlay) {
+    groupModalOverlay.addEventListener("click", function () {
+      cerrarModalGrupo();
+    });
+  }
+
+  /*
+   * =========================================================
+   * CERRAR MODAL CON ESC
+   * =========================================================
+   */
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && groupModal && !groupModal.hidden) {
+      cerrarModalGrupo();
+    }
+  });
+
+  /*
+   * =========================================================
+   * OBTENER DÍAS SELECCIONADOS
+   * =========================================================
+   */
+
+  function obtenerDiasSeleccionados() {
+    const checkboxes = document.querySelectorAll('input[name="dias"]:checked');
+
+    return Array.from(checkboxes).map((checkbox) => checkbox.value);
+  }
+
+  /*
+   * =========================================================
+   * LIMPIAR DÍAS
+   * =========================================================
+   */
+
+  function limpiarDiasSeleccionados() {
+    const checkboxes = document.querySelectorAll('input[name="dias"]');
+
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = false;
+    });
+  }
+
+  /*
+   * =========================================================
+   * CARGAR FRECUENCIAS
+   * =========================================================
+   */
+
+  async function cargarFrecuencias() {
+    try {
+      const response = await apiFetch("/api/frecuencias-grupo", {
+        method: "GET",
+      });
+
+      if (manejarNoAutorizado(response)) {
         return;
-    }
+      }
 
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para consultar las frecuencias.");
+      }
 
-    usernameDisplay.textContent = username;
+      if (!response.ok) {
+        throw new Error("No se pudieron obtener las frecuencias.");
+      }
 
+      const frecuencias = await response.json();
 
-    /*
-     * MOSTRAR MENSAJE
-     */
+      frecuenciasDisponibles = frecuencias;
 
-    function mostrarMensaje(elemento, mensaje, tipo) {
-
-        elemento.textContent = mensaje;
-
-        elemento.hidden = false;
-
-        if (tipo === "success") {
-
-            elemento.className =
-                "grupos-message grupos-message--success";
-
-        } else {
-
-            elemento.className =
-                "grupos-message grupos-message--error";
-        }
-    }
-
-
-    /*
-     * FORMATEAR HORA
-     */
-
-    function formatearHora(hora) {
-
-        if (!hora) {
-            return "-";
-        }
-
-        return hora.substring(0, 5);
-    }
-
-
-    /*
-     * CARGAR GRUPOS
-     */
-
-    async function cargarGrupos() {
-
-        groupsList.innerHTML = `
-
-            <div class="grupos-loading">
-
-                Cargando grupos...
-
-            </div>
-
+      if (frecuenciaSelect) {
+        frecuenciaSelect.innerHTML = `
+          <option value="">
+            Selecciona una frecuencia
+          </option>
         `;
 
+        frecuencias.forEach((frecuencia) => {
+          const option = document.createElement("option");
 
-        try {
+          option.value = frecuencia.id;
 
-            const response = await fetch(
-                "/api/grupos",
-                {
-                    method: "GET",
+          option.textContent = frecuencia.nombre;
 
-                    headers: {
-                        "Authorization":
-                            "Basic " + auth
-                    }
-                }
-            );
+          option.dataset.frecuenciaSemanal = frecuencia.frecuenciaSemanal;
 
+          frecuenciaSelect.appendChild(option);
+        });
+      }
 
-            /*
-             * SESIÓN NO AUTORIZADA
-             */
+      if (editFrecuenciaSelect) {
+        editFrecuenciaSelect.innerHTML = `
+          <option value="">
+            Selecciona una frecuencia
+          </option>
+        `;
 
-            if (response.status === 401) {
+        frecuencias.forEach((frecuencia) => {
+          const option = document.createElement("option");
 
-                sessionStorage.clear();
+          option.value = frecuencia.id;
 
-                window.location.href = "/login";
+          option.textContent = frecuencia.nombre;
 
-                return;
-            }
+          option.dataset.frecuenciaSemanal = frecuencia.frecuenciaSemanal;
 
+          editFrecuenciaSelect.appendChild(option);
+        });
+      }
+    } catch (error) {
+      console.error("Error cargando frecuencias:", error);
 
-            /*
-             * SIN PERMISOS
-             */
+      mostrarMensaje(groupMessage, error.message, "error");
+    }
+  }
 
-            if (response.status === 403) {
+  /*
+   * =========================================================
+   * OBTENER FRECUENCIA DE EDICIÓN
+   * =========================================================
+   */
 
-                throw new Error(
-                    "No tienes permisos para consultar grupos."
-                );
-            }
-
-
-            /*
-             * OTROS ERRORES
-             */
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "No se pudieron obtener los grupos."
-                );
-            }
-
-
-            const grupos =
-                await response.json();
-
-
-            /*
-             * CONTADOR
-             */
-
-            groupsCount.textContent =
-                `${grupos.length} grupo${grupos.length !== 1 ? "s" : ""}`;
-
-
-            /*
-             * LISTA VACÍA
-             */
-
-            if (grupos.length === 0) {
-
-                groupsList.innerHTML = `
-
-                    <div class="grupos-empty">
-
-                        No hay grupos registrados.
-
-                    </div>
-
-                `;
-
-                return;
-            }
-
-
-            /*
-             * TABLA
-             */
-
-            groupsList.innerHTML = `
-
-                <table class="grupos-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Grupo
-                            </th>
-
-                            <th>
-                                Horario
-                            </th>
-
-                            <th>
-                                Capacidad
-                            </th>
-
-                            <th>
-                                Inscritos
-                            </th>
-
-                            <th>
-                                Cupos disponibles
-                            </th>
-
-                            <th>
-                                Estado
-                            </th>
-
-                            <th>
-                                Acciones
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        ${grupos.map(grupo => `
-
-                            <tr>
-
-                                <td>
-
-                                    <div class="grupo-info">
-
-                                        <span class="grupo-nombre">
-
-                                            ${grupo.nombre}
-
-                                        </span>
-
-                                        <span class="grupo-descripcion">
-
-                                            ${grupo.descripcion || "Sin descripción"}
-
-                                        </span>
-
-                                    </div>
-
-                                </td>
-
-
-                                <td>
-
-                                    <span class="grupo-horario">
-
-                                        ${formatearHora(grupo.horaInicio)}
-                                        -
-                                        ${formatearHora(grupo.horaFin)}
-
-                                    </span>
-
-                                </td>
-
-
-                                <td>
-
-                                    <span class="grupo-capacidad">
-
-                                        ${grupo.capacidad}
-
-                                    </span>
-
-                                </td>
-
-
-                                <td>
-
-                                    <span class="grupo-inscritos">
-
-                                        ${grupo.estudiantesActivos}
-
-                                    </span>
-
-                                </td>
-
-
-                                <td>
-
-                                    <span class="
-                                        grupo-cupos
-                                        ${grupo.cuposDisponibles === 0
-                    ? "grupo-cupos--lleno"
-                    : ""}
-                                    ">
-
-                                        ${grupo.cuposDisponibles}
-
-                                    </span>
-
-                                </td>
-
-
-                                <td>
-
-                                    <span class="
-                                        grupo-estado
-                                        ${grupo.estado === "ACTIVO"
-                    ? "grupo-estado--activo"
-                    : "grupo-estado--inactivo"}
-                                    ">
-
-                                        ${grupo.estado}
-
-                                    </span>
-
-                                </td>
-
-
-                                <td>
-
-                                    <div class="grupo-acciones">
-
-
-                                        <button
-                                            type="button"
-                                            class="btn btn--outline btn-editar-grupo"
-                                            data-id="${grupo.id}">
-
-                                            Editar
-
-                                        </button>
-
-
-                                        <button
-                                            type="button"
-                                            class="btn btn--secondary btn-estado-grupo"
-                                            data-id="${grupo.id}"
-                                            data-estado="${grupo.estado}">
-
-                                            ${grupo.estado === "ACTIVO"
-                    ? "Desactivar"
-                    : "Activar"}
-
-                                        </button>
-
-
-                                    </div>
-
-                                </td>
-
-                            </tr>
-
-                        `).join("")}
-
-                    </tbody>
-
-                </table>
-
-            `;
-
-
-        } catch (error) {
-
-            console.error(
-                "Error cargando grupos:",
-                error
-            );
-
-
-            groupsList.innerHTML = `
-
-                <div class="grupos-empty">
-
-                    ${error.message}
-
-                </div>
-
-            `;
-        }
+  function obtenerFrecuenciaEdicion() {
+    if (!editFrecuenciaSelect || !editFrecuenciaSelect.value) {
+      return null;
     }
 
+    const option =
+      editFrecuenciaSelect.options[editFrecuenciaSelect.selectedIndex];
 
-    /*
-     * CREAR GRUPO
-     */
+    if (!option) {
+      return null;
+    }
 
-    groupForm.addEventListener(
-        "submit",
-        async function (event) {
+    return {
+      id: Number(editFrecuenciaSelect.value),
 
-            event.preventDefault();
+      frecuenciaSemanal: Number(option.dataset.frecuenciaSemanal),
+    };
+  }
 
+  /*
+   * =========================================================
+   * OBTENER FRECUENCIA AUTOMÁTICA
+   * =========================================================
+   */
 
-            groupMessage.hidden = true;
+  function obtenerFrecuenciaPorCantidadDias(cantidadDias) {
+    return (
+      frecuenciasDisponibles.find(
+        (frecuencia) => Number(frecuencia.frecuenciaSemanal) === cantidadDias,
+      ) || null
+    );
+  }
 
+  /*
+   * =========================================================
+   * CARGAR SENSEIS
+   * =========================================================
+   */
 
-            const grupo = {
+  async function cargarSenseis() {
+    try {
+      const response = await apiFetch("/api/usuarios/senseis", {
+        method: "GET",
+      });
 
-                nombre:
-                    document
-                        .getElementById("nombre")
-                        .value
-                        .trim(),
+      if (manejarNoAutorizado(response)) {
+        return;
+      }
 
-                descripcion:
-                    document
-                        .getElementById("descripcion")
-                        .value
-                        .trim(),
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para consultar los senseis.");
+      }
 
-                horaInicio:
-                    document
-                        .getElementById("horaInicio")
-                        .value,
+      if (!response.ok) {
+        throw new Error("No se pudieron obtener los senseis.");
+      }
 
-                horaFin:
-                    document
-                        .getElementById("horaFin")
-                        .value,
+      const senseis = await response.json();
 
-                capacidad:
-                    Number(
-                        document
-                            .getElementById("capacidad")
-                            .value
-                    )
+      if (senseiSelect) {
+        senseiSelect.innerHTML = `
+          <option value="">
+            Sin asignar
+          </option>
+        `;
+
+        senseis.forEach((sensei) => {
+          const nombreCompleto = `${sensei.nombre} ${sensei.apellido}`;
+
+          const option = document.createElement("option");
+
+          option.value = sensei.id;
+
+          option.textContent = nombreCompleto;
+
+          senseiSelect.appendChild(option);
+        });
+      }
+
+      if (editSenseiSelect) {
+        editSenseiSelect.innerHTML = `
+          <option value="">
+            Sin asignar
+          </option>
+        `;
+
+        senseis.forEach((sensei) => {
+          const nombreCompleto = `${sensei.nombre} ${sensei.apellido}`;
+
+          const option = document.createElement("option");
+
+          option.value = sensei.id;
+
+          option.textContent = nombreCompleto;
+
+          editSenseiSelect.appendChild(option);
+        });
+      }
+    } catch (error) {
+      console.error("Error cargando senseis:", error);
+
+      mostrarMensaje(groupMessage, error.message, "error");
+    }
+  }
+
+  /*
+   * =========================================================
+   * OBTENER CRUCES DE HORARIOS
+   * =========================================================
+   */
+
+  async function obtenerCrucesHorarios(dias, horaInicio, horaFin) {
+    const response = await apiFetch("/api/grupos", {
+      method: "GET",
+    });
+
+    if (manejarNoAutorizado(response)) {
+      throw new Error("La sesión ha expirado.");
+    }
+
+    if (response.status === 403) {
+      throw new Error("No tienes permisos para consultar los grupos.");
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        await obtenerMensajeError(
+          response,
+          "No se pudieron consultar los grupos para validar el horario.",
+        ),
+      );
+    }
+
+    const grupos = await response.json();
+
+    const gruposActivos = grupos.filter((grupo) => grupo.estado === "ACTIVO");
+
+    const gruposConHorarios = await Promise.all(
+      gruposActivos.map(async (grupo) => {
+        const horariosResponse = await apiFetch(
+          `/api/grupo-horarios/grupo/${grupo.id}`,
+          {
+            method: "GET",
+          },
+        );
+
+        if (manejarNoAutorizado(horariosResponse)) {
+          throw new Error("La sesión ha expirado.");
+        }
+
+        if (horariosResponse.status === 403) {
+          throw new Error(
+            "No tienes permisos para consultar los horarios de los grupos.",
+          );
+        }
+
+        if (!horariosResponse.ok) {
+          throw new Error(
+            await obtenerMensajeError(
+              horariosResponse,
+              `No se pudieron consultar los horarios del grupo "${grupo.nombre}".`,
+            ),
+          );
+        }
+
+        const horarios = await horariosResponse.json();
+
+        return {
+          grupo: grupo,
+          horarios: horarios,
+        };
+      }),
+    );
+
+    const cruces = [];
+
+    gruposConHorarios.forEach((grupoData) => {
+      const grupo = grupoData.grupo;
+
+      grupoData.horarios.forEach((horario) => {
+        const diaExistente = String(horario.diaSemana || "").toUpperCase();
+
+        const coincideDia = dias.some(
+          (dia) => String(dia).toUpperCase() === diaExistente,
+        );
+
+        if (!coincideDia) {
+          return;
+        }
+
+        const inicioExistente = formatearHora(horario.horaInicio);
+
+        const finExistente = formatearHora(horario.horaFin);
+
+        if (horaInicio < finExistente && horaFin > inicioExistente) {
+          cruces.push({
+            grupoNombre: grupo.nombre,
+            dia: diaExistente,
+            horaInicio: inicioExistente,
+            horaFin: finExistente,
+          });
+        }
+      });
+    });
+
+    return cruces;
+  }
+
+  /*
+   * =========================================================
+   * CREAR GRUPO
+   * =========================================================
+   */
+
+  if (groupForm) {
+    groupForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      ocultarMensaje(groupMessage);
+
+      const nombre = document.getElementById("groupNombre").value.trim();
+
+      const descripcion = document
+        .getElementById("groupDescripcion")
+        .value.trim();
+
+      const horaInicio = document.getElementById("groupHoraInicio").value;
+
+      const horaFin = document.getElementById("groupHoraFin").value;
+
+      const capacidad = Number(document.getElementById("groupCapacidad").value);
+
+      const senseiValue = senseiSelect ? senseiSelect.value : "";
+
+      const diasSeleccionados = obtenerDiasSeleccionados();
+
+      if (diasSeleccionados.length === 0) {
+        mostrarMensaje(
+          groupMessage,
+          "Debes seleccionar al menos un día de entrenamiento.",
+          "error",
+        );
+
+        return;
+      }
+
+      const frecuencia = obtenerFrecuenciaPorCantidadDias(
+        diasSeleccionados.length,
+      );
+
+      if (!frecuencia) {
+        mostrarMensaje(
+          groupMessage,
+          `No existe una frecuencia configurada para ${diasSeleccionados.length} día${diasSeleccionados.length !== 1 ? "s" : ""} por semana.`,
+          "error",
+        );
+
+        return;
+      }
+
+      if (!horaInicio || !horaFin) {
+        mostrarMensaje(
+          groupMessage,
+          "Debes seleccionar la hora de inicio y la hora de fin.",
+          "error",
+        );
+
+        return;
+      }
+
+      if (horaInicio >= horaFin) {
+        mostrarMensaje(
+          groupMessage,
+          "La hora de inicio debe ser anterior a la hora de fin.",
+          "error",
+        );
+
+        return;
+      }
+
+      if (!capacidad || capacidad <= 0) {
+        mostrarMensaje(
+          groupMessage,
+          "La capacidad debe ser mayor que 0.",
+          "error",
+        );
+
+        return;
+      }
+
+      const grupo = {
+        nombre: nombre,
+        descripcion: descripcion,
+        capacidad: capacidad,
+        senseiId: senseiValue ? Number(senseiValue) : null,
+        frecuenciaId: frecuencia.id,
+      };
+
+      const submitButton = groupForm.querySelector('button[type="submit"]');
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Validando horario...";
+      }
+
+      try {
+        const cruces = await obtenerCrucesHorarios(
+          diasSeleccionados,
+          horaInicio,
+          horaFin,
+        );
+
+        if (cruces.length > 0) {
+          const detallesCruces = cruces
+            .map(
+              (cruce) =>
+                `${cruce.grupoNombre} — ${obtenerNombreDia(cruce.dia)} ${cruce.horaInicio} - ${cruce.horaFin}`,
+            )
+            .filter((detalle, index, array) => array.indexOf(detalle) === index)
+            .join("; ");
+
+          mostrarMensaje(
+            groupMessage,
+            `El horario seleccionado entra en conflicto con: ${detallesCruces}.`,
+            "error",
+          );
+
+          return;
+        }
+
+        if (submitButton) {
+          submitButton.textContent = "Registrando...";
+        }
+
+        const response = await apiFetch("/api/grupos", {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify(grupo),
+        });
+
+        if (manejarNoAutorizado(response)) {
+          return;
+        }
+
+        if (response.status === 403) {
+          throw new Error("No tienes permisos para registrar grupos.");
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            await obtenerMensajeError(
+              response,
+              "No se pudo registrar el grupo.",
+            ),
+          );
+        }
+
+        const nuevoGrupo = await response.json();
+
+        await crearHorariosGrupo(
+          nuevoGrupo.id,
+          diasSeleccionados,
+          horaInicio,
+          horaFin,
+        );
+
+        groupForm.reset();
+
+        limpiarDiasSeleccionados();
+
+        if (frecuenciaSelect) {
+          frecuenciaSelect.value = "";
+        }
+
+        mostrarMensaje(
+          groupMessage,
+          "Grupo y horarios registrados correctamente.",
+          "success",
+        );
+
+        await cargarGrupos();
+
+        setTimeout(function () {
+          cerrarModalGrupo();
+
+          ocultarMensaje(groupMessage);
+        }, 800);
+      } catch (error) {
+        console.error("Error registrando grupo:", error);
+
+        mostrarMensaje(groupMessage, error.message, "error");
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+
+          submitButton.textContent = "Registrar grupo";
+        }
+      }
+    });
+  }
+
+  /*
+   * =========================================================
+   * CARGAR GRUPOS
+   * =========================================================
+   */
+
+  async function cargarGrupos() {
+    if (!groupsList) {
+      return;
+    }
+
+    groupsList.innerHTML = `
+      <div class="grupos-loading">
+        <div class="grupos-loading__spinner"></div>
+        <span>Cargando grupos...</span>
+      </div>
+    `;
+
+    try {
+      const response = await apiFetch("/api/grupos", {
+        method: "GET",
+      });
+
+      if (manejarNoAutorizado(response)) {
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para consultar grupos.");
+      }
+
+      if (!response.ok) {
+        throw new Error("No se pudieron obtener los grupos.");
+      }
+
+      const grupos = await response.json();
+
+      if (groupsCount) {
+        groupsCount.textContent = `${grupos.length} grupo${grupos.length !== 1 ? "s" : ""}`;
+      }
+
+      if (grupos.length === 0) {
+        groupsList.innerHTML = `
+          <div class="grupos-empty">
+            No hay grupos registrados.
+          </div>
+        `;
+
+        return;
+      }
+
+      /*
+       * OBTENER HORARIOS
+       */
+
+      const gruposConHorarios = await Promise.all(
+        grupos.map(async (grupo) => {
+          try {
+            const horariosResponse = await apiFetch(
+              `/api/grupo-horarios/grupo/${grupo.id}`,
+              {
+                method: "GET",
+              },
+            );
+
+            if (horariosResponse.status === 401) {
+              manejarNoAutorizado(horariosResponse);
+
+              return {
+                ...grupo,
+                horarios: [],
+              };
+            }
+
+            if (!horariosResponse.ok) {
+              return {
+                ...grupo,
+                horarios: [],
+              };
+            }
+
+            const horarios = await horariosResponse.json();
+
+            return {
+              ...grupo,
+              horarios: horarios,
             };
+          } catch (error) {
+            console.error(
+              `Error cargando horarios del grupo ${grupo.id}:`,
+              error,
+            );
 
+            return {
+              ...grupo,
+              horarios: [],
+            };
+          }
+        }),
+      );
 
-            try {
+      /*
+       * AGRUPAR POR FRECUENCIA
+       */
 
-                const response = await fetch(
-                    "/api/grupos",
-                    {
-                        method: "POST",
+      const gruposPorFrecuencia = new Map();
 
-                        headers: {
+      gruposConHorarios.forEach((grupo) => {
+        const frecuenciaId =
+          grupo.frecuenciaId != null
+            ? String(grupo.frecuenciaId)
+            : "sin-frecuencia";
 
-                            "Authorization":
-                                "Basic " + auth,
+        if (!gruposPorFrecuencia.has(frecuenciaId)) {
+          gruposPorFrecuencia.set(frecuenciaId, {
+            id: grupo.frecuenciaId,
+            nombre: grupo.frecuenciaNombre || "Sin frecuencia",
+            frecuenciaSemanal: grupo.frecuenciaSemanal ?? null,
+            grupos: [],
+          });
+        }
 
-                            "Content-Type":
-                                "application/json"
-                        },
+        gruposPorFrecuencia.get(frecuenciaId).grupos.push(grupo);
+      });
 
-                        body:
-                            JSON.stringify(grupo)
+      /*
+       * ORDENAR CATEGORÍAS
+       */
+
+      const categorias = Array.from(gruposPorFrecuencia.values()).sort(
+        (a, b) => {
+          if (a.frecuenciaSemanal == null) {
+            return 1;
+          }
+
+          if (b.frecuenciaSemanal == null) {
+            return -1;
+          }
+
+          return a.frecuenciaSemanal - b.frecuenciaSemanal;
+        },
+      );
+
+      /*
+       * TABLA
+       */
+
+      groupsList.innerHTML = `
+        <table class="grupos-table">
+          <tbody>
+            ${categorias
+          .map((categoria, categoriaIndex) => {
+            const categoriaId = `frecuencia-${categoria.id ?? "sin"}-${categoriaIndex}`;
+
+            const capacidadTotal = categoria.grupos.reduce(
+              (total, grupo) => total + (Number(grupo.capacidad) || 0),
+              0,
+            );
+
+            const inscritosTotal = categoria.grupos.reduce(
+              (total, grupo) =>
+                total + (Number(grupo.estudiantesActivos) || 0),
+              0,
+            );
+
+            const cuposTotal = categoria.grupos.reduce(
+              (total, grupo) =>
+                total + (Number(grupo.cuposDisponibles) || 0),
+              0,
+            );
+
+            return `
+                  <tr
+                    class="grupo-frecuencia-header"
+                    data-frecuencia-toggle="${categoriaId}"
+                  >
+                    <td colspan="9">
+                      <div class="grupo-frecuencia-titulo">
+                        <strong>${categoria.nombre}</strong>
+                        <span>
+                          (${categoria.grupos.length}
+                          grupo${categoria.grupos.length !== 1 ? "s" : ""})
+                        </span>
+                      </div>
+
+                      <div class="grupo-frecuencia-resumen">
+                        <span>
+                          Capacidad:
+                          <strong>${capacidadTotal}</strong>
+                        </span>
+
+                        <span>
+                          Inscritos:
+                          <strong>${inscritosTotal}</strong>
+                        </span>
+
+                        <span>
+                          Cupos:
+                          <strong>${cuposTotal}</strong>
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr
+                    class="grupo-columnas-header"
+                    data-frecuencia-columnas="${categoriaId}"
+                  >
+                    <th>Grupo</th>
+                    <th>Sensei</th>
+                    <th>Días</th>
+                    <th>Horario</th>
+                    <th>Capacidad</th>
+                    <th>Inscritos</th>
+                    <th>Cupos disponibles</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+
+                  ${categoria.grupos
+                .map((grupo) => {
+                  const ordenDias = {
+                    LUNES: 1,
+                    MARTES: 2,
+                    MIERCOLES: 3,
+                    JUEVES: 4,
+                    VIERNES: 5,
+                    SABADO: 6,
+                    DOMINGO: 7,
+                  };
+
+                  const inicialesDias = {
+                    LUNES: "Lunes",
+                    MARTES: "Martes",
+                    MIERCOLES: "Miércoles",
+                    JUEVES: "Jueves",
+                    VIERNES: "Viernes",
+                    SABADO: "Sábado",
+                    DOMINGO: "Domingo",
+                  };
+
+                  const dias = [...(grupo.horarios || [])].sort(
+                    (a, b) =>
+                      (ordenDias[a.diaSemana] || 99) -
+                      (ordenDias[b.diaSemana] || 99),
+                  );
+
+                  const diasIniciales = dias
+                    .map(
+                      (horario) =>
+                        inicialesDias[horario.diaSemana] ||
+                        horario.diaSemana,
+                    )
+                    .filter(
+                      (dia, index, array) => array.indexOf(dia) === index,
+                    )
+                    .join(" - ");
+
+                  const diasMostrar = diasIniciales || "Sin días";
+
+                  let horarioMostrar = "Sin horario";
+
+                  if (dias.length > 0) {
+                    const horarios = dias.map((horario) => ({
+                      dia:
+                        inicialesDias[horario.diaSemana] ||
+                        horario.diaSemana,
+
+                      hora: `${formatearHora(
+                        horario.horaInicio,
+                      )} - ${formatearHora(horario.horaFin)}`,
+                    }));
+
+                    const primeraHora = horarios[0].hora;
+
+                    const todosMismaHora = horarios.every(
+                      (horario) => horario.hora === primeraHora,
+                    );
+
+                    if (todosMismaHora) {
+                      horarioMostrar = primeraHora;
+                    } else {
+                      horarioMostrar = horarios
+                        .map(
+                          (horario) => `${horario.dia}: ${horario.hora}`,
+                        )
+                        .join(" / ");
                     }
-                );
+                  }
 
+                  const cuposLlenos =
+                    Number(grupo.cuposDisponibles) === 0;
 
-                /*
-                 * NO AUTORIZADO
-                 */
+                  const grupoActivo = grupo.estado === "ACTIVO";
 
-                if (response.status === 401) {
+                  return `
+                        <tr
+                          class="grupo-frecuencia-item"
+                          data-frecuencia-parent="${categoriaId}"
+                        >
+                          <td>
+                            <div class="grupo-info">
+                              <span class="grupo-nombre">
+                                ${grupo.nombre}
+                              </span>
 
-                    sessionStorage.clear();
+                              <span class="grupo-descripcion">
+                                ${grupo.descripcion || "Sin descripción"}
+                              </span>
+                            </div>
+                          </td>
 
-                    window.location.href =
-                        "/login";
+                          <td>
+                            <span class="grupo-sensei">
+                              ${grupo.senseiNombre || "Sin asignar"}
+                            </span>
+                          </td>
 
-                    return;
-                }
+                          <td>
+                            <span class="grupo-dias">
+                              ${diasMostrar}
+                            </span>
+                          </td>
 
+                          <td>
+                            <span class="grupo-horario">
+                              ${horarioMostrar}
+                            </span>
+                          </td>
 
-                /*
-                 * SIN PERMISOS
-                 */
+                          <td>
+                            <span class="grupo-capacidad">
+                              ${grupo.capacidad}
+                            </span>
+                          </td>
 
-                if (response.status === 403) {
+                          <td>
+                            <span class="grupo-inscritos">
+                              ${grupo.estudiantesActivos}
+                            </span>
+                          </td>
 
-                    throw new Error(
-                        "No tienes permisos para registrar grupos."
-                    );
-                }
+                          <td>
+                            <span class="
+                              grupo-cupos
+                              ${cuposLlenos ? "grupo-cupos--lleno" : ""}
+                            ">
+                              ${grupo.cuposDisponibles}
+                            </span>
+                          </td>
 
+                          <td>
+                            <span class="
+                              grupo-estado
+                              ${grupoActivo
+                      ? "grupo-estado--activo"
+                      : "grupo-estado--inactivo"
+                    }
+                            ">
+                              ${grupo.estado}
+                            </span>
+                          </td>
 
-                /*
-                 * ERROR DEL BACKEND
-                 */
+                          <td>
+                            <div class="grupo-acciones">
+                              <button
+                                type="button"
+                                class="btn btn--outline btn-editar-grupo"
+                                data-id="${grupo.id}"
+                              >
+                                Editar
+                              </button>
 
-                if (!response.ok) {
+                              <button
+                                type="button"
+                                class="btn btn--secondary btn-estado-grupo"
+                                data-id="${grupo.id}"
+                                data-estado="${grupo.estado}"
+                              >
+                                ${grupoActivo ? "Desactivar" : "Activar"}
+                              </button>
 
-                    const errorData =
-                        await response.json();
+                              <button
+                                type="button"
+                                class="btn btn--secondary btn-eliminar-grupo"
+                                data-id="${grupo.id}"
+                                data-nombre="${grupo.nombre}"
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `;
+                })
+                .join("")}
+                `;
+          })
+          .join("")}
+          </tbody>
+        </table>
+      `;
 
-                    throw new Error(
-                        errorData.mensaje ||
-                        "No se pudo registrar el grupo."
-                    );
-                }
+      /*
+       * =====================================================
+       * EXPANDIR / CONTRAER CATEGORÍAS
+       * =====================================================
+       */
 
+      document
+        .querySelectorAll("[data-frecuencia-toggle]")
+        .forEach((categoriaHeader) => {
+          categoriaHeader.addEventListener("click", function () {
+            const categoriaId = this.dataset.frecuenciaToggle;
 
-                const nuevoGrupo =
-                    await response.json();
+            const gruposCategoria = document.querySelectorAll(
+              `[data-frecuencia-parent="${categoriaId}"]`,
+            );
 
+            const encabezadoColumnas = document.querySelector(
+              `[data-frecuencia-columnas="${categoriaId}"]`,
+            );
 
-                console.log(
-                    "Grupo creado:",
-                    nuevoGrupo
-                );
+            const actualmenteVisible = Array.from(gruposCategoria).some(
+              (fila) => fila.hidden === false,
+            );
 
+            gruposCategoria.forEach((fila) => {
+              fila.hidden = actualmenteVisible;
+            });
 
-                /*
-                 * LIMPIAR FORMULARIO
-                 */
-
-                groupForm.reset();
-
-
-                /*
-                 * MENSAJE
-                 */
-
-                mostrarMensaje(
-                    groupMessage,
-                    "Grupo registrado correctamente.",
-                    "success"
-                );
-
-
-                /*
-                 * ACTUALIZAR TABLA
-                 */
-
-                await cargarGrupos();
-
-            } catch (error) {
-
-                console.error(
-                    "Error registrando grupo:",
-                    error
-                );
-
-
-                mostrarMensaje(
-                    groupMessage,
-                    error.message,
-                    "error"
-                );
+            if (encabezadoColumnas) {
+              encabezadoColumnas.hidden = actualmenteVisible;
             }
+          });
+        });
+    } catch (error) {
+      console.error("Error cargando grupos:", error);
 
+      groupsList.innerHTML = `
+        <div class="grupos-empty">
+          ${error.message}
+        </div>
+      `;
+    }
+  }
+
+  /*
+   * =========================================================
+   * CREAR HORARIOS DEL GRUPO
+   * =========================================================
+   */
+
+  async function crearHorariosGrupo(grupoId, dias, horaInicio, horaFin) {
+    for (const dia of dias) {
+      const response = await apiFetch("/api/grupo-horarios", {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          grupoId: Number(grupoId),
+          diaSemana: dia,
+          horaInicio: horaInicio,
+          horaFin: horaFin,
+        }),
+      });
+
+      if (manejarNoAutorizado(response)) {
+        throw new Error("La sesión ha expirado.");
+      }
+
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para registrar horarios.");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            `No se pudo registrar el horario del día ${obtenerNombreDia(dia)}.`,
+          ),
+        );
+      }
+    }
+  }
+
+  /*
+   * =========================================================
+   * CARGAR HORARIOS DE UN GRUPO
+   * =========================================================
+   */
+
+  async function cargarHorariosGrupo(grupoId) {
+    if (!groupSchedulesList) {
+      return;
+    }
+
+    groupSchedulesList.innerHTML = `
+      <div class="grupos-loading">
+        <div class="grupos-loading__spinner"></div>
+        <span>Cargando horarios...</span>
+      </div>
+    `;
+
+    try {
+      const response = await apiFetch(
+        `/api/grupo-horarios/grupo/${grupoId}`,
+        {
+          method: "GET",
+        },
+      );
+
+      if (manejarNoAutorizado(response)) {
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para consultar los horarios.");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudieron obtener los horarios.",
+          ),
+        );
+      }
+
+      const horarios = await response.json();
+
+      if (horarios.length === 0) {
+        groupSchedulesList.innerHTML = `
+          <div class="grupos-empty">
+            Este grupo todavía no tiene horarios registrados.
+          </div>
+        `;
+
+        return;
+      }
+
+      horarios.sort((a, b) => {
+        const diaA = obtenerOrdenDia(a.diaSemana);
+
+        const diaB = obtenerOrdenDia(b.diaSemana);
+
+        if (diaA !== diaB) {
+          return diaA - diaB;
         }
+
+        return a.horaInicio.localeCompare(b.horaInicio);
+      });
+
+      groupSchedulesList.innerHTML = horarios
+        .map(
+          (horario) => `
+            <div
+              class="grupo-horario-item"
+              data-id="${horario.id}"
+            >
+              <div class="grupo-horario-info">
+                <strong>
+                  ${obtenerNombreDia(horario.diaSemana)}
+                </strong>
+
+                <span>
+                  ${formatearHora(horario.horaInicio)}
+                  -
+                  ${formatearHora(horario.horaFin)}
+                </span>
+              </div>
+
+              <div class="grupo-horario-acciones">
+                <button
+                  type="button"
+                  class="btn btn--secondary btn-editar-horario"
+                  data-id="${horario.id}"
+                  data-grupo-id="${horario.grupoId}"
+                  data-dia="${horario.diaSemana}"
+                  data-hora-inicio="${formatearHora(horario.horaInicio)}"
+                  data-hora-fin="${formatearHora(horario.horaFin)}"
+                >
+                  Editar
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn--secondary btn-eliminar-horario"
+                  data-id="${horario.id}"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          `,
+        )
+        .join("");
+    } catch (error) {
+      console.error("Error cargando horarios:", error);
+
+      groupSchedulesList.innerHTML = `
+        <div class="grupos-empty">
+          ${error.message}
+        </div>
+      `;
+    }
+  }
+
+  /*
+   * =========================================================
+   * EDITAR GRUPO
+   * =========================================================
+   */
+
+  document.addEventListener("click", async function (event) {
+    const botonEditar = event.target.closest(".btn-editar-grupo");
+
+    if (!botonEditar) {
+      return;
+    }
+
+    const id = botonEditar.dataset.id;
+
+    try {
+      const response = await apiFetch(`/api/grupos/${id}`, {
+        method: "GET",
+      });
+
+      if (manejarNoAutorizado(response)) {
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para editar grupos.");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(response, "No se pudo obtener el grupo."),
+        );
+      }
+
+      const grupo = await response.json();
+
+      document.getElementById("editId").value = grupo.id;
+
+      document.getElementById("editNombre").value = grupo.nombre;
+
+      document.getElementById("editDescripcion").value =
+        grupo.descripcion || "";
+
+      document.getElementById("editCapacidad").value = grupo.capacidad;
+
+      if (editFrecuenciaSelect) {
+        editFrecuenciaSelect.value = grupo.frecuenciaId
+          ? String(grupo.frecuenciaId)
+          : "";
+      }
+
+      const editHoraInicio = document.getElementById("editHoraInicio");
+
+      const editHoraFin = document.getElementById("editHoraFin");
+
+      if (editHoraInicio) {
+        editHoraInicio.value = "";
+        editHoraInicio.required = false;
+      }
+
+      if (editHoraFin) {
+        editHoraFin.value = "";
+        editHoraFin.required = false;
+      }
+
+      if (editSenseiSelect) {
+        editSenseiSelect.value = grupo.senseiId ? String(grupo.senseiId) : "";
+      }
+
+      if (scheduleDay) {
+        scheduleDay.value = "";
+      }
+
+      if (scheduleStart) {
+        scheduleStart.value = "";
+      }
+
+      if (scheduleEnd) {
+        scheduleEnd.value = "";
+      }
+
+      ocultarMensaje(scheduleMessage);
+
+      if (editGroupSection) {
+        editGroupSection.hidden = false;
+      }
+
+      ocultarMensaje(editGroupMessage);
+
+      await cargarHorariosGrupo(grupo.id);
+
+      if (editGroupSection) {
+        editGroupSection.scrollIntoView({
+          behavior: "smooth",
+        });
+      }
+    } catch (error) {
+      console.error("Error obteniendo grupo:", error);
+
+      alert(error.message);
+    }
+  });
+
+  /*
+   * =========================================================
+   * OBTENER HORARIOS ACTUALES
+   * =========================================================
+   */
+
+  async function obtenerHorariosGrupo(grupoId) {
+    const response = await apiFetch(
+      `/api/grupo-horarios/grupo/${grupoId}`,
+      {
+        method: "GET",
+      },
     );
 
+    if (manejarNoAutorizado(response)) {
+      throw new Error("La sesión ha expirado.");
+    }
 
-    /*
-     * EDITAR GRUPO
-     */
+    if (response.status === 403) {
+      throw new Error("No tienes permisos para consultar los horarios.");
+    }
 
-    document.addEventListener(
-        "click",
-        async function (event) {
+    if (!response.ok) {
+      throw new Error(
+        await obtenerMensajeError(
+          response,
+          "No se pudieron obtener los horarios.",
+        ),
+      );
+    }
 
-            if (
-                !event.target.classList
-                    .contains("btn-editar-grupo")
-            ) {
+    return await response.json();
+  }
 
-                return;
-            }
+  /*
+   * =========================================================
+   * GUARDAR CAMBIOS DEL GRUPO
+   * =========================================================
+   */
 
+  if (editGroupForm) {
+    editGroupForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
 
-            const id =
-                event.target.dataset.id;
+      ocultarMensaje(editGroupMessage);
 
+      const id = document.getElementById("editId").value;
 
-            try {
+      const nombre = document.getElementById("editNombre").value.trim();
 
-                const response =
-                    await fetch(
-                        `/api/grupos/${id}`,
-                        {
-                            method: "GET",
+      const descripcion = document
+        .getElementById("editDescripcion")
+        .value.trim();
 
-                            headers: {
-                                "Authorization":
-                                    "Basic " + auth
-                            }
-                        }
-                    );
+      const capacidad = Number(document.getElementById("editCapacidad").value);
 
+      const senseiValue = editSenseiSelect ? editSenseiSelect.value : "";
 
-                /*
-                 * SESIÓN NO AUTORIZADA
-                 */
+      const frecuencia = obtenerFrecuenciaEdicion();
 
-                if (response.status === 401) {
+      if (!frecuencia) {
+        mostrarMensaje(
+          editGroupMessage,
+          "Debes seleccionar la frecuencia semanal del grupo.",
+          "error",
+        );
 
-                    sessionStorage.clear();
+        return;
+      }
 
-                    window.location.href =
-                        "/login";
+      if (!capacidad || capacidad <= 0) {
+        mostrarMensaje(
+          editGroupMessage,
+          "La capacidad debe ser mayor que 0.",
+          "error",
+        );
 
-                    return;
-                }
+        return;
+      }
 
+      try {
+        const horarios = await obtenerHorariosGrupo(Number(id));
 
-                if (response.status === 403) {
+        if (horarios.length !== frecuencia.frecuenciaSemanal) {
+          mostrarMensaje(
+            editGroupMessage,
+            `La frecuencia seleccionada requiere exactamente ${frecuencia.frecuenciaSemanal} horario${frecuencia.frecuenciaSemanal !== 1 ? "s" : ""}. Actualmente el grupo tiene ${horarios.length}. Agrega o elimina horarios antes de guardar.`,
+            "error",
+          );
 
-                    throw new Error(
-                        "No tienes permisos para editar grupos."
-                    );
-                }
-
-
-                if (!response.ok) {
-
-                    const errorData =
-                        await response.json();
-
-                    throw new Error(
-                        errorData.mensaje ||
-                        "No se pudo obtener el grupo."
-                    );
-                }
-
-
-                const grupo =
-                    await response.json();
-
-
-                /*
-                 * CARGAR DATOS
-                 */
-
-                document.getElementById(
-                    "editId"
-                ).value =
-                    grupo.id;
-
-
-                document.getElementById(
-                    "editNombre"
-                ).value =
-                    grupo.nombre;
-
-
-                document.getElementById(
-                    "editDescripcion"
-                ).value =
-                    grupo.descripcion || "";
-
-
-                document.getElementById(
-                    "editHoraInicio"
-                ).value =
-                    formatearHora(grupo.horaInicio);
-
-
-                document.getElementById(
-                    "editHoraFin"
-                ).value =
-                    formatearHora(grupo.horaFin);
-
-
-                document.getElementById(
-                    "editCapacidad"
-                ).value =
-                    grupo.capacidad;
-
-
-                /*
-                 * MOSTRAR FORMULARIO
-                 */
-
-                editGroupSection.hidden =
-                    false;
-
-
-                editGroupMessage.hidden =
-                    true;
-
-
-                editGroupSection.scrollIntoView({
-                    behavior: "smooth"
-                });
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error obteniendo grupo:",
-                    error
-                );
-
-
-                alert(error.message);
-            }
-
+          return;
         }
+      } catch (error) {
+        console.error("Error validando horarios:", error);
+
+        mostrarMensaje(editGroupMessage, error.message, "error");
+
+        return;
+      }
+
+      const grupo = {
+        nombre: nombre,
+        descripcion: descripcion,
+        capacidad: capacidad,
+        senseiId: senseiValue ? Number(senseiValue) : null,
+        frecuenciaId: frecuencia.id,
+      };
+
+      const submitButton = editGroupForm.querySelector('button[type="submit"]');
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Guardando...";
+      }
+
+      try {
+        const response = await apiFetch(`/api/grupos/${id}`, {
+          method: "PUT",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify(grupo),
+        });
+
+        if (manejarNoAutorizado(response)) {
+          return;
+        }
+
+        if (response.status === 403) {
+          throw new Error("No tienes permisos para editar grupos.");
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            await obtenerMensajeError(
+              response,
+              "No se pudo actualizar el grupo.",
+            ),
+          );
+        }
+
+        await response.json();
+
+        mostrarMensaje(
+          editGroupMessage,
+          "Grupo actualizado correctamente.",
+          "success",
+        );
+
+        await cargarGrupos();
+
+        await cargarHorariosGrupo(Number(id));
+      } catch (error) {
+        console.error("Error actualizando grupo:", error);
+
+        mostrarMensaje(editGroupMessage, error.message, "error");
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = "Guardar cambios";
+        }
+      }
+    });
+  }
+
+  /*
+   * =========================================================
+   * AGREGAR HORARIO
+   * =========================================================
+   */
+
+  if (addScheduleButton) {
+    addScheduleButton.addEventListener("click", async function () {
+      ocultarMensaje(scheduleMessage);
+
+      const grupoId = document.getElementById("editId").value;
+
+      const dia = scheduleDay.value;
+
+      const horaInicio = scheduleStart.value;
+
+      const horaFin = scheduleEnd.value;
+
+      if (!grupoId) {
+        mostrarMensaje(
+          scheduleMessage,
+          "No se ha seleccionado ningún grupo.",
+          "error",
+        );
+
+        return;
+      }
+
+      if (!dia) {
+        mostrarMensaje(
+          scheduleMessage,
+          "Selecciona un día de la semana.",
+          "error",
+        );
+
+        return;
+      }
+
+      if (!horaInicio || !horaFin) {
+        mostrarMensaje(
+          scheduleMessage,
+          "Selecciona la hora de inicio y la hora de fin.",
+          "error",
+        );
+
+        return;
+      }
+
+      if (horaInicio >= horaFin) {
+        mostrarMensaje(
+          scheduleMessage,
+          "La hora de inicio debe ser anterior a la hora de fin.",
+          "error",
+        );
+
+        return;
+      }
+
+      const frecuencia = obtenerFrecuenciaEdicion();
+
+      if (!frecuencia) {
+        mostrarMensaje(
+          scheduleMessage,
+          "El grupo no tiene una frecuencia semanal seleccionada.",
+          "error",
+        );
+
+        return;
+      }
+
+      try {
+        const horarios = await obtenerHorariosGrupo(Number(grupoId));
+
+        if (horarios.length >= frecuencia.frecuenciaSemanal) {
+          mostrarMensaje(
+            scheduleMessage,
+            `Este grupo ya tiene ${horarios.length} horario${horarios.length !== 1 ? "s" : ""} registrado${horarios.length !== 1 ? "s" : ""}. La frecuencia permite un máximo de ${frecuencia.frecuenciaSemanal}.`,
+            "error",
+          );
+
+          return;
+        }
+
+        const diaYaRegistrado = horarios.some(
+          (horario) => horario.diaSemana?.toUpperCase() === dia.toUpperCase(),
+        );
+
+        if (diaYaRegistrado) {
+          mostrarMensaje(
+            scheduleMessage,
+            "El grupo ya tiene un horario registrado para ese día.",
+            "error",
+          );
+
+          return;
+        }
+      } catch (error) {
+        mostrarMensaje(scheduleMessage, error.message, "error");
+
+        return;
+      }
+
+      addScheduleButton.disabled = true;
+
+      addScheduleButton.textContent = "Guardando...";
+
+      try {
+        const response = await apiFetch("/api/grupo-horarios", {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            grupoId: Number(grupoId),
+            diaSemana: dia,
+            horaInicio: horaInicio,
+            horaFin: horaFin,
+          }),
+        });
+
+        if (manejarNoAutorizado(response)) {
+          return;
+        }
+
+        if (response.status === 403) {
+          throw new Error("No tienes permisos para registrar horarios.");
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            await obtenerMensajeError(
+              response,
+              "No se pudo registrar el horario.",
+            ),
+          );
+        }
+
+        scheduleDay.value = "";
+
+        scheduleStart.value = "";
+
+        scheduleEnd.value = "";
+
+        mostrarMensaje(
+          scheduleMessage,
+          "Horario agregado correctamente.",
+          "success",
+        );
+
+        await cargarHorariosGrupo(Number(grupoId));
+
+        await cargarGrupos();
+      } catch (error) {
+        console.error("Error agregando horario:", error);
+
+        mostrarMensaje(scheduleMessage, error.message, "error");
+      } finally {
+        addScheduleButton.disabled = false;
+
+        addScheduleButton.textContent = "+ Agregar horario";
+      }
+    });
+  }
+
+  /*
+   * =========================================================
+   * EDITAR HORARIO
+   * =========================================================
+   */
+
+  if (groupSchedulesList) {
+    groupSchedulesList.addEventListener("click", async function (event) {
+      const botonEditar = event.target.closest(".btn-editar-horario");
+
+      if (!botonEditar) {
+        return;
+      }
+
+      const horarioId = botonEditar.dataset.id;
+
+      const grupoId = botonEditar.dataset.grupoId;
+
+      const diaSemana = botonEditar.dataset.dia;
+
+      const horaInicioActual = botonEditar.dataset.horaInicio;
+
+      const horaFinActual = botonEditar.dataset.horaFin;
+
+      const item = botonEditar.closest(".grupo-horario-item");
+
+      if (!item) {
+        return;
+      }
+
+      const info = item.querySelector(".grupo-horario-info");
+
+      const acciones = item.querySelector(".grupo-horario-acciones");
+
+      if (!info || !acciones) {
+        return;
+      }
+
+      info.innerHTML = `
+        <strong>
+          ${obtenerNombreDia(diaSemana)}
+        </strong>
+
+        <div class="grupo-horario-edicion">
+          <input
+            type="time"
+            class="editar-hora-inicio"
+            value="${horaInicioActual}"
+          >
+
+          <span>-</span>
+
+          <input
+            type="time"
+            class="editar-hora-fin"
+            value="${horaFinActual}"
+          >
+        </div>
+      `;
+
+      acciones.innerHTML = `
+        <button
+          type="button"
+          class="btn btn--primary btn-guardar-horario"
+        >
+          Guardar
+        </button>
+
+        <button
+          type="button"
+          class="btn btn--secondary btn-cancelar-edicion-horario"
+        >
+          Cancelar
+        </button>
+      `;
+
+      const inputInicio = item.querySelector(".editar-hora-inicio");
+
+      const inputFin = item.querySelector(".editar-hora-fin");
+
+      const botonGuardar = item.querySelector(".btn-guardar-horario");
+
+      const botonCancelar = item.querySelector(
+        ".btn-cancelar-edicion-horario",
+      );
+
+      botonCancelar.addEventListener("click", function () {
+        cargarHorariosGrupo(Number(grupoId));
+      });
+
+      botonGuardar.addEventListener("click", async function () {
+        const horaInicio = inputInicio.value;
+
+        const horaFin = inputFin.value;
+
+        if (!horaInicio || !horaFin) {
+          mostrarMensaje(
+            scheduleMessage,
+            "Debes ingresar la hora de inicio y la hora de fin.",
+            "error",
+          );
+
+          return;
+        }
+
+        if (horaInicio >= horaFin) {
+          mostrarMensaje(
+            scheduleMessage,
+            "La hora de inicio debe ser anterior a la hora de fin.",
+            "error",
+          );
+
+          return;
+        }
+
+        botonGuardar.disabled = true;
+
+        botonCancelar.disabled = true;
+
+        try {
+          const response = await apiFetch(
+            `/api/grupo-horarios/${horarioId}`,
+            {
+              method: "PUT",
+
+              headers: {
+                "Content-Type": "application/json",
+              },
+
+              body: JSON.stringify({
+                grupoId: Number(grupoId),
+                diaSemana: diaSemana,
+                horaInicio: horaInicio,
+                horaFin: horaFin,
+              }),
+            },
+          );
+
+          if (manejarNoAutorizado(response)) {
+            return;
+          }
+
+          if (response.status === 403) {
+            throw new Error("No tienes permisos para modificar este horario.");
+          }
+
+          if (!response.ok) {
+            throw new Error(
+              await obtenerMensajeError(
+                response,
+                "No se pudo actualizar el horario.",
+              ),
+            );
+          }
+
+          mostrarMensaje(
+            scheduleMessage,
+            "Horario actualizado correctamente.",
+            "success",
+          );
+
+          await cargarHorariosGrupo(Number(grupoId));
+
+          await cargarGrupos();
+        } catch (error) {
+          console.error("Error actualizando horario:", error);
+
+          mostrarMensaje(scheduleMessage, error.message, "error");
+
+          botonGuardar.disabled = false;
+
+          botonCancelar.disabled = false;
+        }
+      });
+    });
+  }
+
+  /*
+   * =========================================================
+   * ELIMINAR HORARIO
+   * =========================================================
+   */
+
+  document.addEventListener("click", async function (event) {
+    const button = event.target.closest(".btn-eliminar-horario");
+
+    if (!button) {
+      return;
+    }
+
+    const horarioId = button.dataset.id;
+
+    const grupoId = document.getElementById("editId").value;
+
+    const confirmar = confirm("¿Deseas eliminar este horario?");
+
+    if (!confirmar) {
+      return;
+    }
+
+    button.disabled = true;
+
+    button.textContent = "Eliminando...";
+
+    try {
+      const response = await apiFetch(
+        `/api/grupo-horarios/${horarioId}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      if (manejarNoAutorizado(response)) {
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para eliminar horarios.");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudo eliminar el horario.",
+          ),
+        );
+      }
+
+      mostrarMensaje(
+        scheduleMessage,
+        "Horario eliminado correctamente.",
+        "success",
+      );
+
+      await cargarHorariosGrupo(Number(grupoId));
+
+      await cargarGrupos();
+    } catch (error) {
+      console.error("Error eliminando horario:", error);
+
+      mostrarMensaje(scheduleMessage, error.message, "error");
+
+      button.disabled = false;
+
+      button.textContent = "Eliminar";
+    }
+  });
+
+  /*
+   * =========================================================
+   * ELIMINAR GRUPO
+   * =========================================================
+   */
+
+  document.addEventListener("click", async function (event) {
+    const button = event.target.closest(".btn-eliminar-grupo");
+
+    if (!button) {
+      return;
+    }
+
+    const id = button.dataset.id;
+
+    const nombre = button.dataset.nombre;
+
+    const confirmar = confirm(
+      `¿Deseas eliminar el grupo "${nombre}"?\n\nTambién se eliminarán sus horarios habituales.\n\nEsta acción no se puede deshacer.`,
     );
 
+    if (!confirmar) {
+      return;
+    }
 
-    /*
-     * GUARDAR CAMBIOS DEL GRUPO
-     */
+    button.disabled = true;
 
-    editGroupForm.addEventListener(
-        "submit",
-        async function (event) {
+    button.textContent = "Eliminando...";
 
-            event.preventDefault();
+    try {
+      const response = await apiFetch(`/api/grupos/${id}`, {
+        method: "DELETE",
+      });
 
+      if (manejarNoAutorizado(response)) {
+        return;
+      }
 
-            const id =
-                document.getElementById(
-                    "editId"
-                ).value;
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para eliminar grupos.");
+      }
 
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(response, "No se pudo eliminar el grupo."),
+        );
+      }
 
-            const grupo = {
+      const grupoEditado = document.getElementById("editId").value;
 
-                nombre:
-                    document
-                        .getElementById("editNombre")
-                        .value
-                        .trim(),
-
-                descripcion:
-                    document
-                        .getElementById("editDescripcion")
-                        .value
-                        .trim(),
-
-                horaInicio:
-                    document
-                        .getElementById("editHoraInicio")
-                        .value,
-
-                horaFin:
-                    document
-                        .getElementById("editHoraFin")
-                        .value,
-
-                capacidad:
-                    Number(
-                        document
-                            .getElementById("editCapacidad")
-                            .value
-                    )
-            };
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        `/api/grupos/${id}`,
-                        {
-                            method: "PUT",
-
-                            headers: {
-
-                                "Authorization":
-                                    "Basic " + auth,
-
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body:
-                                JSON.stringify(grupo)
-                        }
-                    );
-
-
-                /*
-                 * NO AUTORIZADO
-                 */
-
-                if (response.status === 401) {
-
-                    sessionStorage.clear();
-
-                    window.location.href =
-                        "/login";
-
-                    return;
-                }
-
-
-                /*
-                 * SIN PERMISOS
-                 */
-
-                if (response.status === 403) {
-
-                    throw new Error(
-                        "No tienes permisos para editar grupos."
-                    );
-                }
-
-
-                /*
-                 * ERROR DEL BACKEND
-                 */
-
-                if (!response.ok) {
-
-                    const errorData =
-                        await response.json();
-
-                    throw new Error(
-                        errorData.mensaje ||
-                        "No se pudo actualizar el grupo."
-                    );
-                }
-
-
-                const grupoActualizado =
-                    await response.json();
-
-
-                console.log(
-                    "Grupo actualizado:",
-                    grupoActualizado
-                );
-
-
-                /*
-                 * MENSAJE
-                 */
-
-                mostrarMensaje(
-                    editGroupMessage,
-                    "Grupo actualizado correctamente.",
-                    "success"
-                );
-
-
-                /*
-                 * ACTUALIZAR TABLA
-                 */
-
-                await cargarGrupos();
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error actualizando grupo:",
-                    error
-                );
-
-
-                mostrarMensaje(
-                    editGroupMessage,
-                    error.message,
-                    "error"
-                );
-            }
-
+      if (grupoEditado === String(id)) {
+        if (editGroupSection) {
+          editGroupSection.hidden = true;
         }
-    );
 
-
-    /*
-     * CANCELAR EDICIÓN
-     */
-
-    cancelEditButton.addEventListener(
-        "click",
-        function () {
-
-            editGroupSection.hidden =
-                true;
-
-            editGroupForm.reset();
-
-            editGroupMessage.hidden =
-                true;
-
+        if (editGroupForm) {
+          editGroupForm.reset();
         }
-    );
 
+        ocultarMensaje(editGroupMessage);
 
-    /*
-     * ACTIVAR / DESACTIVAR GRUPO
-     */
+        ocultarMensaje(scheduleMessage);
 
-    document.addEventListener(
-        "click",
-        async function (event) {
-
-            if (
-                !event.target.classList
-                    .contains("btn-estado-grupo")
-            ) {
-
-                return;
-            }
-
-
-            const button =
-                event.target;
-
-
-            const id =
-                button.dataset.id;
-
-
-            const estadoActual =
-                button.dataset.estado;
-
-
-            const nuevoEstado =
-                estadoActual === "ACTIVO"
-                    ? "INACTIVO"
-                    : "ACTIVO";
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        `/api/grupos/${id}/estado?estado=${nuevoEstado}`,
-                        {
-                            method: "PATCH",
-
-                            headers: {
-                                "Authorization":
-                                    "Basic " + auth
-                            }
-                        }
-                    );
-
-
-                /*
-                 * NO AUTORIZADO
-                 */
-
-                if (response.status === 401) {
-
-                    sessionStorage.clear();
-
-                    window.location.href =
-                        "/login";
-
-                    return;
-                }
-
-
-                /*
-                 * SIN PERMISOS
-                 */
-
-                if (response.status === 403) {
-
-                    throw new Error(
-                        "No tienes permisos para cambiar el estado del grupo."
-                    );
-                }
-
-
-                /*
-                 * ERROR DEL BACKEND
-                 */
-
-                if (!response.ok) {
-
-                    const errorData =
-                        await response.json();
-
-                    throw new Error(
-                        errorData.mensaje ||
-                        "No se pudo cambiar el estado del grupo."
-                    );
-                }
-
-
-                const grupo =
-                    await response.json();
-
-
-                console.log(
-                    "Estado del grupo actualizado:",
-                    grupo
-                );
-
-
-                /*
-                 * ACTUALIZAR TABLA
-                 */
-
-                await cargarGrupos();
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error cambiando estado:",
-                    error
-                );
-
-
-                alert(error.message);
-            }
-
+        if (groupSchedulesList) {
+          groupSchedulesList.innerHTML = `
+            <div class="grupos-empty">
+              Selecciona un grupo para gestionar sus horarios.
+            </div>
+          `;
         }
-    );
+      }
 
+      await cargarGrupos();
 
-    /*
-     * CARGA INICIAL
-     */
+      mostrarMensaje(
+        groupMessage,
+        `El grupo "${nombre}" fue eliminado correctamente.`,
+        "success",
+      );
+    } catch (error) {
+      console.error("Error eliminando grupo:", error);
 
-    cargarGrupos();
+      mostrarMensaje(groupMessage, error.message, "error");
 
+      button.disabled = false;
+
+      button.textContent = "Eliminar";
+    }
+  });
+
+  /*
+   * =========================================================
+   * CANCELAR EDICIÓN
+   * =========================================================
+   */
+
+  if (cancelEditButton) {
+    cancelEditButton.addEventListener("click", function () {
+      if (editGroupSection) {
+        editGroupSection.hidden = true;
+      }
+
+      if (editGroupForm) {
+        editGroupForm.reset();
+      }
+
+      ocultarMensaje(editGroupMessage);
+
+      ocultarMensaje(scheduleMessage);
+
+      if (groupSchedulesList) {
+        groupSchedulesList.innerHTML = `
+          <div class="grupos-empty">
+            Selecciona un grupo para gestionar sus horarios.
+          </div>
+        `;
+      }
+    });
+  }
+
+  /*
+   * =========================================================
+   * ACTIVAR / DESACTIVAR GRUPO
+   * =========================================================
+   */
+
+  document.addEventListener("click", async function (event) {
+    const button = event.target.closest(".btn-estado-grupo");
+
+    if (!button) {
+      return;
+    }
+
+    const id = button.dataset.id;
+
+    const estadoActual = button.dataset.estado;
+
+    const nuevoEstado = estadoActual === "ACTIVO" ? "INACTIVO" : "ACTIVO";
+
+    button.disabled = true;
+
+    try {
+      const response = await apiFetch(
+        `/api/grupos/${id}/estado?estado=${nuevoEstado}`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      if (manejarNoAutorizado(response)) {
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para cambiar el estado del grupo.");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudo cambiar el estado del grupo.",
+          ),
+        );
+      }
+
+      await cargarGrupos();
+    } catch (error) {
+      console.error("Error cambiando estado:", error);
+
+      alert(error.message);
+
+      button.disabled = false;
+    }
+  });
+
+  /*
+   * =========================================================
+   * EVITAR VALIDACIÓN DE HORARIOS ANTIGUOS
+   * =========================================================
+   */
+
+  const editHoraInicioInicial = document.getElementById("editHoraInicio");
+
+  const editHoraFinInicial = document.getElementById("editHoraFin");
+
+  if (editHoraInicioInicial) {
+    editHoraInicioInicial.required = false;
+  }
+
+  if (editHoraFinInicial) {
+    editHoraFinInicial.required = false;
+  }
+
+  /*
+   * =========================================================
+   * CARGA INICIAL
+   * =========================================================
+   */
+
+  cargarFrecuencias();
+
+  cargarSenseis();
+
+  cargarGrupos();
 });

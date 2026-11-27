@@ -1,12 +1,18 @@
+
 package com.kihon.kihon.service;
 
 import com.kihon.kihon.dto.ReporteAsistenciaResponse;
 import com.kihon.kihon.model.Asistencia;
 import com.kihon.kihon.model.Estudiante;
 import com.kihon.kihon.model.Grupo;
+import com.kihon.kihon.model.Persona;
+import com.kihon.kihon.model.Rol;
+import com.kihon.kihon.model.Usuario;
 import com.kihon.kihon.repository.AsistenciaRepository;
 import com.kihon.kihon.repository.EstudianteRepository;
 import com.kihon.kihon.repository.GrupoRepository;
+import com.kihon.kihon.repository.UsuarioRepository;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,181 +29,325 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ReporteAsistenciaServiceTest {
 
-    @Mock
-    private AsistenciaRepository asistenciaRepository;
+        @Mock
+        private AsistenciaRepository asistenciaRepository;
 
-    @Mock
-    private EstudianteRepository estudianteRepository;
+        @Mock
+        private EstudianteRepository estudianteRepository;
 
-    @Mock
-    private GrupoRepository grupoRepository;
+        @Mock
+        private GrupoRepository grupoRepository;
 
-    @InjectMocks
-    private ReporteAsistenciaService reporteAsistenciaService;
+        @Mock
+        private UsuarioRepository usuarioRepository;
 
-    @Test
-    void debeGenerarReporteDiarioCorrectamente() {
+        @InjectMocks
+        private ReporteAsistenciaService reporteAsistenciaService;
 
-        LocalDate fecha = LocalDate.of(2026, 9, 8);
+        // ==========================================
+        // AUXILIAR: AUTENTICAR ADMIN
+        // ==========================================
 
-        Estudiante estudiante = mock(Estudiante.class);
-        Grupo grupo = mock(Grupo.class);
+        private void autenticarAdmin() {
 
-        when(estudiante.getId()).thenReturn(1L);
-        when(estudiante.getNombre()).thenReturn("Juan");
-        when(estudiante.getApellido()).thenReturn("Perez");
+                Usuario usuario = mock(Usuario.class);
+                Rol rol = mock(Rol.class);
 
-        when(grupo.getId()).thenReturn(2L);
-        when(grupo.getNombre()).thenReturn("Adultos Avanzados 2");
+                when(usuarioRepository.findByUsername("admin"))
+                                .thenReturn(Optional.of(usuario));
 
-        Asistencia presente = mock(Asistencia.class);
-        Asistencia tardanza = mock(Asistencia.class);
-        Asistencia ausente = mock(Asistencia.class);
+                when(usuario.getEstado()).thenReturn("ACTIVO");
+                when(usuario.getRol()).thenReturn(rol);
+                when(rol.getNombre()).thenReturn("ADMIN");
+        }
 
-        when(presente.getEstado()).thenReturn("PRESENTE");
-        when(presente.getEstudiante()).thenReturn(estudiante);
-        when(presente.getGrupo()).thenReturn(grupo);
+        // ==========================================
+        // AUXILIAR: AUTENTICAR SENSEI
+        // ==========================================
 
-        when(tardanza.getEstado()).thenReturn("TARDANZA");
-        when(tardanza.getEstudiante()).thenReturn(estudiante);
-        when(tardanza.getGrupo()).thenReturn(grupo);
+        private void autenticarSensei(Long senseiId) {
 
-        when(ausente.getEstado()).thenReturn("AUSENTE");
-        when(ausente.getEstudiante()).thenReturn(estudiante);
-        when(ausente.getGrupo()).thenReturn(grupo);
+                Usuario usuario = mock(Usuario.class);
+                Rol rol = mock(Rol.class);
 
-        when(asistenciaRepository.findByFecha(fecha))
-                .thenReturn(List.of(presente, tardanza, ausente));
+                when(usuarioRepository.findByUsername("sensei"))
+                                .thenReturn(Optional.of(usuario));
 
-        ReporteAsistenciaResponse resultado = reporteAsistenciaService.generarReporteDiario(fecha);
+                when(usuario.getId()).thenReturn(senseiId);
+                when(usuario.getEstado()).thenReturn("ACTIVO");
+                when(usuario.getRol()).thenReturn(rol);
+                when(rol.getNombre()).thenReturn("SENSEI");
+        }
 
-        assertEquals(3, resultado.getTotal());
-        assertEquals(1, resultado.getPresentes());
-        assertEquals(1, resultado.getTardanzas());
-        assertEquals(1, resultado.getAusentes());
-        assertEquals(66.67, resultado.getPorcentajeAsistencia());
+        // ==========================================
+        // REPORTE DIARIO
+        // ==========================================
 
-        verify(asistenciaRepository).findByFecha(fecha);
-    }
+        @Test
+        void debeGenerarReporteDiarioCorrectamente() {
 
-    @Test
-    void debeGenerarReporteSemanalCorrectamente() {
+                autenticarAdmin();
 
-        LocalDate inicio = LocalDate.of(2026, 9, 7);
-        LocalDate fin = LocalDate.of(2026, 9, 13);
+                LocalDate fecha = LocalDate.of(2026, 9, 8);
 
-        Estudiante estudiante = mock(Estudiante.class);
-        Grupo grupo = mock(Grupo.class);
+                Estudiante estudiante = mock(Estudiante.class);
+                Persona persona = mock(Persona.class);
+                Grupo grupo = mock(Grupo.class);
 
-        when(estudiante.getId()).thenReturn(1L);
-        when(estudiante.getNombre()).thenReturn("Juan");
-        when(estudiante.getApellido()).thenReturn("Perez");
+                when(estudiante.getId()).thenReturn(1L);
+                when(estudiante.getPersona()).thenReturn(persona);
 
-        when(grupo.getId()).thenReturn(2L);
-        when(grupo.getNombre()).thenReturn("Adultos Avanzados 2");
+                when(persona.getNombre()).thenReturn("Juan");
+                when(persona.getApellido()).thenReturn("Perez");
 
-        Asistencia presente = mock(Asistencia.class);
-        Asistencia tardanza = mock(Asistencia.class);
+                when(grupo.getId()).thenReturn(2L);
+                when(grupo.getNombre()).thenReturn("Adultos Avanzados 2");
 
-        when(presente.getEstado()).thenReturn("PRESENTE");
-        when(presente.getEstudiante()).thenReturn(estudiante);
-        when(presente.getGrupo()).thenReturn(grupo);
+                Asistencia presente = mock(Asistencia.class);
+                Asistencia tardanza = mock(Asistencia.class);
+                Asistencia ausente = mock(Asistencia.class);
 
-        when(tardanza.getEstado()).thenReturn("TARDANZA");
-        when(tardanza.getEstudiante()).thenReturn(estudiante);
-        when(tardanza.getGrupo()).thenReturn(grupo);
+                when(presente.getEstado()).thenReturn("PRESENTE");
+                when(presente.getEstudiante()).thenReturn(estudiante);
+                when(presente.getGrupo()).thenReturn(grupo);
 
-        when(asistenciaRepository.findByFechaBetween(inicio, fin))
-                .thenReturn(List.of(presente, tardanza));
+                when(tardanza.getEstado()).thenReturn("TARDANZA");
+                when(tardanza.getEstudiante()).thenReturn(estudiante);
+                when(tardanza.getGrupo()).thenReturn(grupo);
 
-        ReporteAsistenciaResponse resultado = reporteAsistenciaService.generarReporteSemanal(
-                inicio,
-                fin);
+                when(ausente.getEstado()).thenReturn("AUSENTE");
+                when(ausente.getEstudiante()).thenReturn(estudiante);
+                when(ausente.getGrupo()).thenReturn(grupo);
 
-        assertEquals(2, resultado.getTotal());
-        assertEquals(1, resultado.getPresentes());
-        assertEquals(1, resultado.getTardanzas());
-        assertEquals(0, resultado.getAusentes());
-        assertEquals(100.0, resultado.getPorcentajeAsistencia());
+                when(asistenciaRepository.findByFecha(fecha))
+                                .thenReturn(List.of(presente, tardanza, ausente));
 
-        verify(asistenciaRepository)
-                .findByFechaBetween(inicio, fin);
-    }
+                ReporteAsistenciaResponse resultado = reporteAsistenciaService.generarReporteDiario(
+                                fecha,
+                                "admin");
 
-    @Test
-    void noDebeAceptarPeriodoInvalido() {
+                assertEquals(3, resultado.getTotal());
+                assertEquals(1, resultado.getPresentes());
+                assertEquals(1, resultado.getTardanzas());
+                assertEquals(1, resultado.getAusentes());
+                assertEquals(66.67, resultado.getPorcentajeAsistencia());
 
-        LocalDate inicio = LocalDate.of(2026, 9, 13);
-        LocalDate fin = LocalDate.of(2026, 9, 7);
+                verify(asistenciaRepository).findByFecha(fecha);
+        }
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> reporteAsistenciaService.generarReporteSemanal(
-                        inicio,
-                        fin));
+        // ==========================================
+        // REPORTE SEMANAL
+        // ==========================================
 
-        assertEquals(
-                "La fecha de inicio no puede ser posterior a la fecha de fin",
-                exception.getMessage());
+        @Test
+        void debeGenerarReporteSemanalCorrectamente() {
 
-        verifyNoInteractions(asistenciaRepository);
-    }
+                autenticarAdmin();
 
-    @Test
-    void noDebeAceptarMesInvalido() {
+                LocalDate inicio = LocalDate.of(2026, 9, 7);
+                LocalDate fin = LocalDate.of(2026, 9, 13);
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> reporteAsistenciaService.generarReporteMensual(
-                        2026,
-                        13));
+                Estudiante estudiante = mock(Estudiante.class);
+                Persona persona = mock(Persona.class);
+                Grupo grupo = mock(Grupo.class);
 
-        assertEquals(
-                "El mes debe estar entre 1 y 12",
-                exception.getMessage());
+                when(estudiante.getId()).thenReturn(1L);
+                when(estudiante.getPersona()).thenReturn(persona);
 
-        verifyNoInteractions(asistenciaRepository);
-    }
+                when(persona.getNombre()).thenReturn("Juan");
+                when(persona.getApellido()).thenReturn("Perez");
 
-    @Test
-    void noDebeGenerarReporteSiEstudianteNoExiste() {
+                when(grupo.getId()).thenReturn(2L);
+                when(grupo.getNombre()).thenReturn("Adultos Avanzados 2");
 
-        Long estudianteId = 99L;
+                Asistencia presente = mock(Asistencia.class);
+                Asistencia tardanza = mock(Asistencia.class);
 
-        when(estudianteRepository.findById(estudianteId))
-                .thenReturn(Optional.empty());
+                when(presente.getEstado()).thenReturn("PRESENTE");
+                when(presente.getEstudiante()).thenReturn(estudiante);
+                when(presente.getGrupo()).thenReturn(grupo);
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> reporteAsistenciaService.generarReportePorEstudiante(
-                        estudianteId));
+                when(tardanza.getEstado()).thenReturn("TARDANZA");
+                when(tardanza.getEstudiante()).thenReturn(estudiante);
+                when(tardanza.getGrupo()).thenReturn(grupo);
 
-        assertEquals(
-                "Estudiante no encontrado",
-                exception.getMessage());
+                when(asistenciaRepository.findByFechaBetween(inicio, fin))
+                                .thenReturn(List.of(presente, tardanza));
 
-        verify(estudianteRepository).findById(estudianteId);
-        verifyNoInteractions(asistenciaRepository);
-    }
+                ReporteAsistenciaResponse resultado = reporteAsistenciaService.generarReporteSemanal(
+                                inicio,
+                                fin,
+                                "admin");
 
-    @Test
-    void noDebeGenerarReporteSiGrupoNoExiste() {
+                assertEquals(2, resultado.getTotal());
+                assertEquals(1, resultado.getPresentes());
+                assertEquals(1, resultado.getTardanzas());
+                assertEquals(0, resultado.getAusentes());
+                assertEquals(100.0, resultado.getPorcentajeAsistencia());
 
-        Long grupoId = 99L;
+                verify(asistenciaRepository)
+                                .findByFechaBetween(inicio, fin);
+        }
 
-        when(grupoRepository.findById(grupoId))
-                .thenReturn(Optional.empty());
+        // ==========================================
+        // VALIDAR PERIODO
+        // ==========================================
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> reporteAsistenciaService.generarReportePorGrupo(
-                        grupoId));
+        @Test
+        void noDebeAceptarPeriodoInvalido() {
 
-        assertEquals(
-                "Grupo no encontrado",
-                exception.getMessage());
+                autenticarAdmin();
 
-        verify(grupoRepository).findById(grupoId);
-        verifyNoInteractions(asistenciaRepository);
-    }
+                LocalDate inicio = LocalDate.of(2026, 9, 13);
+                LocalDate fin = LocalDate.of(2026, 9, 7);
+
+                RuntimeException exception = assertThrows(
+                                RuntimeException.class,
+                                () -> reporteAsistenciaService.generarReporteSemanal(
+                                                inicio,
+                                                fin,
+                                                "admin"));
+
+                assertEquals(
+                                "La fecha de inicio no puede ser posterior a la fecha de fin",
+                                exception.getMessage());
+
+                verifyNoInteractions(asistenciaRepository);
+        }
+
+        // ==========================================
+        // VALIDAR MES
+        // ==========================================
+
+        @Test
+        void noDebeAceptarMesInvalido() {
+
+                autenticarAdmin();
+
+                RuntimeException exception = assertThrows(
+                                RuntimeException.class,
+                                () -> reporteAsistenciaService.generarReporteMensual(
+                                                2026,
+                                                13,
+                                                "admin"));
+
+                assertEquals(
+                                "El mes debe estar entre 1 y 12",
+                                exception.getMessage());
+
+                verifyNoInteractions(asistenciaRepository);
+        }
+
+        // ==========================================
+        // VALIDAR ESTUDIANTE
+        // ==========================================
+
+        @Test
+        void noDebeGenerarReporteSiEstudianteNoExiste() {
+
+                autenticarAdmin();
+
+                Long estudianteId = 99L;
+
+                when(estudianteRepository.findById(estudianteId))
+                                .thenReturn(Optional.empty());
+
+                RuntimeException exception = assertThrows(
+                                RuntimeException.class,
+                                () -> reporteAsistenciaService.generarReportePorEstudiante(
+                                                estudianteId,
+                                                "admin"));
+
+                assertEquals(
+                                "Estudiante no encontrado",
+                                exception.getMessage());
+
+                verify(estudianteRepository).findById(estudianteId);
+                verifyNoInteractions(asistenciaRepository);
+        }
+
+        // ==========================================
+        // VALIDAR GRUPO
+        // ==========================================
+
+        @Test
+        void noDebeGenerarReporteSiGrupoNoExiste() {
+
+                autenticarAdmin();
+
+                Long grupoId = 99L;
+
+                when(grupoRepository.findById(grupoId))
+                                .thenReturn(Optional.empty());
+
+                RuntimeException exception = assertThrows(
+                                RuntimeException.class,
+                                () -> reporteAsistenciaService.generarReportePorGrupo(
+                                                grupoId,
+                                                "admin"));
+
+                assertEquals(
+                                "Grupo no encontrado",
+                                exception.getMessage());
+
+                verify(grupoRepository).findById(grupoId);
+                verifyNoInteractions(asistenciaRepository);
+        }
+
+        // ==========================================
+        // FILTRAR ASISTENCIAS POR SENSEI
+        // ==========================================
+
+        @Test
+        void debeFiltrarReporteDiarioSoloConGruposDelSensei() {
+
+                autenticarSensei(10L);
+
+                LocalDate fecha = LocalDate.of(2026, 9, 8);
+
+                Estudiante estudiante = mock(Estudiante.class);
+                Persona persona = mock(Persona.class);
+
+                Grupo grupoPropio = mock(Grupo.class);
+                Grupo grupoAjeno = mock(Grupo.class);
+
+                when(estudiante.getId()).thenReturn(1L);
+                when(estudiante.getPersona()).thenReturn(persona);
+
+                when(persona.getNombre()).thenReturn("Juan");
+                when(persona.getApellido()).thenReturn("Perez");
+
+                when(grupoPropio.getId()).thenReturn(2L);
+                when(grupoPropio.getNombre()).thenReturn("Grupo Sensei");
+
+                when(grupoAjeno.getId()).thenReturn(3L);
+
+                Asistencia asistenciaPropia = mock(Asistencia.class);
+                Asistencia asistenciaAjena = mock(Asistencia.class);
+
+                when(asistenciaPropia.getEstado()).thenReturn("PRESENTE");
+                when(asistenciaPropia.getEstudiante()).thenReturn(estudiante);
+                when(asistenciaPropia.getGrupo()).thenReturn(grupoPropio);
+
+                // Solo se necesita el grupo para descartar esta asistencia.
+                when(asistenciaAjena.getGrupo()).thenReturn(grupoAjeno);
+
+                when(asistenciaRepository.findByFecha(fecha))
+                                .thenReturn(List.of(asistenciaPropia, asistenciaAjena));
+
+                when(grupoRepository.findBySenseiId(10L))
+                                .thenReturn(List.of(grupoPropio));
+
+                ReporteAsistenciaResponse resultado = reporteAsistenciaService.generarReporteDiario(
+                                fecha,
+                                "sensei");
+
+                assertEquals(1, resultado.getTotal());
+                assertEquals(1, resultado.getPresentes());
+                assertEquals(0, resultado.getAusentes());
+                assertEquals(100.0, resultado.getPorcentajeAsistencia());
+
+                verify(grupoRepository).findBySenseiId(10L);
+                verify(asistenciaRepository).findByFecha(fecha);
+        }
 }

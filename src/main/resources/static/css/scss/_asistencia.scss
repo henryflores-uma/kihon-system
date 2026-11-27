@@ -2,29 +2,21 @@
     width: 100%;
 }
 
-.asistencia-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
 
-    margin-bottom: 2rem;
-
-    h1 {
-        margin-bottom: 0.35rem;
-        font-size: 2rem;
-    }
-
-    p {
-        color: $color-gray-600;
-    }
-}
+/* =========================================================
+   FORMULARIO PRINCIPAL
+   ========================================================= */
 
 .asistencia-form-card {
     margin-bottom: 2rem;
 }
 
+
 .asistencia-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
     margin-bottom: 1.5rem;
 
     h2 {
@@ -37,18 +29,88 @@
     }
 }
 
-.asistencia-form {
-    display: flex;
-    flex-direction: column;
-}
 
-.asistencia-form-actions {
-    display: flex;
-    justify-content: flex-end;
+/* =========================================================
+   SELECCIÓN DE FECHA Y GRUPO
+   ========================================================= */
+
+.asistencia-selection {
+    display: grid;
+
+    grid-template-columns:
+        minmax(220px, 300px) minmax(260px, 1fr);
+
     gap: 1rem;
 
-    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
 }
+
+
+/* =========================================================
+   INFORMACIÓN DEL GRUPO
+   ========================================================= */
+
+.asistencia-grupo-info {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 1.5rem;
+
+    padding: 1rem 1.25rem;
+
+    margin-bottom: 1.5rem;
+
+    border: 1px solid $color-gray-200;
+    border-radius: 8px;
+
+    background-color: $color-gray-100;
+}
+
+
+.asistencia-grupo-info__main {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.25rem;
+
+
+    strong {
+        color: $color-gray-900;
+        font-size: 1rem;
+    }
+
+
+    span {
+        color: $color-gray-600;
+        font-size: 0.85rem;
+    }
+}
+
+
+.asistencia-grupo-info__details {
+    display: flex;
+
+    align-items: center;
+
+    gap: 1.5rem;
+
+    color: $color-gray-600;
+
+    font-size: 0.85rem;
+
+
+    strong {
+        color: $color-gray-900;
+    }
+}
+
+
+/* =========================================================
+   MENSAJES
+   ========================================================= */
 
 .asistencia-message {
     margin-bottom: 1rem;
@@ -59,62 +121,322 @@
 
     font-size: 0.9rem;
 
+
     &:empty {
         display: none;
     }
 }
 
+
 .asistencia-message--success {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: $color-gray-100;
+    color: $color-gray-900;
 }
 
+
 .asistencia-message--error {
-    background-color: #ffebee;
+    background-color: $color-gray-100;
     color: $color-red;
 }
+
+
+/* =========================================================
+   REGISTRO DE ESTUDIANTES
+   ========================================================= */
+
+.asistencia-register {
+    width: 100%;
+}
+
+
+.asistencia-register-header {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 1rem;
+
+
+    strong {
+        display: block;
+
+        margin-bottom: 0.25rem;
+
+        color: $color-gray-900;
+    }
+
+
+    span {
+        color: $color-gray-600;
+
+        font-size: 0.85rem;
+    }
+}
+
+
+.asistencia-student-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.75rem;
+}
+
+
+.asistencia-student-row {
+    display: grid;
+
+    grid-template-columns:
+        minmax(150px, 1fr) auto minmax(260px, 1.3fr);
+
+    align-items: center;
+
+    gap: 1rem;
+
+    padding: 1rem;
+
+    border: 1px solid $color-gray-200;
+
+    border-radius: 8px;
+
+    background-color: $color-white;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+
+
+    &:hover {
+        border-color: $color-gray-600;
+
+        box-shadow:
+            0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+}
+
+
+.asistencia-student-info {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.25rem;
+
+
+    strong {
+        color: $color-gray-900;
+
+        font-size: 0.95rem;
+    }
+
+
+    span {
+        color: $color-gray-600;
+
+        font-size: 0.75rem;
+    }
+}
+
+
+/* =========================================================
+   BOTONES DE ESTADO
+   ========================================================= */
+
+.asistencia-state-buttons {
+    display: flex;
+
+    align-items: center;
+
+    gap: 0.4rem;
+
+    flex-wrap: wrap;
+}
+
+
+.asistencia-state-button {
+    border: 1px solid $color-gray-200;
+
+    border-radius: 6px;
+
+    padding: 0.45rem 0.7rem;
+
+    background-color: $color-white;
+
+    color: $color-gray-600;
+
+    font-family: $font-family-base;
+
+    font-size: 0.7rem;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+
+
+    &:hover {
+        border-color: $color-gray-600;
+    }
+}
+
+
+/* =========================================================
+   PRESENTE
+   ========================================================= */
+
+.asistencia-state-button--presente {
+
+    &.is-active {
+        background-color: $color-black;
+
+        border-color: $color-black;
+
+        color: $color-white;
+    }
+}
+
+
+/* =========================================================
+   TARDANZA
+   ========================================================= */
+
+.asistencia-state-button--tardanza {
+
+    &.is-active {
+        background-color: $color-yellow;
+
+        border-color: $color-yellow;
+
+        color: $color-black;
+    }
+}
+
+
+/* =========================================================
+   AUSENTE
+   ========================================================= */
+
+.asistencia-state-button--ausente {
+
+    &.is-active {
+        background-color: $color-red;
+
+        border-color: $color-red;
+
+        color: $color-white;
+    }
+}
+
+
+/* =========================================================
+   CAMPOS DE CADA ESTUDIANTE
+   ========================================================= */
+
+.asistencia-student-fields {
+    display: grid;
+
+    grid-template-columns:
+        minmax(110px, 130px) 1fr;
+
+    gap: 0.75rem;
+}
+
+
+.asistencia-student-fields .form-group {
+    min-width: 0;
+}
+
+
+/* =========================================================
+   BOTÓN PRINCIPAL
+   ========================================================= */
+
+.asistencia-form-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 1rem;
+
+    margin-top: 1.5rem;
+}
+
+
+/* =========================================================
+   CONSULTA
+   ========================================================= */
 
 .asistencia-list-card {
     overflow: hidden;
 }
 
+
 .asistencia-list-header {
     display: flex;
+
     align-items: center;
     justify-content: space-between;
+
     gap: 1rem;
 
     margin-bottom: 1.5rem;
+
 
     h2 {
         margin-bottom: 0.35rem;
     }
 
+
     p {
         color: $color-gray-600;
+
         font-size: 0.9rem;
     }
 
+
     >span {
         color: $color-gray-600;
+
         font-size: 0.9rem;
+
         white-space: nowrap;
     }
 }
 
-.asistencia-filter {
-    max-width: 300px;
+
+.asistencia-consultation-filters {
+    display: grid;
+
+    grid-template-columns:
+        minmax(180px, 260px) minmax(220px, 1fr) minmax(220px, 1fr);
+
+    gap: 1rem;
+
     margin-bottom: 1.5rem;
 }
 
+
+/* =========================================================
+   TABLA
+   ========================================================= */
+
 .asistencia-table-wrapper {
     width: 100%;
+
     overflow-x: auto;
 }
 
+
 .asistencia-table {
     width: 100%;
+
     border-collapse: collapse;
+
 
     th,
     td {
@@ -122,33 +444,44 @@
 
         text-align: left;
 
-        border-bottom: 1px solid $color-gray-200;
+        border-bottom:
+            1px solid $color-gray-200;
     }
+
 
     th {
         background-color: $color-black;
+
         color: $color-white;
 
         font-size: 0.8rem;
+
         font-weight: 600;
 
         text-transform: uppercase;
+
         white-space: nowrap;
     }
 
+
     td {
         background-color: $color-white;
+
         color: $color-gray-900;
 
         font-size: 0.9rem;
     }
 
+
     tbody tr {
-        transition: background-color 0.2s ease;
+        transition:
+            background-color 0.2s ease;
+
 
         &:hover td {
             background-color: $color-gray-100;
         }
+
 
         &:last-child td {
             border-bottom: none;
@@ -156,8 +489,14 @@
     }
 }
 
+
+/* =========================================================
+   ESTADOS
+   ========================================================= */
+
 .asistencia-estado {
     display: inline-flex;
+
     align-items: center;
 
     padding: 0.35rem 0.7rem;
@@ -165,23 +504,53 @@
     border-radius: 20px;
 
     font-size: 0.75rem;
+
     font-weight: 700;
 }
 
+
 .asistencia-estado--presente {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: $color-black;
+
+    color: $color-white;
 }
+
 
 .asistencia-estado--tardanza {
-    background-color: #fff8e1;
-    color: #f57f17;
+    background-color: $color-yellow;
+
+    color: $color-black;
 }
 
+
 .asistencia-estado--ausente {
-    background-color: #ffebee;
-    color: $color-red;
+    background-color: $color-red;
+
+    color: $color-white;
 }
+
+
+/* =========================================================
+   EDICIÓN
+   ========================================================= */
+
+.asistencia-edit-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 0.5rem;
+}
+
+
+.asistencia-edit-actions .btn {
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   ESTADOS VACÍOS / CARGA
+   ========================================================= */
 
 .asistencia-empty {
     padding: 3rem 1rem;
@@ -191,6 +560,7 @@
     color: $color-gray-600;
 }
 
+
 .asistencia-loading {
     padding: 2rem;
 
@@ -199,45 +569,136 @@
     color: $color-gray-600;
 }
 
-@media (max-width: 900px) {
 
-    .asistencia-table {
-        min-width: 850px;
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .asistencia-student-row {
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+
+    .asistencia-student-fields {
+        grid-column: 1 / -1;
     }
 }
 
+
+@media (max-width: 900px) {
+
+    .asistencia-selection {
+        grid-template-columns: 1fr;
+    }
+
+
+    .asistencia-consultation-filters {
+        grid-template-columns: 1fr 1fr;
+    }
+
+
+    .asistencia-table {
+        min-width: 1000px;
+    }
+}
+
+
 @media (max-width: 700px) {
 
-    .asistencia-header {
+    .asistencia-grupo-info {
         flex-direction: column;
+
         align-items: flex-start;
     }
 
-    .asistencia-list-header {
+
+    .asistencia-grupo-info__details {
         flex-direction: column;
+
         align-items: flex-start;
+
+        gap: 0.4rem;
     }
+
+
+    .asistencia-consultation-filters {
+        grid-template-columns: 1fr;
+    }
+
+
+    .asistencia-student-row {
+        grid-template-columns: 1fr;
+    }
+
+
+    .asistencia-state-buttons {
+        width: 100%;
+    }
+
+
+    .asistencia-state-button {
+        flex: 1;
+    }
+
+
+    .asistencia-student-fields {
+        grid-template-columns: 1fr;
+    }
+
 
     .asistencia-form-actions {
         justify-content: stretch;
+
 
         .btn {
             flex: 1;
         }
     }
+
+
+    .asistencia-list-header {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
 }
+
 
 @media (max-width: 500px) {
 
+    .asistencia-state-buttons {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .asistencia-state-button {
+        width: 100%;
+    }
+
+
     .asistencia-form-actions {
         flex-direction: column;
+
 
         .btn {
             width: 100%;
         }
     }
 
-    .asistencia-filter {
-        max-width: 100%;
+
+    .asistencia-edit-actions {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .asistencia-edit-actions .btn {
+        width: 100%;
     }
 }

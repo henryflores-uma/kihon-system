@@ -14,8 +14,6 @@ public class UsuarioRequest {
     private LocalDate fechaNacimiento;
     private String genero;
     private String correo;
-    private String foto;
-    private Long estudianteId;
 
     public UsuarioRequest() {
     }
@@ -98,21 +96,5 @@ public class UsuarioRequest {
 
     public void setCorreo(String correo) {
         this.correo = correo;
-    }
-
-    public String getFoto() {
-        return foto;
-    }
-
-    public void setFoto(String foto) {
-        this.foto = foto;
-    }
-
-    public Long getEstudianteId() {
-        return estudianteId;
-    }
-
-    public void setEstudianteId(Long estudianteId) {
-        this.estudianteId = estudianteId;
     }
 }

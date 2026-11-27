@@ -1,11 +1,31 @@
 $color-black: #000000;
-$color-red: #FF2400;
-$color-yellow: #FFD700;
+$color-red: #ff2400;
+$color-yellow: #ffd700;
+$color-white: #ffffff;
 
-$color-white: #FFFFFF;
-
-$color-gray-100: #F5F5F5;
-$color-gray-200: #E5E5E5;
+$color-gray-50: #fafafa;
+$color-gray-100: #f5f5f5;
+$color-gray-200: #e5e5e5;
+$color-gray-300: #d4d4d4;
+$color-gray-500: #737373;
 $color-gray-600: #666666;
-$color-gray-900: #1A1A1A;
+$color-gray-700: #404040;
+$color-gray-900: #1a1a1a;
+
+$color-green: #16a34a;
+$color-green-light: #dcfce7;
+$color-red-light: #fee2e2;
+$color-yellow-light: #fef9c3;
+$color-blue-light: #eff6ff;
+$color-blue: #2563eb;
+
 $font-family-base: "Segoe UI", Arial, sans-serif;
+
+$border-color: $color-gray-200;
+$border-radius: 8px;
+$border-radius-lg: 12px;
+
+$shadow-card: 0 2px 8px rgb(0 0 0 / 5%);
+$shadow-modal: 0 16px 48px rgb(0 0 0 / 20%);
+
+$transition-base: 0.2s ease;

@@ -1,188 +1,870 @@
+
 package com.kihon.kihon.service;
 
+import com.kihon.kihon.exception.DatoDuplicadoException;
+
+import com.kihon.kihon.model.Cinturon;
 import com.kihon.kihon.model.Estudiante;
+import com.kihon.kihon.model.EstudianteGrupo;
+import com.kihon.kihon.model.Grupo;
+import com.kihon.kihon.model.Persona;
+import com.kihon.kihon.model.TipoDocumento;
+import com.kihon.kihon.model.Usuario;
+
+import com.kihon.kihon.repository.CinturonRepository;
 import com.kihon.kihon.repository.EstudianteRepository;
+import com.kihon.kihon.repository.EstudianteGrupoRepository;
+import com.kihon.kihon.repository.GrupoRepository;
+import com.kihon.kihon.repository.PersonaRepository;
+import com.kihon.kihon.repository.TipoDocumentoRepository;
+import com.kihon.kihon.repository.UsuarioRepository;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class EstudianteService {
 
-    private final EstudianteRepository estudianteRepository;
+        private final EstudianteRepository estudianteRepository;
+        private final PersonaRepository personaRepository;
+        private final TipoDocumentoRepository tipoDocumentoRepository;
+        private final CinturonRepository cinturonRepository;
+        private final SupabaseStorageService storageService;
 
-    public EstudianteService(
-            EstudianteRepository estudianteRepository) {
+        // Dependencias para el acceso del Sensei
+        private final GrupoRepository grupoRepository;
+        private final EstudianteGrupoRepository estudianteGrupoRepository;
+        private final UsuarioRepository usuarioRepository;
 
-        this.estudianteRepository = estudianteRepository;
-    }
+        public EstudianteService(
+                        EstudianteRepository estudianteRepository,
+                        PersonaRepository personaRepository,
+                        TipoDocumentoRepository tipoDocumentoRepository,
+                        CinturonRepository cinturonRepository,
+                        SupabaseStorageService storageService,
+                        GrupoRepository grupoRepository,
+                        EstudianteGrupoRepository estudianteGrupoRepository,
+                        UsuarioRepository usuarioRepository) {
 
-    public List<Estudiante> listarEstudiantes() {
-        return estudianteRepository.findAll();
-    }
+                this.estudianteRepository = estudianteRepository;
+                this.personaRepository = personaRepository;
+                this.tipoDocumentoRepository = tipoDocumentoRepository;
+                this.cinturonRepository = cinturonRepository;
+                this.storageService = storageService;
 
-    public Estudiante buscarPorId(Long id) {
-
-        return estudianteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Estudiante no encontrado"));
-    }
-
-    public Estudiante crearEstudiante(
-            String nombre,
-            String apellido,
-            String tipoDocumento,
-            String documento,
-            String telefono,
-            String correo,
-            LocalDate fechaNacimiento,
-            String direccion,
-            String foto) {
-
-        if (nombre == null || nombre.isBlank()) {
-            throw new RuntimeException(
-                    "El nombre es obligatorio");
+                this.grupoRepository = grupoRepository;
+                this.estudianteGrupoRepository = estudianteGrupoRepository;
+                this.usuarioRepository = usuarioRepository;
         }
 
-        if (apellido == null || apellido.isBlank()) {
-            throw new RuntimeException(
-                    "El apellido es obligatorio");
+        /*
+         * ==========================================
+         * LISTAR TODOS
+         * ==========================================
+         */
+        public List<Estudiante> listarEstudiantes() {
+
+                return estudianteRepository.findAll();
         }
 
-        if (tipoDocumento == null || tipoDocumento.isBlank()) {
-            throw new RuntimeException(
-                    "El tipo de documento es obligatorio");
+        /*
+         * ==========================================
+         * BUSCAR POR ID
+         * ==========================================
+         */
+        public Estudiante buscarPorId(Long id) {
+
+                return estudianteRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Estudiante no encontrado"));
         }
 
-        if (documento == null || documento.isBlank()) {
-            throw new RuntimeException(
-                    "El documento es obligatorio");
+        /*
+         * ==========================================
+         * LISTAR ESTUDIANTES DEL SENSEI
+         * ==========================================
+         */
+        @Transactional(readOnly = true)
+        public List<Estudiante> listarPorSensei(
+                        String username,
+                        String estado) {
+
+                Usuario sensei = obtenerSenseiAutenticado(username);
+
+                // ==============================
+                // VALIDAR FILTRO DE ESTADO
+                // ==============================
+
+                String estadoFiltro = null;
+
+                if (estado != null && !estado.isBlank()) {
+
+                        estadoFiltro = estado.trim().toUpperCase();
+
+                        if (!estadoFiltro.equals("ACTIVO")
+                                        && !estadoFiltro.equals("INACTIVO")) {
+
+                                throw new RuntimeException(
+                                                "El estado debe ser ACTIVO o INACTIVO");
+                        }
+                }
+
+                // ==============================
+                // OBTENER GRUPOS DEL SENSEI
+                // ==============================
+
+                List<Grupo> grupos = grupoRepository.findBySenseiId(
+                                sensei.getId());
+
+                // ==============================
+                // OBTENER ESTUDIANTES ÚNICOS
+                // ==============================
+
+                Map<Long, Estudiante> estudiantesUnicos = new LinkedHashMap<>();
+
+                for (Grupo grupo : grupos) {
+
+                        List<EstudianteGrupo> inscripciones = estudianteGrupoRepository
+                                        .findByGrupoId(grupo.getId());
+
+                        for (EstudianteGrupo inscripcion : inscripciones) {
+
+                                // Solo inscripciones activas
+                                if (!"ACTIVO".equalsIgnoreCase(inscripcion.getEstado())) {
+                                        continue;
+                                }
+
+                                Estudiante estudiante = inscripcion.getEstudiante();
+
+                                if (estudiante == null) {
+                                        continue;
+                                }
+
+                                // Aplicar filtro de estado del estudiante
+                                if (estadoFiltro != null
+                                                && !estadoFiltro.equalsIgnoreCase(estudiante.getEstado())) {
+
+                                        continue;
+                                }
+
+                                // Evitar estudiantes duplicados
+                                estudiantesUnicos.putIfAbsent(
+                                                estudiante.getId(),
+                                                estudiante);
+                        }
+                }
+
+                return List.copyOf(estudiantesUnicos.values());
         }
 
-        if (telefono == null || telefono.isBlank()) {
-            throw new RuntimeException(
-                    "El teléfono es obligatorio");
+        /*
+         * ==========================================
+         * BUSCAR ESTUDIANTE DEL SENSEI POR ID
+         * ==========================================
+         */
+        @Transactional(readOnly = true)
+        public Estudiante buscarPorIdDeSensei(
+                        Long estudianteId,
+                        String username) {
+
+                Usuario sensei = obtenerSenseiAutenticado(username);
+
+                // ==============================
+                // BUSCAR ESTUDIANTE
+                // ==============================
+
+                Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Estudiante no encontrado"));
+
+                // ==============================
+                // OBTENER INSCRIPCIONES ACTIVAS
+                // ==============================
+
+                List<EstudianteGrupo> inscripciones = estudianteGrupoRepository
+                                .findByEstudianteIdAndEstado(
+                                                estudianteId,
+                                                "ACTIVO");
+
+                // ==============================
+                // VALIDAR PERTENENCIA AL SENSEI
+                // ==============================
+
+                boolean perteneceAlSensei = inscripciones.stream()
+                                .anyMatch(inscripcion -> {
+
+                                        Grupo grupo = inscripcion.getGrupo();
+
+                                        return grupo != null
+                                                        && grupo.getSensei() != null
+                                                        && grupo.getSensei().getId()
+                                                                        .equals(sensei.getId());
+                                });
+
+                if (!perteneceAlSensei) {
+
+                        throw new RuntimeException(
+                                        "No tienes acceso a este estudiante");
+                }
+
+                return estudiante;
         }
 
-        if (correo == null || correo.isBlank()) {
-            throw new RuntimeException(
-                    "El correo es obligatorio");
+        /*
+         * ==========================================
+         * VALIDAR SENSEI AUTENTICADO
+         * ==========================================
+         */
+        private Usuario obtenerSenseiAutenticado(String username) {
+
+                Usuario usuario = usuarioRepository.findByUsername(username)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Usuario autenticado no encontrado"));
+
+                if (usuario.getRol() == null
+                                || !"SENSEI".equalsIgnoreCase(usuario.getRol().getNombre())) {
+
+                        throw new RuntimeException(
+                                        "El usuario autenticado no tiene el rol SENSEI");
+                }
+
+                if (!"ACTIVO".equalsIgnoreCase(usuario.getEstado())) {
+
+                        throw new RuntimeException(
+                                        "El Sensei no se encuentra activo");
+                }
+
+                return usuario;
         }
 
-        if (fechaNacimiento == null) {
-            throw new RuntimeException(
-                    "La fecha de nacimiento es obligatoria");
+        /*
+         * ==========================================
+         * CREAR ESTUDIANTE
+         * ==========================================
+         */
+        @Transactional
+        public Estudiante crearEstudiante(
+                        String nombre,
+                        String apellido,
+                        String tipoDocumento,
+                        String documento,
+                        String telefono,
+                        String correo,
+                        LocalDate fechaNacimiento,
+                        String direccion,
+                        String cinturon,
+                        MultipartFile foto) {
+
+                // ==============================
+                // VALIDACIONES
+                // ==============================
+
+                if (nombre == null || nombre.isBlank()) {
+                        throw new RuntimeException(
+                                        "El nombre es obligatorio");
+                }
+
+                if (apellido == null || apellido.isBlank()) {
+                        throw new RuntimeException(
+                                        "El apellido es obligatorio");
+                }
+
+                if (tipoDocumento == null || tipoDocumento.isBlank()) {
+                        throw new RuntimeException(
+                                        "El tipo de documento es obligatorio");
+                }
+
+                if (documento == null || documento.isBlank()) {
+                        throw new RuntimeException(
+                                        "El documento es obligatorio");
+                }
+
+                if (telefono == null || telefono.isBlank()) {
+                        throw new RuntimeException(
+                                        "El teléfono es obligatorio");
+                }
+
+                if (correo == null || correo.isBlank()) {
+                        throw new RuntimeException(
+                                        "El correo es obligatorio");
+                }
+
+                if (fechaNacimiento == null) {
+                        throw new RuntimeException(
+                                        "La fecha de nacimiento es obligatoria");
+                }
+
+                if (direccion == null || direccion.isBlank()) {
+                        throw new RuntimeException(
+                                        "La dirección es obligatoria");
+                }
+
+                if (cinturon == null || cinturon.isBlank()) {
+                        throw new RuntimeException(
+                                        "El cinturón es obligatorio");
+                }
+
+                // ==============================
+                // NORMALIZAR DATOS
+                // ==============================
+
+                nombre = nombre.trim();
+                apellido = apellido.trim();
+                tipoDocumento = tipoDocumento.trim().toUpperCase();
+                documento = documento.trim();
+                telefono = telefono.trim();
+                correo = correo.trim().toLowerCase();
+                direccion = direccion.trim();
+                cinturon = cinturon.trim().toUpperCase();
+
+                // ==============================
+                // BUSCAR TIPO DE DOCUMENTO
+                // ==============================
+
+                TipoDocumento tipoDocumentoEntidad = tipoDocumentoRepository
+                                .findByNombre(tipoDocumento)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "El tipo de documento no existe"));
+
+                // ==============================
+                // BUSCAR CINTURÓN
+                // ==============================
+
+                Cinturon cinturonEntidad = cinturonRepository
+                                .findByNombre(cinturon)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "El cinturón no existe"));
+
+                // ==============================
+                // BUSCAR PERSONA POR DOCUMENTO
+                // ==============================
+
+                Persona persona = personaRepository
+                                .findByTipoDocumentoIdAndNumeroDocumento(
+                                                tipoDocumentoEntidad.getId(),
+                                                documento)
+                                .orElse(null);
+
+                // ==============================
+                // PERSONA EXISTENTE
+                // ==============================
+
+                if (persona != null) {
+
+                        /*
+                         * La persona ya existe.
+                         * Puede tener otros roles en el sistema.
+                         */
+
+                        if (!persona.getCorreo().equalsIgnoreCase(correo)) {
+
+                                throw new DatoDuplicadoException(
+                                                "El documento ya está registrado con otro correo electrónico");
+                        }
+
+                        /*
+                         * Verificar que la persona todavía
+                         * no tenga un registro de estudiante.
+                         */
+
+                        if (estudianteRepository
+                                        .findByPersona(persona)
+                                        .isPresent()) {
+
+                                throw new DatoDuplicadoException(
+                                                "Ya existe un estudiante registrado con ese documento");
+                        }
+
+                        /*
+                         * Actualizar información personal
+                         * de la persona existente.
+                         */
+
+                        persona.setNombre(nombre);
+                        persona.setApellido(apellido);
+                        persona.setTelefono(telefono);
+                        persona.setFechaNacimiento(fechaNacimiento);
+                        persona.setDireccion(direccion);
+
+                        persona = personaRepository.save(persona);
+                }
+
+                // ==============================
+                // PERSONA NUEVA
+                // ==============================
+
+                else {
+
+                        /*
+                         * El correo debe ser único globalmente.
+                         */
+
+                        if (personaRepository
+                                        .findByCorreo(correo)
+                                        .isPresent()) {
+
+                                throw new DatoDuplicadoException(
+                                                "El correo electrónico ya existe");
+                        }
+
+                        persona = new Persona();
+
+                        persona.setNombre(nombre);
+                        persona.setApellido(apellido);
+                        persona.setTipoDocumento(tipoDocumentoEntidad);
+                        persona.setNumeroDocumento(documento);
+                        persona.setTelefono(telefono);
+                        persona.setCorreo(correo);
+                        persona.setFechaNacimiento(fechaNacimiento);
+                        persona.setDireccion(direccion);
+
+                        persona = personaRepository.save(persona);
+                }
+
+                // ==============================
+                // CREAR ESTUDIANTE
+                // ==============================
+
+                Estudiante estudiante = new Estudiante();
+
+                /*
+                 * Persona es la identidad del estudiante.
+                 */
+
+                estudiante.setPersona(persona);
+
+                /*
+                 * Datos propios del estudiante.
+                 */
+
+                estudiante.setCinturon(cinturonEntidad);
+                estudiante.setEstado("ACTIVO");
+
+                // ==============================
+                // GUARDAR ESTUDIANTE
+                // ==============================
+
+                estudiante = estudianteRepository.save(estudiante);
+
+                // ==============================
+                // GUARDAR FOTOGRAFÍA
+                // ==============================
+
+                if (foto != null && !foto.isEmpty()) {
+
+                        String ruta = null;
+
+                        try {
+
+                                validarFoto(foto);
+
+                                String extension = obtenerExtension(
+                                                foto.getOriginalFilename());
+
+                                ruta = "estudiantes/"
+                                                + estudiante.getId()
+                                                + "/perfil"
+                                                + extension;
+
+                                storageService.subirFoto(foto, ruta);
+
+                                /*
+                                 * La fotografía pertenece a Persona.
+                                 */
+
+                                persona.setFoto(ruta);
+
+                                personaRepository.save(persona);
+
+                        } catch (Exception e) {
+
+                                /*
+                                 * Si la subida llegó a realizarse,
+                                 * intentamos eliminarla.
+                                 */
+
+                                if (ruta != null) {
+
+                                        try {
+                                                storageService.eliminarFoto(ruta);
+                                        } catch (Exception ignored) {
+                                        }
+                                }
+
+                                throw new RuntimeException(
+                                                "No se pudo guardar la fotografía: "
+                                                                + e.getMessage(),
+                                                e);
+                        }
+                }
+
+                return estudiante;
         }
 
-        if (direccion == null || direccion.isBlank()) {
-            throw new RuntimeException(
-                    "La dirección es obligatoria");
+        /*
+         * ==========================================
+         * ACTUALIZAR ESTUDIANTE
+         * ==========================================
+         */
+        @Transactional
+        public Estudiante actualizarEstudiante(
+                        Long id,
+                        String nombre,
+                        String apellido,
+                        String documento,
+                        String telefono,
+                        String correo,
+                        String cinturon,
+                        MultipartFile foto,
+                        boolean quitarFoto) {
+
+                // ==============================
+                // BUSCAR ESTUDIANTE
+                // ==============================
+
+                Estudiante estudiante = estudianteRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Estudiante no encontrado"));
+
+                // ==============================
+                // VALIDACIONES
+                // ==============================
+
+                if (nombre == null || nombre.isBlank()) {
+                        throw new RuntimeException(
+                                        "El nombre es obligatorio");
+                }
+
+                if (apellido == null || apellido.isBlank()) {
+                        throw new RuntimeException(
+                                        "El apellido es obligatorio");
+                }
+
+                if (documento == null || documento.isBlank()) {
+                        throw new RuntimeException(
+                                        "El documento es obligatorio");
+                }
+
+                if (telefono == null || telefono.isBlank()) {
+                        throw new RuntimeException(
+                                        "El teléfono es obligatorio");
+                }
+
+                if (correo == null || correo.isBlank()) {
+                        throw new RuntimeException(
+                                        "El correo es obligatorio");
+                }
+
+                if (cinturon == null || cinturon.isBlank()) {
+                        throw new RuntimeException(
+                                        "El cinturón es obligatorio");
+                }
+
+                // ==============================
+                // NORMALIZAR DATOS
+                // ==============================
+
+                nombre = nombre.trim();
+                apellido = apellido.trim();
+                documento = documento.trim();
+                telefono = telefono.trim();
+                correo = correo.trim().toLowerCase();
+                cinturon = cinturon.trim().toUpperCase();
+
+                // ==============================
+                // PERSONA ACTUAL
+                // ==============================
+
+                Persona persona = estudiante.getPersona();
+
+                if (persona == null) {
+                        throw new RuntimeException(
+                                        "El estudiante no tiene una persona asociada");
+                }
+
+                Long personaId = persona.getId();
+
+                // ==============================
+                // TIPO DE DOCUMENTO
+                // ==============================
+
+                TipoDocumento tipoDocumentoEntidad = persona.getTipoDocumento();
+
+                if (tipoDocumentoEntidad == null) {
+                        throw new RuntimeException(
+                                        "El estudiante no tiene un tipo de documento asociado");
+                }
+
+                // ==============================
+                // VALIDAR DOCUMENTO
+                // ==============================
+
+                if (!persona.getNumeroDocumento().equals(documento)) {
+
+                        boolean documentoExiste = personaRepository
+                                        .findByTipoDocumentoIdAndNumeroDocumento(
+                                                        tipoDocumentoEntidad.getId(),
+                                                        documento)
+                                        .filter(personaEncontrada -> !personaEncontrada.getId()
+                                                        .equals(personaId))
+                                        .isPresent();
+
+                        if (documentoExiste) {
+
+                                throw new DatoDuplicadoException(
+                                                "El número de documento ya existe");
+                        }
+                }
+
+                // ==============================
+                // VALIDAR CORREO
+                // ==============================
+
+                if (!persona.getCorreo().equalsIgnoreCase(correo)) {
+
+                        boolean correoExiste = personaRepository
+                                        .findByCorreo(correo)
+                                        .filter(personaEncontrada -> !personaEncontrada.getId()
+                                                        .equals(personaId))
+                                        .isPresent();
+
+                        if (correoExiste) {
+
+                                throw new DatoDuplicadoException(
+                                                "El correo electrónico ya existe");
+                        }
+                }
+
+                // ==============================
+                // BUSCAR CINTURÓN
+                // ==============================
+
+                Cinturon cinturonEntidad = cinturonRepository
+                                .findByNombre(cinturon)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "El cinturón no existe"));
+
+                // ==============================
+                // ACTUALIZAR PERSONA
+                // ==============================
+
+                persona.setNombre(nombre);
+                persona.setApellido(apellido);
+                persona.setNumeroDocumento(documento);
+                persona.setTelefono(telefono);
+                persona.setCorreo(correo);
+
+                persona = personaRepository.save(persona);
+
+                // ==============================
+                // ACTUALIZAR ESTUDIANTE
+                // ==============================
+
+                estudiante.setCinturon(cinturonEntidad);
+
+                // ==============================
+                // CAMBIAR FOTOGRAFÍA
+                // ==============================
+
+                if (foto != null && !foto.isEmpty()) {
+
+                        try {
+
+                                validarFoto(foto);
+
+                                String extension = obtenerExtension(
+                                                foto.getOriginalFilename());
+
+                                String nuevaRuta = "estudiantes/"
+                                                + estudiante.getId()
+                                                + "/perfil"
+                                                + extension;
+
+                                String fotoAnterior = persona.getFoto();
+
+                                /*
+                                 * Subimos primero la nueva fotografía.
+                                 */
+
+                                storageService.subirFoto(foto, nuevaRuta);
+
+                                /*
+                                 * Eliminamos la anterior después
+                                 * de subir correctamente la nueva.
+                                 */
+
+                                if (fotoAnterior != null
+                                                && !fotoAnterior.isBlank()
+                                                && !fotoAnterior.equals(nuevaRuta)) {
+
+                                        try {
+                                                storageService.eliminarFoto(fotoAnterior);
+                                        } catch (Exception ignored) {
+                                        }
+                                }
+
+                                persona.setFoto(nuevaRuta);
+
+                                personaRepository.save(persona);
+
+                        } catch (Exception e) {
+
+                                throw new RuntimeException(
+                                                "No se pudo actualizar la fotografía: "
+                                                                + e.getMessage(),
+                                                e);
+                        }
+                }
+
+                // ==============================
+                // QUITAR FOTOGRAFÍA
+                // ==============================
+
+                else if (quitarFoto
+                                && persona.getFoto() != null
+                                && !persona.getFoto().isBlank()) {
+
+                        try {
+
+                                storageService.eliminarFoto(persona.getFoto());
+
+                                persona.setFoto(null);
+
+                                personaRepository.save(persona);
+
+                        } catch (Exception e) {
+
+                                throw new RuntimeException(
+                                                "No se pudo eliminar la fotografía: "
+                                                                + e.getMessage(),
+                                                e);
+                        }
+                }
+
+                // ==============================
+                // GUARDAR
+                // ==============================
+
+                return estudianteRepository.save(estudiante);
         }
 
-        if (estudianteRepository
-                .findByDocumento(documento)
-                .isPresent()) {
+        /*
+         * ==========================================
+         * VALIDAR FOTOGRAFÍA
+         * ==========================================
+         */
+        private void validarFoto(MultipartFile foto) {
 
-            throw new RuntimeException(
-                    "El documento ya existe");
+                String tipoContenido = foto.getContentType();
+
+                if (tipoContenido == null
+                                || (!tipoContenido.equals("image/jpeg")
+                                                && !tipoContenido.equals("image/png")
+                                                && !tipoContenido.equals("image/webp"))) {
+
+                        throw new RuntimeException(
+                                        "La fotografía debe ser JPG, PNG o WEBP");
+                }
+
+                long tamanioMaximo = 5 * 1024 * 1024;
+
+                if (foto.getSize() > tamanioMaximo) {
+
+                        throw new RuntimeException(
+                                        "La fotografía no puede superar los 5 MB");
+                }
         }
 
-        if (estudianteRepository
-                .findByCorreo(correo)
-                .isPresent()) {
+        /*
+         * ==========================================
+         * OBTENER EXTENSIÓN
+         * ==========================================
+         */
+        private String obtenerExtension(String nombreArchivo) {
 
-            throw new RuntimeException(
-                    "El correo ya existe");
+                if (nombreArchivo == null
+                                || !nombreArchivo.contains(".")) {
+
+                        return ".jpg";
+                }
+
+                String extension = nombreArchivo.substring(
+                                nombreArchivo.lastIndexOf("."))
+                                .toLowerCase();
+
+                if (!extension.equals(".jpg")
+                                && !extension.equals(".jpeg")
+                                && !extension.equals(".png")
+                                && !extension.equals(".webp")) {
+
+                        return ".jpg";
+                }
+
+                return extension;
         }
 
-        Estudiante estudiante = new Estudiante();
+        /*
+         * ==========================================
+         * CAMBIAR ESTADO
+         * ==========================================
+         */
+        @Transactional
+        public Estudiante cambiarEstado(
+                        Long id,
+                        String estado) {
 
-        estudiante.setNombre(nombre);
-        estudiante.setApellido(apellido);
-        estudiante.setTipoDocumento(tipoDocumento);
-        estudiante.setDocumento(documento);
-        estudiante.setTelefono(telefono);
-        estudiante.setCorreo(correo);
-        estudiante.setFechaNacimiento(fechaNacimiento);
-        estudiante.setDireccion(direccion);
-        estudiante.setFoto(foto);
+                Estudiante estudiante = estudianteRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Estudiante no encontrado"));
 
-        estudiante.setEstado("ACTIVO");
+                if (estado == null || estado.isBlank()) {
 
-        return estudianteRepository.save(estudiante);
-    }
+                        throw new RuntimeException(
+                                        "El estado es obligatorio");
+                }
 
-    public Estudiante actualizarEstudiante(
-            Long id,
-            String nombre,
-            String apellido,
-            String documento,
-            String telefono,
-            String correo) {
+                estado = estado.trim().toUpperCase();
 
-        Estudiante estudiante = estudianteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Estudiante no encontrado"));
+                if (!estado.equals("ACTIVO")
+                                && !estado.equals("INACTIVO")) {
 
-        if (!estudiante.getDocumento().equals(documento)
-                && estudianteRepository
-                        .findByDocumento(documento)
-                        .isPresent()) {
+                        throw new RuntimeException(
+                                        "El estado debe ser ACTIVO o INACTIVO");
+                }
 
-            throw new RuntimeException(
-                    "El documento ya existe");
+                estudiante.setEstado(estado);
+
+                return estudianteRepository.save(estudiante);
         }
 
-        if (!estudiante.getCorreo().equals(correo)
-                && estudianteRepository
-                        .findByCorreo(correo)
-                        .isPresent()) {
+        /*
+         * ==========================================
+         * LISTAR POR ESTADO
+         * ==========================================
+         */
+        public List<Estudiante> listarPorEstado(String estado) {
 
-            throw new RuntimeException(
-                    "El correo ya existe");
+                if (estado == null || estado.isBlank()) {
+
+                        throw new RuntimeException(
+                                        "El estado es obligatorio");
+                }
+
+                estado = estado.trim().toUpperCase();
+
+                if (!estado.equals("ACTIVO")
+                                && !estado.equals("INACTIVO")) {
+
+                        throw new RuntimeException(
+                                        "El estado debe ser ACTIVO o INACTIVO");
+                }
+
+                return estudianteRepository.findByEstado(estado);
         }
-
-        estudiante.setNombre(nombre);
-        estudiante.setApellido(apellido);
-        estudiante.setDocumento(documento);
-        estudiante.setTelefono(telefono);
-        estudiante.setCorreo(correo);
-
-        return estudianteRepository.save(estudiante);
-    }
-
-    public Estudiante cambiarEstado(
-            Long id,
-            String estado) {
-
-        Estudiante estudiante = estudianteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Estudiante no encontrado"));
-
-        if (!estado.equals("ACTIVO")
-                && !estado.equals("INACTIVO")) {
-
-            throw new RuntimeException(
-                    "El estado debe ser ACTIVO o INACTIVO");
-        }
-
-        estudiante.setEstado(estado);
-
-        return estudianteRepository.save(estudiante);
-    }
-
-    public List<Estudiante> listarPorEstado(
-            String estado) {
-
-        if (!estado.equals("ACTIVO")
-                && !estado.equals("INACTIVO")) {
-
-            throw new RuntimeException(
-                    "El estado debe ser ACTIVO o INACTIVO");
-        }
-
-        return estudianteRepository
-                .findByEstado(estado);
-    }
 }

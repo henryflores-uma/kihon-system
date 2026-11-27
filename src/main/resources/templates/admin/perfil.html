@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mi perfil | Kihon</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+
+    <main class="perfil-page">
+
+        <div class="perfil-container">
+
+            <!-- ==========================================
+                 ENCABEZADO
+                 ========================================== -->
+
+            <section class="perfil-header">
+
+                <div class="perfil-header__top">
+
+                    <button type="button" class="perfil-back" id="perfilVolverBtn">
+                        <span aria-hidden="true">←</span>
+                        Volver
+                    </button>
+
+                </div>
+
+                <div class="perfil-header__content">
+
+                    <div>
+                        <span class="perfil-header__eyebrow">
+                            CONFIGURACIÓN DE CUENTA
+                        </span>
+
+                        <h1 class="perfil-header__title">
+                            Mi perfil
+                        </h1>
+
+                        <p class="perfil-header__description">
+                            Administra tu información personal y configura la seguridad de tu cuenta.
+                        </p>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==========================================
+                 CONTENIDO DEL DASHBOARD
+                 ========================================== -->
+
+            <div class="perfil-dashboard">
+
+                <!-- ==========================================
+                     TARJETA PRINCIPAL
+                     ========================================== -->
+
+                <section class="perfil-card perfil-card--main">
+
+                    <div class="perfil-main">
+
+                        <!-- FOTO DE PERFIL -->
+
+                        <div class="perfil-photo">
+
+                            <div class="perfil-photo__preview">
+                                <img id="perfilFotoPreview" src="/img/default-avatar.png" alt="Foto de perfil">
+                            </div>
+
+                            <button type="button" class="perfil-photo__button" id="cambiarFotoBtn">
+                                <span aria-hidden="true">✎</span>
+                                Cambiar foto
+                            </button>
+
+                            <input type="file" id="perfilFotoInput" accept="image/jpeg,image/png,image/webp" hidden>
+
+                        </div>
+
+
+                        <!-- IDENTIDAD DEL USUARIO -->
+
+                        <div class="perfil-main__identity">
+
+                            <span class="perfil-main__eyebrow">
+                                PERFIL DE USUARIO
+                            </span>
+
+                            <h2 class="perfil-main__name" id="perfilNombreCompleto">
+                                Mi cuenta
+                            </h2>
+
+                            <p class="perfil-main__username" id="perfilUsernameDisplay">
+                                @usuario
+                            </p>
+
+                            <div class="perfil-main__badges">
+
+                                <span class="perfil-badge perfil-badge--role" id="perfilRolBadge">
+                                    Usuario
+                                </span>
+
+                                <span class="perfil-badge perfil-badge--status" id="perfilEstadoBadge">
+                                    Estado
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="perfil-main__footer">
+
+                        <span class="perfil-main__footer-text">
+                            <span aria-hidden="true">●</span>
+                            Información de tu cuenta Kihon
+                        </span>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==========================================
+                     INFORMACIÓN EDITABLE
+                     ========================================== -->
+
+                <section class="perfil-card perfil-card--edit">
+
+                    <div class="perfil-card__header">
+
+                        <div class="perfil-card__heading">
+
+                            <div class="perfil-card__icon">
+                                <span aria-hidden="true">✎</span>
+                            </div>
+
+                            <div>
+                                <h2 class="perfil-card__title">
+                                    Datos de acceso y contacto
+                                </h2>
+
+                                <p class="perfil-card__description">
+                                    Actualiza los datos principales de tu cuenta.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <form id="perfilForm" class="perfil-form">
+
+                        <div class="perfil-form__grid">
+
+                            <!-- USERNAME -->
+
+                            <div class="perfil-form__group">
+
+                                <label for="perfilUsername" class="perfil-form__label">
+                                    Nombre de usuario
+                                </label>
+
+                                <input type="text" id="perfilUsername" name="username" class="perfil-form__input"
+                                    autocomplete="username" minlength="4" maxlength="30" required>
+
+                                <span class="perfil-form__hint">
+                                    Entre 4 y 30 caracteres. Se utiliza para iniciar sesión.
+                                </span>
+
+                            </div>
+
+
+                            <!-- CORREO -->
+
+                            <div class="perfil-form__group">
+
+                                <label for="perfilCorreo" class="perfil-form__label">
+                                    Correo electrónico
+                                </label>
+
+                                <input type="email" id="perfilCorreo" name="correo" class="perfil-form__input"
+                                    autocomplete="email" required>
+
+                            </div>
+
+
+                            <!-- NOMBRES -->
+
+                            <div class="perfil-form__group">
+
+                                <label for="perfilNombre" class="perfil-form__label">
+                                    Nombres
+                                </label>
+
+                                <input type="text" id="perfilNombre" name="nombre" class="perfil-form__input"
+                                    autocomplete="given-name" required>
+
+                            </div>
+
+
+                            <!-- APELLIDOS -->
+
+                            <div class="perfil-form__group">
+
+                                <label for="perfilApellido" class="perfil-form__label">
+                                    Apellidos
+                                </label>
+
+                                <input type="text" id="perfilApellido" name="apellido" class="perfil-form__input"
+                                    autocomplete="family-name" required>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="perfil-form__footer">
+
+                            <p class="perfil-form__footer-text">
+                                Los cambios se guardarán en tu cuenta.
+                            </p>
+
+                            <div class="perfil-form__actions">
+
+                                <button type="submit" class="perfil-button perfil-button--primary">
+                                    Guardar cambios
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </section>
+
+
+                <!-- ==========================================
+                     INFORMACIÓN PERSONAL
+                     ========================================== -->
+
+                <section class="perfil-card perfil-card--personal">
+
+                    <div class="perfil-card__header">
+
+                        <div class="perfil-card__heading">
+
+                            <div class="perfil-card__icon">
+                                <span aria-hidden="true">▤</span>
+                            </div>
+
+                            <div>
+                                <h2 class="perfil-card__title">
+                                    Información personal
+                                </h2>
+
+                                <p class="perfil-card__description">
+                                    Datos personales registrados en el sistema.
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <span class="perfil-card__tag">
+                            Solo lectura
+                        </span>
+
+                    </div>
+
+
+                    <div class="perfil-info">
+
+                        <div class="perfil-info__grid">
+
+                            <div class="perfil-info__item">
+                                <span class="perfil-info__label">
+                                    Tipo de documento
+                                </span>
+
+                                <span class="perfil-info__value" id="perfilTipoDocumento">
+                                    -
+                                </span>
+                            </div>
+
+
+                            <div class="perfil-info__item">
+                                <span class="perfil-info__label">
+                                    Número de documento
+                                </span>
+
+                                <span class="perfil-info__value" id="perfilNumeroDocumento">
+                                    -
+                                </span>
+                            </div>
+
+
+                            <div class="perfil-info__item">
+                                <span class="perfil-info__label">
+                                    Teléfono
+                                </span>
+
+                                <span class="perfil-info__value" id="perfilTelefono">
+                                    -
+                                </span>
+                            </div>
+
+
+                            <div class="perfil-info__item">
+                                <span class="perfil-info__label">
+                                    Fecha de nacimiento
+                                </span>
+
+                                <span class="perfil-info__value" id="perfilFechaNacimiento">
+                                    -
+                                </span>
+                            </div>
+
+
+                            <div class="perfil-info__item">
+                                <span class="perfil-info__label">
+                                    Género
+                                </span>
+
+                                <span class="perfil-info__value" id="perfilGenero">
+                                    -
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==========================================
+                     INFORMACIÓN DE CUENTA
+                     ========================================== -->
+
+                <section class="perfil-card perfil-card--account">
+
+                    <div class="perfil-card__header">
+
+                        <div class="perfil-card__heading">
+
+                            <div class="perfil-card__icon">
+                                <span aria-hidden="true">◈</span>
+                            </div>
+
+                            <div>
+                                <h2 class="perfil-card__title">
+                                    Información de cuenta
+                                </h2>
+
+                                <p class="perfil-card__description">
+                                    Estado y detalles de tu cuenta.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="perfil-info">
+
+                        <div class="perfil-info__grid perfil-info__grid--account">
+
+                            <div class="perfil-info__item">
+                                <span class="perfil-info__label">
+                                    Rol asignado
+                                </span>
+
+                                <span class="perfil-info__value" id="perfilRol">
+                                    -
+                                </span>
+                            </div>
+
+
+                            <div class="perfil-info__item">
+                                <span class="perfil-info__label">
+                                    Estado de cuenta
+                                </span>
+
+                                <span class="perfil-info__value" id="perfilEstado">
+                                    -
+                                </span>
+                            </div>
+
+
+                            <div class="perfil-info__item perfil-info__item--full">
+                                <span class="perfil-info__label">
+                                    Fecha de registro
+                                </span>
+
+                                <span class="perfil-info__value" id="perfilFechaRegistro">
+                                    -
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==========================================
+                     SEGURIDAD
+                     ========================================== -->
+
+                <section class="perfil-card perfil-card--security">
+
+                    <div class="perfil-card__header">
+
+                        <div class="perfil-card__heading">
+
+                            <div class="perfil-card__icon perfil-card__icon--security">
+                                <span aria-hidden="true">♙</span>
+                            </div>
+
+                            <div>
+                                <h2 class="perfil-card__title">
+                                    Seguridad
+                                </h2>
+
+                                <p class="perfil-card__description">
+                                    Mantén protegida tu cuenta actualizando tu contraseña.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="perfil-security-notice">
+
+                        <span class="perfil-security-notice__icon" aria-hidden="true">
+                            !
+                        </span>
+
+                        <p>
+                            Después de cambiar tu contraseña, deberás iniciar sesión nuevamente.
+                        </p>
+
+                    </div>
+
+
+                    <form id="passwordForm" class="perfil-form">
+
+                        <div class="perfil-form__grid perfil-form__grid--password">
+
+                            <!-- CONTRASEÑA ACTUAL -->
+
+                            <div class="perfil-form__group">
+
+                                <label for="passwordActual" class="perfil-form__label">
+                                    Contraseña actual
+                                </label>
+
+                                <input type="password" id="passwordActual" name="passwordActual"
+                                    class="perfil-form__input" autocomplete="current-password" required>
+
+                            </div>
+
+
+                            <!-- NUEVA CONTRASEÑA -->
+
+                            <div class="perfil-form__group">
+
+                                <label for="passwordNueva" class="perfil-form__label">
+                                    Nueva contraseña
+                                </label>
+
+                                <input type="password" id="passwordNueva" name="passwordNueva"
+                                    class="perfil-form__input" autocomplete="new-password" minlength="8" maxlength="72"
+                                    required>
+
+                                <span class="perfil-form__hint">
+                                    Mínimo 8 caracteres.
+                                </span>
+
+                            </div>
+
+
+                            <!-- CONFIRMAR CONTRASEÑA -->
+
+                            <div class="perfil-form__group">
+
+                                <label for="passwordConfirmar" class="perfil-form__label">
+                                    Confirmar nueva contraseña
+                                </label>
+
+                                <input type="password" id="passwordConfirmar" name="passwordConfirmar"
+                                    class="perfil-form__input" autocomplete="new-password" minlength="8" maxlength="72"
+                                    required>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="perfil-form__footer">
+
+                            <p class="perfil-form__footer-text">
+                                Utiliza una contraseña segura que no compartas con otras personas.
+                            </p>
+
+                            <div class="perfil-form__actions">
+
+                                <button type="submit" class="perfil-button perfil-button--primary">
+                                    Cambiar contraseña
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </section>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- ==========================================
+         JAVASCRIPT
+         ========================================== -->
+
+    <script src="/js/perfil.js"></script>
+
+</body>
+
+</html>

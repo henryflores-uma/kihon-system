@@ -1,3 +1,4 @@
+
 package com.kihon.kihon.dto;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ public class ReporteAsistenciaResponse {
     private int presentes;
     private int tardanzas;
     private int ausentes;
+    private int justificados;
 
     private double porcentajeAsistencia;
 
@@ -24,6 +26,7 @@ public class ReporteAsistenciaResponse {
             int presentes,
             int tardanzas,
             int ausentes,
+            int justificados,
             double porcentajeAsistencia,
             List<AsistenciaResponse> asistencias) {
 
@@ -33,6 +36,7 @@ public class ReporteAsistenciaResponse {
         this.presentes = presentes;
         this.tardanzas = tardanzas;
         this.ausentes = ausentes;
+        this.justificados = justificados;
         this.porcentajeAsistencia = porcentajeAsistencia;
         this.asistencias = asistencias;
     }
@@ -59,6 +63,10 @@ public class ReporteAsistenciaResponse {
 
     public int getAusentes() {
         return ausentes;
+    }
+
+    public int getJustificados() {
+        return justificados;
     }
 
     public double getPorcentajeAsistencia() {

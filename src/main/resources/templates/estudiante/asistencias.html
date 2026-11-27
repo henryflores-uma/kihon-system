@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Historial de asistencia del estudiante de Kihon.">
+
+    <title>Kihon | Mis asistencias</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+
+    <main class="app-layout estudiante-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar" id="sidebarMenu">
+
+            <div class="sidebar__logo">
+                KIHON
+            </div>
+
+            <nav class="sidebar__nav" aria-label="Navegación principal"></nav>
+
+        </aside>
+
+
+        <!-- OVERLAY MENÚ MÓVIL -->
+
+        <div id="mobileMenuOverlay" class="mobile-menu-overlay" hidden></div>
+
+
+        <!-- CONTENIDO PRINCIPAL -->
+
+        <section class="main-content">
+
+            <!-- NAVEGACIÓN MÓVIL -->
+
+            <div class="mobile-nav">
+
+                <button type="button" class="mobile-menu-button" id="mobileMenuButton" aria-label="Abrir menú"
+                    aria-expanded="false" aria-controls="sidebarMenu">
+
+                    <span id="mobileMenuIcon">☰</span>
+
+                </button>
+
+                <strong class="mobile-nav__logo">
+                    KIHON
+                </strong>
+
+            </div>
+
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <div class="topbar__role">
+
+                    <span class="topbar__role-label">
+                        Rol
+                    </span>
+
+                    <strong id="roleDisplay">
+                        Estudiante
+                    </strong>
+
+                </div>
+
+
+                <div class="topbar__actions">
+
+                    <!-- NOTIFICACIONES -->
+
+                    <button type="button" class="topbar__notification" id="notificationButton"
+                        aria-label="Notificaciones">
+
+                        <span class="topbar__notification-icon">
+                            🔔
+                        </span>
+
+                        <span id="notificationCount" class="topbar__notification-count" hidden>
+                            0
+                        </span>
+
+                    </button>
+
+
+                    <!-- PERFIL -->
+
+                    <div class="topbar__profile" id="profileMenuContainer">
+
+                        <button type="button" class="topbar__profile-button" id="profileMenuButton"
+                            aria-expanded="false" aria-controls="profileMenu">
+
+                            <div class="topbar__avatar" id="userProfileAvatar">
+
+                                <span id="userAvatarInitial">
+                                    U
+                                </span>
+
+                            </div>
+
+                            <div class="topbar__profile-info">
+
+                                <strong id="usernameDisplay">
+                                    Usuario
+                                </strong>
+
+                                <span id="profileRoleDisplay">
+                                    Estudiante
+                                </span>
+
+                            </div>
+
+                            <span class="topbar__profile-arrow">
+                                ▼
+                            </span>
+
+                        </button>
+
+
+                        <div class="topbar__profile-menu" id="profileMenu" hidden>
+
+                            <a href="/estudiante/perfil" class="topbar__profile-menu-item">
+                                Mi perfil
+                            </a>
+
+                            <button type="button" id="topbarLogoutButton"
+                                class="topbar__profile-menu-item topbar__profile-menu-item--danger">
+
+                                Cerrar sesión
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- HEADER DE LA PÁGINA -->
+
+            <section class="dashboard-header estudiante-header">
+
+                <div>
+
+                    <span class="section-kicker">
+                        Mi espacio personal
+                    </span>
+
+                    <h1>
+                        Mis asistencias
+                    </h1>
+
+                    <p>
+                        Consulta tu historial de asistencia y revisa
+                        tu participación en las clases de karate.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- MENSAJE DE ESTADO -->
+
+            <div id="asistenciasStatusMessage" class="estudiante-status-message" role="status" aria-live="polite"
+                hidden>
+            </div>
+
+
+            <!-- RESUMEN DE ASISTENCIAS -->
+
+            <section class="dashboard-section estudiante-section">
+
+                <div class="section-header">
+
+                    <span class="section-kicker">
+                        Mi información
+                    </span>
+
+                    <h2>
+                        Resumen de asistencia
+                    </h2>
+
+                    <p>
+                        Consulta el estado general de tus registros.
+                    </p>
+
+                </div>
+
+
+                <div class="dashboard-kpis estudiante-kpis">
+
+                    <!-- TOTAL -->
+
+                    <article class="dashboard-kpi">
+
+                        <div class="dashboard-kpi__icon">
+                            📋
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Total de registros
+                            </span>
+
+                            <strong id="asistenciasTotal">
+                                0
+                            </strong>
+
+                            <small>
+                                Registros de asistencia
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- PRESENTES -->
+
+                    <article class="dashboard-kpi dashboard-kpi--accent">
+
+                        <div class="dashboard-kpi__icon">
+                            ✅
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Presentes
+                            </span>
+
+                            <strong id="asistenciasPresentes">
+                                0
+                            </strong>
+
+                            <small>
+                                Clases asistidas
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- TARDANZAS -->
+
+                    <article class="dashboard-kpi">
+
+                        <div class="dashboard-kpi__icon">
+                            ⏰
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Tardanzas
+                            </span>
+
+                            <strong id="asistenciasTardanzas">
+                                0
+                            </strong>
+
+                            <small>
+                                Llegadas tarde
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- AUSENCIAS -->
+
+                    <article class="dashboard-kpi">
+
+                        <div class="dashboard-kpi__icon">
+                            ❌
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Ausencias
+                            </span>
+
+                            <strong id="asistenciasAusencias">
+                                0
+                            </strong>
+
+                            <small>
+                                Clases no asistidas
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- JUSTIFICADOS -->
+
+                    <article class="dashboard-kpi">
+
+                        <div class="dashboard-kpi__icon">
+                            📄
+                        </div>
+
+                        <div class="dashboard-kpi__content">
+
+                            <span class="dashboard-kpi__label">
+                                Justificados
+                            </span>
+
+                            <strong id="asistenciasJustificados">
+                                0
+                            </strong>
+
+                            <small>
+                                Ausencias justificadas
+                            </small>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- HISTORIAL DE ASISTENCIAS -->
+
+            <section class="dashboard-section estudiante-section">
+
+                <div class="section-header estudiante-section__heading">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            Seguimiento personal
+                        </span>
+
+                        <h2>
+                            Historial de asistencias
+                        </h2>
+
+                        <p>
+                            Revisa las fechas y los estados de tus registros.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="estudiante-panel">
+
+                    <div class="estudiante-panel__content">
+
+                        <div class="asistencias-history-header">
+
+                            <div>
+
+                                <h3>
+                                    Mis registros
+                                </h3>
+
+                                <span id="asistenciasCantidad">
+                                    0 registros
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="asistencias-table-container">
+
+                            <table class="asistencias-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Grupo</th>
+                                        <th>Hora de llegada</th>
+                                        <th>Estado</th>
+                                        <th>Observación</th>
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody id="asistenciasTableBody">
+
+                                    <tr>
+                                        <td colspan="5">
+                                            Cargando asistencias...
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+
+                        <div id="asistenciasEmptyMessage" class="estudiante-empty-message" hidden>
+
+                            <p>
+                                Todavía no tienes registros de asistencia.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- INFORMACIÓN -->
+
+            <section class="dashboard-section estudiante-section">
+
+                <div class="section-header">
+
+                    <span class="section-kicker">
+                        Información importante
+                    </span>
+
+                    <h2>
+                        Sobre tus asistencias
+                    </h2>
+
+                    <p>
+                        Si encuentras algún registro incorrecto,
+                        comunícate con la secretaría o con tu sensei
+                        para solicitar su revisión.
+                    </p>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+
+    <!-- SCRIPTS -->
+
+    <script src="/js/topbar.js"></script>
+
+    <script src="/js/nav-acordeon.js"></script>
+
+    <script src="/js/asistencias-estudiante.js"></script>
+
+</body>
+
+</html>

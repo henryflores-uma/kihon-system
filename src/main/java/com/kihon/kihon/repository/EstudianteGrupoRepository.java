@@ -19,6 +19,12 @@ public interface EstudianteGrupoRepository
                         Long grupoId,
                         String estado);
 
+        boolean existsByEstudianteIdAndGrupoIdAndEstadoAndIdNot(
+                        Long estudianteId,
+                        Long grupoId,
+                        String estado,
+                        Long id);
+
         List<EstudianteGrupo> findByEstudianteIdAndEstado(
                         Long estudianteId,
                         String estado);
