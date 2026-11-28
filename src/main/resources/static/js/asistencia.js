@@ -5,6 +5,8 @@
     * =========================================================
     */
 
+    /*cambio de gino*/
+
     const username = sessionStorage.getItem("kihonUsername");
     const rol = sessionStorage.getItem("kihonRol");
 
