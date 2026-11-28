@@ -79,6 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
       sessionStorage.removeItem("kihonAuth");
 =======
     /*cambio de gino*/
+    /*segundo cambio*/
 
     const username = sessionStorage.getItem("kihonUsername");
     const rol = sessionStorage.getItem("kihonRol");
