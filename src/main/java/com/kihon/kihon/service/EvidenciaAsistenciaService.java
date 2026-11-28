@@ -13,6 +13,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.kihon.kihon.model.Estudiante;
+import com.kihon.kihon.repository.EstudianteRepository;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -25,21 +27,31 @@ public class EvidenciaAsistenciaService {
         private static final int MIN_SEGUNDOS_URL = 60;
         private static final int MAX_SEGUNDOS_URL = 3600;
 
+        private static final long MAX_TAMANO_ARCHIVO = 5 * 1024 * 1024;
+
+        private static final List<String> TIPOS_MIME_PERMITIDOS = List.of(
+        "application/pdf",
+        "image/jpeg",
+        "image/png");
+
         private final EvidenciaAsistenciaRepository evidenciaRepository;
         private final JustificacionAsistenciaRepository justificacionRepository;
         private final UsuarioRepository usuarioRepository;
         private final SupabaseStorageService supabaseStorageService;
+        private final EstudianteRepository estudianteRepository;
 
         public EvidenciaAsistenciaService(
-                        EvidenciaAsistenciaRepository evidenciaRepository,
-                        JustificacionAsistenciaRepository justificacionRepository,
-                        UsuarioRepository usuarioRepository,
-                        SupabaseStorageService supabaseStorageService) {
-
-                this.evidenciaRepository = evidenciaRepository;
-                this.justificacionRepository = justificacionRepository;
-                this.usuarioRepository = usuarioRepository;
-                this.supabaseStorageService = supabaseStorageService;
+                EvidenciaAsistenciaRepository evidenciaRepository,
+                JustificacionAsistenciaRepository justificacionRepository,
+                UsuarioRepository usuarioRepository,
+                EstudianteRepository estudianteRepository,
+                SupabaseStorageService supabaseStorageService) {
+        
+            this.evidenciaRepository = evidenciaRepository;
+            this.justificacionRepository = justificacionRepository;
+            this.usuarioRepository = usuarioRepository;
+            this.estudianteRepository = estudianteRepository;
+            this.supabaseStorageService = supabaseStorageService;
         }
 
         // ==========================================
@@ -64,10 +76,7 @@ public class EvidenciaAsistenciaService {
 
                 validarAccesoJustificacion(justificacion, username);
 
-                if (archivo == null || archivo.isEmpty()) {
-                        throw new RuntimeException(
-                                        "El archivo está vacío");
-                }
+                validarArchivo(archivo);
 
                 String nombreOriginal = archivo.getOriginalFilename();
 
@@ -147,6 +156,57 @@ public class EvidenciaAsistenciaService {
                 }
         }
 
+
+    // ==========================================
+    // VALIDAR ARCHIVO
+    // ==========================================
+
+    private void validarArchivo(MultipartFile archivo) {
+
+        if (archivo == null || archivo.isEmpty()) {
+            throw new RuntimeException(
+                    "Debe seleccionar un archivo");
+        }
+
+        if (archivo.getSize() > MAX_TAMANO_ARCHIVO) {
+            throw new RuntimeException(
+                    "El archivo no puede superar los 5 MB");
+        }
+
+        String nombreArchivo = archivo.getOriginalFilename();
+
+        if (nombreArchivo == null || nombreArchivo.isBlank()) {
+            throw new RuntimeException(
+                    "El archivo no tiene un nombre válido");
+        }
+
+        String tipoMime = archivo.getContentType();
+
+        if (tipoMime == null
+                || !TIPOS_MIME_PERMITIDOS.contains(tipoMime.toLowerCase())) {
+
+            throw new RuntimeException(
+                    "Formato no permitido. Solo se aceptan PDF, JPG y PNG");
+        }
+
+        String extension = nombreArchivo.substring(
+                nombreArchivo.lastIndexOf(".") + 1)
+                .toLowerCase();
+
+        boolean extensionValida =
+                ("application/pdf".equalsIgnoreCase(tipoMime)
+                        && "pdf".equals(extension))
+                || ("image/jpeg".equalsIgnoreCase(tipoMime)
+                        && ("jpg".equals(extension) || "jpeg".equals(extension)))
+                || ("image/png".equalsIgnoreCase(tipoMime)
+                        && "png".equals(extension));
+
+        if (!extensionValida) {
+            throw new RuntimeException(
+                    "La extensión del archivo no coincide con su formato");
+        }
+    }
+
         // ==========================================
         // LISTAR POR JUSTIFICACIÓN
         // ==========================================
@@ -166,7 +226,7 @@ public class EvidenciaAsistenciaService {
                                 .orElseThrow(() -> new RuntimeException(
                                                 "La justificación no existe"));
 
-                validarAccesoJustificacion(justificacion, username);
+                validarAccesoLecturaJustificacion(justificacion, username);
 
                 return evidenciaRepository.findByJustificacionId(justificacionId);
         }
@@ -251,41 +311,50 @@ public class EvidenciaAsistenciaService {
         // ELIMINAR EVIDENCIA
         // ==========================================
 
-        @Transactional
-        public void eliminarEvidencia(
-                        Long id,
-                        String username) {
+       // ==========================================
+// ELIMINAR EVIDENCIA
+// ==========================================
 
-                EvidenciaAsistencia evidencia = buscarPorId(id, username);
+@Transactional
+public void eliminarEvidencia(
+        Long id,
+        String username) {
 
-                String ruta = evidencia.getRutaArchivo();
+    EvidenciaAsistencia evidencia = buscarPorId(id, username);
 
-                try {
+    // La eliminación requiere permisos de gestión.
+    validarAccesoJustificacion(
+            evidencia.getJustificacion(),
+            username);
 
-                        if (ruta != null
-                                        && !ruta.isBlank()
-                                        && !"PENDIENTE".equals(ruta)) {
+    String ruta = evidencia.getRutaArchivo();
 
-                                supabaseStorageService.eliminarEvidencia(ruta);
-                        }
+    try {
 
-                } catch (InterruptedException e) {
+        if (ruta != null
+                && !ruta.isBlank()
+                && !"PENDIENTE".equals(ruta)) {
 
-                        Thread.currentThread().interrupt();
-
-                        throw new RuntimeException(
-                                        "La eliminación del archivo fue interrumpida",
-                                        e);
-
-                } catch (IOException e) {
-
-                        throw new RuntimeException(
-                                        "No se pudo eliminar el archivo de Supabase Storage",
-                                        e);
-                }
-
-                evidenciaRepository.delete(evidencia);
+            supabaseStorageService.eliminarEvidencia(ruta);
         }
+
+    } catch (InterruptedException e) {
+
+        Thread.currentThread().interrupt();
+
+        throw new RuntimeException(
+                "La eliminación del archivo fue interrumpida",
+                e);
+
+    } catch (IOException e) {
+
+        throw new RuntimeException(
+                "No se pudo eliminar el archivo de Supabase Storage",
+                e);
+    }
+
+    evidenciaRepository.delete(evidencia);
+}
 
         // ==========================================
         // VALIDAR ACCESO A JUSTIFICACIÓN
@@ -297,7 +366,10 @@ public class EvidenciaAsistenciaService {
 
                 Usuario usuario = obtenerUsuarioAutenticado(username);
 
-                String nombreRol = usuario.getRol().getNombre();
+                String nombreRol = usuario.getRol() != null
+                && usuario.getRol().getNombre() != null
+                ? usuario.getRol().getNombre().trim().toUpperCase()
+                : "";
 
                 /*
                  * ADMIN y SECRETARIA pueden acceder a todas
@@ -339,22 +411,102 @@ public class EvidenciaAsistenciaService {
                 }
         }
 
+
+        // ==========================================
+// VALIDAR ACCESO DE LECTURA A JUSTIFICACIÓN
+// ==========================================
+
+private void validarAccesoLecturaJustificacion(
+        JustificacionAsistencia justificacion,
+        String username) {
+
+    Usuario usuario = obtenerUsuarioAutenticado(username);
+
+    String nombreRol = usuario.getRol().getNombre()
+            .trim()
+            .toUpperCase();
+
+    // ADMIN y SECRETARIA
+    if ("ADMIN".equals(nombreRol)
+            || "SECRETARIA".equals(nombreRol)) {
+        return;
+    }
+
+    Asistencia asistencia = justificacion.getAsistencia();
+
+    if (asistencia == null
+            || asistencia.getEstudiante() == null) {
+
+        throw new AccessDeniedException(
+                "No se pudo validar la asistencia asociada");
+    }
+
+    // SENSEI
+    if ("SENSEI".equals(nombreRol)) {
+
+        if (asistencia.getGrupo() == null
+                || asistencia.getGrupo().getSensei() == null) {
+
+            throw new AccessDeniedException(
+                    "No se pudo validar el grupo de la asistencia");
+        }
+
+        Long senseiId = asistencia.getGrupo()
+                .getSensei()
+                .getId();
+
+        if (senseiId == null
+                || !senseiId.equals(usuario.getId())) {
+
+            throw new AccessDeniedException(
+                    "No tienes acceso a evidencias de este grupo");
+        }
+
+        return;
+    }
+
+    // ESTUDIANTE
+    if ("ESTUDIANTE".equals(nombreRol)) {
+
+        if (usuario.getPersona() == null) {
+            throw new AccessDeniedException(
+                    "El usuario no tiene una persona asociada");
+        }
+
+        Estudiante estudiante = estudianteRepository
+                .findByPersona(usuario.getPersona())
+                .orElseThrow(() -> new AccessDeniedException(
+                        "No existe un estudiante asociado al usuario"));
+
+        if (!estudiante.getId().equals(
+                asistencia.getEstudiante().getId())) {
+
+            throw new AccessDeniedException(
+                    "No puedes consultar evidencias de otro estudiante");
+        }
+
+        return;
+    }
+
+    throw new AccessDeniedException(
+            "No tienes permisos para consultar estas evidencias");
+}
         // ==========================================
         // VALIDAR ACCESO A EVIDENCIA
         // ==========================================
 
         private void validarAccesoEvidencia(
-                        EvidenciaAsistencia evidencia,
-                        String username) {
-
-                if (evidencia.getJustificacion() == null) {
-                        throw new AccessDeniedException(
-                                        "La evidencia no tiene una justificación asociada");
-                }
-
-                validarAccesoJustificacion(
-                                evidencia.getJustificacion(),
-                                username);
+                EvidenciaAsistencia evidencia,
+                String username) {
+        
+            if (evidencia.getJustificacion() == null) {
+                throw new AccessDeniedException(
+                        "La evidencia no tiene una justificación asociada");
+            }
+        
+            validarAccesoLecturaJustificacion(
+                    evidencia.getJustificacion(),
+                    username);
         }
 
         // ==========================================

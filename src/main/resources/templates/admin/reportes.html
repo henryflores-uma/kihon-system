@@ -10,6 +10,69 @@
   <title>Kihon | Reportes</title>
 
   <link rel="stylesheet" href="/css/main.css">
+
+  <style>
+    .reporte-paginacion {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 16px;
+      padding-top: 12px;
+    }
+  
+    .reporte-paginacion__info {
+      font-size: 0.9rem;
+      color: #475569;
+    }
+  
+    .reporte-paginacion__controls,
+    .reporte-paginacion__pages {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+  
+    .reporte-paginacion__btn,
+    .reporte-paginacion__page {
+      padding: 6px 11px;
+      border: 1px solid #cbd5e1;
+      background-color: #ffffff;
+      color: #1e293b;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      line-height: 1.2;
+    }
+  
+    .reporte-paginacion__btn:hover:not(:disabled),
+    .reporte-paginacion__page:hover:not(:disabled) {
+      background-color: #f1f5f9;
+      border-color: #94a3b8;
+    }
+  
+    .reporte-paginacion__page.is-active {
+      background-color: #0f172a;
+      border-color: #0f172a;
+      color: #ffffff;
+      font-weight: 600;
+      cursor: default;
+    }
+  
+    .reporte-paginacion__btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  
+    .reporte-paginacion__ellipsis {
+      padding: 0 4px;
+      color: #64748b;
+      user-select: none;
+    }
+  </style>
+
 </head>
 
 <body>

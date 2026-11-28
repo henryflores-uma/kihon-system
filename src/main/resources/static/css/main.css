@@ -3423,6 +3423,9 @@ body.modal-open {
     width: 100%;
   }
 }
+/* =========================================================
+   PÁGINA DE ASISTENCIAS
+   ========================================================= */
 .asistencia-page {
   width: 100%;
 }
@@ -3634,6 +3637,15 @@ body.modal-open {
 }
 
 /* =========================================================
+   JUSTIFICADO
+   ========================================================= */
+.asistencia-state-button--justificado.is-active {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+/* =========================================================
    CAMPOS DE CADA ESTUDIANTE
    ========================================================= */
 .asistencia-student-fields {
@@ -3646,6 +3658,203 @@ body.modal-open {
   min-width: 0;
 }
 
+/* =========================================================
+   JUSTIFICACIÓN DE ASISTENCIA
+   ========================================================= */
+.asistencia-justificacion-fields {
+  display: block;
+  grid-column: 1/-1;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  margin-top: 20px;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-left: 4px solid #2563eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+  animation: justificacionEntrada 0.25s ease;
+}
+
+.asistencia-justificacion-fields[hidden],
+.asistencia-justificacion-summary[hidden],
+.asistencia-evidencia-preview[hidden] {
+  display: none !important;
+}
+
+/* ENCABEZADO */
+.asistencia-justificacion-header {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 22px;
+}
+.asistencia-justificacion-header strong {
+  color: #1a1a1a;
+  font-size: 16px;
+  font-weight: 700;
+}
+.asistencia-justificacion-header span {
+  color: #666666;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* CAMPOS */
+.asistencia-justificacion-fields .form-group {
+  margin-bottom: 18px;
+}
+
+.asistencia-justificacion-fields .form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.asistencia-justificacion-fields .form-select,
+.asistencia-justificacion-fields .form-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.asistencia-justificacion-fields small {
+  display: block;
+  margin-top: 7px;
+  color: #666666;
+  font-size: 12px;
+}
+
+/* BOTÓN LISTO */
+.asistencia-justificacion-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.asistencia-justificacion-listo {
+  min-width: 120px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   VISTA PREVIA DE EVIDENCIAS
+   ========================================================= */
+.asistencia-evidencia-preview {
+  margin-top: 16px;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+}
+
+.asistencia-evidencia-preview-header {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.asistencia-evidencia-preview-header strong {
+  color: #1a1a1a;
+  font-size: 13px;
+}
+
+.asistencia-evidencia-nombre {
+  color: #666666;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.asistencia-evidencia-preview-content {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.asistencia-evidencia-imagen {
+  display: block;
+  width: 100%;
+  max-height: 380px;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+.asistencia-evidencia-pdf {
+  display: block;
+  width: 100%;
+  height: 420px;
+  border: none;
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+/* =========================================================
+   RESUMEN DE JUSTIFICACIÓN
+   ========================================================= */
+.asistencia-justificacion-summary {
+  display: flex;
+  grid-column: 1/-1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  margin-top: 14px;
+  padding: 20px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  animation: justificacionEntrada 0.25s ease;
+}
+
+.asistencia-justificacion-summary-info {
+  min-width: 0;
+}
+.asistencia-justificacion-summary-info strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #166534;
+  font-size: 14px;
+  font-weight: 700;
+}
+.asistencia-justificacion-summary-info p {
+  margin: 8px 0 0;
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.asistencia-justificacion-editar {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   ANIMACIÓN
+   ========================================================= */
+@keyframes justificacionEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 /* =========================================================
    BOTÓN PRINCIPAL
    ========================================================= */
@@ -3732,7 +3941,7 @@ body.modal-open {
 }
 
 /* =========================================================
-   ESTADOS
+   ESTADOS DE LA TABLA
    ========================================================= */
 .asistencia-estado {
   display: inline-flex;
@@ -3756,6 +3965,11 @@ body.modal-open {
 .asistencia-estado--ausente {
   background-color: #ff2400;
   color: #ffffff;
+}
+
+.asistencia-estado--justificado {
+  background-color: #dbeafe;
+  color: #1e40af;
 }
 
 /* =========================================================
@@ -3787,16 +4001,21 @@ body.modal-open {
 }
 
 /* =========================================================
-   RESPONSIVE
+   RESPONSIVE: TABLETS
    ========================================================= */
 @media (max-width: 1100px) {
   .asistencia-student-row {
     grid-template-columns: 1fr 1fr;
   }
-  .asistencia-student-fields {
+  .asistencia-student-fields,
+  .asistencia-justificacion-fields,
+  .asistencia-justificacion-summary {
     grid-column: 1/-1;
   }
 }
+/* =========================================================
+   RESPONSIVE: PANTALLAS MEDIANAS
+   ========================================================= */
 @media (max-width: 900px) {
   .asistencia-selection {
     grid-template-columns: 1fr;
@@ -3808,6 +4027,9 @@ body.modal-open {
     min-width: 1000px;
   }
 }
+/* =========================================================
+   RESPONSIVE: MÓVILES
+   ========================================================= */
 @media (max-width: 700px) {
   .asistencia-grupo-info {
     flex-direction: column;
@@ -3833,6 +4055,27 @@ body.modal-open {
   .asistencia-student-fields {
     grid-template-columns: 1fr;
   }
+  .asistencia-justificacion-fields,
+  .asistencia-justificacion-summary {
+    grid-column: 1/-1;
+  }
+  .asistencia-justificacion-fields {
+    padding: 16px;
+  }
+  .asistencia-justificacion-summary {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 15px;
+  }
+  .asistencia-justificacion-editar {
+    width: 100%;
+  }
+  .asistencia-evidencia-pdf {
+    height: 320px;
+  }
+  .asistencia-evidencia-imagen {
+    max-height: 280px;
+  }
   .asistencia-form-actions {
     justify-content: stretch;
   }
@@ -3844,6 +4087,9 @@ body.modal-open {
     align-items: flex-start;
   }
 }
+/* =========================================================
+   RESPONSIVE: MÓVILES PEQUEÑOS
+   ========================================================= */
 @media (max-width: 500px) {
   .asistencia-state-buttons {
     flex-direction: column;
@@ -3864,6 +4110,105 @@ body.modal-open {
   }
   .asistencia-edit-actions .btn {
     width: 100%;
+  }
+}
+/* ==========================================
+   MODAL DE JUSTIFICANTES
+========================================== */
+.asistencia-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.asistencia-modal {
+  width: 100%;
+  max-width: 550px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 24px;
+  background-color: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+}
+
+.asistencia-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+.asistencia-modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.asistencia-modal-cerrar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  background-color: #f1f5f9;
+  color: #475569;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.asistencia-modal-cerrar:hover {
+  background-color: #e2e8f0;
+}
+
+.asistencia-modal > p {
+  margin-bottom: 20px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.asistencia-modal-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.asistencia-modal-documento {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background-color: #f8fafc;
+}
+.asistencia-modal-documento strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+.asistencia-modal-documento small {
+  display: block;
+  margin-top: 5px;
+  color: #64748b;
+}
+.asistencia-modal-documento .btn {
+  flex-shrink: 0;
+}
+
+@media (max-width: 500px) {
+  .asistencia-modal {
+    padding: 18px;
+  }
+  .asistencia-modal-documento {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 /* ==========================================
@@ -4837,14 +5182,12 @@ body.modal-open {
   background-color: #000000;
   color: #ffffff;
 }
-
 .home-footer__inner {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
   gap: 2rem;
 }
-
 .home-footer__social {
   display: flex;
   align-items: center;
