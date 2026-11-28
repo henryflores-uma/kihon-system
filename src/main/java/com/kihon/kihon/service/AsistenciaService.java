@@ -1,6 +1,7 @@
 
 package com.kihon.kihon.service;
 
+import com.kihon.kihon.dto.AsistenciaPageResponse;
 import com.kihon.kihon.model.Asistencia;
 import com.kihon.kihon.model.Estudiante;
 import com.kihon.kihon.model.Grupo;
@@ -12,6 +13,8 @@ import com.kihon.kihon.repository.EstudianteRepository;
 import com.kihon.kihon.repository.GrupoRepository;
 import com.kihon.kihon.repository.UsuarioRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,10 +48,79 @@ public class AsistenciaService {
                 this.usuarioRepository = usuarioRepository;
         }
 
-        // ==========================================
-        // REGISTRAR ASISTENCIA
-        // ==========================================
+        // =========================================================
+        // PAGINACIÓN Y RESUMEN PARA ESTUDIANTE
+        // =========================================================
 
+        @Transactional(readOnly = true)
+        public Page<Asistencia> listarPorEstudiantePaginado(
+                        Long estudianteId,
+                        String estado,
+                        Pageable pageable) {
+
+                if (estado != null
+                                && !estado.isBlank()
+                                && !"TODOS".equalsIgnoreCase(estado)) {
+
+                        return asistenciaRepository
+                                        .findByEstudianteIdAndEstadoIgnoreCaseOrderByFechaDescIdDesc(
+                                                        estudianteId,
+                                                        estado.trim(),
+                                                        pageable);
+                }
+
+                return asistenciaRepository
+                                .findByEstudianteIdOrderByFechaDescIdDesc(
+                                                estudianteId,
+                                                pageable);
+        }
+
+        @Transactional(readOnly = true)
+        public AsistenciaPageResponse.ResumenAsistencia obtenerResumenPorEstudiante(
+                        Long estudianteId) {
+
+                List<Object[]> filas = asistenciaRepository.contarPorEstadoYEstudiante(estudianteId);
+
+                long presentes = 0;
+                long tardanzas = 0;
+                long ausencias = 0;
+                long justificados = 0;
+
+                for (Object[] fila : filas) {
+
+                        String estado = fila[0] != null
+                                        ? fila[0].toString().trim().toUpperCase()
+                                        : "";
+
+                        long cantidad = fila[1] != null
+                                        ? ((Number) fila[1]).longValue()
+                                        : 0L;
+
+                        switch (estado) {
+                                case "PRESENTE" -> presentes += cantidad;
+                                case "TARDANZA" -> tardanzas += cantidad;
+                                case "AUSENTE" -> ausencias += cantidad;
+                                case "JUSTIFICADO" -> justificados += cantidad;
+                                default -> {
+                                }
+                        }
+                }
+
+                long total = presentes + tardanzas + ausencias + justificados;
+
+                return new AsistenciaPageResponse.ResumenAsistencia(
+                                total,
+                                presentes,
+                                tardanzas,
+                                ausencias,
+                                justificados);
+        }
+
+        // =========================================================
+        // REGISTRAR ASISTENCIA
+        // =========================================================
+
+        @Transactional
         public Asistencia registrarAsistencia(
                         Long estudianteId,
                         Long grupoId,
@@ -65,13 +137,21 @@ public class AsistenciaService {
 
                 validarEstudianteActivo(estudiante);
                 validarGrupoActivo(grupo);
-
                 validarEstudianteActivoEnGrupo(estudianteId, grupoId);
 
-                validarDatosAsistencia(fecha, horaLlegada, estado);
+                // Se mantienen los valores predeterminados del segundo código.
+                LocalDate fechaFinal = fecha != null
+                                ? fecha
+                                : LocalDate.now();
+
+                String estadoFinal = estado != null && !estado.isBlank()
+                                ? estado.trim().toUpperCase()
+                                : "PRESENTE";
+
+                validarDatosAsistencia(fechaFinal, horaLlegada, estadoFinal);
 
                 if (asistenciaRepository.existsByEstudianteIdAndGrupoIdAndFecha(
-                                estudianteId, grupoId, fecha)) {
+                                estudianteId, grupoId, fechaFinal)) {
 
                         throw new RuntimeException(
                                         "El estudiante ya tiene asistencia registrada para este grupo en esta fecha");
@@ -81,17 +161,17 @@ public class AsistenciaService {
 
                 asistencia.setEstudiante(estudiante);
                 asistencia.setGrupo(grupo);
-                asistencia.setFecha(fecha);
+                asistencia.setFecha(fechaFinal);
                 asistencia.setHoraLlegada(horaLlegada);
-                asistencia.setEstado(estado.toUpperCase());
+                asistencia.setEstado(estadoFinal);
                 asistencia.setObservacion(observacion);
 
                 return asistenciaRepository.save(asistencia);
         }
 
-        // ==========================================
+        // =========================================================
         // REGISTRAR ASISTENCIA - SENSEI
-        // ==========================================
+        // =========================================================
 
         @Transactional
         public Asistencia registrarAsistenciaDeSensei(
@@ -103,11 +183,8 @@ public class AsistenciaService {
                         String observacion,
                         String username) {
 
-                // Verificar que el grupo pertenezca al Sensei.
                 validarGrupoDelSensei(grupoId, username);
 
-                // El método original conserva las validaciones
-                // de estudiante activo, grupo activo e inscripción.
                 return registrarAsistencia(
                                 estudianteId,
                                 grupoId,
@@ -117,10 +194,11 @@ public class AsistenciaService {
                                 observacion);
         }
 
-        // ==========================================
+        // =========================================================
         // ACTUALIZAR ASISTENCIA
-        // ==========================================
+        // =========================================================
 
+        @Transactional
         public Asistencia actualizarAsistencia(
                         Long id,
                         Long estudianteId,
@@ -133,39 +211,77 @@ public class AsistenciaService {
                 Asistencia asistencia = asistenciaRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException("Asistencia no encontrada"));
 
-                Estudiante estudiante = estudianteRepository.findById(estudianteId)
-                                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
+                // Se permite actualización parcial.
+                Estudiante estudiante = asistencia.getEstudiante();
+                Grupo grupo = asistencia.getGrupo();
 
-                Grupo grupo = grupoRepository.findById(grupoId)
-                                .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
+                if (estudianteId != null) {
+                        estudiante = estudianteRepository.findById(estudianteId)
+                                        .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
+                }
 
-                validarDatosAsistencia(fecha, horaLlegada, estado);
+                if (grupoId != null) {
+                        grupo = grupoRepository.findById(grupoId)
+                                        .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
+                }
 
-                boolean cambioRegistro = !asistencia.getEstudiante().getId().equals(estudianteId)
-                                || !asistencia.getGrupo().getId().equals(grupoId)
-                                || !asistencia.getFecha().equals(fecha);
+                LocalDate fechaFinal = fecha != null
+                                ? fecha
+                                : asistencia.getFecha();
+
+                String estadoFinal = estado != null && !estado.isBlank()
+                                ? estado.trim().toUpperCase()
+                                : asistencia.getEstado();
+
+                validarDatosAsistencia(
+                                fechaFinal,
+                                horaLlegada,
+                                estadoFinal);
+
+                boolean cambioRegistro = !asistencia.getEstudiante().getId().equals(estudiante.getId())
+                                || !asistencia.getGrupo().getId().equals(grupo.getId())
+                                || !asistencia.getFecha().equals(fechaFinal);
 
                 if (cambioRegistro
                                 && asistenciaRepository.existsByEstudianteIdAndGrupoIdAndFecha(
-                                                estudianteId, grupoId, fecha)) {
+                                                estudiante.getId(),
+                                                grupo.getId(),
+                                                fechaFinal)) {
 
                         throw new RuntimeException(
                                         "Ya existe otra asistencia para este estudiante, grupo y fecha");
                 }
 
+                // Validar estudiante y grupo cuando se modifica la relación.
+                if (!asistencia.getEstudiante().getId().equals(estudiante.getId())) {
+                        validarEstudianteActivo(estudiante);
+                }
+
+                if (!asistencia.getGrupo().getId().equals(grupo.getId())) {
+                        validarGrupoActivo(grupo);
+                }
+
+                if (!asistencia.getEstudiante().getId().equals(estudiante.getId())
+                                || !asistencia.getGrupo().getId().equals(grupo.getId())) {
+
+                        validarEstudianteActivoEnGrupo(
+                                        estudiante.getId(),
+                                        grupo.getId());
+                }
+
                 asistencia.setEstudiante(estudiante);
                 asistencia.setGrupo(grupo);
-                asistencia.setFecha(fecha);
+                asistencia.setFecha(fechaFinal);
                 asistencia.setHoraLlegada(horaLlegada);
-                asistencia.setEstado(estado.toUpperCase());
+                asistencia.setEstado(estadoFinal);
                 asistencia.setObservacion(observacion);
 
                 return asistenciaRepository.save(asistencia);
         }
 
-        // ==========================================
+        // =========================================================
         // ACTUALIZAR ASISTENCIA - SENSEI
-        // ==========================================
+        // =========================================================
 
         @Transactional
         public Asistencia actualizarAsistenciaDeSensei(
@@ -181,21 +297,14 @@ public class AsistenciaService {
                 Asistencia asistencia = asistenciaRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException("Asistencia no encontrada"));
 
-                // No permitir modificar una asistencia de otro Sensei.
+                // El Sensei debe ser propietario del grupo original.
                 validarGrupoDelSensei(
                                 asistencia.getGrupo().getId(),
                                 username);
 
                 // El grupo de destino también debe pertenecer al Sensei.
-                validarGrupoDelSensei(grupoId, username);
-
-                boolean cambioEstudianteOGrupo = !asistencia.getEstudiante().getId().equals(estudianteId)
-                                || !asistencia.getGrupo().getId().equals(grupoId);
-
-                // Si cambia el estudiante o el grupo, debe existir
-                // una inscripción activa en el grupo de destino.
-                if (cambioEstudianteOGrupo) {
-                        validarEstudianteActivoEnGrupo(estudianteId, grupoId);
+                if (grupoId != null) {
+                        validarGrupoDelSensei(grupoId, username);
                 }
 
                 return actualizarAsistencia(
@@ -208,17 +317,18 @@ public class AsistenciaService {
                                 observacion);
         }
 
-        // ==========================================
+        // =========================================================
         // LISTAR POR ESTUDIANTE
-        // ==========================================
+        // =========================================================
 
+        @Transactional(readOnly = true)
         public List<Asistencia> listarPorEstudiante(Long estudianteId) {
                 return asistenciaRepository.findByEstudianteId(estudianteId);
         }
 
-        // ==========================================
+        // =========================================================
         // LISTAR POR ESTUDIANTE - SENSEI
-        // ==========================================
+        // =========================================================
 
         @Transactional(readOnly = true)
         public List<Asistencia> listarPorEstudianteDeSensei(
@@ -233,17 +343,29 @@ public class AsistenciaService {
                                 .toList();
         }
 
-        // ==========================================
-        // LISTAR POR GRUPO
-        // ==========================================
+        // =========================================================
+        // LISTAR ÚLTIMAS ASISTENCIAS
+        // =========================================================
 
+        @Transactional(readOnly = true)
+        public List<Asistencia> listarUltimasPorEstudiante(Long estudianteId) {
+
+                return asistenciaRepository
+                                .findTop5ByEstudianteIdOrderByFechaDescIdDesc(estudianteId);
+        }
+
+        // =========================================================
+        // LISTAR POR GRUPO
+        // =========================================================
+
+        @Transactional(readOnly = true)
         public List<Asistencia> listarPorGrupo(Long grupoId) {
                 return asistenciaRepository.findByGrupoId(grupoId);
         }
 
-        // ==========================================
+        // =========================================================
         // LISTAR POR GRUPO - SENSEI
-        // ==========================================
+        // =========================================================
 
         @Transactional(readOnly = true)
         public List<Asistencia> listarPorGrupoDeSensei(
@@ -255,17 +377,18 @@ public class AsistenciaService {
                 return asistenciaRepository.findByGrupoId(grupoId);
         }
 
-        // ==========================================
+        // =========================================================
         // LISTAR POR FECHA
-        // ==========================================
+        // =========================================================
 
+        @Transactional(readOnly = true)
         public List<Asistencia> listarPorFecha(LocalDate fecha) {
                 return asistenciaRepository.findByFecha(fecha);
         }
 
-        // ==========================================
+        // =========================================================
         // LISTAR POR FECHA - SENSEI
-        // ==========================================
+        // =========================================================
 
         @Transactional(readOnly = true)
         public List<Asistencia> listarPorFechaDeSensei(
@@ -280,10 +403,11 @@ public class AsistenciaService {
                                 .toList();
         }
 
-        // ==========================================
+        // =========================================================
         // ESTUDIANTE + FECHA
-        // ==========================================
+        // =========================================================
 
+        @Transactional(readOnly = true)
         public List<Asistencia> listarPorEstudianteYFecha(
                         Long estudianteId,
                         LocalDate fecha) {
@@ -293,9 +417,9 @@ public class AsistenciaService {
                                 fecha);
         }
 
-        // ==========================================
+        // =========================================================
         // ESTUDIANTE + FECHA - SENSEI
-        // ==========================================
+        // =========================================================
 
         @Transactional(readOnly = true)
         public List<Asistencia> listarPorEstudianteYFechaDeSensei(
@@ -305,18 +429,18 @@ public class AsistenciaService {
 
                 Set<Long> gruposIds = obtenerIdsGruposDelSensei(username);
 
-                return asistenciaRepository.findByEstudianteIdAndFecha(
-                                estudianteId,
-                                fecha)
+                return asistenciaRepository
+                                .findByEstudianteIdAndFecha(estudianteId, fecha)
                                 .stream()
                                 .filter(a -> gruposIds.contains(a.getGrupo().getId()))
                                 .toList();
         }
 
-        // ==========================================
+        // =========================================================
         // GRUPO + FECHA
-        // ==========================================
+        // =========================================================
 
+        @Transactional(readOnly = true)
         public List<Asistencia> listarPorGrupoYFecha(
                         Long grupoId,
                         LocalDate fecha) {
@@ -326,9 +450,9 @@ public class AsistenciaService {
                                 fecha);
         }
 
-        // ==========================================
+        // =========================================================
         // GRUPO + FECHA - SENSEI
-        // ==========================================
+        // =========================================================
 
         @Transactional(readOnly = true)
         public List<Asistencia> listarPorGrupoYFechaDeSensei(
@@ -343,9 +467,9 @@ public class AsistenciaService {
                                 fecha);
         }
 
-        // ==========================================
+        // =========================================================
         // OBTENER SENSEI AUTENTICADO
-        // ==========================================
+        // =========================================================
 
         private Usuario obtenerSenseiAutenticado(String username) {
 
@@ -354,7 +478,8 @@ public class AsistenciaService {
                                                 "Usuario autenticado no encontrado"));
 
                 if (sensei.getRol() == null
-                                || !"SENSEI".equalsIgnoreCase(sensei.getRol().getNombre())) {
+                                || !"SENSEI".equalsIgnoreCase(
+                                                sensei.getRol().getNombre())) {
 
                         throw new AccessDeniedException(
                                         "El usuario autenticado no tiene el rol SENSEI");
@@ -368,9 +493,9 @@ public class AsistenciaService {
                 return sensei;
         }
 
-        // ==========================================
+        // =========================================================
         // OBTENER GRUPOS DEL SENSEI
-        // ==========================================
+        // =========================================================
 
         private Set<Long> obtenerIdsGruposDelSensei(String username) {
 
@@ -385,7 +510,6 @@ public class AsistenciaService {
                 }
 
                 for (Grupo grupo : grupos) {
-
                         if (grupo != null && grupo.getId() != null) {
                                 gruposIds.add(grupo.getId());
                         }
@@ -393,9 +517,10 @@ public class AsistenciaService {
 
                 return gruposIds;
         }
-        // ==========================================
+
+        // =========================================================
         // VALIDAR PROPIEDAD DEL GRUPO
-        // ==========================================
+        // =========================================================
 
         private void validarGrupoDelSensei(
                         Long grupoId,
@@ -404,8 +529,7 @@ public class AsistenciaService {
                 Usuario sensei = obtenerSenseiAutenticado(username);
 
                 Grupo grupo = grupoRepository.findById(grupoId)
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Grupo no encontrado"));
+                                .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
 
                 if (grupo.getSensei() == null
                                 || !grupo.getSensei().getId().equals(sensei.getId())) {
@@ -415,9 +539,9 @@ public class AsistenciaService {
                 }
         }
 
-        // ==========================================
+        // =========================================================
         // VALIDAR ESTUDIANTE ACTIVO
-        // ==========================================
+        // =========================================================
 
         private void validarEstudianteActivo(Estudiante estudiante) {
 
@@ -427,9 +551,9 @@ public class AsistenciaService {
                 }
         }
 
-        // ==========================================
+        // =========================================================
         // VALIDAR GRUPO ACTIVO
-        // ==========================================
+        // =========================================================
 
         private void validarGrupoActivo(Grupo grupo) {
 
@@ -439,9 +563,9 @@ public class AsistenciaService {
                 }
         }
 
-        // ==========================================
-        // VALIDAR ESTUDIANTE EN GRUPO
-        // ==========================================
+        // =========================================================
+        // VALIDAR ESTUDIANTE INSCRITO EN GRUPO
+        // =========================================================
 
         private void validarEstudianteActivoEnGrupo(
                         Long estudianteId,
@@ -458,9 +582,9 @@ public class AsistenciaService {
                 }
         }
 
-        // ==========================================
+        // =========================================================
         // VALIDAR DATOS DE ASISTENCIA
-        // ==========================================
+        // =========================================================
 
         private void validarDatosAsistencia(
                         LocalDate fecha,
@@ -476,14 +600,15 @@ public class AsistenciaService {
                                         "El estado de la asistencia es obligatorio");
                 }
 
-                String estadoNormalizado = estado.toUpperCase();
+                String estadoNormalizado = estado.trim().toUpperCase();
 
                 if (!estadoNormalizado.equals("PRESENTE")
                                 && !estadoNormalizado.equals("AUSENTE")
-                                && !estadoNormalizado.equals("TARDANZA")) {
+                                && !estadoNormalizado.equals("TARDANZA")
+                                && !estadoNormalizado.equals("JUSTIFICADO")) {
 
                         throw new RuntimeException(
-                                        "El estado debe ser PRESENTE, AUSENTE o TARDANZA");
+                                        "El estado debe ser PRESENTE, AUSENTE, TARDANZA o JUSTIFICADO");
                 }
 
                 if (estadoNormalizado.equals("PRESENTE")
@@ -501,12 +626,5 @@ public class AsistenciaService {
                         throw new RuntimeException(
                                         "Un estudiante AUSENTE no debe tener hora de llegada");
                 }
-        }
-
-        @Transactional(readOnly = true)
-        public List<Asistencia> listarUltimasPorEstudiante(Long estudianteId) {
-
-                return asistenciaRepository
-                                .findTop5ByEstudianteIdOrderByFechaDescIdDesc(estudianteId);
         }
 }

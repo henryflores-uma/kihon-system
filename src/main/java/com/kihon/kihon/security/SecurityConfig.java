@@ -115,7 +115,10 @@ public class SecurityConfig {
 
                                 .authorizeHttpRequests(auth -> auth
 
-                                                // Recursos públicos
+                                                // =========================================
+                                                // RECURSOS PÚBLICOS
+                                                // =========================================
+
                                                 .requestMatchers(
                                                                 "/",
                                                                 "/login",
@@ -126,25 +129,37 @@ public class SecurityConfig {
                                                                 "/favicon.ico")
                                                 .permitAll()
 
+                                                // =========================================
                                                 // CSRF
+                                                // =========================================
+
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/auth/csrf")
                                                 .permitAll()
 
-                                                // Inicio de sesión
+                                                // =========================================
+                                                // INICIO DE SESIÓN
+                                                // =========================================
+
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/auth/login")
                                                 .permitAll()
 
-                                                // Registro público
+                                                // =========================================
+                                                // REGISTRO PÚBLICO
+                                                // =========================================
+
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/usuarios")
                                                 .permitAll()
 
-                                                // Vistas administrativas
+                                                // =========================================
+                                                // VISTAS ADMINISTRATIVAS
+                                                // =========================================
+
                                                 .requestMatchers(
                                                                 "/admin/usuarios",
                                                                 "/admin/usuarios/**")
@@ -153,37 +168,58 @@ public class SecurityConfig {
                                                 .requestMatchers("/admin/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                // Vistas de secretaría
+                                                // =========================================
+                                                // VISTAS DE SECRETARÍA
+                                                // =========================================
+
                                                 .requestMatchers("/secretaria/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                // Vistas del Sensei
+                                                // =========================================
+                                                // VISTAS DEL SENSEI
+                                                // =========================================
+
                                                 .requestMatchers("/sensei/**")
                                                 .hasAnyRole("ADMIN", "SENSEI")
 
-                                                // Vistas del estudiante
+                                                // =========================================
+                                                // VISTAS DEL ESTUDIANTE
+                                                // =========================================
+
                                                 .requestMatchers("/estudiante/**")
                                                 .hasAnyRole("ADMIN", "ESTUDIANTE")
 
-                                                // Cuentas de estudiantes
+                                                // =========================================
+                                                // CUENTAS DE ESTUDIANTES
+                                                // =========================================
+
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/usuarios/estudiante")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                // Usuario actual
+                                                // =========================================
+                                                // USUARIO ACTUAL
+                                                // =========================================
+
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/usuarios/me")
                                                 .authenticated()
 
-                                                // Consulta de Senseis
+                                                // =========================================
+                                                // CONSULTA DE SENSEIS
+                                                // =========================================
+
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/usuarios/senseis")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                // Módulo de usuarios
+                                                // =========================================
+                                                // MÓDULO DE USUARIOS
+                                                // =========================================
+
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/usuarios")
@@ -195,14 +231,20 @@ public class SecurityConfig {
                                                                 "/api/usuarios/*/rol")
                                                 .hasRole("ADMIN")
 
-                                                // Autenticación y perfil
+                                                // =========================================
+                                                // AUTENTICACIÓN Y PERFIL
+                                                // =========================================
+
                                                 .requestMatchers(
                                                                 "/api/auth/me",
                                                                 "/api/auth/perfil",
                                                                 "/api/auth/perfil/password")
                                                 .authenticated()
 
-                                                // Paneles por rol
+                                                // =========================================
+                                                // PANELES POR ROL
+                                                // =========================================
+
                                                 .requestMatchers("/api/admin")
                                                 .hasRole("ADMIN")
 
@@ -232,7 +274,10 @@ public class SecurityConfig {
                                                                 "/api/estudiantes/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
 
-                                                // Apoderados
+                                                // =========================================
+                                                // APODERADOS
+                                                // =========================================
+
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/apoderados/estudiante/*")
@@ -288,6 +333,7 @@ public class SecurityConfig {
                                                                 "/api/estudiantes-grupos",
                                                                 "/api/estudiantes-grupos/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA")
+
                                                 // =========================================
                                                 // ASISTENCIAS
                                                 // =========================================
@@ -295,19 +341,44 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/asistencias/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
-                                                // Justificaciones
+                                                // =========================================
+                                                // JUSTIFICACIONES Y EVIDENCIAS
+                                                // =========================================
+
+                                                // Consultar justificaciones y evidencias
                                                 .requestMatchers(
+                                                                HttpMethod.GET,
                                                                 "/api/justificaciones-asistencia/**",
+                                                                "/api/evidencias-asistencia/**")
+                                                .hasAnyRole(
+                                                                "ADMIN",
+                                                                "SECRETARIA",
+                                                                "SENSEI",
+                                                                "ESTUDIANTE")
+
+                                                // Crear, actualizar y eliminar justificaciones
+                                                .requestMatchers(
+                                                                "/api/justificaciones-asistencia/**")
+                                                .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
+
+                                                // Subir y eliminar evidencias
+                                                .requestMatchers(
                                                                 "/api/evidencias-asistencia/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
-                                                // Motivos de justificación
+                                                // =========================================
+                                                // MOTIVOS DE JUSTIFICACIÓN
+                                                // =========================================
+
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/motivos-justificacion")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
-                                                // Reportes
+                                                // =========================================
+                                                // REPORTES
+                                                // =========================================
+
                                                 .requestMatchers("/api/reportes/asistencias/**")
                                                 .hasAnyRole("ADMIN", "SECRETARIA", "SENSEI")
 
@@ -352,7 +423,10 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/estudiante/**")
                                                 .hasAnyRole("ADMIN", "ESTUDIANTE")
 
-                                                // Cualquier otra solicitud
+                                                // =========================================
+                                                // CUALQUIER OTRA SOLICITUD
+                                                // =========================================
+
                                                 .anyRequest().authenticated())
 
                                 // =========================================
@@ -440,6 +514,7 @@ public class SecurityConfig {
 
                                                                         response.setStatus(
                                                                                         HttpStatus.FORBIDDEN.value());
+
                                                                         response.setContentType("application/json");
                                                                         response.setCharacterEncoding("UTF-8");
 

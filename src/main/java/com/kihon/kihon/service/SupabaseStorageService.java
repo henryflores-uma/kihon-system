@@ -1,6 +1,10 @@
+
 package com.kihon.kihon.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kihon.kihon.config.SupabaseConfig;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,13 +24,13 @@ public class SupabaseStorageService {
 
         private final HttpClient httpClient = HttpClient.newHttpClient();
 
+        private final ObjectMapper objectMapper = new ObjectMapper();
+
         private static final String BUCKET_FOTOS = "estudiantes-fotos";
 
         private static final String BUCKET_EVIDENCIAS = "evidencias-asistencia";
 
-        public SupabaseStorageService(
-                        SupabaseConfig supabaseConfig) {
-
+        public SupabaseStorageService(SupabaseConfig supabaseConfig) {
                 this.supabaseConfig = supabaseConfig;
         }
 
@@ -36,12 +40,10 @@ public class SupabaseStorageService {
 
         public String subirFoto(
                         MultipartFile archivo,
-                        String ruta)
-                        throws IOException, InterruptedException {
+                        String ruta) throws IOException, InterruptedException {
 
                 if (archivo == null || archivo.isEmpty()) {
-                        throw new RuntimeException(
-                                        "El archivo está vacío");
+                        throw new RuntimeException("El archivo está vacío");
                 }
 
                 String tipoContenido = archivo.getContentType();
@@ -52,6 +54,8 @@ public class SupabaseStorageService {
                         throw new RuntimeException(
                                         "El archivo debe ser una imagen");
                 }
+
+                validarRuta(ruta);
 
                 String rutaCodificada = codificarRuta(ruta);
 
@@ -65,8 +69,7 @@ public class SupabaseStorageService {
                                 .uri(URI.create(url))
                                 .header(
                                                 HttpHeaders.AUTHORIZATION,
-                                                "Bearer "
-                                                                + supabaseConfig.getSecretKey())
+                                                "Bearer " + supabaseConfig.getSecretKey())
                                 .header(
                                                 "apikey",
                                                 supabaseConfig.getSecretKey())
@@ -77,33 +80,24 @@ public class SupabaseStorageService {
                                                 "x-upsert",
                                                 "true")
                                 .PUT(
-                                                HttpRequest.BodyPublishers
-                                                                .ofByteArray(
-                                                                                archivo.getBytes()))
+                                                HttpRequest.BodyPublishers.ofByteArray(
+                                                                archivo.getBytes()))
                                 .build();
 
                 HttpResponse<String> response = httpClient.send(
                                 request,
                                 HttpResponse.BodyHandlers.ofString());
 
-                if (response.statusCode() < 200
-                                || response.statusCode() >= 300) {
-
-                        throw new RuntimeException(
-                                        "Error al subir la foto a Supabase Storage. "
-                                                        + "Código: "
-                                                        + response.statusCode()
-                                                        + " - "
-                                                        + response.body());
-                }
+                validarRespuesta(
+                                response,
+                                "Error al subir la foto a Supabase Storage");
 
                 return ruta;
         }
 
         public String generarUrlFirmada(
                         String ruta,
-                        int segundos)
-                        throws IOException, InterruptedException {
+                        int segundos) throws IOException, InterruptedException {
 
                 return generarUrlFirmadaBucket(
                                 BUCKET_FOTOS,
@@ -112,8 +106,7 @@ public class SupabaseStorageService {
         }
 
         public void eliminarFoto(
-                        String ruta)
-                        throws IOException, InterruptedException {
+                        String ruta) throws IOException, InterruptedException {
 
                 eliminarArchivoBucket(
                                 BUCKET_FOTOS,
@@ -121,27 +114,25 @@ public class SupabaseStorageService {
         }
 
         // =========================================================
-        // EVIDENCIAS
+        // EVIDENCIAS DE ASISTENCIA
         // =========================================================
 
         public String subirEvidencia(
                         MultipartFile archivo,
-                        String ruta)
-                        throws IOException, InterruptedException {
+                        String ruta) throws IOException, InterruptedException {
 
                 if (archivo == null || archivo.isEmpty()) {
-                        throw new RuntimeException(
-                                        "El archivo está vacío");
+                        throw new RuntimeException("El archivo está vacío");
                 }
 
                 String tipoContenido = archivo.getContentType();
 
-                if (tipoContenido == null
-                                || tipoContenido.isBlank()) {
-
+                if (tipoContenido == null || tipoContenido.isBlank()) {
                         throw new RuntimeException(
                                         "No se pudo determinar el tipo del archivo");
                 }
+
+                validarRuta(ruta);
 
                 String rutaCodificada = codificarRuta(ruta);
 
@@ -155,8 +146,7 @@ public class SupabaseStorageService {
                                 .uri(URI.create(url))
                                 .header(
                                                 HttpHeaders.AUTHORIZATION,
-                                                "Bearer "
-                                                                + supabaseConfig.getSecretKey())
+                                                "Bearer " + supabaseConfig.getSecretKey())
                                 .header(
                                                 "apikey",
                                                 supabaseConfig.getSecretKey())
@@ -167,33 +157,24 @@ public class SupabaseStorageService {
                                                 "x-upsert",
                                                 "false")
                                 .PUT(
-                                                HttpRequest.BodyPublishers
-                                                                .ofByteArray(
-                                                                                archivo.getBytes()))
+                                                HttpRequest.BodyPublishers.ofByteArray(
+                                                                archivo.getBytes()))
                                 .build();
 
                 HttpResponse<String> response = httpClient.send(
                                 request,
                                 HttpResponse.BodyHandlers.ofString());
 
-                if (response.statusCode() < 200
-                                || response.statusCode() >= 300) {
-
-                        throw new RuntimeException(
-                                        "Error al subir la evidencia a Supabase Storage. "
-                                                        + "Código: "
-                                                        + response.statusCode()
-                                                        + " - "
-                                                        + response.body());
-                }
+                validarRespuesta(
+                                response,
+                                "Error al subir la evidencia a Supabase Storage");
 
                 return ruta;
         }
 
         public String generarUrlFirmadaEvidencia(
                         String ruta,
-                        int segundos)
-                        throws IOException, InterruptedException {
+                        int segundos) throws IOException, InterruptedException {
 
                 return generarUrlFirmadaBucket(
                                 BUCKET_EVIDENCIAS,
@@ -202,8 +183,7 @@ public class SupabaseStorageService {
         }
 
         public void eliminarEvidencia(
-                        String ruta)
-                        throws IOException, InterruptedException {
+                        String ruta) throws IOException, InterruptedException {
 
                 eliminarArchivoBucket(
                                 BUCKET_EVIDENCIAS,
@@ -211,19 +191,15 @@ public class SupabaseStorageService {
         }
 
         // =========================================================
-        // URL FIRMADA
+        // GENERACIÓN DE URL FIRMADA
         // =========================================================
 
         private String generarUrlFirmadaBucket(
                         String bucket,
                         String ruta,
-                        int segundos)
-                        throws IOException, InterruptedException {
+                        int segundos) throws IOException, InterruptedException {
 
-                if (ruta == null || ruta.isBlank()) {
-                        throw new RuntimeException(
-                                        "La ruta del archivo está vacía");
-                }
+                validarRuta(ruta);
 
                 if (segundos <= 0) {
                         throw new RuntimeException(
@@ -238,16 +214,13 @@ public class SupabaseStorageService {
                                 + "/"
                                 + rutaCodificada;
 
-                String body = "{\"expiresIn\":"
-                                + segundos
-                                + "}";
+                String body = "{\"expiresIn\":" + segundos + "}";
 
                 HttpRequest request = HttpRequest.newBuilder()
                                 .uri(URI.create(url))
                                 .header(
                                                 HttpHeaders.AUTHORIZATION,
-                                                "Bearer "
-                                                                + supabaseConfig.getSecretKey())
+                                                "Bearer " + supabaseConfig.getSecretKey())
                                 .header(
                                                 "apikey",
                                                 supabaseConfig.getSecretKey())
@@ -255,48 +228,36 @@ public class SupabaseStorageService {
                                                 HttpHeaders.CONTENT_TYPE,
                                                 "application/json")
                                 .POST(
-                                                HttpRequest.BodyPublishers
-                                                                .ofString(body))
+                                                HttpRequest.BodyPublishers.ofString(body))
                                 .build();
 
                 HttpResponse<String> response = httpClient.send(
                                 request,
                                 HttpResponse.BodyHandlers.ofString());
 
-                if (response.statusCode() < 200
-                                || response.statusCode() >= 300) {
+                validarRespuesta(
+                                response,
+                                "Error al generar la URL firmada");
+
+                // Interpretar la respuesta JSON de Supabase.
+                JsonNode json = objectMapper.readTree(response.body());
+
+                JsonNode signedURLNode = json.get("signedURL");
+
+                if (signedURLNode == null
+                                || signedURLNode.isNull()
+                                || signedURLNode.asText().isBlank()) {
 
                         throw new RuntimeException(
-                                        "Error al generar la URL firmada. "
-                                                        + "Código: "
-                                                        + response.statusCode()
-                                                        + " - "
-                                                        + response.body());
+                                        "Supabase no devolvió una URL firmada válida");
                 }
 
-                String respuesta = response.body();
+                String signedPath = signedURLNode.asText();
 
-                String marcador = "\"signedURL\":\"";
-
-                int inicio = respuesta.indexOf(marcador);
-
-                if (inicio == -1) {
+                if (!signedPath.startsWith("/")) {
                         throw new RuntimeException(
-                                        "Supabase no devolvió una URL firmada");
+                                        "Supabase devolvió una ruta de URL firmada inválida");
                 }
-
-                inicio += marcador.length();
-
-                int fin = respuesta.indexOf("\"", inicio);
-
-                if (fin == -1) {
-                        throw new RuntimeException(
-                                        "Respuesta inválida de Supabase");
-                }
-
-                String signedPath = respuesta.substring(
-                                inicio,
-                                fin);
 
                 return supabaseConfig.getUrl()
                                 + "/storage/v1"
@@ -304,13 +265,12 @@ public class SupabaseStorageService {
         }
 
         // =========================================================
-        // ELIMINACIÓN
+        // ELIMINACIÓN DE ARCHIVOS
         // =========================================================
 
         private void eliminarArchivoBucket(
                         String bucket,
-                        String ruta)
-                        throws IOException, InterruptedException {
+                        String ruta) throws IOException, InterruptedException {
 
                 if (ruta == null || ruta.isBlank()) {
                         return;
@@ -328,8 +288,7 @@ public class SupabaseStorageService {
                                 .uri(URI.create(url))
                                 .header(
                                                 HttpHeaders.AUTHORIZATION,
-                                                "Bearer "
-                                                                + supabaseConfig.getSecretKey())
+                                                "Bearer " + supabaseConfig.getSecretKey())
                                 .header(
                                                 "apikey",
                                                 supabaseConfig.getSecretKey())
@@ -340,15 +299,40 @@ public class SupabaseStorageService {
                                 request,
                                 HttpResponse.BodyHandlers.ofString());
 
+                validarRespuesta(
+                                response,
+                                "Error al eliminar el archivo de Supabase Storage");
+        }
+
+        // =========================================================
+        // VALIDAR RESPUESTA HTTP
+        // =========================================================
+
+        private void validarRespuesta(
+                        HttpResponse<String> response,
+                        String mensaje) {
+
                 if (response.statusCode() < 200
                                 || response.statusCode() >= 300) {
 
                         throw new RuntimeException(
-                                        "Error al eliminar el archivo de Supabase Storage. "
-                                                        + "Código: "
+                                        mensaje
+                                                        + ". Código: "
                                                         + response.statusCode()
                                                         + " - "
                                                         + response.body());
+                }
+        }
+
+        // =========================================================
+        // VALIDAR RUTA
+        // =========================================================
+
+        private void validarRuta(String ruta) {
+
+                if (ruta == null || ruta.isBlank()) {
+                        throw new RuntimeException(
+                                        "La ruta del archivo está vacía");
                 }
         }
 
@@ -363,13 +347,14 @@ public class SupabaseStorageService {
          *
          * justificaciones/1/archivo con espacio.pdf
          *
-         * se convierte en:
+         * Resultado:
          *
          * justificaciones/1/archivo%20con%20espacio.pdf
          *
-         * Las "/" se mantienen porque forman parte
-         * de la estructura de carpetas.
+         * Las barras "/" se mantienen para conservar
+         * la estructura de carpetas de Supabase Storage.
          */
+
         private String codificarRuta(String ruta) {
 
                 String[] segmentos = ruta.split("/");

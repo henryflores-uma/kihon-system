@@ -1,4 +1,3 @@
-
 package com.kihon.kihon.controller;
 
 import com.kihon.kihon.dto.JustificacionAsistenciaRequest;
@@ -44,6 +43,23 @@ public class JustificacionAsistenciaController {
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
                                 .body(convertirAResponse(justificacion));
+        }
+
+        // ==========================================
+        // ACTUALIZAR JUSTIFICACIÓN
+        // ==========================================
+
+        @PutMapping("/{id}")
+        public ResponseEntity<JustificacionAsistenciaResponse> actualizar(
+                        @PathVariable Long id,
+                        @RequestBody JustificacionAsistenciaRequest request) {
+
+                JustificacionAsistencia justificacion = justificacionService.actualizarJustificacion(
+                                id,
+                                request.getMotivoId(),
+                                request.getDescripcion());
+
+                return ResponseEntity.ok(convertirAResponse(justificacion));
         }
 
         // ==========================================
