@@ -63,43 +63,43 @@ public class EstudiantePortalController {
         */
 
         @GetMapping("/asistencias")
-public ResponseEntity<AsistenciaPageResponse> listarMisAsistencias(
-                @RequestParam(defaultValue = "0") int page,
-                @RequestParam(defaultValue = "10") int size,
-                @RequestParam(required = false) String estado,
-                Authentication authentication) {
+        public ResponseEntity<AsistenciaPageResponse> listarMisAsistencias(
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "10") int size,
+                        @RequestParam(required = false) String estado,
+                        Authentication authentication) {
 
-        int paginaSegura = Math.max(page, 0);
-        int tamanioSeguro = Math.min(Math.max(size, 1), 50);
+                int paginaSegura = Math.max(page, 0);
+                int tamanioSeguro = Math.min(Math.max(size, 1), 50);
 
-        Pageable pageable = PageRequest.of(paginaSegura, tamanioSeguro);
+                Pageable pageable = PageRequest.of(paginaSegura, tamanioSeguro);
 
-        Page<Asistencia> paginaAsistencias = estudiantePortalService
-                        .listarMisAsistenciasPaginadas(
-                                        authentication.getName(),
-                                        estado,
-                                        pageable);
+                Page<Asistencia> paginaAsistencias = estudiantePortalService
+                                .listarMisAsistenciasPaginadas(
+                                                authentication.getName(),
+                                                estado,
+                                                pageable);
 
-        AsistenciaPageResponse.ResumenAsistencia resumen = estudiantePortalService
-                        .obtenerResumenMisAsistencias(authentication.getName());
+                AsistenciaPageResponse.ResumenAsistencia resumen = estudiantePortalService
+                                .obtenerResumenMisAsistencias(authentication.getName());
 
-        List<AsistenciaResponse> contenido = paginaAsistencias.getContent()
-                        .stream()
-                        .map(this::convertirAResponse)
-                        .toList();
+                List<AsistenciaResponse> contenido = paginaAsistencias.getContent()
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
 
-        AsistenciaPageResponse response = new AsistenciaPageResponse(
-                        contenido,
-                        paginaAsistencias.getNumber(),
-                        paginaAsistencias.getSize(),
-                        paginaAsistencias.getTotalElements(),
-                        paginaAsistencias.getTotalPages(),
-                        paginaAsistencias.isFirst(),
-                        paginaAsistencias.isLast(),
-                        resumen);
+                AsistenciaPageResponse response = new AsistenciaPageResponse(
+                                contenido,
+                                paginaAsistencias.getNumber(),
+                                paginaAsistencias.getSize(),
+                                paginaAsistencias.getTotalElements(),
+                                paginaAsistencias.getTotalPages(),
+                                paginaAsistencias.isFirst(),
+                                paginaAsistencias.isLast(),
+                                resumen);
 
-        return ResponseEntity.ok(response);
-}
+                return ResponseEntity.ok(response);
+        }
 
         /*
         * =========================================================

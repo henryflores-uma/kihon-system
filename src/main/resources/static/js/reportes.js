@@ -2442,25 +2442,25 @@ document.addEventListener("DOMContentLoaded", function () {
         <tr>
           <td>
             ${escaparHTML(
-              asistencia.estudianteNombre ||
-              asistencia.estudianteId ||
-              "-"
-            )}
+        asistencia.estudianteNombre ||
+        asistencia.estudianteId ||
+        "-"
+      )}
           </td>
           <td>
             ${escaparHTML(
-              asistencia.grupoNombre ||
-              asistencia.grupoId ||
-              "-"
-            )}
+        asistencia.grupoNombre ||
+        asistencia.grupoId ||
+        "-"
+      )}
           </td>
           <td>
             ${formatoFecha(asistencia.fecha)}
           </td>
           <td>
             ${escaparHTML(
-              asistencia.horaLlegada || "-"
-            )}
+        asistencia.horaLlegada || "-"
+      )}
           </td>
           <td>
             <span class="
@@ -2468,14 +2468,14 @@ document.addEventListener("DOMContentLoaded", function () {
               reporte-estado--${estadoClase}
             ">
               ${escaparHTML(
-                obtenerEtiquetaEstado(estado)
-              )}
+        obtenerEtiquetaEstado(estado)
+      )}
             </span>
           </td>
           <td>
             ${escaparHTML(
-              asistencia.observacion || "-"
-            )}
+        asistencia.observacion || "-"
+      )}
           </td>
         </tr>
       `;

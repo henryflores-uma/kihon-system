@@ -1,224 +1,221 @@
-    document.addEventListener("DOMContentLoaded", function () {
-        /*
-        * =========================================================
-        * AUTENTICACIÓN
-        * =========================================================
-        */
+document.addEventListener("DOMContentLoaded", function () {
+  /*
+  * =========================================================
+  * AUTENTICACIÓN
+  * =========================================================
+  */
 
-        /*cambio de gino*/
-        /*segundo cambio*/
+  const username = sessionStorage.getItem("kihonUsername");
+  const rol = sessionStorage.getItem("kihonRol");
 
-        const username = sessionStorage.getItem("kihonUsername");
-        const rol = sessionStorage.getItem("kihonRol");
+  if (!username || !rol || !["ADMIN", "SECRETARIA", "SENSEI"].includes(rol)) {
+    window.location.replace("/login");
+    return;
+  }
 
-        if (!username || !rol || !["ADMIN", "SECRETARIA", "SENSEI"].includes(rol)) {
-        window.location.replace("/login");
-        return;
-        }
+  /*
+  * =========================================================
+  * TOKEN CSRF 
+  * =========================================================
+  */
 
-        /*
-        * =========================================================
-        * TOKEN CSRF
-        * =========================================================
-        */
+  async function obtenerTokenCSRF() {
+    const response = await fetch("/api/auth/csrf", {
+      method: "GET",
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json",
+      },
+    });
 
-        async function obtenerTokenCSRF() {
-        const response = await fetch("/api/auth/csrf", {
-            method: "GET",
-            credentials: "same-origin",
-            headers: {
-            Accept: "application/json",
-            },
-        });
+    if (!response.ok) {
+      throw new Error("No se pudo obtener el token CSRF.");
+    }
 
-        if (!response.ok) {
-            throw new Error("No se pudo obtener el token CSRF.");
-        }
+    const data = await response.json();
 
-        const data = await response.json();
+    return data.token;
+  }
 
-        return data.token;
-        }
+  /*
+  * =========================================================
+  * SOLICITUDES HTTP
+  * =========================================================
+  */
 
-        /*
-        * =========================================================
-        * SOLICITUDES HTTP
-        * =========================================================
-        */
+  async function solicitar(url, opciones = {}) {
+    const metodo = (opciones.method || "GET").toUpperCase();
 
-        async function solicitar(url, opciones = {}) {
-        const metodo = (opciones.method || "GET").toUpperCase();
+    const encabezados = new Headers(opciones.headers || {});
 
-        const encabezados = new Headers(opciones.headers || {});
+    encabezados.set("Accept", "application/json");
 
-        encabezados.set("Accept", "application/json");
+    /*
+    * Las solicitudes que modifican información
+    * necesitan el token CSRF.
+    */
 
-        /*
-        * Las solicitudes que modifican información
-        * necesitan el token CSRF.
-        */
+    if (!["GET", "HEAD", "OPTIONS"].includes(metodo)) {
+      const csrfToken = await obtenerTokenCSRF();
 
-        if (!["GET", "HEAD", "OPTIONS"].includes(metodo)) {
-            const csrfToken = await obtenerTokenCSRF();
+      encabezados.set("X-CSRF-TOKEN", csrfToken);
+    }
 
-            encabezados.set("X-CSRF-TOKEN", csrfToken);
-        }
+    const response = await fetch(url, {
+      ...opciones,
+      method: metodo,
+      credentials: "same-origin",
+      headers: encabezados,
+    });
 
-        const response = await fetch(url, {
-            ...opciones,
-            method: metodo,
-            credentials: "same-origin",
-            headers: encabezados,
-        });
+    /*
+    * SESIÓN EXPIRADA
+    */
 
-        /*
-        * SESIÓN EXPIRADA
-        */
+    if (response.status === 401) {
+      sessionStorage.removeItem("kihonUsername");
+      sessionStorage.removeItem("kihonRol");
+      sessionStorage.removeItem("kihonAuth");
 
-        if (response.status === 401) {
-            sessionStorage.removeItem("kihonUsername");
-            sessionStorage.removeItem("kihonRol");
-            sessionStorage.removeItem("kihonAuth");
+      window.location.replace("/login");
 
-            window.location.replace("/login");
+      throw new Error("La sesión ha expirado.");
+    }
 
-            throw new Error("La sesión ha expirado.");
-        }
+    return response;
+  }
 
-        return response;
-        }
+  /*
+  * =========================================================
+  * ELEMENTOS DEL DOM
+  * =========================================================
+  */
 
-        /*
-        * =========================================================
-        * ELEMENTOS DEL DOM
-        * =========================================================
-        */
+  const fechaInput = document.getElementById("fecha");
 
-        const fechaInput = document.getElementById("fecha");
+  const grupoSelect = document.getElementById("grupoId");
 
-        const grupoSelect = document.getElementById("grupoId");
+  const grupoInfo = document.getElementById("grupoInfo");
 
-        const grupoInfo = document.getElementById("grupoInfo");
+  const grupoInfoNombre = document.getElementById("grupoInfoNombre");
 
-        const grupoInfoNombre = document.getElementById("grupoInfoNombre");
+  const grupoInfoHorario = document.getElementById("grupoInfoHorario");
 
-        const grupoInfoHorario = document.getElementById("grupoInfoHorario");
+  const grupoInfoSensei = document.getElementById("grupoInfoSensei");
 
-        const grupoInfoSensei = document.getElementById("grupoInfoSensei");
+  const grupoInfoCantidad = document.getElementById("grupoInfoCantidad");
 
-        const grupoInfoCantidad = document.getElementById("grupoInfoCantidad");
+  const attendanceRegister = document.getElementById("attendanceRegister");
 
-        const attendanceRegister = document.getElementById("attendanceRegister");
+  const saveAttendanceButton = document.getElementById("saveAttendanceButton");
 
-        const saveAttendanceButton = document.getElementById("saveAttendanceButton");
+  const attendanceMessage = document.getElementById("attendanceMessage");
 
-        const attendanceMessage = document.getElementById("attendanceMessage");
+  const fechaConsulta = document.getElementById("fechaConsulta");
 
-        const fechaConsulta = document.getElementById("fechaConsulta");
+  const grupoConsulta = document.getElementById("grupoConsulta");
 
-        const grupoConsulta = document.getElementById("grupoConsulta");
+  const estudianteConsulta = document.getElementById("estudianteConsulta");
 
-        const estudianteConsulta = document.getElementById("estudianteConsulta");
+  const attendanceList = document.getElementById("attendanceList");
 
-        const attendanceList = document.getElementById("attendanceList");
+  /*
+  * =========================================================
+  * ESTADO
+  * =========================================================
+  */
 
-        /*
-        * =========================================================
-        * ESTADO
-        * =========================================================
-        */
+  let horariosDelDia = [];
 
-        let horariosDelDia = [];
+  let estudiantesGrupo = [];
 
-        let estudiantesGrupo = [];
+  let asistenciasGrupo = [];
 
-        let asistenciasGrupo = [];
+  let asistenciasConsulta = [];
 
-        let asistenciasConsulta = [];
+  let motivosJustificacion = [];
 
-        let motivosJustificacion = [];
+  /*
+  * =========================================================
+  * FECHA LOCAL
+  * =========================================================
+  */
 
-        /*
-        * =========================================================
-        * FECHA LOCAL
-        * =========================================================
-        */
+  function obtenerFechaLocal() {
+    const ahora = new Date();
 
-        function obtenerFechaLocal() {
-        const ahora = new Date();
+    const year = ahora.getFullYear();
 
-        const year = ahora.getFullYear();
+    const month = String(ahora.getMonth() + 1).padStart(2, "0");
 
-        const month = String(ahora.getMonth() + 1).padStart(2, "0");
+    const day = String(ahora.getDate()).padStart(2, "0");
 
-        const day = String(ahora.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
 
-        return `${year}-${month}-${day}`;
-        }
+  /*
+  * =========================================================
+  * DÍA DE LA SEMANA
+  * =========================================================
+  */
 
-        /*
-        * =========================================================
-        * DÍA DE LA SEMANA
-        * =========================================================
-        */
+  function obtenerDiaSemana(fecha) {
+    const partes = fecha.split("-");
 
-        function obtenerDiaSemana(fecha) {
-        const partes = fecha.split("-");
+    const fechaLocal = new Date(
+      Number(partes[0]),
+      Number(partes[1]) - 1,
+      Number(partes[2]),
+    );
 
-        const fechaLocal = new Date(
-            Number(partes[0]),
-            Number(partes[1]) - 1,
-            Number(partes[2]),
-        );
+    const dias = [
+      "DOMINGO",
+      "LUNES",
+      "MARTES",
+      "MIERCOLES",
+      "JUEVES",
+      "VIERNES",
+      "SABADO",
+    ];
 
-        const dias = [
-            "DOMINGO",
-            "LUNES",
-            "MARTES",
-            "MIERCOLES",
-            "JUEVES",
-            "VIERNES",
-            "SABADO",
-        ];
+    return dias[fechaLocal.getDay()];
+  }
 
-        return dias[fechaLocal.getDay()];
-        }
+  /*
+  * =========================================================
+  * AUTORIZACIÓN
+  * =========================================================
+  */
 
-        /*
-        * =========================================================
-        * AUTORIZACIÓN
-        * =========================================================
-        */
+  function verificarAutorizacion(response) {
+    if (response.status === 401) {
+      sessionStorage.removeItem("kihonUsername");
+      sessionStorage.removeItem("kihonRol");
+      sessionStorage.removeItem("kihonAuth");
 
-        function verificarAutorizacion(response) {
-        if (response.status === 401) {
-            sessionStorage.removeItem("kihonUsername");
-            sessionStorage.removeItem("kihonRol");
-            sessionStorage.removeItem("kihonAuth");
+      window.location.replace("/login");
 
-            window.location.replace("/login");
+      return false;
+    }
 
-            return false;
-        }
+    return true;
+  }
 
-        return true;
-        }
+  /*
+  * =========================================================
+  * ERROR DEL BACKEND
+  * =========================================================
+  */
 
-        /*
-        * =========================================================
-        * ERROR DEL BACKEND
-        * =========================================================
-        */
+  async function obtenerMensajeError(response, mensajePorDefecto) {
+    try {
+      const data = await response.json();
 
-        async function obtenerMensajeError(response, mensajePorDefecto) {
-        try {
-            const data = await response.json();
-
-            return data.mensaje || data.message || mensajePorDefecto;
-        } catch (error) {
-            return mensajePorDefecto;
-        }
-        }
+      return data.mensaje || data.message || mensajePorDefecto;
+    } catch (error) {
+      return mensajePorDefecto;
+    }
+  }
 
 
     /*
@@ -227,80 +224,80 @@
     * =========================================================
     */
 
-    async function cargarMotivosJustificacion() {
-        try {
-            const response = await solicitar(
-                "/api/motivos-justificacion",
-                {
-                    method: "GET",
-                },
-            );
-
-            if (!verificarAutorizacion(response)) {
-                return;
-            }
-
-            if (response.status === 403) {
-                throw new Error(
-                    "No tienes permisos para consultar los motivos de justificación.",
-                );
-            }
-
-            if (!response.ok) {
-                throw new Error(
-                    await obtenerMensajeError(
-                        response,
-                        "No se pudieron cargar los motivos de justificación.",
-                    ),
-                );
-            }
-
-            motivosJustificacion = await response.json();
-
-            if (!Array.isArray(motivosJustificacion)) {
-                throw new Error("La respuesta de motivos no tiene un formato válido.");
-            }
-
-            actualizarSelectoresMotivos();
-
-        } catch (error) {
-            console.error("Error cargando motivos de justificación:", error);
-        }
-    }
-
-
-    async function mostrarModalJustificacion(asistencia) {
+  async function cargarMotivosJustificacion() {
     try {
-        // Obtener la justificación existente
-        const justificacion = await obtenerJustificacionPorAsistencia(
-            asistencia.id
+      const response = await solicitar(
+        "/api/motivos-justificacion",
+        {
+          method: "GET",
+        },
+      );
+
+      if (!verificarAutorizacion(response)) {
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error(
+          "No tienes permisos para consultar los motivos de justificación.",
         );
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudieron cargar los motivos de justificación.",
+          ),
+        );
+      }
+
+      motivosJustificacion = await response.json();
+
+      if (!Array.isArray(motivosJustificacion)) {
+        throw new Error("La respuesta de motivos no tiene un formato válido.");
+      }
+
+      actualizarSelectoresMotivos();
+
+    } catch (error) {
+      console.error("Error cargando motivos de justificación:", error);
+    }
+  }
+
+
+  async function mostrarModalJustificacion(asistencia) {
+    try {
+      // Obtener la justificación existente
+      const justificacion = await obtenerJustificacionPorAsistencia(
+        asistencia.id
+      );
 
         // Obtener las evidencias existentes
         let evidencias = [];
 
-        if (justificacion) {
-            const response = await solicitar(
-                `/api/evidencias-asistencia/justificacion/${justificacion.id}`
-            );
+      if (justificacion) {
+        const response = await solicitar(
+          `/api/evidencias-asistencia/justificacion/${justificacion.id}`
+        );
 
-            if (!response.ok) {
-                throw new Error(
-                    await obtenerMensajeError(
-                        response,
-                        "No se pudieron consultar los documentos existentes."
-                    )
-                );
-            }
-
-            evidencias = await response.json();
+        if (!response.ok) {
+          throw new Error(
+            await obtenerMensajeError(
+              response,
+              "No se pudieron consultar los documentos existentes."
+            )
+          );
         }
 
-        return new Promise((resolve) => {
-            // Crear el fondo del modal
-            const overlay = document.createElement("div");
+        evidencias = await response.json();
+      }
 
-            overlay.style.cssText = `
+      return new Promise((resolve) => {
+        // Crear el fondo del modal
+        const overlay = document.createElement("div");
+
+        overlay.style.cssText = `
                 position: fixed;
                 inset: 0;
                 z-index: 99999;
@@ -311,10 +308,10 @@
                 background: rgba(0, 0, 0, 0.55);
             `;
 
-            // Crear contenido
-            const modal = document.createElement("div");
+        // Crear contenido
+        const modal = document.createElement("div");
 
-            modal.style.cssText = `
+        modal.style.cssText = `
                 background: white;
                 width: 100%;
                 max-width: 600px;
@@ -324,7 +321,7 @@
                 padding: 24px;
             `;
 
-            modal.innerHTML = `
+        modal.innerHTML = `
                 <h2>Gestionar justificación</h2>
 
                 <p>
@@ -411,48 +408,48 @@
                 </div>
             `;
 
-            overlay.appendChild(modal);
-            document.body.appendChild(overlay);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
 
-            // Llenar selector de motivos
-            const selectMotivo = modal.querySelector(
-                "#modal-motivo-justificacion"
-            );
+        // Llenar selector de motivos
+        const selectMotivo = modal.querySelector(
+          "#modal-motivo-justificacion"
+        );
 
-            motivosJustificacion.forEach((motivo) => {
-                const option = document.createElement("option");
+        motivosJustificacion.forEach((motivo) => {
+          const option = document.createElement("option");
 
-                option.value = motivo.id;
-                option.textContent = motivo.nombre;
+          option.value = motivo.id;
+          option.textContent = motivo.nombre;
 
-                if (
-                    justificacion &&
-                    String(justificacion.motivoId) === String(motivo.id)
-                ) {
-                    option.selected = true;
-                }
+          if (
+            justificacion &&
+            String(justificacion.motivoId) === String(motivo.id)
+          ) {
+            option.selected = true;
+          }
 
-                selectMotivo.appendChild(option);
-            });
+          selectMotivo.appendChild(option);
+        });
 
-            // Precargar descripción
-            modal.querySelector(
-                "#modal-descripcion-justificacion"
-            ).value = justificacion?.descripcion || "";
+        // Precargar descripción
+        modal.querySelector(
+          "#modal-descripcion-justificacion"
+        ).value = justificacion?.descripcion || "";
 
-            // Mostrar documentos existentes
-            const contenedorEvidencias = modal.querySelector(
-                "#modal-evidencias-existentes"
-            );
+        // Mostrar documentos existentes
+        const contenedorEvidencias = modal.querySelector(
+          "#modal-evidencias-existentes"
+        );
 
-            if (evidencias.length === 0) {
-                contenedorEvidencias.textContent =
-                    "No existen documentos adjuntos.";
-            } else {
-                evidencias.forEach((evidencia) => {
-                    const documento = document.createElement("div");
+        if (evidencias.length === 0) {
+          contenedorEvidencias.textContent =
+            "No existen documentos adjuntos.";
+        } else {
+          evidencias.forEach((evidencia) => {
+            const documento = document.createElement("div");
 
-                    documento.style.cssText = `
+            documento.style.cssText = `
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
@@ -461,79 +458,79 @@
                         border-bottom: 1px solid #ddd;
                     `;
 
-                    const nombre = document.createElement("span");
-                    nombre.textContent = evidencia.nombreArchivo;
+            const nombre = document.createElement("span");
+            nombre.textContent = evidencia.nombreArchivo;
 
-                    const botonVer = document.createElement("button");
+            const botonVer = document.createElement("button");
 
-                    botonVer.type = "button";
-                    botonVer.className = "btn btn--secondary";
-                    botonVer.textContent = "Ver documento";
+            botonVer.type = "button";
+            botonVer.className = "btn btn--secondary";
+            botonVer.textContent = "Ver documento";
 
-                    botonVer.addEventListener("click", () => {
-                        window.KihonEvidencias.abrirDocumentoEvidencia(
-                            evidencia.id
-                        );
-                    });
-
-                    documento.append(nombre, botonVer);
-                    contenedorEvidencias.appendChild(documento);
-                });
-            }
-
-            // Cancelar
-            modal.querySelector(
-                "#modal-cancelar-justificacion"
-            ).addEventListener("click", () => {
-                overlay.remove();
-                resolve(null);
+            botonVer.addEventListener("click", () => {
+              window.KihonEvidencias.abrirDocumentoEvidencia(
+                evidencia.id
+              );
             });
 
-            // Guardar: por ahora devuelve los datos del formulario
-            modal.querySelector(
-                "#modal-guardar-justificacion"
-            ).addEventListener("click", () => {
-                const motivoId = selectMotivo.value;
+            documento.append(nombre, botonVer);
+            contenedorEvidencias.appendChild(documento);
+          });
+        }
 
-                const descripcion = modal.querySelector(
-                    "#modal-descripcion-justificacion"
-                ).value.trim();
-
-                const archivos = Array.from(
-                    modal.querySelector("#modal-nuevas-evidencias").files
-                );
-
-                if (!motivoId) {
-                    alert("Selecciona un motivo de justificación.");
-                    return;
-                }
-
-                overlay.remove();
-
-                resolve({
-                    justificacionExistente: justificacion,
-                    motivoId: Number(motivoId),
-                    descripcion,
-                    archivos
-                });
-            });
+        // Cancelar
+        modal.querySelector(
+          "#modal-cancelar-justificacion"
+        ).addEventListener("click", () => {
+          overlay.remove();
+          resolve(null);
         });
 
+        // Guardar: por ahora devuelve los datos del formulario
+        modal.querySelector(
+          "#modal-guardar-justificacion"
+        ).addEventListener("click", () => {
+          const motivoId = selectMotivo.value;
+
+          const descripcion = modal.querySelector(
+            "#modal-descripcion-justificacion"
+          ).value.trim();
+
+          const archivos = Array.from(
+            modal.querySelector("#modal-nuevas-evidencias").files
+          );
+
+          if (!motivoId) {
+            alert("Selecciona un motivo de justificación.");
+            return;
+          }
+
+          overlay.remove();
+
+          resolve({
+            justificacionExistente: justificacion,
+            motivoId: Number(motivoId),
+            descripcion,
+            archivos
+          });
+        });
+      });
+
     } catch (error) {
-        console.error("Error abriendo modal de justificación:", error);
+      console.error("Error abriendo modal de justificación:", error);
 
         alert(error.message);
 
-        return null;
+      return null;
     }
-    }
+  }
 
 
-    function mostrarModalConfirmacion(mensaje) {
+  function mostrarModalConfirmacion(mensaje) {
     return new Promise((resolve) => {
-        const overlay = document.createElement("div");
+      const overlay = document.createElement("div");
 
-        overlay.style.cssText = `
+      overlay.style.cssText = `
             position: fixed;
             inset: 0;
             z-index: 100000;
@@ -546,7 +543,7 @@
 
         const modal = document.createElement("div");
 
-        modal.style.cssText = `
+      modal.style.cssText = `
             background: white;
             width: 100%;
             max-width: 420px;
@@ -556,7 +553,7 @@
             box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
         `;
 
-        modal.innerHTML = `
+      modal.innerHTML = `
             <div style="
                 width: 55px;
                 height: 55px;
@@ -596,14 +593,14 @@
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        modal.querySelector(
-            "#btn-cerrar-confirmacion"
-        ).addEventListener("click", () => {
-            overlay.remove();
-            resolve();
-        });
+      modal.querySelector(
+        "#btn-cerrar-confirmacion"
+      ).addEventListener("click", () => {
+        overlay.remove();
+        resolve();
+      });
     });
-    }
+  }
 
 
 
@@ -614,195 +611,195 @@
     * =========================================================
     */
 
-    function actualizarSelectoresMotivos() {
-        const selectores = attendanceRegister.querySelectorAll(
-            ".asistencia-motivo",
-        );
+  function actualizarSelectoresMotivos() {
+    const selectores = attendanceRegister.querySelectorAll(
+      ".asistencia-motivo",
+    );
 
-        selectores.forEach((select) => {
-            select.innerHTML = "";
+    selectores.forEach((select) => {
+      select.innerHTML = "";
 
-            const opcionInicial = document.createElement("option");
+      const opcionInicial = document.createElement("option");
 
-            opcionInicial.value = "";
-            opcionInicial.textContent = "Selecciona un motivo";
+      opcionInicial.value = "";
+      opcionInicial.textContent = "Selecciona un motivo";
 
-            select.appendChild(opcionInicial);
+      select.appendChild(opcionInicial);
 
-            motivosJustificacion.forEach((motivo) => {
-                const option = document.createElement("option");
+      motivosJustificacion.forEach((motivo) => {
+        const option = document.createElement("option");
 
-                option.value = motivo.id;
-                option.textContent = motivo.nombre;
+        option.value = motivo.id;
+        option.textContent = motivo.nombre;
 
-                select.appendChild(option);
-            });
-        });
+        select.appendChild(option);
+      });
+    });
+  }
+
+
+  /*
+  * =========================================================
+  * MENSAJES
+  * =========================================================
+  */
+
+  function mostrarMensaje(mensaje, tipo) {
+    attendanceMessage.textContent = mensaje;
+
+    attendanceMessage.hidden = false;
+
+    attendanceMessage.className =
+      "asistencia-message " +
+      (tipo === "success"
+        ? "asistencia-message--success"
+        : "asistencia-message--error");
+  }
+
+  function ocultarMensaje() {
+    attendanceMessage.hidden = true;
+
+    attendanceMessage.textContent = "";
+  }
+
+  /*
+  * =========================================================
+  * FORMATO DE HORA
+  * =========================================================
+  */
+
+  function formatearHora(hora) {
+    if (!hora) {
+      return "-";
     }
 
+    return hora.substring(0, 5);
+  }
 
-        /*
-        * =========================================================
-        * MENSAJES
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * CARGAR GRUPOS DEL DÍA
+  * =========================================================
+  */
 
-        function mostrarMensaje(mensaje, tipo) {
-        attendanceMessage.textContent = mensaje;
+  async function cargarGruposDelDia() {
+    const fecha = fechaInput.value;
 
-        attendanceMessage.hidden = false;
-
-        attendanceMessage.className =
-            "asistencia-message " +
-            (tipo === "success"
-            ? "asistencia-message--success"
-            : "asistencia-message--error");
-        }
-
-        function ocultarMensaje() {
-        attendanceMessage.hidden = true;
-
-        attendanceMessage.textContent = "";
-        }
-
-        /*
-        * =========================================================
-        * FORMATO DE HORA
-        * =========================================================
-        */
-
-        function formatearHora(hora) {
-        if (!hora) {
-            return "-";
-        }
-
-        return hora.substring(0, 5);
-        }
-
-        /*
-        * =========================================================
-        * CARGAR GRUPOS DEL DÍA
-        * =========================================================
-        */
-
-        async function cargarGruposDelDia() {
-        const fecha = fechaInput.value;
-
-        grupoSelect.innerHTML = `
+    grupoSelect.innerHTML = `
                 <option value="">
                     Cargando grupos...
                 </option>
             `;
 
-        grupoSelect.disabled = true;
+    grupoSelect.disabled = true;
 
-        limpiarEstudiantes();
+    limpiarEstudiantes();
 
-        if (!fecha) {
-            grupoSelect.innerHTML = `
+    if (!fecha) {
+      grupoSelect.innerHTML = `
                     <option value="">
                         Selecciona una fecha primero
                     </option>
                 `;
 
-            return;
-        }
+      return;
+    }
 
-        const diaSemana = obtenerDiaSemana(fecha);
+    const diaSemana = obtenerDiaSemana(fecha);
 
-        try {
-            const response = await solicitar(
-            `/api/grupo-horarios/dia/${diaSemana}`,
-            {
-                method: "GET",
-            },
-            );
+    try {
+      const response = await solicitar(
+        `/api/grupo-horarios/dia/${diaSemana}`,
+        {
+          method: "GET",
+        },
+      );
 
-            if (!verificarAutorizacion(response)) {
-            return;
-            }
+      if (!verificarAutorizacion(response)) {
+        return;
+      }
 
-            if (response.status === 403) {
-            throw new Error("No tienes permisos para consultar los horarios.");
-            }
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para consultar los horarios.");
+      }
 
-            if (!response.ok) {
-            throw new Error(
-                await obtenerMensajeError(
-                response,
-                "No se pudieron obtener los grupos del día.",
-                ),
-            );
-            }
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudieron obtener los grupos del día.",
+          ),
+        );
+      }
 
-            horariosDelDia = await response.json();
+      horariosDelDia = await response.json();
 
-            grupoSelect.innerHTML = `
+      grupoSelect.innerHTML = `
                     <option value="">
                         Selecciona un grupo
                     </option>
                 `;
 
-            /*
-            * Evitar grupos repetidos.
-            */
+      /*
+      * Evitar grupos repetidos.
+      */
 
-            const gruposMostrados = new Set();
+      const gruposMostrados = new Set();
 
-            horariosDelDia.forEach((horario) => {
-            if (gruposMostrados.has(horario.grupoId)) {
-                return;
-            }
+      horariosDelDia.forEach((horario) => {
+        if (gruposMostrados.has(horario.grupoId)) {
+          return;
+        }
 
-            gruposMostrados.add(horario.grupoId);
+        gruposMostrados.add(horario.grupoId);
 
-            const option = document.createElement("option");
+        const option = document.createElement("option");
 
-            option.value = horario.grupoId;
+        option.value = horario.grupoId;
 
-            option.textContent = `${horario.grupoNombre} (${formatearHora(horario.horaInicio)} - ${formatearHora(horario.horaFin)})`;
+        option.textContent = `${horario.grupoNombre} (${formatearHora(horario.horaInicio)} - ${formatearHora(horario.horaFin)})`;
 
-            grupoSelect.appendChild(option);
-            });
+        grupoSelect.appendChild(option);
+      });
 
-            if (horariosDelDia.length === 0) {
-            grupoSelect.innerHTML = `
+      if (horariosDelDia.length === 0) {
+        grupoSelect.innerHTML = `
                         <option value="">
                             No hay grupos este día
                         </option>
                     `;
-            }
+      }
 
-            grupoSelect.disabled = horariosDelDia.length === 0;
-        } catch (error) {
-            console.error("Error cargando grupos del día:", error);
+      grupoSelect.disabled = horariosDelDia.length === 0;
+    } catch (error) {
+      console.error("Error cargando grupos del día:", error);
 
-            grupoSelect.innerHTML = `
+      grupoSelect.innerHTML = `
                     <option value="">
                         Error al cargar grupos
                     </option>
                 `;
 
-            mostrarMensaje(error.message, "error");
-        }
-        }
+      mostrarMensaje(error.message, "error");
+    }
+  }
 
-        /*
-        * =========================================================
-        * LIMPIAR ESTUDIANTES
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * LIMPIAR ESTUDIANTES
+  * =========================================================
+  */
 
-        function limpiarEstudiantes() {
-        estudiantesGrupo = [];
+  function limpiarEstudiantes() {
+    estudiantesGrupo = [];
 
-        asistenciasGrupo = [];
+    asistenciasGrupo = [];
 
-        grupoInfo.hidden = true;
+    grupoInfo.hidden = true;
 
-        saveAttendanceButton.disabled = true;
+    saveAttendanceButton.disabled = true;
 
-        attendanceRegister.innerHTML = `
+    attendanceRegister.innerHTML = `
                 <div class="asistencia-empty">
 
                     Selecciona una fecha y un grupo
@@ -810,174 +807,174 @@
 
                 </div>
             `;
-        }
+  }
 
-        /*
-        * =========================================================
-        * CARGAR ESTUDIANTES DEL GRUPO
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * CARGAR ESTUDIANTES DEL GRUPO
+  * =========================================================
+  */
 
-        async function cargarEstudiantesGrupo() {
-        const grupoId = grupoSelect.value;
+  async function cargarEstudiantesGrupo() {
+    const grupoId = grupoSelect.value;
 
-        const fecha = fechaInput.value;
+    const fecha = fechaInput.value;
 
 
-        // Impedir la selección de fechas futuras.
+    // Impedir la selección de fechas futuras.
     if (fecha && fecha > obtenerFechaLocal()) {
-    fechaInput.value = obtenerFechaLocal();
+      fechaInput.value = obtenerFechaLocal();
 
-    grupoSelect.innerHTML = `
+      grupoSelect.innerHTML = `
         <option value="">
             Selecciona una fecha primero
         </option>
     `;
 
-    grupoSelect.disabled = true;
+      grupoSelect.disabled = true;
+
+      limpiarEstudiantes();
+
+      mostrarMensaje(
+        "No es posible registrar asistencias en fechas futuras.",
+        "error"
+      );
+
+      return;
+    }
 
     limpiarEstudiantes();
 
-    mostrarMensaje(
-        "No es posible registrar asistencias en fechas futuras.",
-        "error"
-    );
-
-    return;
+    if (!grupoId || !fecha) {
+      return;
     }
 
-        limpiarEstudiantes();
+    ocultarMensaje();
 
-        if (!grupoId || !fecha) {
-            return;
-        }
+    try {
+      /*
+      * BUSCAR INFORMACIÓN DEL HORARIO
+      */
 
-        ocultarMensaje();
+      const horario = horariosDelDia.find(
+        (item) => Number(item.grupoId) === Number(grupoId),
+      );
 
-        try {
-            /*
-            * BUSCAR INFORMACIÓN DEL HORARIO
-            */
+      if (horario) {
+        grupoInfoNombre.textContent = horario.grupoNombre;
 
-            const horario = horariosDelDia.find(
-            (item) => Number(item.grupoId) === Number(grupoId),
-            );
+        grupoInfoHorario.textContent = `${formatearHora(horario.horaInicio)} - ${formatearHora(horario.horaFin)}`;
 
-            if (horario) {
-            grupoInfoNombre.textContent = horario.grupoNombre;
+        grupoInfoSensei.textContent = horario.senseiNombre || "-";
+      }
 
-            grupoInfoHorario.textContent = `${formatearHora(horario.horaInicio)} - ${formatearHora(horario.horaFin)}`;
+      /*
+      * ESTUDIANTES
+      */
 
-            grupoInfoSensei.textContent = horario.senseiNombre || "-";
-            }
+      const estudiantesResponse = await solicitar(
+        `/api/estudiantes-grupos/grupo/${grupoId}`,
+        {
+          method: "GET",
+        },
+      );
 
-            /*
-            * ESTUDIANTES
-            */
+      if (!verificarAutorizacion(estudiantesResponse)) {
+        return;
+      }
 
-            const estudiantesResponse = await solicitar(
-            `/api/estudiantes-grupos/grupo/${grupoId}`,
-            {
-                method: "GET",
-            },
-            );
+      if (estudiantesResponse.status === 403) {
+        throw new Error(
+          "No tienes permisos para consultar los estudiantes del grupo.",
+        );
+      }
 
-            if (!verificarAutorizacion(estudiantesResponse)) {
-            return;
-            }
+      if (!estudiantesResponse.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            estudiantesResponse,
+            "No se pudieron obtener los estudiantes del grupo.",
+          ),
+        );
+      }
 
-            if (estudiantesResponse.status === 403) {
-            throw new Error(
-                "No tienes permisos para consultar los estudiantes del grupo.",
-            );
-            }
+      const asignaciones = await estudiantesResponse.json();
 
-            if (!estudiantesResponse.ok) {
-            throw new Error(
-                await obtenerMensajeError(
-                estudiantesResponse,
-                "No se pudieron obtener los estudiantes del grupo.",
-                ),
-            );
-            }
+      estudiantesGrupo = asignaciones.filter(
+        (asignacion) => String(asignacion.estado).toUpperCase() === "ACTIVO",
+      );
 
-            const asignaciones = await estudiantesResponse.json();
+      /*
+      * ASISTENCIAS EXISTENTES
+      */
 
-            estudiantesGrupo = asignaciones.filter(
-            (asignacion) => String(asignacion.estado).toUpperCase() === "ACTIVO",
-            );
+      const asistenciasResponse = await solicitar(
+        `/api/asistencias/grupo/${grupoId}/fecha/${fecha}`,
+        {
+          method: "GET",
+        },
+      );
 
-            /*
-            * ASISTENCIAS EXISTENTES
-            */
+      if (!verificarAutorizacion(asistenciasResponse)) {
+        return;
+      }
 
-            const asistenciasResponse = await solicitar(
-            `/api/asistencias/grupo/${grupoId}/fecha/${fecha}`,
-            {
-                method: "GET",
-            },
-            );
+      if (asistenciasResponse.status === 403) {
+        throw new Error("No tienes permisos para consultar las asistencias.");
+      }
 
-            if (!verificarAutorizacion(asistenciasResponse)) {
-            return;
-            }
+      if (!asistenciasResponse.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            asistenciasResponse,
+            "No se pudieron obtener las asistencias del grupo.",
+          ),
+        );
+      }
 
-            if (asistenciasResponse.status === 403) {
-            throw new Error("No tienes permisos para consultar las asistencias.");
-            }
+      asistenciasGrupo = await asistenciasResponse.json();
 
-            if (!asistenciasResponse.ok) {
-            throw new Error(
-                await obtenerMensajeError(
-                asistenciasResponse,
-                "No se pudieron obtener las asistencias del grupo.",
-                ),
-            );
-            }
+      /*
+      * INFORMACIÓN DEL GRUPO
+      */
 
-            asistenciasGrupo = await asistenciasResponse.json();
+      grupoInfoCantidad.textContent = estudiantesGrupo.length;
 
-            /*
-            * INFORMACIÓN DEL GRUPO
-            */
+      grupoInfo.hidden = false;
 
-            grupoInfoCantidad.textContent = estudiantesGrupo.length;
+      /*
+      * RENDERIZAR
+      */
 
-            grupoInfo.hidden = false;
+      renderizarEstudiantes();
+    } catch (error) {
+      console.error("Error cargando estudiantes:", error);
 
-            /*
-            * RENDERIZAR
-            */
-
-            renderizarEstudiantes();
-        } catch (error) {
-            console.error("Error cargando estudiantes:", error);
-
-            attendanceRegister.innerHTML = `
+      attendanceRegister.innerHTML = `
                     <div class="asistencia-empty">
                         ${error.message}
                     </div>
                 `;
-        }
-        }
+    }
+  }
 
-        /*
-        * =========================================================
-        * BUSCAR ASISTENCIA EXISTENTE
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * BUSCAR ASISTENCIA EXISTENTE
+  * =========================================================
+  */
 
-        function buscarAsistencia(estudianteId) {
-        return asistenciasGrupo.find(
-            (asistencia) => Number(asistencia.estudianteId) === Number(estudianteId),
-        );
-        }
+  function buscarAsistencia(estudianteId) {
+    return asistenciasGrupo.find(
+      (asistencia) => Number(asistencia.estudianteId) === Number(estudianteId),
+    );
+  }
 
-        /*
-        * =========================================================
-        * RENDERIZAR ESTUDIANTES
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * RENDERIZAR ESTUDIANTES
+  * =========================================================
+  */
 
 
     function configurarVistaPreviaEvidencias() {
@@ -986,220 +983,220 @@
 
         archivos.forEach(input => {
 
-            input.addEventListener("change", function () {
+      input.addEventListener("change", function () {
 
-                const archivo = this.files[0];
+        const archivo = this.files[0];
 
-                const fila = this.closest(".asistencia-student-row");
+        const fila = this.closest(".asistencia-student-row");
 
-                if (!fila) return;
+        if (!fila) return;
 
-                const preview = fila.querySelector(
-                    ".asistencia-evidencia-preview"
-                );
+        const preview = fila.querySelector(
+          ".asistencia-evidencia-preview"
+        );
 
-                const nombreArchivo = fila.querySelector(
-                    ".asistencia-evidencia-nombre"
-                );
+        const nombreArchivo = fila.querySelector(
+          ".asistencia-evidencia-nombre"
+        );
 
-                const contenido = fila.querySelector(
-                    ".asistencia-evidencia-preview-content"
-                );
+        const contenido = fila.querySelector(
+          ".asistencia-evidencia-preview-content"
+        );
 
-                if (!preview || !nombreArchivo || !contenido) return;
+        if (!preview || !nombreArchivo || !contenido) return;
 
-                // Liberar la URL temporal anterior.
-                if (preview.dataset.urlTemporal) {
-                    URL.revokeObjectURL(preview.dataset.urlTemporal);
-                    delete preview.dataset.urlTemporal;
-                }
+        // Liberar la URL temporal anterior.
+        if (preview.dataset.urlTemporal) {
+          URL.revokeObjectURL(preview.dataset.urlTemporal);
+          delete preview.dataset.urlTemporal;
+        }
 
-                contenido.replaceChildren();
-                nombreArchivo.textContent = "";
+        contenido.replaceChildren();
+        nombreArchivo.textContent = "";
 
-                // Si no hay archivo seleccionado, ocultar la vista previa.
-                if (!archivo) {
-                    preview.hidden = true;
-                    return;
-                }
+        // Si no hay archivo seleccionado, ocultar la vista previa.
+        if (!archivo) {
+          preview.hidden = true;
+          return;
+        }
 
-                const extension = archivo.name
-                    .split(".")
-                    .pop()
-                    .toLowerCase();
+        const extension = archivo.name
+          .split(".")
+          .pop()
+          .toLowerCase();
 
-                const esPDF =
-                    archivo.type === "application/pdf" ||
-                    extension === "pdf";
+        const esPDF =
+          archivo.type === "application/pdf" ||
+          extension === "pdf";
 
-                const esImagen =
-                    ["image/jpeg", "image/png"].includes(archivo.type) ||
-                    ["jpg", "jpeg", "png"].includes(extension);
+        const esImagen =
+          ["image/jpeg", "image/png"].includes(archivo.type) ||
+          ["jpg", "jpeg", "png"].includes(extension);
 
-                if (!esPDF && !esImagen) {
-                    preview.hidden = true;
-                    return;
-                }
+        if (!esPDF && !esImagen) {
+          preview.hidden = true;
+          return;
+        }
 
-                const urlTemporal = URL.createObjectURL(archivo);
+        const urlTemporal = URL.createObjectURL(archivo);
 
-                preview.dataset.urlTemporal = urlTemporal;
-                nombreArchivo.textContent = archivo.name;
+        preview.dataset.urlTemporal = urlTemporal;
+        nombreArchivo.textContent = archivo.name;
 
-                if (esPDF) {
+        if (esPDF) {
 
-                    const visor = document.createElement("iframe");
+          const visor = document.createElement("iframe");
 
-                    visor.src = urlTemporal;
-                    visor.title = "Vista previa del documento PDF";
-                    visor.className = "asistencia-evidencia-pdf";
+          visor.src = urlTemporal;
+          visor.title = "Vista previa del documento PDF";
+          visor.className = "asistencia-evidencia-pdf";
 
-                    contenido.appendChild(visor);
+          contenido.appendChild(visor);
 
-                } else {
+        } else {
 
-                    const imagen = document.createElement("img");
+          const imagen = document.createElement("img");
 
-                    imagen.src = urlTemporal;
-                    imagen.alt = "Vista previa de la evidencia";
-                    imagen.className = "asistencia-evidencia-imagen";
+          imagen.src = urlTemporal;
+          imagen.alt = "Vista previa de la evidencia";
+          imagen.className = "asistencia-evidencia-imagen";
 
-                    contenido.appendChild(imagen);
-                }
+          contenido.appendChild(imagen);
+        }
 
-                preview.hidden = false;
-            });
-        });
-    }
+        preview.hidden = false;
+      });
+    });
+  }
 
 
     function configurarBotonesJustificacion() {
 
-        const filas = attendanceRegister.querySelectorAll(
-            ".asistencia-student-row"
-        );
+    const filas = attendanceRegister.querySelectorAll(
+      ".asistencia-student-row"
+    );
 
         filas.forEach(fila => {
 
-            const formulario = fila.querySelector(
-                ".asistencia-justificacion-fields"
-            );
+      const formulario = fila.querySelector(
+        ".asistencia-justificacion-fields"
+      );
 
-            const resumen = fila.querySelector(
-                ".asistencia-justificacion-summary"
-            );
+      const resumen = fila.querySelector(
+        ".asistencia-justificacion-summary"
+      );
 
-            const textoResumen = fila.querySelector(
-                ".asistencia-justificacion-resumen-texto"
-            );
+      const textoResumen = fila.querySelector(
+        ".asistencia-justificacion-resumen-texto"
+      );
 
-            const botonListo = fila.querySelector(
-                ".asistencia-justificacion-listo"
-            );
+      const botonListo = fila.querySelector(
+        ".asistencia-justificacion-listo"
+      );
 
-            const botonEditar = fila.querySelector(
-                ".asistencia-justificacion-editar"
-            );
+      const botonEditar = fila.querySelector(
+        ".asistencia-justificacion-editar"
+      );
 
-            const motivo = fila.querySelector(
-                ".asistencia-motivo"
-            );
+      const motivo = fila.querySelector(
+        ".asistencia-motivo"
+      );
 
-            const descripcion = fila.querySelector(
-                ".asistencia-descripcion"
-            );
+      const descripcion = fila.querySelector(
+        ".asistencia-descripcion"
+      );
 
-            const evidencia = fila.querySelector(
-                ".asistencia-evidencia"
-            );
+      const evidencia = fila.querySelector(
+        ".asistencia-evidencia"
+      );
 
-            if (
-                !formulario ||
-                !resumen ||
-                !textoResumen ||
-                !botonListo ||
-                !botonEditar ||
-                !motivo ||
-                !descripcion ||
-                !evidencia
-            ) {
-                return;
-            }
+      if (
+        !formulario ||
+        !resumen ||
+        !textoResumen ||
+        !botonListo ||
+        !botonEditar ||
+        !motivo ||
+        !descripcion ||
+        !evidencia
+      ) {
+        return;
+      }
 
-            // BOTÓN LISTO
-            botonListo.addEventListener("click", function () {
+      // BOTÓN LISTO
+      botonListo.addEventListener("click", function () {
 
-                const motivoId = motivo.value;
+        const motivoId = motivo.value;
 
-                const descripcionTexto = descripcion.value.trim();
+        const descripcionTexto = descripcion.value.trim();
 
-                if (!motivoId) {
-                    alert("Debes seleccionar un motivo de justificación.");
-                    motivo.focus();
-                    return;
-                }
+        if (!motivoId) {
+          alert("Debes seleccionar un motivo de justificación.");
+          motivo.focus();
+          return;
+        }
 
-                const motivoSeleccionado =
-                    motivo.options[motivo.selectedIndex].text;
+        const motivoSeleccionado =
+          motivo.options[motivo.selectedIndex].text;
 
-                // El motivo OTRO requiere descripción.
-                const esOtro = motivoSeleccionado
-                    .trim()
-                    .toUpperCase() === "OTRO";
+        // El motivo OTRO requiere descripción.
+        const esOtro = motivoSeleccionado
+          .trim()
+          .toUpperCase() === "OTRO";
 
-                if (esOtro && !descripcionTexto) {
-                    alert("Debes ingresar una descripción para el motivo OTRO.");
-                    descripcion.focus();
-                    return;
-                }
+        if (esOtro && !descripcionTexto) {
+          alert("Debes ingresar una descripción para el motivo OTRO.");
+          descripcion.focus();
+          return;
+        }
 
-                // Mostrar resumen.
-                const nombreArchivo = evidencia.files.length > 0
-                    ? evidencia.files[0].name
-                    : "Sin documento adjunto";
+        // Mostrar resumen.
+        const nombreArchivo = evidencia.files.length > 0
+          ? evidencia.files[0].name
+          : "Sin documento adjunto";
 
-                textoResumen.textContent =
-                    `Motivo: ${motivoSeleccionado} | ` +
-                    `Descripción: ${descripcionTexto || "No especificada"} | ` +
-                    `Documento: ${nombreArchivo}`;
+        textoResumen.textContent =
+          `Motivo: ${motivoSeleccionado} | ` +
+          `Descripción: ${descripcionTexto || "No especificada"} | ` +
+          `Documento: ${nombreArchivo}`;
 
-                // Contraer formulario.
-                formulario.hidden = true;
-                resumen.hidden = false;
+        // Contraer formulario.
+        formulario.hidden = true;
+        resumen.hidden = false;
 
-            });
+      });
 
-            // BOTÓN EDITAR
-            botonEditar.addEventListener("click", function () {
+      // BOTÓN EDITAR
+      botonEditar.addEventListener("click", function () {
 
-                resumen.hidden = true;
-                formulario.hidden = false;
+        resumen.hidden = true;
+        formulario.hidden = false;
 
-            });
+      });
 
-            // Si se selecciona otro estado, ocultar el resumen.
-            fila.querySelectorAll(".asistencia-state-button").forEach(boton => {
+      // Si se selecciona otro estado, ocultar el resumen.
+      fila.querySelectorAll(".asistencia-state-button").forEach(boton => {
 
-                boton.addEventListener("click", function () {
+        boton.addEventListener("click", function () {
 
-                    if (this.dataset.estado !== "JUSTIFICADO") {
-                        resumen.hidden = true;
-                    } else {
-                        resumen.hidden = true;
-                    }
+          if (this.dataset.estado !== "JUSTIFICADO") {
+            resumen.hidden = true;
+          } else {
+            resumen.hidden = true;
+          }
 
-                });
+        });
 
-            });
+      });
 
         });
     }
 
 
 
-        function renderizarEstudiantes() {
-        if (estudiantesGrupo.length === 0) {
-            attendanceRegister.innerHTML = `
+  function renderizarEstudiantes() {
+    if (estudiantesGrupo.length === 0) {
+      attendanceRegister.innerHTML = `
                     <div class="asistencia-empty">
 
                         No hay estudiantes activos
@@ -1208,12 +1205,12 @@
                     </div>
                 `;
 
-            saveAttendanceButton.disabled = true;
+      saveAttendanceButton.disabled = true;
 
-            return;
-        }
+      return;
+    }
 
-        attendanceRegister.innerHTML = `
+    attendanceRegister.innerHTML = `
 
                 <div class="asistencia-register-header">
 
@@ -1235,24 +1232,24 @@
                 <div class="asistencia-student-list">
 
                     ${estudiantesGrupo
-            .map((asignacion) => {
-                const asistencia = buscarAsistencia(
-                asignacion.estudianteId,
-                );
+        .map((asignacion) => {
+          const asistencia = buscarAsistencia(
+            asignacion.estudianteId,
+          );
 
-                const estado = asistencia ? asistencia.estado : "AUSENTE";
+          const estado = asistencia ? asistencia.estado : "AUSENTE";
 
-                const hora =
-                asistencia && asistencia.horaLlegada
-                    ? asistencia.horaLlegada.substring(0, 5)
-                    : "";
+          const hora =
+            asistencia && asistencia.horaLlegada
+              ? asistencia.horaLlegada.substring(0, 5)
+              : "";
 
-                const observacion =
-                asistencia && asistencia.observacion
-                    ? asistencia.observacion
-                    : "";
+          const observacion =
+            asistencia && asistencia.observacion
+              ? asistencia.observacion
+              : "";
 
-                return `
+          return `
 
                                 <div
                                     class="asistencia-student-row"
@@ -1440,13 +1437,13 @@
     </div>
 
     `;
-            })
-            .join("")}
+        })
+        .join("")}
 
                 </div>
             `;
 
-            configurarBotonesEstado();
+    configurarBotonesEstado();
 
     actualizarSelectoresMotivos();
 
@@ -1455,146 +1452,143 @@
     configurarBotonesJustificacion();
 
     saveAttendanceButton.disabled = false;
-        }
+  }
 
-        /*
-        * =========================================================
-        * BOTONES DE ESTADO
-        * =========================================================
-        */
-
-        
-
-        function configurarBotonesEstado() {
-        const botones = attendanceRegister.querySelectorAll(
-            ".asistencia-state-button",
-        );
-
-        botones.forEach((boton) => {
-            boton.addEventListener("click", function () {
-                const fila = boton.closest(".asistencia-student-row");
-                const estado = boton.dataset.estado;
-
-                fila
-                    .querySelectorAll(".asistencia-state-button")
-                    .forEach((otroBoton) => {
-                        otroBoton.classList.remove("is-active");
-                    });
-
-                boton.classList.add("is-active");
-
-                const horaInput = fila.querySelector(".asistencia-hora");
-
-                // Mostrar u ocultar el formulario de justificación
-                const justificacionFields = fila.querySelector(
-                    ".asistencia-justificacion-fields",
-                );
-
-                if (justificacionFields) {
-                    justificacionFields.hidden = estado !== "JUSTIFICADO";
-                }
-
-                // Configurar hora de llegada
-                if (estado === "AUSENTE" || estado === "JUSTIFICADO") {
-                    horaInput.value = "";
-                    horaInput.disabled = true;
-                    horaInput.required = false;
-                } else {
-                    horaInput.disabled = false;
-                    horaInput.required = true;
-
-                    if (!horaInput.value) {
-                        const ahora = new Date();
-
-                        const horas = String(ahora.getHours()).padStart(2, "0");
-                        const minutos = String(ahora.getMinutes()).padStart(2, "0");
-
-                        horaInput.value = `${horas}:${minutos}`;
-                    }
-                }
-            });
-        });
-    }
+  /*
+  * =========================================================
+  * BOTONES DE ESTADO
+  * =========================================================
+  */
 
 
 
-        /*
-        * =========================================================
-        * OBTENER ESTADO DE UNA FILA
-        * =========================================================
-        */
+  function configurarBotonesEstado() {
+    const botones = attendanceRegister.querySelectorAll(
+      ".asistencia-state-button",
+    );
 
-        function obtenerDatosFila(fila) {
-        const estudianteId = Number(fila.dataset.estudianteId);
-        const asistenciaId = fila.dataset.asistenciaId
-            ? Number(fila.dataset.asistenciaId)
-            : null;
+    botones.forEach((boton) => {
+      boton.addEventListener("click", function () {
+        const fila = boton.closest(".asistencia-student-row");
+        const estado = boton.dataset.estado;
 
-        const botonActivo = fila.querySelector(
-            ".asistencia-state-button.is-active"
-        );
+        fila
+          .querySelectorAll(".asistencia-state-button")
+          .forEach((otroBoton) => {
+            otroBoton.classList.remove("is-active");
+          });
 
-        const estado = botonActivo
-            ? botonActivo.dataset.estado
-            : "AUSENTE";
+        boton.classList.add("is-active");
 
         const horaInput = fila.querySelector(".asistencia-hora");
-        const observacionInput = fila.querySelector(
-            ".asistencia-observacion"
+
+        // Mostrar u ocultar el formulario de justificación
+        const justificacionFields = fila.querySelector(
+          ".asistencia-justificacion-fields",
         );
 
-        const motivoInput = fila.querySelector(".asistencia-motivo");
-        const descripcionInput = fila.querySelector(
-            ".asistencia-descripcion"
-        );
-        const evidenciaInput = fila.querySelector(
-            ".asistencia-evidencia"
-        );
+        if (justificacionFields) {
+          justificacionFields.hidden = estado !== "JUSTIFICADO";
+        }
 
-        return {
-            asistenciaId,
-            estudianteId,
-            grupoId: Number(grupoSelect.value),
-            fecha: fechaInput.value,
+        // Configurar hora de llegada
+        if (estado === "AUSENTE" || estado === "JUSTIFICADO") {
+          horaInput.value = "";
+          horaInput.disabled = true;
+          horaInput.required = false;
+        } else {
+          horaInput.disabled = false;
+          horaInput.required = true;
 
-            horaLlegada:
-                estado === "AUSENTE" || estado === "JUSTIFICADO"
-                    ? null
-                    : horaInput.value || null,
+          if (!horaInput.value) {
+            const ahora = new Date();
 
-            estado,
-            observacion: observacionInput.value.trim() || null,
+            const horas = String(ahora.getHours()).padStart(2, "0");
+            const minutos = String(ahora.getMinutes()).padStart(2, "0");
 
-            motivoId: motivoInput.value
-                ? Number(motivoInput.value)
-                : null,
+            horaInput.value = `${horas}:${minutos}`;
+          }
+        }
+      });
+    });
+  }
 
-            descripcionJustificacion:
-                descripcionInput.value.trim() || null,
 
-            archivoEvidencia:
-                evidenciaInput.files.length > 0
-                    ? evidenciaInput.files[0]
-                    : null
-        };
-    }
 
-        /*
-        * =========================================================
-        * GUARDAR ASISTENCIAS
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * OBTENER ESTADO DE UNA FILA
+  * =========================================================
+  */
 
-        
-    
-    async function guardarAsistencias() {
+  function obtenerDatosFila(fila) {
+    const estudianteId = Number(fila.dataset.estudianteId);
+    const asistenciaId = fila.dataset.asistenciaId
+      ? Number(fila.dataset.asistenciaId)
+      : null;
+
+    const botonActivo = fila.querySelector(
+      ".asistencia-state-button.is-active"
+    );
+
+    const estado = botonActivo
+      ? botonActivo.dataset.estado
+      : "AUSENTE";
+
+    const horaInput = fila.querySelector(".asistencia-hora");
+    const observacionInput = fila.querySelector(
+      ".asistencia-observacion"
+    );
+
+    const motivoInput = fila.querySelector(".asistencia-motivo");
+    const descripcionInput = fila.querySelector(
+      ".asistencia-descripcion"
+    );
+    const evidenciaInput = fila.querySelector(
+      ".asistencia-evidencia"
+    );
+
+    return {
+      asistenciaId,
+      estudianteId,
+      grupoId: Number(grupoSelect.value),
+      fecha: fechaInput.value,
+
+      horaLlegada:
+        estado === "AUSENTE" || estado === "JUSTIFICADO"
+          ? null
+          : horaInput.value || null,
+
+      estado,
+      observacion: observacionInput.value.trim() || null,
+
+      motivoId: motivoInput.value
+        ? Number(motivoInput.value)
+        : null,
+
+      descripcionJustificacion:
+        descripcionInput.value.trim() || null,
+
+      archivoEvidencia:
+        evidenciaInput.files.length > 0
+          ? evidenciaInput.files[0]
+          : null
+    };
+  }
+
+  /*
+  * =========================================================
+  * GUARDAR ASISTENCIAS
+  * =========================================================
+  */
+  async function guardarAsistencias() {
     const filas = attendanceRegister.querySelectorAll(
-        ".asistencia-student-row"
+      ".asistencia-student-row"
     );
 
     if (filas.length === 0) {
-        mostrarMensaje("No hay estudiantes para registrar.", "error");
-        return;
+      mostrarMensaje("No hay estudiantes para registrar.", "error");
+      return;
     }
 
     const asistencias = Array.from(filas).map(obtenerDatosFila);
@@ -1604,29 +1598,29 @@
     */
 
     for (const asistencia of asistencias) {
-        if (
-            (asistencia.estado === "PRESENTE" ||
-                asistencia.estado === "TARDANZA") &&
-            !asistencia.horaLlegada
-        ) {
-            mostrarMensaje(
-                "Los estudiantes PRESENTES o con TARDANZA deben tener una hora de llegada.",
-                "error"
-            );
-            return;
-        }
+      if (
+        (asistencia.estado === "PRESENTE" ||
+          asistencia.estado === "TARDANZA") &&
+        !asistencia.horaLlegada
+      ) {
+        mostrarMensaje(
+          "Los estudiantes PRESENTES o con TARDANZA deben tener una hora de llegada.",
+          "error"
+        );
+        return;
+      }
 
-        if (
-            (asistencia.estado === "AUSENTE" ||
-                asistencia.estado === "JUSTIFICADO") &&
-            asistencia.horaLlegada
-        ) {
-            mostrarMensaje(
-                "Las asistencias AUSENTE o JUSTIFICADO no pueden tener hora de llegada.",
-                "error"
-            );
-            return;
-        }
+      if (
+        (asistencia.estado === "AUSENTE" ||
+          asistencia.estado === "JUSTIFICADO") &&
+        asistencia.horaLlegada
+      ) {
+        mostrarMensaje(
+          "Las asistencias AUSENTE o JUSTIFICADO no pueden tener hora de llegada.",
+          "error"
+        );
+        return;
+      }
     }
 
     /*
@@ -1634,40 +1628,40 @@
     */
 
     for (const asistencia of asistencias) {
-        if (asistencia.estado !== "JUSTIFICADO") {
-            continue;
-        }
+      if (asistencia.estado !== "JUSTIFICADO") {
+        continue;
+      }
 
-        if (!asistencia.motivoId) {
-            mostrarMensaje(
-                "Debes seleccionar un motivo para cada asistencia justificada.",
-                "error"
-            );
-            return;
-        }
-
-        const motivoSeleccionado = motivosJustificacion.find(
-            motivo => Number(motivo.id) === asistencia.motivoId
+      if (!asistencia.motivoId) {
+        mostrarMensaje(
+          "Debes seleccionar un motivo para cada asistencia justificada.",
+          "error"
         );
+        return;
+      }
 
-        if (!motivoSeleccionado) {
-            mostrarMensaje(
-                "El motivo seleccionado no es válido.",
-                "error"
-            );
-            return;
-        }
+      const motivoSeleccionado = motivosJustificacion.find(
+        motivo => Number(motivo.id) === asistencia.motivoId
+      );
 
-        if (
-            motivoSeleccionado.nombre.trim().toUpperCase() === "OTRO" &&
-            !asistencia.descripcionJustificacion
-        ) {
-            mostrarMensaje(
-                "Debes ingresar una descripción cuando el motivo sea OTRO.",
-                "error"
-            );
-            return;
-        }
+      if (!motivoSeleccionado) {
+        mostrarMensaje(
+          "El motivo seleccionado no es válido.",
+          "error"
+        );
+        return;
+      }
+
+      if (
+        motivoSeleccionado.nombre.trim().toUpperCase() === "OTRO" &&
+        !asistencia.descripcionJustificacion
+      ) {
+        mostrarMensaje(
+          "Debes ingresar una descripción cuando el motivo sea OTRO.",
+          "error"
+        );
+        return;
+      }
     }
 
     saveAttendanceButton.disabled = true;
@@ -1676,237 +1670,237 @@
     ocultarMensaje();
 
     try {
-        let registrados = 0;
-        let actualizados = 0;
+      let registrados = 0;
+      let actualizados = 0;
 
-        for (let i = 0; i < asistencias.length; i++) {
-            const asistencia = asistencias[i];
-            const fila = filas[i];
+      for (let i = 0; i < asistencias.length; i++) {
+        const asistencia = asistencias[i];
+        const fila = filas[i];
 
-            let response;
+        let response;
 
-            const esNueva = !asistencia.asistenciaId;
+        const esNueva = !asistencia.asistenciaId;
 
-            /*
-            * GUARDAR ASISTENCIA
-            */
+        /*
+        * GUARDAR ASISTENCIA
+        */
 
-            const datosAsistencia = {
-                estudianteId: asistencia.estudianteId,
-                grupoId: asistencia.grupoId,
-                fecha: asistencia.fecha,
-                horaLlegada: asistencia.horaLlegada,
-                estado: asistencia.estado,
-                observacion: asistencia.observacion
-            };
+        const datosAsistencia = {
+          estudianteId: asistencia.estudianteId,
+          grupoId: asistencia.grupoId,
+          fecha: asistencia.fecha,
+          horaLlegada: asistencia.horaLlegada,
+          estado: asistencia.estado,
+          observacion: asistencia.observacion
+        };
 
-            if (!esNueva) {
-                response = await solicitar(
-                    `/api/asistencias/${asistencia.asistenciaId}`,
-                    {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(datosAsistencia)
-                    }
-                );
-            } else {
-                response = await solicitar(
-                    "/api/asistencias",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(datosAsistencia)
-                    }
-                );
+        if (!esNueva) {
+          response = await solicitar(
+            `/api/asistencias/${asistencia.asistenciaId}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(datosAsistencia)
             }
-
-            if (!verificarAutorizacion(response)) {
-                return;
+          );
+        } else {
+          response = await solicitar(
+            "/api/asistencias",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(datosAsistencia)
             }
-
-            if (response.status === 403) {
-                throw new Error(
-                    "No tienes permisos para modificar las asistencias."
-                );
-            }
-
-            if (!response.ok) {
-                throw new Error(
-                    await obtenerMensajeError(
-                        response,
-                        "No se pudo guardar una de las asistencias."
-                    )
-                );
-            }
-
-            /*
-            * RECUPERAR ID DE ASISTENCIA
-            */
-
-            let asistenciaId = asistencia.asistenciaId;
-
-            if (esNueva) {
-                const asistenciaResponse = await response.json();
-
-                asistenciaId = asistenciaResponse.id;
-
-                if (!asistenciaId) {
-                    throw new Error(
-                        "La asistencia se guardó, pero no se recibió su ID."
-                    );
-                }
-
-                fila.dataset.asistenciaId = asistenciaId;
-
-                registrados++;
-            } else {
-                actualizados++;
-            }
-
-            /*
-            * GUARDAR JUSTIFICACIÓN Y EVIDENCIA
-            */
-
-            if (asistencia.estado === "JUSTIFICADO") {
-                const asistenciaConId = {
-                    ...asistencia,
-                    asistenciaId
-                };
-
-                // Crear o actualizar justificación.
-                const justificacion = await guardarJustificacion(
-                    asistenciaConId
-                );
-
-                if (!justificacion || !justificacion.id) {
-                    throw new Error(
-                        "La justificación se guardó, pero no se recibió su ID."
-                    );
-                }
-
-                // Subir documento si fue seleccionado.
-                if (asistencia.archivoEvidencia) {
-                    await subirEvidencia(
-                        justificacion.id,
-                        asistencia.archivoEvidencia
-                    );
-                }
-            }
+          );
         }
 
-        /*
-        * RECARGAR DATOS DEL GRUPO
-        */
+        if (!verificarAutorizacion(response)) {
+          return;
+        }
 
-        await cargarEstudiantesGrupo();
-
-        /*
-        * ACTUALIZAR CONSULTA
-        */
-
-        await cargarAsistenciasConsulta();
-
-        /*
-        * MOSTRAR MODAL DE CONFIRMACIÓN
-        */
-
-        mostrarModalConfirmacion(
-            `Las asistencias se han guardado correctamente.`
-        );
-
-    } catch (error) {
-        console.error("Error guardando asistencias:", error);
-
-        mostrarMensaje(
-            error.message || "Ocurrió un error al guardar las asistencias.",
-            "error"
-        );
-
-    } finally {
-        saveAttendanceButton.disabled = false;
-        saveAttendanceButton.textContent = "Guardar asistencia";
-    }
-    }
-
-
-
-        
-    async function obtenerJustificacionPorAsistencia(asistenciaId) {
-    try {
-        const response = await solicitar(
-            `/api/justificaciones-asistencia/asistencia/${asistenciaId}`
-        );
-
-        if (response.status === 404) {
-            return null;
+        if (response.status === 403) {
+          throw new Error(
+            "No tienes permisos para modificar las asistencias."
+          );
         }
 
         if (!response.ok) {
-            throw new Error(
-                await obtenerMensajeError(response)
-            );
+          throw new Error(
+            await obtenerMensajeError(
+              response,
+              "No se pudo guardar una de las asistencias."
+            )
+          );
         }
+
+        /*
+        * RECUPERAR ID DE ASISTENCIA
+        */
+
+        let asistenciaId = asistencia.asistenciaId;
+
+        if (esNueva) {
+          const asistenciaResponse = await response.json();
+
+          asistenciaId = asistenciaResponse.id;
+
+          if (!asistenciaId) {
+            throw new Error(
+              "La asistencia se guardó, pero no se recibió su ID."
+            );
+          }
+
+          fila.dataset.asistenciaId = asistenciaId;
+
+          registrados++;
+        } else {
+          actualizados++;
+        }
+
+        /*
+        * GUARDAR JUSTIFICACIÓN Y EVIDENCIA
+        */
+
+        if (asistencia.estado === "JUSTIFICADO") {
+          const asistenciaConId = {
+            ...asistencia,
+            asistenciaId
+          };
+
+          // Crear o actualizar justificación.
+          const justificacion = await guardarJustificacion(
+            asistenciaConId
+          );
+
+          if (!justificacion || !justificacion.id) {
+            throw new Error(
+              "La justificación se guardó, pero no se recibió su ID."
+            );
+          }
+
+          // Subir documento si fue seleccionado.
+          if (asistencia.archivoEvidencia) {
+            await subirEvidencia(
+              justificacion.id,
+              asistencia.archivoEvidencia
+            );
+          }
+        }
+      }
+
+      /*
+      * RECARGAR DATOS DEL GRUPO
+      */
+
+        await cargarEstudiantesGrupo();
+
+      /*
+      * ACTUALIZAR CONSULTA
+      */
+
+        await cargarAsistenciasConsulta();
+
+      /*
+      * MOSTRAR MODAL DE CONFIRMACIÓN
+      */
+
+      mostrarModalConfirmacion(
+        `Las asistencias se han guardado correctamente.`
+      );
+
+    } catch (error) {
+      console.error("Error guardando asistencias:", error);
+
+      mostrarMensaje(
+        error.message || "Ocurrió un error al guardar las asistencias.",
+        "error"
+      );
+
+    } finally {
+      saveAttendanceButton.disabled = false;
+      saveAttendanceButton.textContent = "Guardar asistencia";
+    }
+  }
+
+
+
+
+  async function obtenerJustificacionPorAsistencia(asistenciaId) {
+    try {
+      const response = await solicitar(
+        `/api/justificaciones-asistencia/asistencia/${asistenciaId}`
+      );
+
+      if (response.status === 404) {
+        return null;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(response)
+        );
+      }
 
         return await response.json();
 
     } catch (error) {
-        console.error(
-            "Error consultando justificación:",
-            error
-        );
+      console.error(
+        "Error consultando justificación:",
+        error
+      );
 
-        throw error;
+      throw error;
     }
-    }
+  }
 
 
-    async function guardarJustificacion(asistencia) {
-        const datos = {
-            asistenciaId: asistencia.asistenciaId,
-            motivoId: asistencia.motivoId,
-            descripcion: asistencia.descripcionJustificacion
-        };
+  async function guardarJustificacion(asistencia) {
+    const datos = {
+      asistenciaId: asistencia.asistenciaId,
+      motivoId: asistencia.motivoId,
+      descripcion: asistencia.descripcionJustificacion
+    };
 
-        const justificacionExistente =
-            await obtenerJustificacionPorAsistencia(
-                asistencia.asistenciaId
-            );
+    const justificacionExistente =
+      await obtenerJustificacionPorAsistencia(
+        asistencia.asistenciaId
+      );
 
         let response;
 
-        if (justificacionExistente) {
-            response = await solicitar(
-                `/api/justificaciones-asistencia/${justificacionExistente.id}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(datos)
-                }
-            );
-        } else {
-            response = await solicitar(
-                "/api/justificaciones-asistencia",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(datos)
-                }
-            );
+    if (justificacionExistente) {
+      response = await solicitar(
+        `/api/justificaciones-asistencia/${justificacionExistente.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(datos)
         }
+      );
+    } else {
+      response = await solicitar(
+        "/api/justificaciones-asistencia",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(datos)
+        }
+      );
+    }
 
-        if (!response.ok) {
-            throw new Error(
-                await obtenerMensajeError(response)
-            );
-        }
+    if (!response.ok) {
+      throw new Error(
+        await obtenerMensajeError(response)
+      );
+    }
 
         return await response.json();
     }
@@ -1917,22 +1911,22 @@
         formData.append("justificacionId", justificacionId);
         formData.append("archivo", archivo);
 
-        const response = await solicitar(
-            "/api/evidencias-asistencia",
-            {
-                method: "POST",
-                body: formData
-            }
-        );
+    const response = await solicitar(
+      "/api/evidencias-asistencia",
+      {
+        method: "POST",
+        body: formData
+      }
+    );
 
-        if (!response.ok) {
-            throw new Error(
-                await obtenerMensajeError(
-                    response,
-                    "No se pudo subir el documento de justificación."
-                )
-            );
-        }
+    if (!response.ok) {
+      throw new Error(
+        await obtenerMensajeError(
+          response,
+          "No se pudo subir el documento de justificación."
+        )
+      );
+    }
 
         return await response.json();
     }
@@ -1941,279 +1935,279 @@
 
 
 
-    async function configurarBotonesVerDocumento(resultados) {
-        for (const asistencia of resultados) {
-            if (String(asistencia.estado).toUpperCase() !== "JUSTIFICADO") {
-                continue;
-            }
+  async function configurarBotonesVerDocumento(resultados) {
+    for (const asistencia of resultados) {
+      if (String(asistencia.estado).toUpperCase() !== "JUSTIFICADO") {
+        continue;
+      }
 
-            try {
-                const justificacion = await obtenerJustificacionPorAsistencia(asistencia.id);
+      try {
+        const justificacion = await obtenerJustificacionPorAsistencia(asistencia.id);
 
-                if (!justificacion) continue;
+        if (!justificacion) continue;
 
-                const response = await solicitar(
-                    `/api/evidencias-asistencia/justificacion/${justificacion.id}`,
-                    { method: "GET" }
-                );
+        const response = await solicitar(
+          `/api/evidencias-asistencia/justificacion/${justificacion.id}`,
+          { method: "GET" }
+        );
 
-                if (!verificarAutorizacion(response)) return;
+        if (!verificarAutorizacion(response)) return;
 
-                if (!response.ok) {
-                    throw new Error(
-                        await obtenerMensajeError(
-                            response,
-                            "No se pudieron consultar las evidencias."
-                        )
-                    );
-                }
-
-                const evidencias = await response.json();
-
-                if (!Array.isArray(evidencias) || evidencias.length === 0) {
-                    continue;
-                }
-
-                const fila = attendanceList.querySelector(
-                    `tr[data-consulta-id="${asistencia.id}"]`
-                );
-
-                const celdaAcciones = fila?.lastElementChild;
-
-                if (!celdaAcciones) continue;
-
-                // Un único botón para todos los justificantes.
-                const boton = document.createElement("button");
-
-                boton.type = "button";
-                boton.className = "btn btn--secondary asistencia-view-evidence";
-                boton.textContent = "Ver justificantes";
-                boton.title = `Consultar ${evidencias.length} documento(s)`;
-
-                boton.addEventListener("click", () => {
-                window.KihonEvidencias.mostrarListaJustificantes(evidencias);
-            });
-
-                celdaAcciones.appendChild(boton);
-
-            } catch (error) {
-                console.error(
-                    `Error consultando documentos de asistencia ${asistencia.id}:`,
-                    error
-                );
-            }
+        if (!response.ok) {
+          throw new Error(
+            await obtenerMensajeError(
+              response,
+              "No se pudieron consultar las evidencias."
+            )
+          );
         }
+
+        const evidencias = await response.json();
+
+        if (!Array.isArray(evidencias) || evidencias.length === 0) {
+          continue;
+        }
+
+        const fila = attendanceList.querySelector(
+          `tr[data-consulta-id="${asistencia.id}"]`
+        );
+
+        const celdaAcciones = fila?.lastElementChild;
+
+        if (!celdaAcciones) continue;
+
+        // Un único botón para todos los justificantes.
+        const boton = document.createElement("button");
+
+        boton.type = "button";
+        boton.className = "btn btn--secondary asistencia-view-evidence";
+        boton.textContent = "Ver justificantes";
+        boton.title = `Consultar ${evidencias.length} documento(s)`;
+
+        boton.addEventListener("click", () => {
+          window.KihonEvidencias.mostrarListaJustificantes(evidencias);
+        });
+
+        celdaAcciones.appendChild(boton);
+
+      } catch (error) {
+        console.error(
+          `Error consultando documentos de asistencia ${asistencia.id}:`,
+          error
+        );
+      }
     }
+  }
 
 
 
 
 
 
-        /*
-        * =========================================================
-        * CARGAR GRUPOS PARA CONSULTA
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * CARGAR GRUPOS PARA CONSULTA
+  * =========================================================
+  */
 
-        async function cargarGruposConsulta() {
-        try {
-            const response = await solicitar("/api/grupos?estado=ACTIVO", {
-            method: "GET",
-            });
+  async function cargarGruposConsulta() {
+    try {
+      const response = await solicitar("/api/grupos?estado=ACTIVO", {
+        method: "GET",
+      });
 
-            if (!verificarAutorizacion(response)) {
-            return;
-            }
+      if (!verificarAutorizacion(response)) {
+        return;
+      }
 
-            if (!response.ok) {
-            throw new Error(
-                await obtenerMensajeError(
-                response,
-                "No se pudieron cargar los grupos.",
-                ),
-            );
-            }
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudieron cargar los grupos.",
+          ),
+        );
+      }
 
-            const grupos = await response.json();
+      const grupos = await response.json();
 
-            grupoConsulta.innerHTML = `
+      grupoConsulta.innerHTML = `
                     <option value="">
                         Todos los grupos
                     </option>
                 `;
 
-            grupos.forEach((grupo) => {
-            const option = document.createElement("option");
+      grupos.forEach((grupo) => {
+        const option = document.createElement("option");
 
-            option.value = grupo.id;
+        option.value = grupo.id;
 
-            option.textContent = grupo.nombre;
+        option.textContent = grupo.nombre;
 
-            grupoConsulta.appendChild(option);
-            });
-        } catch (error) {
-            console.error("Error cargando grupos de consulta:", error);
-        }
-        }
+        grupoConsulta.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Error cargando grupos de consulta:", error);
+    }
+  }
 
-        /*
-        * =========================================================
-        * CARGAR ESTUDIANTES PARA CONSULTA
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * CARGAR ESTUDIANTES PARA CONSULTA
+  * =========================================================
+  */
 
-        async function cargarEstudiantesConsulta() {
-        try {
-            const response = await solicitar("/api/estudiantes?estado=ACTIVO", {
-            method: "GET",
-            });
+  async function cargarEstudiantesConsulta() {
+    try {
+      const response = await solicitar("/api/estudiantes?estado=ACTIVO", {
+        method: "GET",
+      });
 
-            if (!verificarAutorizacion(response)) {
-            return;
-            }
+      if (!verificarAutorizacion(response)) {
+        return;
+      }
 
-            if (!response.ok) {
-            throw new Error(
-                await obtenerMensajeError(
-                response,
-                "No se pudieron cargar los estudiantes.",
-                ),
-            );
-            }
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudieron cargar los estudiantes.",
+          ),
+        );
+      }
 
-            const estudiantes = await response.json();
+      const estudiantes = await response.json();
 
-            estudianteConsulta.innerHTML = `
+      estudianteConsulta.innerHTML = `
                     <option value="">
                         Todos los estudiantes
                     </option>
                 `;
 
-            estudiantes.forEach((estudiante) => {
-            const option = document.createElement("option");
+      estudiantes.forEach((estudiante) => {
+        const option = document.createElement("option");
 
-            option.value = estudiante.id;
+        option.value = estudiante.id;
 
-            option.textContent = `${estudiante.nombre} ${estudiante.apellido}`;
+        option.textContent = `${estudiante.nombre} ${estudiante.apellido}`;
 
-            estudianteConsulta.appendChild(option);
-            });
-        } catch (error) {
-            console.error("Error cargando estudiantes de consulta:", error);
-        }
-        }
+        estudianteConsulta.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Error cargando estudiantes de consulta:", error);
+    }
+  }
 
-        /*
-        * =========================================================
-        * CARGAR ASISTENCIAS PARA CONSULTA
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * CARGAR ASISTENCIAS PARA CONSULTA
+  * =========================================================
+  */
 
-        async function cargarAsistenciasConsulta() {
-        const fecha = fechaConsulta.value;
+  async function cargarAsistenciasConsulta() {
+    const fecha = fechaConsulta.value;
 
-        // Impedir consultas de fechas futuras.
+    // Impedir consultas de fechas futuras.
     if (fecha && fecha > obtenerFechaLocal()) {
-    fechaConsulta.value = obtenerFechaLocal();
+      fechaConsulta.value = obtenerFechaLocal();
 
-    attendanceList.innerHTML = `
+      attendanceList.innerHTML = `
         <div class="asistencia-empty">
             No es posible consultar asistencias de fechas futuras.
         </div>
     `;
 
-    attendanceCount.textContent = "0 asistencias";
+      attendanceCount.textContent = "0 asistencias";
 
-    return;
+      return;
     }
 
-        if (!fecha) {
-            attendanceList.innerHTML = `
+    if (!fecha) {
+      attendanceList.innerHTML = `
                     <div class="asistencia-empty">
                         Selecciona una fecha para consultar.
                     </div>
                 `;
 
-            attendanceCount.textContent = "0 asistencias";
+      attendanceCount.textContent = "0 asistencias";
 
-            return;
-        }
+      return;
+    }
 
-        attendanceList.innerHTML = `
+    attendanceList.innerHTML = `
                 <div class="asistencia-loading">
                     Cargando asistencias...
                 </div>
             `;
 
-        try {
-            const response = await solicitar(`/api/asistencias/fecha/${fecha}`, {
-            method: "GET",
-            });
+    try {
+      const response = await solicitar(`/api/asistencias/fecha/${fecha}`, {
+        method: "GET",
+      });
 
-            if (!verificarAutorizacion(response)) {
-            return;
-            }
+      if (!verificarAutorizacion(response)) {
+        return;
+      }
 
-            if (response.status === 403) {
-            throw new Error("No tienes permisos para consultar asistencias.");
-            }
+      if (response.status === 403) {
+        throw new Error("No tienes permisos para consultar asistencias.");
+      }
 
-            if (!response.ok) {
-            throw new Error(
-                await obtenerMensajeError(
-                response,
-                "No se pudieron obtener las asistencias.",
-                ),
-            );
-            }
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudieron obtener las asistencias.",
+          ),
+        );
+      }
 
-            asistenciasConsulta = await response.json();
+      asistenciasConsulta = await response.json();
 
-            /*
-            * FILTRO POR GRUPO
-            */
+      /*
+      * FILTRO POR GRUPO
+      */
 
-            const grupoId = grupoConsulta.value ? Number(grupoConsulta.value) : null;
+      const grupoId = grupoConsulta.value ? Number(grupoConsulta.value) : null;
 
-            /*
-            * FILTRO POR ESTUDIANTE
-            */
+      /*
+      * FILTRO POR ESTUDIANTE
+      */
 
-            const estudianteId = estudianteConsulta.value
-            ? Number(estudianteConsulta.value)
-            : null;
+      const estudianteId = estudianteConsulta.value
+        ? Number(estudianteConsulta.value)
+        : null;
 
-            let resultados = asistenciasConsulta.filter((asistencia) => {
-            if (grupoId && Number(asistencia.grupoId) !== grupoId) {
-                return false;
-            }
+      let resultados = asistenciasConsulta.filter((asistencia) => {
+        if (grupoId && Number(asistencia.grupoId) !== grupoId) {
+          return false;
+        }
 
-            if (estudianteId && Number(asistencia.estudianteId) !== estudianteId) {
-                return false;
-            }
+        if (estudianteId && Number(asistencia.estudianteId) !== estudianteId) {
+          return false;
+        }
 
-            return true;
-            });
+        return true;
+      });
 
-            attendanceCount.textContent = `${resultados.length} asistencia${resultados.length !== 1 ? "s" : ""}`;
+      attendanceCount.textContent = `${resultados.length} asistencia${resultados.length !== 1 ? "s" : ""}`;
 
-            if (resultados.length === 0) {
-            attendanceList.innerHTML = `
+      if (resultados.length === 0) {
+        attendanceList.innerHTML = `
                         <div class="asistencia-empty">
                             No hay asistencias que coincidan
                             con los filtros seleccionados.
                         </div>
                     `;
 
-            return;
-            }
+        return;
+      }
 
-            /*
-            * TABLA
-            */
+      /*
+      * TABLA
+      */
 
-            attendanceList.innerHTML = `
+      attendanceList.innerHTML = `
 
                     <table class="asistencia-table">
 
@@ -2257,8 +2251,8 @@
                         <tbody>
 
                             ${resultados
-                .map((asistencia) => {
-                return `
+          .map((asistencia) => {
+            return `
 
                                         <tr
                                             data-consulta-id="${asistencia.id}"
@@ -2281,12 +2275,12 @@
 
                                             <td>
                                                 ${asistencia.horaLlegada
-                    ? asistencia.horaLlegada.substring(
-                        0,
-                        5,
-                    )
-                    : "-"
-                    }
+                ? asistencia.horaLlegada.substring(
+                  0,
+                  5,
+                )
+                : "-"
+              }
                                             </td>
 
 
@@ -2295,8 +2289,8 @@
                                                 <span class="
                                                     asistencia-estado
                                                     asistencia-estado--${String(
-                    asistencia.estado,
-                    ).toLowerCase()}
+                asistencia.estado,
+              ).toLowerCase()}
                                                 ">
 
                                                     ${asistencia.estado}
@@ -2326,8 +2320,8 @@
                                         </tr>
 
                                     `;
-                })
-                .join("")}
+          })
+          .join("")}
 
                         </tbody>
 
@@ -2335,61 +2329,61 @@
 
                 `;
 
-            configurarBotonesEdicion();
+      configurarBotonesEdicion();
 
 
-            await configurarBotonesVerDocumento(resultados);
-        } catch (error) {
-            console.error("Error cargando asistencias:", error);
+      await configurarBotonesVerDocumento(resultados);
+    } catch (error) {
+      console.error("Error cargando asistencias:", error);
 
-            attendanceList.innerHTML = `
+      attendanceList.innerHTML = `
                     <div class="asistencia-empty">
                         ${error.message}
                     </div>
                 `;
-        }
-        }
+    }
+  }
 
-        /*
-        * =========================================================
-        * EDITAR ASISTENCIA DESDE CONSULTA
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * EDITAR ASISTENCIA DESDE CONSULTA
+  * =========================================================
+  */
 
-        function configurarBotonesEdicion() {
-        const botones = document.querySelectorAll(".asistencia-edit-button");
+  function configurarBotonesEdicion() {
+    const botones = document.querySelectorAll(".asistencia-edit-button");
 
-        botones.forEach((boton) => {
-            boton.addEventListener("click", function () {
-            const id = Number(boton.dataset.id);
+    botones.forEach((boton) => {
+      boton.addEventListener("click", function () {
+        const id = Number(boton.dataset.id);
 
-            const asistencia = asistenciasConsulta.find(
-                (item) => Number(item.id) === id,
-            );
+        const asistencia = asistenciasConsulta.find(
+          (item) => Number(item.id) === id,
+        );
 
-            if (!asistencia) {
-                return;
-            }
-
-            abrirEditorConsulta(asistencia);
-            });
-        });
+        if (!asistencia) {
+          return;
         }
 
-        /*
-        * =========================================================
-        * EDITOR DE CONSULTA
-        * =========================================================
-        */
+        abrirEditorConsulta(asistencia);
+      });
+    });
+  }
 
-        
-    function abrirEditorConsulta(asistencia) {
+  /*
+  * =========================================================
+  * EDITOR DE CONSULTA
+  * =========================================================
+  */
+
+
+  function abrirEditorConsulta(asistencia) {
     const fila = document.querySelector(
-        `tr[data-consulta-id="${asistencia.id}"]`
+      `tr[data-consulta-id="${asistencia.id}"]`
     );
 
     if (!fila) {
-        return;
+      return;
     }
 
     fila.innerHTML = `
@@ -2410,11 +2404,10 @@
             <input
                 type="time"
                 class="form-input asistencia-edit-hora"
-                value="${
-                    asistencia.horaLlegada
-                        ? asistencia.horaLlegada.substring(0, 5)
-                        : ""
-                }"
+                value="${asistencia.horaLlegada
+        ? asistencia.horaLlegada.substring(0, 5)
+        : ""
+      }"
             >
         </td>
 
@@ -2466,9 +2459,8 @@
         <td>
             <div class="asistencia-edit-actions">
 
-                ${
-                    asistencia.estado === "JUSTIFICADO"
-                        ? `
+                ${asistencia.estado === "JUSTIFICADO"
+        ? `
                             <button
                                 type="button"
                                 class="btn btn--secondary asistencia-add-justificacion"
@@ -2476,8 +2468,8 @@
                                 Añadir justificación
                             </button>
                         `
-                        : ""
-                }
+        : ""
+      }
 
                 <button
                     type="button"
@@ -2503,20 +2495,20 @@
     // ==========================================
 
     const estadoSelect = fila.querySelector(
-        ".asistencia-edit-estado"
+      ".asistencia-edit-estado"
     );
 
     const horaInput = fila.querySelector(
-        ".asistencia-edit-hora"
+      ".asistencia-edit-hora"
     );
 
     function actualizarHoraEdicion() {
-        if (estadoSelect.value === "AUSENTE") {
-            horaInput.value = "";
-            horaInput.disabled = true;
-        } else {
-            horaInput.disabled = false;
-        }
+      if (estadoSelect.value === "AUSENTE") {
+        horaInput.value = "";
+        horaInput.disabled = true;
+      } else {
+        horaInput.disabled = false;
+      }
     }
 
     let estadoAnterior = estadoSelect.value;
@@ -2524,47 +2516,47 @@
     let modalJustificacionAbierto = false;
 
     estadoSelect.addEventListener("change", async function () {
-        actualizarHoraEdicion();
+      actualizarHoraEdicion();
 
-        // Si selecciona otro estado, descartamos los datos pendientes.
-        if (estadoSelect.value !== "JUSTIFICADO") {
-            estadoAnterior = estadoSelect.value;
-            datosJustificacionPendientes = null;
-            return;
+      // Si selecciona otro estado, descartamos los datos pendientes.
+      if (estadoSelect.value !== "JUSTIFICADO") {
+        estadoAnterior = estadoSelect.value;
+        datosJustificacionPendientes = null;
+        return;
+      }
+
+      // Evitamos abrir nuevamente el modal si ya estaba justificado.
+      if (estadoAnterior === "JUSTIFICADO" || modalJustificacionAbierto) {
+        return;
+      }
+
+      modalJustificacionAbierto = true;
+
+      try {
+        const datos = await mostrarModalJustificacion(asistencia);
+
+        if (!datos) {
+          // Si cancela, recuperamos el estado anterior.
+          estadoSelect.value = estadoAnterior;
+          actualizarHoraEdicion();
+          return;
         }
-
-        // Evitamos abrir nuevamente el modal si ya estaba justificado.
-        if (estadoAnterior === "JUSTIFICADO" || modalJustificacionAbierto) {
-            return;
-        }
-
-        modalJustificacionAbierto = true;
-
-        try {
-            const datos = await mostrarModalJustificacion(asistencia);
-
-            if (!datos) {
-                // Si cancela, recuperamos el estado anterior.
-                estadoSelect.value = estadoAnterior;
-                actualizarHoraEdicion();
-                return;
-            }
 
             // Conservamos los datos para guardarlos posteriormente.
             datosJustificacionPendientes = datos;
             estadoAnterior = "JUSTIFICADO";
 
-        } catch (error) {
-            console.error("Error mostrando la justificación:", error);
+      } catch (error) {
+        console.error("Error mostrando la justificación:", error);
 
             estadoSelect.value = estadoAnterior;
             actualizarHoraEdicion();
 
             alert(error.message);
 
-        } finally {
-            modalJustificacionAbierto = false;
-        }
+      } finally {
+        modalJustificacionAbierto = false;
+      }
     });
 
     actualizarHoraEdicion();
@@ -2574,11 +2566,11 @@
     // ==========================================
 
     fila.querySelector(".asistencia-save-edit").addEventListener("click", () => {
-        guardarEdicionConsulta(
-            asistencia,
-            fila,
-            datosJustificacionPendientes
-        );
+      guardarEdicionConsulta(
+        asistencia,
+        fila,
+        datosJustificacionPendientes
+      );
     });
 
     // ==========================================
@@ -2586,9 +2578,9 @@
     // ==========================================
 
     fila.querySelector(
-        ".asistencia-cancel-edit"
+      ".asistencia-cancel-edit"
     ).addEventListener("click", function () {
-        cargarAsistenciasConsulta();
+      cargarAsistenciasConsulta();
     });
 
     // ==========================================
@@ -2596,248 +2588,248 @@
     // ==========================================
 
     const botonAgregarJustificacion = fila.querySelector(
-        ".asistencia-add-justificacion"
+      ".asistencia-add-justificacion"
     );
 
     if (botonAgregarJustificacion) {
-        botonAgregarJustificacion.addEventListener(
-            "click",
-            function () {
-                gestionarJustificacionConsulta(asistencia);
-            }
-        );
+      botonAgregarJustificacion.addEventListener(
+        "click",
+        function () {
+          gestionarJustificacionConsulta(asistencia);
+        }
+      );
     }
-    }
+  }
 
 
-        /*
-        * =========================================================
-        * GUARDAR EDICIÓN
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * GUARDAR EDICIÓN
+  * =========================================================
+  */
 
-        
-        async function guardarEdicionConsulta(
-        asistencia,
-        fila,
-        datosJustificacionPendientes = null
-    ){
+
+  async function guardarEdicionConsulta(
+    asistencia,
+    fila,
+    datosJustificacionPendientes = null
+  ) {
     const estadoSelect = fila.querySelector(
-        ".asistencia-edit-estado"
+      ".asistencia-edit-estado"
     );
 
     const horaInput = fila.querySelector(
-        ".asistencia-edit-hora"
+      ".asistencia-edit-hora"
     );
 
     const observacionInput = fila.querySelector(
-        ".asistencia-edit-observacion"
+      ".asistencia-edit-observacion"
     );
 
     const estado = estadoSelect.value;
 
     const horaLlegada =
-        estado === "AUSENTE" ? null : horaInput.value || null;
+      estado === "AUSENTE" ? null : horaInput.value || null;
 
     if (
-        (estado === "PRESENTE" || estado === "TARDANZA") &&
-        !horaLlegada
+      (estado === "PRESENTE" || estado === "TARDANZA") &&
+      !horaLlegada
     ) {
-        alert(
-            "Los estados PRESENTE y TARDANZA requieren hora de llegada."
-        );
-        return;
+      alert(
+        "Los estados PRESENTE y TARDANZA requieren hora de llegada."
+      );
+      return;
     }
 
     try {
-        let datosJustificacion = null;
+      let datosJustificacion = null;
 
-        if (estado === "JUSTIFICADO") {
-            datosJustificacion = datosJustificacionPendientes;
-        
-            // Si no se abrió previamente el modal, lo abrimos como alternativa.
-            if (!datosJustificacion) {
-                datosJustificacion = await mostrarModalJustificacion(asistencia);
-            }
-        
-            if (!datosJustificacion) {
-                return;
-            }
+      if (estado === "JUSTIFICADO") {
+        datosJustificacion = datosJustificacionPendientes;
+
+        // Si no se abrió previamente el modal, lo abrimos como alternativa.
+        if (!datosJustificacion) {
+          datosJustificacion = await mostrarModalJustificacion(asistencia);
         }
 
-        // Actualizar asistencia
-        const response = await solicitar(
-            `/api/asistencias/${asistencia.id}`,
-            {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    estudianteId: asistencia.estudianteId,
-                    grupoId: asistencia.grupoId,
-                    fecha: asistencia.fecha,
-                    horaLlegada,
-                    estado,
-                    observacion: observacionInput.value.trim() || null
-                })
-            }
+        if (!datosJustificacion) {
+          return;
+        }
+      }
+
+      // Actualizar asistencia
+      const response = await solicitar(
+        `/api/asistencias/${asistencia.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            estudianteId: asistencia.estudianteId,
+            grupoId: asistencia.grupoId,
+            fecha: asistencia.fecha,
+            horaLlegada,
+            estado,
+            observacion: observacionInput.value.trim() || null
+          })
+        }
+      );
+
+      if (!verificarAutorizacion(response)) {
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error(
+          "No tienes permisos para modificar asistencias."
         );
+      }
 
-        if (!verificarAutorizacion(response)) {
-            return;
+      if (!response.ok) {
+        throw new Error(
+          await obtenerMensajeError(
+            response,
+            "No se pudo actualizar la asistencia."
+          )
+        );
+      }
+
+      // Gestionar justificación
+      if (estado === "JUSTIFICADO") {
+        const justificacion = await guardarJustificacion({
+          asistenciaId: asistencia.id,
+          motivoId: datosJustificacion.motivoId,
+          descripcionJustificacion: datosJustificacion.descripcion
+        });
+
+        // Subir todos los documentos nuevos
+        for (const archivo of datosJustificacion.archivos) {
+          await subirEvidencia(
+            justificacion.id,
+            archivo
+          );
         }
-
-        if (response.status === 403) {
-            throw new Error(
-                "No tienes permisos para modificar asistencias."
-            );
-        }
-
-        if (!response.ok) {
-            throw new Error(
-                await obtenerMensajeError(
-                    response,
-                    "No se pudo actualizar la asistencia."
-                )
-            );
-        }
-
-        // Gestionar justificación
-        if (estado === "JUSTIFICADO") {
-            const justificacion = await guardarJustificacion({
-                asistenciaId: asistencia.id,
-                motivoId: datosJustificacion.motivoId,
-                descripcionJustificacion: datosJustificacion.descripcion
-            });
-
-            // Subir todos los documentos nuevos
-            for (const archivo of datosJustificacion.archivos) {
-                await subirEvidencia(
-                    justificacion.id,
-                    archivo
-                );
-            }
-        }
+      }
 
         // Actualizar tabla de consulta
         await cargarAsistenciasConsulta();
 
-        // Actualizar registro principal si corresponde
-        if (
-            fechaInput.value === asistencia.fecha &&
-            String(grupoSelect.value) === String(asistencia.grupoId)
-        ) {
-            await cargarEstudiantesGrupo();
-        }
+      // Actualizar registro principal si corresponde
+      if (
+        fechaInput.value === asistencia.fecha &&
+        String(grupoSelect.value) === String(asistencia.grupoId)
+      ) {
+        await cargarEstudiantesGrupo();
+      }
 
-        await mostrarModalConfirmacion(
-            "La asistencia se ha actualizado correctamente."
-        );
+      await mostrarModalConfirmacion(
+        "La asistencia se ha actualizado correctamente."
+      );
 
     } catch (error) {
-        console.error(
-            "Error actualizando asistencia:",
-            error
-        );
+      console.error(
+        "Error actualizando asistencia:",
+        error
+      );
 
-        alert(error.message);
+      alert(error.message);
     }
-    }
+  }
 
 
-    async function gestionarJustificacionConsulta(asistencia) {
+  async function gestionarJustificacionConsulta(asistencia) {
     try {
-        // Abrir el modal con los datos existentes
-        const datos = await mostrarModalJustificacion(asistencia);
+      // Abrir el modal con los datos existentes
+      const datos = await mostrarModalJustificacion(asistencia);
 
-        if (!datos) {
-            return;
-        }
+      if (!datos) {
+        return;
+      }
 
-        // Actualizar la justificación existente
-        const justificacion = await guardarJustificacion({
-            asistenciaId: asistencia.id,
-            motivoId: datos.motivoId,
-            descripcionJustificacion: datos.descripcion
-        });
+      // Actualizar la justificación existente
+      const justificacion = await guardarJustificacion({
+        asistenciaId: asistencia.id,
+        motivoId: datos.motivoId,
+        descripcionJustificacion: datos.descripcion
+      });
 
-        // Incorporar los documentos nuevos
-        for (const archivo of datos.archivos) {
-            await subirEvidencia(
-                justificacion.id,
-                archivo
-            );
-        }
+      // Incorporar los documentos nuevos
+      for (const archivo of datos.archivos) {
+        await subirEvidencia(
+          justificacion.id,
+          archivo
+        );
+      }
 
         // Recargar la tabla para reflejar los cambios
         await cargarAsistenciasConsulta();
 
-        await mostrarModalConfirmacion(
-            "La justificación se ha actualizado correctamente."
-        );
+      await mostrarModalConfirmacion(
+        "La justificación se ha actualizado correctamente."
+      );
 
     } catch (error) {
-        console.error(
-            "Error gestionando la justificación:",
-            error
-        );
+      console.error(
+        "Error gestionando la justificación:",
+        error
+      );
 
-        alert(error.message);
+      alert(error.message);
     }
-    }
+  }
 
 
 
-        /*
-        * =========================================================
-        * EVENTOS
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * EVENTOS
+  * =========================================================
+  */
 
-        fechaInput.addEventListener("change", async function () {
-        ocultarMensaje();
+  fechaInput.addEventListener("change", async function () {
+    ocultarMensaje();
 
-        await cargarGruposDelDia();
-        });
+    await cargarGruposDelDia();
+  });
 
-        grupoSelect.addEventListener("change", cargarEstudiantesGrupo);
+  grupoSelect.addEventListener("change", cargarEstudiantesGrupo);
 
-        saveAttendanceButton.addEventListener("click", guardarAsistencias);
+  saveAttendanceButton.addEventListener("click", guardarAsistencias);
 
-        fechaConsulta.addEventListener("change", cargarAsistenciasConsulta);
+  fechaConsulta.addEventListener("change", cargarAsistenciasConsulta);
 
-        grupoConsulta.addEventListener("change", cargarAsistenciasConsulta);
+  grupoConsulta.addEventListener("change", cargarAsistenciasConsulta);
 
-        estudianteConsulta.addEventListener("change", cargarAsistenciasConsulta);
+  estudianteConsulta.addEventListener("change", cargarAsistenciasConsulta);
 
-        /*
-        * =========================================================
-        * INICIALIZACIÓN
-        * =========================================================
-        */
+  /*
+  * =========================================================
+  * INICIALIZACIÓN
+  * =========================================================
+  */
 
-        const fechaActual = obtenerFechaLocal();
+  const fechaActual = obtenerFechaLocal();
 
-    // Bloquear visualmente las fechas posteriores al día actual.
-    fechaInput.max = fechaActual;
-    fechaConsulta.max = fechaActual;
+  // Bloquear visualmente las fechas posteriores al día actual.
+  fechaInput.max = fechaActual;
+  fechaConsulta.max = fechaActual;
 
-    // Establecer la fecha actual por defecto.
-    fechaInput.value = fechaActual;
-    fechaConsulta.value = fechaActual;
+  // Establecer la fecha actual por defecto.
+  fechaInput.value = fechaActual;
+  fechaConsulta.value = fechaActual;
 
-        /*
-        * CARGAR DATOS INICIALES
-        */
+  /*
+  * CARGAR DATOS INICIALES
+  */
 
-        cargarGruposDelDia();
+  cargarGruposDelDia();
 
-        cargarGruposConsulta();
+  cargarGruposConsulta();
 
-        cargarEstudiantesConsulta();
+  cargarEstudiantesConsulta();
 
-        cargarAsistenciasConsulta();
+  cargarAsistenciasConsulta();
 
-        cargarMotivosJustificacion();
-    });
+  cargarMotivosJustificacion();
+});

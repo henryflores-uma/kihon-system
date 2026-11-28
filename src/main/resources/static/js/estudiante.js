@@ -56,6 +56,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (!elementos.statusMessage) return;
 
         elementos.statusMessage.textContent = mensaje;
+
         elementos.statusMessage.className =
             `estudiante-status-message estudiante-status-message--${tipo}`;
 
@@ -76,17 +77,21 @@ document.addEventListener("DOMContentLoaded", async function () {
             method: "GET",
             credentials: "same-origin",
             headers: {
-                "Accept": "application/json"
+                Accept: "application/json"
             }
         });
 
         if (!respuesta.ok) {
 
             if (respuesta.status === 401 || respuesta.status === 403) {
-                throw new Error("No tienes autorización para consultar esta información.");
+                throw new Error(
+                    "No tienes autorización para consultar esta información."
+                );
             }
 
-            throw new Error(`Error al consultar ${url}: ${respuesta.status}`);
+            throw new Error(
+                `Error al consultar ${url}: ${respuesta.status}`
+            );
         }
 
         return respuesta.json();
@@ -166,7 +171,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function cargarInformacionSesion(nombreCompleto) {
 
-        const username = sessionStorage.getItem("kihonUsername") || "Estudiante";
+        const username =
+            sessionStorage.getItem("kihonUsername") || "Estudiante";
 
         if (elementos.sessionUsername) {
             elementos.sessionUsername.textContent = username;
@@ -215,7 +221,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         const grupos = await obtenerDatos(API.grupos);
 
         if (!Array.isArray(grupos)) {
-            throw new Error("La respuesta de grupos no tiene un formato válido.");
+            throw new Error(
+                "La respuesta de grupos no tiene un formato válido."
+            );
         }
 
         if (elementos.grupo) {
@@ -262,13 +270,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                 "estudiante-group-card"
             );
 
-            const nombre = crearElemento(
-                "h3",
-                "estudiante-group-card__title",
-                grupo.nombre || "Grupo sin nombre"
+            tarjeta.appendChild(
+                crearElemento(
+                    "h3",
+                    "estudiante-group-card__title",
+                    grupo.nombre || "Grupo sin nombre"
+                )
             );
-
-            tarjeta.appendChild(nombre);
 
             if (grupo.descripcion) {
 
@@ -281,23 +289,26 @@ document.addEventListener("DOMContentLoaded", async function () {
                 );
             }
 
-            const estado = crearElemento(
-                "span",
-                "estudiante-group-card__status",
-                grupo.estado || "Sin estado"
+            tarjeta.appendChild(
+                crearElemento(
+                    "span",
+                    "estudiante-group-card__status",
+                    grupo.estado || "Sin estado"
+                )
             );
 
-            tarjeta.appendChild(estado);
-
-            const tituloHorarios = crearElemento(
-                "h4",
-                "estudiante-group-card__subtitle",
-                "Horarios de entrenamiento"
+            tarjeta.appendChild(
+                crearElemento(
+                    "h4",
+                    "estudiante-group-card__subtitle",
+                    "Horarios de entrenamiento"
+                )
             );
 
-            tarjeta.appendChild(tituloHorarios);
-
-            if (Array.isArray(grupo.horarios) && grupo.horarios.length > 0) {
+            if (
+                Array.isArray(grupo.horarios) &&
+                grupo.horarios.length > 0
+            ) {
 
                 const lista = crearElemento(
                     "ul",
@@ -306,7 +317,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 grupo.horarios.forEach(horario => {
 
-                    const texto = `${horario.diaSemana || "Día no especificado"}: ${formatearHora(horario.horaInicio)} - ${formatearHora(horario.horaFin)}`;
+                    const texto =
+                        `${horario.diaSemana || "Día no especificado"}: ` +
+                        `${formatearHora(horario.horaInicio)} - ` +
+                        `${formatearHora(horario.horaFin)}`;
 
                     lista.appendChild(
                         crearElemento("li", "", texto)
@@ -336,51 +350,85 @@ document.addEventListener("DOMContentLoaded", async function () {
     // INDICADORES DE ASISTENCIA
     // =====================================================
 
-    
-async function cargarAsistencias() {
+    async function cargarAsistencias() {
 
-    const respuesta = await obtenerDatos(API.asistencias);
+        const respuesta = await obtenerDatos(API.asistencias);
 
-    if (
-        !respuesta ||
-        !Array.isArray(respuesta.content) ||
-        !respuesta.resumen
-    ) {
-        throw new Error("La respuesta de asistencias no tiene un formato válido.");
+        if (
+            !respuesta ||
+            !Array.isArray(respuesta.content)
+        ) {
+            throw new Error(
+                "La respuesta de asistencias no tiene un formato válido."
+            );
+        }
+
+        // Se utiliza el resumen del backend cuando está disponible.
+        // Si no existe, se calculan los indicadores desde los registros.
+
+        if (respuesta.resumen) {
+
+            calcularIndicadores(respuesta.resumen);
+
+        } else {
+
+            calcularIndicadoresDesdeRegistros(respuesta.content);
+        }
+
+        return respuesta.content;
     }
 
-    calcularIndicadores(respuesta.resumen);
+    function calcularIndicadores(resumen) {
 
-    return respuesta.content;
-}
+        const total = Number(resumen.total ?? 0);
+        const presentes = Number(resumen.presentes ?? 0);
+        const tardanzas = Number(resumen.tardanzas ?? 0);
+        const justificados = Number(resumen.justificados ?? 0);
 
+        const totalEvaluable = Math.max(0, total - justificados);
 
-    
-function calcularIndicadores(resumen) {
+        const porcentaje = totalEvaluable > 0
+            ? ((presentes + tardanzas) / totalEvaluable) * 100
+            : null;
 
-    const total = resumen.total ?? 0;
-    const presentes = resumen.presentes ?? 0;
-    const tardanzas = resumen.tardanzas ?? 0;
-    const justificados = resumen.justificados ?? 0;
+        if (elementos.asistencias) {
+            elementos.asistencias.textContent = total;
+        }
 
-    const totalEvaluable = total - justificados;
+        if (elementos.progreso) {
 
-    const porcentaje = totalEvaluable > 0
-        ? ((presentes + tardanzas) / totalEvaluable) * 100
-        : null;
-
-    if (elementos.asistencias) {
-        elementos.asistencias.textContent = total;
+            elementos.progreso.textContent = porcentaje === null
+                ? "—"
+                : `${porcentaje.toFixed(1)}%`;
+        }
     }
 
-    if (elementos.progreso) {
+    function calcularIndicadoresDesdeRegistros(asistencias) {
 
-        elementos.progreso.textContent = porcentaje === null
-            ? "—"
-            : `${porcentaje.toFixed(1)}%`;
+        const total = asistencias.length;
+
+        const presentes = asistencias.filter(
+            asistencia =>
+                normalizarEstado(asistencia.estado) === "PRESENTE"
+        ).length;
+
+        const tardanzas = asistencias.filter(
+            asistencia =>
+                normalizarEstado(asistencia.estado) === "TARDANZA"
+        ).length;
+
+        const justificados = asistencias.filter(
+            asistencia =>
+                normalizarEstado(asistencia.estado) === "JUSTIFICADO"
+        ).length;
+
+        calcularIndicadores({
+            total,
+            presentes,
+            tardanzas,
+            justificados
+        });
     }
-}
-
 
     // =====================================================
     // ACTIVIDAD RECIENTE
@@ -388,13 +436,19 @@ function calcularIndicadores(resumen) {
 
     async function cargarAsistenciasRecientes() {
 
-        const asistencias = await obtenerDatos(API.asistenciasRecientes);
+        const asistencias = await obtenerDatos(
+            API.asistenciasRecientes
+        );
 
         if (!Array.isArray(asistencias)) {
-            throw new Error("La respuesta de actividad reciente no tiene un formato válido.");
+            throw new Error(
+                "La respuesta de actividad reciente no tiene un formato válido."
+            );
         }
 
         renderizarActividad(asistencias);
+
+        return asistencias;
     }
 
     function renderizarActividad(asistencias) {
@@ -413,7 +467,7 @@ function calcularIndicadores(resumen) {
             return;
         }
 
-        const tabla = crearElemento(
+        const lista = crearElemento(
             "div",
             "estudiante-activity-list"
         );
@@ -469,10 +523,10 @@ function calcularIndicadores(resumen) {
             fila.appendChild(informacion);
             fila.appendChild(etiqueta);
 
-            tabla.appendChild(fila);
+            lista.appendChild(fila);
         });
 
-        contenedor.replaceChildren(tabla);
+        contenedor.replaceChildren(lista);
     }
 
     // =====================================================

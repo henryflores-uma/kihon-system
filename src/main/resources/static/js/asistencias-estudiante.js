@@ -332,151 +332,151 @@ document.addEventListener("DOMContentLoaded", function () {
     // CONSTRUCCIÓN DE FILAS
     // =========================================================
 
-    
-function crearFilaAsistencia(asistencia) {
-    const fila = document.createElement("tr");
 
-    const celdaFecha = crearElemento(
-        "td",
-        "asistencias-table__date",
-        formatearFecha(asistencia.fecha)
-    );
+    function crearFilaAsistencia(asistencia) {
+        const fila = document.createElement("tr");
 
-    const celdaGrupo = crearElemento(
-        "td",
-        "asistencias-table__group",
-        asistencia.grupoNombre || "Sin grupo"
-    );
+        const celdaFecha = crearElemento(
+            "td",
+            "asistencias-table__date",
+            formatearFecha(asistencia.fecha)
+        );
 
-    const celdaHora = crearElemento(
-        "td",
-        "asistencias-table__time",
-        formatearHora(asistencia.horaLlegada)
-    );
+        const celdaGrupo = crearElemento(
+            "td",
+            "asistencias-table__group",
+            asistencia.grupoNombre || "Sin grupo"
+        );
 
-    const celdaEstado = document.createElement("td");
-    celdaEstado.appendChild(
-        crearBadgeEstado(asistencia.estado)
-    );
+        const celdaHora = crearElemento(
+            "td",
+            "asistencias-table__time",
+            formatearHora(asistencia.horaLlegada)
+        );
 
-    const celdaObservacion = crearElemento(
-        "td",
-        "asistencias-table__observation",
-        asistencia.observacion || "—"
-    );
+        const celdaEstado = document.createElement("td");
+        celdaEstado.appendChild(
+            crearBadgeEstado(asistencia.estado)
+        );
 
-    const celdaEvidencias = crearElemento(
-        "td",
-        "asistencias-table__evidence"
-    );
+        const celdaObservacion = crearElemento(
+            "td",
+            "asistencias-table__observation",
+            asistencia.observacion || "—"
+        );
 
-    // El botón se agregará posteriormente si existen evidencias.
-    celdaEvidencias.dataset.asistenciaId = asistencia.id;
+        const celdaEvidencias = crearElemento(
+            "td",
+            "asistencias-table__evidence"
+        );
 
-    fila.append(
-        celdaFecha,
-        celdaGrupo,
-        celdaHora,
-        celdaEstado,
-        celdaObservacion,
-        celdaEvidencias
-    );
+        // El botón se agregará posteriormente si existen evidencias.
+        celdaEvidencias.dataset.asistenciaId = asistencia.id;
 
-    return fila;
-}
+        fila.append(
+            celdaFecha,
+            celdaGrupo,
+            celdaHora,
+            celdaEstado,
+            celdaObservacion,
+            celdaEvidencias
+        );
+
+        return fila;
+    }
 
 
 
-async function obtenerEvidenciasAsistencia(asistenciaId) {
+    async function obtenerEvidenciasAsistencia(asistenciaId) {
 
-    const responseJustificacion = await fetch(
-        `/api/justificaciones-asistencia/asistencia/${asistenciaId}`,
-        {
-            method: "GET",
-            credentials: "same-origin",
-            headers: {
-                Accept: "application/json"
+        const responseJustificacion = await fetch(
+            `/api/justificaciones-asistencia/asistencia/${asistenciaId}`,
+            {
+                method: "GET",
+                credentials: "same-origin",
+                headers: {
+                    Accept: "application/json"
+                }
             }
+        );
+
+        if (responseJustificacion.status === 404) {
+            return [];
         }
-    );
 
-    if (responseJustificacion.status === 404) {
-        return [];
-    }
+        if (!responseJustificacion.ok) {
+            throw new Error("No se pudo consultar la justificación.");
+        }
 
-    if (!responseJustificacion.ok) {
-        throw new Error("No se pudo consultar la justificación.");
-    }
+        const justificacion = await responseJustificacion.json();
 
-    const justificacion = await responseJustificacion.json();
-
-    const responseEvidencias = await fetch(
-        `/api/evidencias-asistencia/justificacion/${justificacion.id}`,
-        {
-            method: "GET",
-            credentials: "same-origin",
-            headers: {
-                Accept: "application/json"
+        const responseEvidencias = await fetch(
+            `/api/evidencias-asistencia/justificacion/${justificacion.id}`,
+            {
+                method: "GET",
+                credentials: "same-origin",
+                headers: {
+                    Accept: "application/json"
+                }
             }
-        }
-    );
+        );
 
-    if (!responseEvidencias.ok) {
-        throw new Error("No se pudieron consultar las evidencias.");
+        if (!responseEvidencias.ok) {
+            throw new Error("No se pudieron consultar las evidencias.");
+        }
+
+        const evidencias = await responseEvidencias.json();
+
+        return Array.isArray(evidencias) ? evidencias : [];
     }
 
-    const evidencias = await responseEvidencias.json();
-
-    return Array.isArray(evidencias) ? evidencias : [];
-}
 
 
+    async function configurarBotonesJustificantes(asistencias) {
 
-async function configurarBotonesJustificantes(asistencias) {
+        for (const asistencia of asistencias) {
 
-    for (const asistencia of asistencias) {
-
-        if (normalizarEstado(asistencia.estado) !== "JUSTIFICADO") {
-            continue;
-        }
-
-        try {
-
-            const evidencias = await obtenerEvidenciasAsistencia(asistencia.id);
-
-            if (evidencias.length === 0) {
+            if (normalizarEstado(asistencia.estado) !== "JUSTIFICADO") {
                 continue;
             }
 
-            const celda = asistenciasTableBody.querySelector(
-                `td[data-asistencia-id="${asistencia.id}"]`
-            );
+            try {
 
-            if (!celda) continue;
+                const evidencias = await obtenerEvidenciasAsistencia(asistencia.id);
 
-            const boton = crearElemento(
-                "button",
-                "btn btn--secondary asistencia-view-evidence",
-                "Ver justificantes"
-            );
+                if (evidencias.length === 0) {
+                    continue;
+                }
 
-            boton.type = "button";
+                const celda = asistenciasTableBody.querySelector(
+                    `td[data-asistencia-id="${asistencia.id}"]`
+                );
 
-            boton.addEventListener("click", function () {
-                window.KihonEvidencias.mostrarListaJustificantes(evidencias);
-            });
+                if (!celda) continue;
 
-            celda.appendChild(boton);
+                const boton = crearElemento(
+                    "button",
+                    "btn btn--secondary asistencia-view-evidence",
+                    "Ver justificantes"
+                );
 
-        } catch (error) {
+                boton.type = "button";
 
-            console.error(
-                `Error consultando justificantes de asistencia ${asistencia.id}:`,
-                error
-            );
+                boton.addEventListener("click", function () {
+                    window.KihonEvidencias.mostrarListaJustificantes(evidencias);
+                });
+
+                celda.appendChild(boton);
+
+            } catch (error) {
+
+                console.error(
+                    `Error consultando justificantes de asistencia ${asistencia.id}:`,
+                    error
+                );
+            }
         }
     }
-}
 
 
 
@@ -547,9 +547,9 @@ async function configurarBotonesJustificantes(asistencias) {
 
         asistenciasTableBody.appendChild(fragmento);
 
-configurarBotonesJustificantes(asistencias);
+        configurarBotonesJustificantes(asistencias);
 
-ocultarMensaje();
+        ocultarMensaje();
     }
 
     // =========================================================

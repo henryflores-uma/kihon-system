@@ -1,6 +1,5 @@
-
 package com.kihon.kihon.service;
-//import com.kihon.kihon.repository.EstudianteRepository;
+
 import com.kihon.kihon.exception.RecursoNoEncontradoException;
 import com.kihon.kihon.exception.ValidacionException;
 import com.kihon.kihon.model.Asistencia;
@@ -34,22 +33,22 @@ public class JustificacionAsistenciaService {
         private final EstudianteRepository estudianteRepository;
 
         public JustificacionAsistenciaService(
-                JustificacionAsistenciaRepository justificacionRepository,
-                MotivoJustificacionRepository motivoRepository,
-                AsistenciaRepository asistenciaRepository,
-                UsuarioRepository usuarioRepository,
-                EstudianteRepository estudianteRepository) {
-        
-            this.justificacionRepository = justificacionRepository;
-            this.motivoRepository = motivoRepository;
-            this.asistenciaRepository = asistenciaRepository;
-            this.usuarioRepository = usuarioRepository;
-            this.estudianteRepository = estudianteRepository;
+                        JustificacionAsistenciaRepository justificacionRepository,
+                        MotivoJustificacionRepository motivoRepository,
+                        AsistenciaRepository asistenciaRepository,
+                        UsuarioRepository usuarioRepository,
+                        EstudianteRepository estudianteRepository) {
+
+                this.justificacionRepository = justificacionRepository;
+                this.motivoRepository = motivoRepository;
+                this.asistenciaRepository = asistenciaRepository;
+                this.usuarioRepository = usuarioRepository;
+                this.estudianteRepository = estudianteRepository;
         }
 
-        // ==========================================
+        // =========================================================
         // CREAR JUSTIFICACIÓN
-        // ==========================================
+        // =========================================================
 
         @Transactional
         public JustificacionAsistencia crearJustificacion(
@@ -59,46 +58,41 @@ public class JustificacionAsistenciaService {
                         String username) {
 
                 if (asistenciaId == null) {
-                        throw new RuntimeException(
+                        throw new ValidacionException(
                                         "La asistencia es obligatoria");
                 }
 
                 Asistencia asistencia = asistenciaRepository.findById(asistenciaId)
-                                .orElseThrow(() -> new RuntimeException(
+                                .orElseThrow(() -> new RecursoNoEncontradoException(
                                                 "La asistencia no existe"));
 
                 validarAccesoAsistencia(asistencia);
 
                 if (justificacionRepository.existsByAsistenciaId(asistenciaId)) {
-                        throw new RuntimeException(
+                        throw new ValidacionException(
                                         "La asistencia ya tiene una justificación registrada");
                 }
 
                 if (motivoId == null) {
-                        throw new RuntimeException(
+                        throw new ValidacionException(
                                         "El motivo de justificación es obligatorio");
                 }
 
                 MotivoJustificacion motivo = motivoRepository.findById(motivoId)
-                                .orElseThrow(() -> new RuntimeException(
+                                .orElseThrow(() -> new RecursoNoEncontradoException(
                                                 "El motivo de justificación no existe"));
 
-                String descripcionNormalizada = null;
+                String descripcionNormalizada = normalizarDescripcion(descripcion);
 
-                if (descripcion != null && !descripcion.isBlank()) {
-                        descripcionNormalizada = descripcion.trim();
-                }
+                validarDescripcionMotivo(motivo, descripcionNormalizada);
 
-                if ("OTRO".equalsIgnoreCase(motivo.getNombre())
-                                && (descripcionNormalizada == null
-                                                || descripcionNormalizada.isBlank())) {
-
-                        throw new RuntimeException(
-                                        "Debe ingresar una descripción cuando el motivo es OTRO");
+                if (username == null || username.isBlank()) {
+                        throw new AccessDeniedException(
+                                        "No se pudo identificar al usuario autenticado");
                 }
 
                 Usuario usuario = usuarioRepository.findByUsername(username)
-                                .orElseThrow(() -> new RuntimeException(
+                                .orElseThrow(() -> new RecursoNoEncontradoException(
                                                 "El usuario autenticado no existe"));
 
                 JustificacionAsistencia justificacion = new JustificacionAsistencia();
@@ -112,212 +106,161 @@ public class JustificacionAsistenciaService {
                 return justificacionRepository.save(justificacion);
         }
 
+        // =========================================================
+        // ACTUALIZAR JUSTIFICACIÓN
+        // =========================================================
 
-    // ==========================================
-    // ACTUALIZAR JUSTIFICACIÓN
-    // ==========================================
+        @Transactional
+        public JustificacionAsistencia actualizarJustificacion(
+                        Long id,
+                        Long motivoId,
+                        String descripcion) {
 
-    @Transactional
-    public JustificacionAsistencia actualizarJustificacion(
-            Long id,
-            Long motivoId,
-            String descripcion) {
+                if (id == null) {
+                        throw new ValidacionException(
+                                        "El ID de la justificación es obligatorio");
+                }
 
-        if (id == null) {
-            throw new RuntimeException(
-                    "El ID de la justificación es obligatorio");
+                JustificacionAsistencia justificacion = justificacionRepository.findById(id)
+                                .orElseThrow(() -> new RecursoNoEncontradoException(
+                                                "Justificación no encontrada"));
+
+                validarAccesoAsistencia(justificacion.getAsistencia());
+
+                if (motivoId == null) {
+                        throw new ValidacionException(
+                                        "El motivo de justificación es obligatorio");
+                }
+
+                MotivoJustificacion motivo = motivoRepository.findById(motivoId)
+                                .orElseThrow(() -> new RecursoNoEncontradoException(
+                                                "El motivo de justificación no existe"));
+
+                String descripcionNormalizada = normalizarDescripcion(descripcion);
+
+                validarDescripcionMotivo(motivo, descripcionNormalizada);
+
+                justificacion.setMotivo(motivo);
+                justificacion.setDescripcion(descripcionNormalizada);
+
+                return justificacionRepository.save(justificacion);
         }
 
-        // Buscar la justificación existente
-        JustificacionAsistencia justificacion = justificacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Justificación no encontrada"));
-
-        // Validar permisos sobre la asistencia relacionada
-        validarAccesoAsistencia(justificacion.getAsistencia());
-
-        // Validar que se haya seleccionado un motivo
-        if (motivoId == null) {
-            throw new RuntimeException(
-                    "El motivo de justificación es obligatorio");
-        }
-
-        // Buscar el nuevo motivo
-        MotivoJustificacion motivo = motivoRepository.findById(motivoId)
-                .orElseThrow(() -> new RuntimeException(
-                        "El motivo de justificación no existe"));
-
-        // Normalizar descripción
-        String descripcionNormalizada = null;
-
-        if (descripcion != null && !descripcion.isBlank()) {
-            descripcionNormalizada = descripcion.trim();
-        }
-
-        // Validar descripción cuando el motivo es OTRO
-        if ("OTRO".equalsIgnoreCase(motivo.getNombre())
-                && (descripcionNormalizada == null
-                        || descripcionNormalizada.isBlank())) {
-
-            throw new RuntimeException(
-                    "Debe ingresar una descripción cuando el motivo es OTRO");
-        }
-
-        // Actualizar únicamente los campos permitidos
-        justificacion.setMotivo(motivo);
-        justificacion.setDescripcion(descripcionNormalizada);
-
-        return justificacionRepository.save(justificacion);
-    }
-
-        // ==========================================
+        // =========================================================
         // BUSCAR JUSTIFICACIÓN POR ID
-        // ==========================================
+        // =========================================================
 
         @Transactional(readOnly = true)
         public JustificacionAsistencia buscarPorId(Long id) {
 
+                if (id == null) {
+                        throw new ValidacionException(
+                                        "El ID de la justificación es obligatorio");
+                }
+
                 JustificacionAsistencia justificacion = justificacionRepository.findById(id)
-                                .orElseThrow(() -> new RuntimeException(
+                                .orElseThrow(() -> new RecursoNoEncontradoException(
                                                 "Justificación no encontrada"));
 
-                                                validarAccesoLecturaAsistencia(justificacion.getAsistencia());
+                validarAccesoLecturaAsistencia(justificacion.getAsistencia());
 
                 return justificacion;
         }
 
-        // ==========================================
+        // =========================================================
         // BUSCAR JUSTIFICACIÓN POR ASISTENCIA
-        // ==========================================
-@Transactional(readOnly = true)
-public JustificacionAsistencia buscarPorAsistencia(Long asistenciaId) {
+        // =========================================================
 
-    if (asistenciaId == null) {
-        throw new ValidacionException(
-            "La asistencia es obligatoria"
-        );
-    }
+        @Transactional(readOnly = true)
+        public JustificacionAsistencia buscarPorAsistencia(Long asistenciaId) {
 
-    JustificacionAsistencia justificacion = justificacionRepository
-        .findByAsistenciaId(asistenciaId)
-        .orElseThrow(() -> new RecursoNoEncontradoException(
-            "La asistencia no tiene una justificación"
-        ));
+                if (asistenciaId == null) {
+                        throw new ValidacionException(
+                                        "La asistencia es obligatoria");
+                }
 
-        validarAccesoLecturaAsistencia(justificacion.getAsistencia());
+                JustificacionAsistencia justificacion = justificacionRepository
+                                .findByAsistenciaId(asistenciaId)
+                                .orElseThrow(() -> new RecursoNoEncontradoException(
+                                                "La asistencia no tiene una justificación"));
 
-    return justificacion;
-}
+                validarAccesoLecturaAsistencia(justificacion.getAsistencia());
 
-// ==========================================
-// VALIDAR ACCESO DE LECTURA A UNA ASISTENCIA
-// ==========================================
-
-private void validarAccesoLecturaAsistencia(Asistencia asistencia) {
-
-        Authentication authentication = SecurityContextHolder
-                .getContext()
-                .getAuthentication();
-    
-        if (authentication == null
-                || !authentication.isAuthenticated()
-                || authentication.getName() == null) {
-    
-            throw new AccessDeniedException(
-                    "No existe un usuario autenticado");
+                return justificacion;
         }
-    
-        Usuario usuario = usuarioRepository.findByUsername(
-                authentication.getName())
-                .orElseThrow(() -> new AccessDeniedException(
-                        "El usuario autenticado no existe"));
-    
-        if (usuario.getEstado() == null
-                || !"ACTIVO".equalsIgnoreCase(usuario.getEstado())) {
-    
-            throw new AccessDeniedException(
-                    "El usuario no se encuentra activo");
-        }
-    
-        String rol = usuario.getRol() != null
-                && usuario.getRol().getNombre() != null
-                ? usuario.getRol().getNombre().trim().toUpperCase()
-                : "";
-    
-        // ADMIN y SECRETARIA pueden consultar todas las justificaciones.
-        if ("ADMIN".equals(rol) || "SECRETARIA".equals(rol)) {
-            return;
-        }
-    
-        // SENSEI solamente puede consultar asistencias de sus grupos.
-        if ("SENSEI".equals(rol)) {
-            validarAccesoAsistencia(asistencia);
-            return;
-        }
-    
-        // ESTUDIANTE solamente puede consultar sus propias asistencias.
-        if ("ESTUDIANTE".equals(rol)) {
-    
-            if (asistencia == null
-                    || asistencia.getEstudiante() == null
-                    || usuario.getPersona() == null) {
-    
-                throw new AccessDeniedException(
-                        "No se pudo validar la propiedad de la asistencia");
-            }
-    
-            Usuario estudianteUsuario = usuario;
-    
-            var estudiante = estudianteRepository.findByPersona(
-                    estudianteUsuario.getPersona())
-                    .orElseThrow(() -> new AccessDeniedException(
-                            "No existe un estudiante asociado al usuario"));
-    
-            if (!estudiante.getId().equals(
-                    asistencia.getEstudiante().getId())) {
-    
-                throw new AccessDeniedException(
-                        "No tienes autorización para consultar esta justificación");
-            }
-    
-            return;
-        }
-    
-        throw new AccessDeniedException(
-                "No tienes autorización para consultar justificaciones");
-    }
 
-        // ==========================================
+        // =========================================================
         // LISTAR JUSTIFICACIONES
-        // ==========================================
+        // =========================================================
 
         @Transactional(readOnly = true)
         public List<JustificacionAsistencia> listarJustificaciones() {
 
+                Usuario usuario = obtenerUsuarioAutenticado();
+
+                String rol = obtenerRolUsuario(usuario);
+
                 List<JustificacionAsistencia> justificaciones = justificacionRepository.findAll();
 
-                if (!esSenseiAutenticado()) {
+                // ADMIN y SECRETARIA pueden consultar todas las justificaciones.
+                if ("ADMIN".equals(rol) || "SECRETARIA".equals(rol)) {
                         return justificaciones;
                 }
 
-                Usuario sensei = obtenerSenseiAutenticado();
+                // SENSEI solamente puede consultar las justificaciones
+                // de las asistencias pertenecientes a sus grupos.
+                if ("SENSEI".equals(rol)) {
 
-                return justificaciones.stream()
-                                .filter(j -> perteneceAlSensei(
-                                                j.getAsistencia(),
-                                                sensei.getId()))
-                                .toList();
+                        validarUsuarioActivo(usuario);
+
+                        return justificaciones.stream()
+                                        .filter(j -> perteneceAlSensei(
+                                                        j.getAsistencia(),
+                                                        usuario.getId()))
+                                        .toList();
+                }
+
+                // ESTUDIANTE solamente puede consultar sus propias justificaciones.
+                if ("ESTUDIANTE".equals(rol)) {
+
+                        validarUsuarioActivo(usuario);
+
+                        if (usuario.getPersona() == null) {
+                                throw new AccessDeniedException(
+                                                "No se pudo identificar la persona asociada al estudiante");
+                        }
+
+                        var estudiante = estudianteRepository.findByPersona(
+                                        usuario.getPersona())
+                                        .orElseThrow(() -> new AccessDeniedException(
+                                                        "No existe un estudiante asociado al usuario"));
+
+                        return justificaciones.stream()
+                                        .filter(j -> j.getAsistencia() != null
+                                                        && j.getAsistencia().getEstudiante() != null
+                                                        && j.getAsistencia().getEstudiante().getId()
+                                                                        .equals(estudiante.getId()))
+                                        .toList();
+                }
+
+                throw new AccessDeniedException(
+                                "No tienes autorización para consultar justificaciones");
         }
 
-        // ==========================================
+        // =========================================================
         // ELIMINAR JUSTIFICACIÓN
-        // ==========================================
+        // =========================================================
 
         @Transactional
         public void eliminarJustificacion(Long id) {
 
+                if (id == null) {
+                        throw new ValidacionException(
+                                        "El ID de la justificación es obligatorio");
+                }
+
                 JustificacionAsistencia justificacion = justificacionRepository.findById(id)
-                                .orElseThrow(() -> new RuntimeException(
+                                .orElseThrow(() -> new RecursoNoEncontradoException(
                                                 "Justificación no encontrada"));
 
                 validarAccesoAsistencia(justificacion.getAsistencia());
@@ -325,9 +268,62 @@ private void validarAccesoLecturaAsistencia(Asistencia asistencia) {
                 justificacionRepository.delete(justificacion);
         }
 
-        // ==========================================
-        // VALIDAR ACCESO A UNA ASISTENCIA
-        // ==========================================
+        // =========================================================
+        // VALIDAR ACCESO DE LECTURA A UNA ASISTENCIA
+        // =========================================================
+
+        private void validarAccesoLecturaAsistencia(Asistencia asistencia) {
+
+                Usuario usuario = obtenerUsuarioAutenticado();
+
+                validarUsuarioActivo(usuario);
+
+                String rol = obtenerRolUsuario(usuario);
+
+                // ADMIN y SECRETARIA pueden consultar todas las justificaciones.
+                if ("ADMIN".equals(rol) || "SECRETARIA".equals(rol)) {
+                        return;
+                }
+
+                // SENSEI solamente puede consultar asistencias de sus grupos.
+                if ("SENSEI".equals(rol)) {
+                        validarAccesoAsistencia(asistencia);
+                        return;
+                }
+
+                // ESTUDIANTE solamente puede consultar sus propias asistencias.
+                if ("ESTUDIANTE".equals(rol)) {
+
+                        if (asistencia == null
+                                        || asistencia.getEstudiante() == null
+                                        || usuario.getPersona() == null) {
+
+                                throw new AccessDeniedException(
+                                                "No se pudo validar la propiedad de la asistencia");
+                        }
+
+                        var estudiante = estudianteRepository.findByPersona(
+                                        usuario.getPersona())
+                                        .orElseThrow(() -> new AccessDeniedException(
+                                                        "No existe un estudiante asociado al usuario"));
+
+                        if (!estudiante.getId().equals(
+                                        asistencia.getEstudiante().getId())) {
+
+                                throw new AccessDeniedException(
+                                                "No tienes autorización para consultar esta justificación");
+                        }
+
+                        return;
+                }
+
+                throw new AccessDeniedException(
+                                "No tienes autorización para consultar justificaciones");
+        }
+
+        // =========================================================
+        // VALIDAR ACCESO DE ESCRITURA A UNA ASISTENCIA
+        // =========================================================
 
         private void validarAccesoAsistencia(Asistencia asistencia) {
 
@@ -343,9 +339,9 @@ private void validarAccesoLecturaAsistencia(Asistencia asistencia) {
                 }
         }
 
-        // ==========================================
-        // VERIFICAR PERTENENCIA DE LA ASISTENCIA
-        // ==========================================
+        // =========================================================
+        // VERIFICAR PERTENENCIA DE LA ASISTENCIA AL SENSEI
+        // =========================================================
 
         private boolean perteneceAlSensei(
                         Asistencia asistencia,
@@ -366,9 +362,9 @@ private void validarAccesoLecturaAsistencia(Asistencia asistencia) {
                                 .equals(senseiId);
         }
 
-        // ==========================================
-        // IDENTIFICAR SI ES SENSEI
-        // ==========================================
+        // =========================================================
+        // IDENTIFICAR SI EL USUARIO AUTENTICADO ES SENSEI
+        // =========================================================
 
         private boolean esSenseiAutenticado() {
 
@@ -418,9 +414,9 @@ private void validarAccesoLecturaAsistencia(Asistencia asistencia) {
                                 "No tienes autorización para acceder a las justificaciones");
         }
 
-        // ==========================================
+        // =========================================================
         // OBTENER SENSEI AUTENTICADO
-        // ==========================================
+        // =========================================================
 
         private Usuario obtenerSenseiAutenticado() {
 
@@ -439,7 +435,7 @@ private void validarAccesoLecturaAsistencia(Asistencia asistencia) {
 
                 Usuario sensei = usuarioRepository.findByUsername(
                                 authentication.getName())
-                                .orElseThrow(() -> new RuntimeException(
+                                .orElseThrow(() -> new AccessDeniedException(
                                                 "El usuario autenticado no existe"));
 
                 if (sensei.getRol() == null
@@ -450,11 +446,98 @@ private void validarAccesoLecturaAsistencia(Asistencia asistencia) {
                                         "El usuario no tiene el rol SENSEI");
                 }
 
-                if (!"ACTIVO".equalsIgnoreCase(sensei.getEstado())) {
-                        throw new AccessDeniedException(
-                                        "El Sensei no se encuentra activo");
-                }
+                validarUsuarioActivo(sensei);
 
                 return sensei;
+        }
+
+        // =========================================================
+        // OBTENER USUARIO AUTENTICADO
+        // =========================================================
+
+        private Usuario obtenerUsuarioAutenticado() {
+
+                Authentication authentication = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication();
+
+                if (authentication == null
+                                || !authentication.isAuthenticated()
+                                || authentication.getName() == null
+                                || authentication.getName().isBlank()) {
+
+                        throw new AccessDeniedException(
+                                        "No existe un usuario autenticado");
+                }
+
+                return usuarioRepository.findByUsername(
+                                authentication.getName())
+                                .orElseThrow(() -> new AccessDeniedException(
+                                                "El usuario autenticado no existe"));
+        }
+
+        // =========================================================
+        // OBTENER ROL DEL USUARIO
+        // =========================================================
+
+        private String obtenerRolUsuario(Usuario usuario) {
+
+                if (usuario == null
+                                || usuario.getRol() == null
+                                || usuario.getRol().getNombre() == null) {
+
+                        throw new AccessDeniedException(
+                                        "No se pudo identificar el rol del usuario");
+                }
+
+                return usuario.getRol()
+                                .getNombre()
+                                .trim()
+                                .toUpperCase();
+        }
+
+        // =========================================================
+        // VALIDAR QUE EL USUARIO ESTÉ ACTIVO
+        // =========================================================
+
+        private void validarUsuarioActivo(Usuario usuario) {
+
+                if (usuario == null
+                                || usuario.getEstado() == null
+                                || !"ACTIVO".equalsIgnoreCase(usuario.getEstado())) {
+
+                        throw new AccessDeniedException(
+                                        "El usuario no se encuentra activo");
+                }
+        }
+
+        // =========================================================
+        // NORMALIZAR DESCRIPCIÓN
+        // =========================================================
+
+        private String normalizarDescripcion(String descripcion) {
+
+                if (descripcion == null || descripcion.isBlank()) {
+                        return null;
+                }
+
+                return descripcion.trim();
+        }
+
+        // =========================================================
+        // VALIDAR DESCRIPCIÓN SEGÚN EL MOTIVO
+        // =========================================================
+
+        private void validarDescripcionMotivo(
+                        MotivoJustificacion motivo,
+                        String descripcion) {
+
+                if (motivo != null
+                                && "OTRO".equalsIgnoreCase(motivo.getNombre())
+                                && (descripcion == null || descripcion.isBlank())) {
+
+                        throw new ValidacionException(
+                                        "Debe ingresar una descripción cuando el motivo es OTRO");
+                }
         }
 }

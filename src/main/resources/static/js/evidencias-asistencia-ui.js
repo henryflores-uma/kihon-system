@@ -1,4 +1,3 @@
-
 (function () {
     async function abrirDocumentoEvidencia(evidenciaId) {
         // Abrir una pestaña inmediatamente para evitar bloqueos del navegador.

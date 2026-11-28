@@ -21,7 +21,7 @@
             margin-top: 16px;
             padding-top: 12px;
         }
-    
+
         .asistencias-pagination__controls,
         .asistencias-pagination__pages {
             display: flex;
@@ -29,7 +29,7 @@
             align-items: center;
             gap: 6px;
         }
-    
+
         .asistencias-pagination__controls button,
         .asistencias-pagination__page {
             padding: 6px 11px;
@@ -41,13 +41,13 @@
             font-size: 0.9rem;
             line-height: 1.2;
         }
-    
+
         .asistencias-pagination__controls button:hover:not(:disabled),
         .asistencias-pagination__page:hover:not(:disabled) {
             background-color: #f1f5f9;
             border-color: #94a3b8;
         }
-    
+
         .asistencias-pagination__page.is-active {
             background-color: #0f172a;
             border-color: #0f172a;
@@ -55,12 +55,12 @@
             font-weight: 600;
             cursor: default;
         }
-    
+
         .asistencias-pagination__controls button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-    
+
         .asistencias-pagination__ellipsis {
             padding: 0 4px;
             color: #64748b;
@@ -480,16 +480,17 @@
                             <div class="asistencias-pagination__info">
                                 <span id="asistenciasPageInfo">Página 1 de 1</span>
                             </div>
-                        
+
                             <div class="asistencias-pagination__controls">
-                                
-                        
+
+
                                 <button type="button" id="btnPaginaAnterior" disabled>
                                     Anterior
                                 </button>
-                        
-                                <div id="asistenciasPageNumbers" class="asistencias-pagination__pages" aria-label="Páginas"></div>
-                        
+
+                                <div id="asistenciasPageNumbers" class="asistencias-pagination__pages"
+                                    aria-label="Páginas"></div>
+
                                 <button type="button" id="btnPaginaSiguiente" disabled>
                                     Siguiente
                                 </button>
@@ -544,13 +545,13 @@
     <!-- SCRIPTS -->
 
     <script src="/js/topbar.js"></script>
-<script src="/js/nav-acordeon.js"></script>
+    <script src="/js/nav-acordeon.js"></script>
 
-<!-- FUNCIONES COMPARTIDAS DE EVIDENCIAS -->
-<script src="/js/evidencias-asistencia-ui.js"></script>
+    <!-- FUNCIONES COMPARTIDAS DE EVIDENCIAS -->
+    <script src="/js/evidencias-asistencia-ui.js"></script>
 
-<!-- LÓGICA DEL ESTUDIANTE -->
-<script src="/js/asistencias-estudiante.js"></script>
+    <!-- LÓGICA DEL ESTUDIANTE -->
+    <script src="/js/asistencias-estudiante.js"></script>
 
 </body>
 

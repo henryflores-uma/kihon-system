@@ -1,9 +1,8 @@
-
 /* =========================================================
    PÁGINA DE ASISTENCIAS
    ========================================================= */
 
-   .asistencia-page {
+.asistencia-page {
     width: 100%;
 }
 
@@ -152,9 +151,7 @@
     display: grid;
 
     grid-template-columns:
-        minmax(150px, 1fr)
-        auto
-        minmax(260px, 1.3fr);
+        minmax(150px, 1fr) auto minmax(260px, 1.3fr);
 
     align-items: center;
     gap: 1rem;
@@ -285,8 +282,7 @@
     display: grid;
 
     grid-template-columns:
-        minmax(110px, 130px)
-        1fr;
+        minmax(110px, 130px) 1fr;
 
     gap: 0.75rem;
 }
@@ -562,7 +558,7 @@
         font-size: 0.9rem;
     }
 
-    > span {
+    >span {
         color: $color-gray-600;
         font-size: 0.9rem;
         white-space: nowrap;
@@ -573,9 +569,7 @@
     display: grid;
 
     grid-template-columns:
-        minmax(180px, 260px)
-        minmax(220px, 1fr)
-        minmax(220px, 1fr);
+        minmax(180px, 260px) minmax(220px, 1fr) minmax(220px, 1fr);
 
     gap: 1rem;
     margin-bottom: 1.5rem;
@@ -911,7 +905,7 @@
     }
 }
 
-.asistencia-modal > p {
+.asistencia-modal>p {
     margin-bottom: 20px;
     color: #64748b;
     font-size: 0.9rem;
