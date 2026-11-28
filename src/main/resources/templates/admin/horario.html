@@ -268,206 +268,102 @@
         </section>
 
 
-        <!-- ==================================
-                     FORMULARIO DE EVENTO
-                     ================================== -->
+        <!-- MODAL FORMULARIO DE EVENTOS -->
+        <section id="eventFormSection" class="horario-event-modal" hidden>
+          <div id="eventFormOverlay" class="horario-event-modal__overlay"></div>
 
-        <section id="eventFormSection" class="card horario-event-form" hidden>
+          <div class="horario-event-modal__content">
 
+            <div class="horario-event-modal__header">
+              <div>
+                <h2 id="eventFormTitle">Nuevo evento</h2>
+                <p id="eventFormSubtitle">
+                  Registra una actividad especial en el calendario.
+                </p>
+              </div>
 
-          <!-- ENCABEZADO DEL FORMULARIO -->
-
-          <div class="horario-event-form__header">
-
-            <div>
-
-              <h2>
-                Nuevo evento
-              </h2>
-
-              <p>
-                Registra una actividad especial en el calendario.
-              </p>
-
+              <button type="button" id="closeEventFormButton" class="horario-event-modal__close"
+                aria-label="Cerrar formulario">
+                &times;
+              </button>
             </div>
 
+            <form id="eventForm">
+
+              <div class="horario-event-form__grid">
+
+                <!-- TÍTULO -->
+                <div class="form-group">
+                  <label for="eventTitle">Título del evento *</label>
+                  <input type="text" id="eventTitle" name="titulo" maxlength="150" required>
+                </div>
+
+                <!-- TIPO -->
+                <div class="form-group">
+                  <label for="eventType">Tipo de evento *</label>
+                  <select id="eventType" name="tipo" required>
+                    <option value="EXAMEN">Examen</option>
+                    <option value="SEMINARIO">Seminario</option>
+                    <option value="RECUPERACION">Recuperación</option>
+                    <option value="REFUERZO">Refuerzo</option>
+                    <option value="OTRO">Otro</option>
+                  </select>
+                </div>
+
+                <!-- FECHA -->
+                <div class="form-group">
+                  <label for="eventDate">Fecha *</label>
+                  <input type="date" id="eventDate" name="fecha" required>
+                </div>
+
+                <!-- HORA INICIO -->
+                <div class="form-group">
+                  <label for="eventStart">Hora de inicio *</label>
+                  <input type="time" id="eventStart" name="horaInicio" required>
+                </div>
+
+                <!-- HORA FIN -->
+                <div class="form-group">
+                  <label for="eventEnd">Hora de finalización *</label>
+                  <input type="time" id="eventEnd" name="horaFin" required>
+                </div>
+
+                <!-- LUGAR -->
+                <div class="form-group">
+                  <label for="eventPlace">Lugar</label>
+                  <input type="text" id="eventPlace" name="lugar" maxlength="150">
+                </div>
+
+                <!-- RESPONSABLE -->
+                <div class="form-group">
+                  <label for="eventResponsible">Responsable</label>
+                  <select id="eventResponsible" name="responsableId">
+                    <option value="">Sin responsable</option>
+                  </select>
+                </div>
+
+                <!-- DESCRIPCIÓN -->
+                <div class="form-group horario-event-form__description">
+                  <label for="eventDescription">Descripción</label>
+                  <textarea id="eventDescription" name="descripcion" rows="4"></textarea>
+                </div>
+
+              </div>
+
+              <div id="eventFormMessage" class="horario-message" hidden></div>
+
+              <div class="horario-event-form__actions">
+                <button type="submit" class="btn btn--primary">
+                  Guardar evento
+                </button>
+
+                <button type="button" id="cancelEventButton" class="btn btn--outline">
+                  Cancelar
+                </button>
+              </div>
+
+            </form>
           </div>
-
-
-          <!-- FORMULARIO -->
-
-          <form id="eventForm">
-
-
-            <div class="horario-event-form__grid">
-
-
-              <!-- TÍTULO -->
-
-              <div class="form-group">
-
-                <label for="eventTitle">
-                  Título
-                </label>
-
-                <input type="text" id="eventTitle" name="titulo" maxlength="150" required>
-
-              </div>
-
-
-              <!-- TIPO -->
-
-              <div class="form-group">
-
-                <label for="eventType">
-                  Tipo
-                </label>
-
-                <select id="eventType" name="tipo" required>
-
-                  <option value="">
-                    Seleccionar tipo
-                  </option>
-
-                  <option value="EXAMEN">
-                    Examen
-                  </option>
-
-                  <option value="SEMINARIO">
-                    Seminario
-                  </option>
-
-                  <option value="RECUPERACION">
-                    Recuperación
-                  </option>
-
-                  <option value="REFUERZO">
-                    Refuerzo
-                  </option>
-
-                  <option value="OTRO">
-                    Otro
-                  </option>
-
-                </select>
-
-              </div>
-
-
-              <!-- FECHA -->
-
-              <div class="form-group">
-
-                <label for="eventDate">
-                  Fecha
-                </label>
-
-                <input type="date" id="eventDate" name="fecha" required>
-
-              </div>
-
-
-              <!-- HORA INICIO -->
-
-              <div class="form-group">
-
-                <label for="eventStart">
-                  Hora de inicio
-                </label>
-
-                <input type="time" id="eventStart" name="horaInicio" required>
-
-              </div>
-
-
-              <!-- HORA FIN -->
-
-              <div class="form-group">
-
-                <label for="eventEnd">
-                  Hora de fin
-                </label>
-
-                <input type="time" id="eventEnd" name="horaFin" required>
-
-              </div>
-
-
-              <!-- LUGAR -->
-
-              <div class="form-group">
-
-                <label for="eventPlace">
-                  Lugar
-                </label>
-
-                <input type="text" id="eventPlace" name="lugar" maxlength="150">
-
-              </div>
-
-
-              <!-- RESPONSABLE -->
-
-              <div class="form-group">
-
-                <label for="eventResponsible">
-                  Responsable
-                </label>
-
-                <select id="eventResponsible" name="responsableId">
-
-                  <option value="">
-                    Sin responsable
-                  </option>
-
-                </select>
-
-              </div>
-
-
-              <!-- DESCRIPCIÓN -->
-
-              <div class="form-group horario-event-form__description">
-
-                <label for="eventDescription">
-                  Descripción
-                </label>
-
-                <textarea id="eventDescription" name="descripcion" rows="4">
-                                </textarea>
-
-              </div>
-
-            </div>
-
-
-            <!-- MENSAJE DEL FORMULARIO -->
-
-            <div id="eventFormMessage" class="horario-message" hidden>
-            </div>
-
-
-            <!-- ACCIONES DEL FORMULARIO -->
-
-            <div class="horario-event-form__actions">
-
-              <button type="submit" class="btn btn--primary">
-
-                Guardar evento
-
-              </button>
-
-
-              <button type="button" id="cancelEventButton" class="btn btn--outline">
-
-                Cancelar
-
-              </button>
-
-            </div>
-
-          </form>
-
         </section>
 
 

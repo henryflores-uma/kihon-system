@@ -1,6 +1,5 @@
 package com.kihon.kihon.controller;
 
-import com.kihon.kihon.dto.AsistenciaPageResponse;
 import com.kihon.kihon.dto.AsistenciaResponse;
 import com.kihon.kihon.dto.CambiarPasswordRequest;
 import com.kihon.kihon.dto.EstudiantePerfilRequest;
@@ -12,16 +11,12 @@ import com.kihon.kihon.model.GrupoHorario;
 import com.kihon.kihon.repository.GrupoHorarioRepository;
 import com.kihon.kihon.service.EstudiantePortalService;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.kihon.kihon.dto.EstudianteDashboardResponse;
 
@@ -63,43 +58,15 @@ public class EstudiantePortalController {
          */
 
         @GetMapping("/asistencias")
-public ResponseEntity<AsistenciaPageResponse> listarMisAsistencias(
-                @RequestParam(defaultValue = "0") int page,
-                @RequestParam(defaultValue = "10") int size,
-                @RequestParam(required = false) String estado,
-                Authentication authentication) {
+        public List<AsistenciaResponse> listarMisAsistencias(
+                        Authentication authentication) {
 
-        int paginaSegura = Math.max(page, 0);
-        int tamanioSeguro = Math.min(Math.max(size, 1), 50);
-
-        Pageable pageable = PageRequest.of(paginaSegura, tamanioSeguro);
-
-        Page<Asistencia> paginaAsistencias = estudiantePortalService
-                        .listarMisAsistenciasPaginadas(
-                                        authentication.getName(),
-                                        estado,
-                                        pageable);
-
-        AsistenciaPageResponse.ResumenAsistencia resumen = estudiantePortalService
-                        .obtenerResumenMisAsistencias(authentication.getName());
-
-        List<AsistenciaResponse> contenido = paginaAsistencias.getContent()
-                        .stream()
-                        .map(this::convertirAResponse)
-                        .toList();
-
-        AsistenciaPageResponse response = new AsistenciaPageResponse(
-                        contenido,
-                        paginaAsistencias.getNumber(),
-                        paginaAsistencias.getSize(),
-                        paginaAsistencias.getTotalElements(),
-                        paginaAsistencias.getTotalPages(),
-                        paginaAsistencias.isFirst(),
-                        paginaAsistencias.isLast(),
-                        resumen);
-
-        return ResponseEntity.ok(response);
-}
+                return estudiantePortalService
+                                .listarMisAsistencias(authentication.getName())
+                                .stream()
+                                .map(this::convertirAResponse)
+                                .toList();
+        }
 
         /*
          * =========================================================

@@ -31,12 +31,6 @@ document.addEventListener("DOMContentLoaded", function () {
         "SECRETARIA"
     ];
 
-    /*
-     * Si no existe una sesión, volver al login.
-     * No utilizar kihonAuth: ahora se trabaja
-     * con la sesión de Spring Security.
-     */
-
     if (!username || !rol) {
 
         sessionStorage.removeItem("kihonUsername");
@@ -47,14 +41,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return;
     }
-
-    /*
-     * El módulo de eventos solo funciona para
-     * ADMIN y SECRETARIA.
-     *
-     * SENSEI puede consultar su horario, pero
-     * no necesita inicializar este módulo.
-     */
 
     if (!ROLES_PERMITIDOS.includes(rol)) {
         return;
@@ -137,11 +123,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const cancelEventButton =
         document.getElementById("cancelEventButton");
 
+    const closeEventFormButton =
+        document.getElementById("closeEventFormButton");
+
+    const eventFormOverlay =
+        document.getElementById("eventFormOverlay");
+
     const eventFormMessage =
         document.getElementById("eventFormMessage");
 
     const eventResponsible =
         document.getElementById("eventResponsible");
+
+    const eventFormTitle =
+        document.getElementById("eventFormTitle");
+
+    const eventFormSubtitle =
+        document.getElementById("eventFormSubtitle");
 
 
     /*
@@ -217,8 +215,12 @@ document.addEventListener("DOMContentLoaded", function () {
         eventFormSection,
         eventForm,
         cancelEventButton,
+        closeEventFormButton,
+        eventFormOverlay,
         eventFormMessage,
         eventResponsible,
+        eventFormTitle,
+        eventFormSubtitle,
         eventDetailSection,
         closeEventDetailButton,
         eventDetailTitle,
@@ -331,6 +333,50 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         return false;
+    }
+
+
+    /*
+     * ==========================================
+     * ABRIR MODAL DEL FORMULARIO
+     * ==========================================
+     */
+
+    function abrirModalFormulario() {
+
+        eventFormSection.hidden = false;
+
+        document.body.classList.add("modal-open");
+
+        const primerCampo =
+            document.getElementById("eventTitle");
+
+        if (primerCampo) {
+
+            setTimeout(() => {
+                primerCampo.focus();
+            }, 100);
+        }
+    }
+
+
+    /*
+     * ==========================================
+     * CERRAR MODAL DEL FORMULARIO
+     * ==========================================
+     */
+
+    function cerrarModalFormulario() {
+
+        eventFormSection.hidden = true;
+
+        document.body.classList.remove("modal-open");
+
+        eventForm.reset();
+
+        modoEdicion = false;
+
+        ocultarMensajeFormulario();
     }
 
 
@@ -758,7 +804,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /*
      * ==========================================
-     * MOSTRAR FORMULARIO DE CREACIÓN
+     * ABRIR FORMULARIO DE CREACIÓN
      * ==========================================
      */
 
@@ -774,14 +820,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
             ocultarMensajeFormulario();
 
+            eventFormTitle.textContent = "Nuevo evento";
+
+            eventFormSubtitle.textContent =
+                "Registra una actividad especial en el calendario.";
+
             const responsablesCargados =
                 await cargarResponsables();
 
             if (!responsablesCargados) {
                 return;
             }
-
-            eventFormSection.hidden = false;
 
             const fechaActual =
                 window.KihonHorario?.obtenerFechaActual();
@@ -792,31 +841,49 @@ document.addEventListener("DOMContentLoaded", function () {
                     obtenerFechaISO(fechaActual);
             }
 
-            eventFormSection.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
+            abrirModalFormulario();
         }
     );
 
 
     /*
      * ==========================================
-     * CANCELAR FORMULARIO
+     * CERRAR FORMULARIO
      * ==========================================
      */
 
     cancelEventButton.addEventListener(
         "click",
-        function () {
+        cerrarModalFormulario
+    );
 
-            eventForm.reset();
+    closeEventFormButton.addEventListener(
+        "click",
+        cerrarModalFormulario
+    );
 
-            modoEdicion = false;
+    eventFormOverlay.addEventListener(
+        "click",
+        cerrarModalFormulario
+    );
 
-            ocultarMensajeFormulario();
 
-            eventFormSection.hidden = true;
+    /*
+     * ==========================================
+     * CERRAR MODAL CON ESCAPE
+     * ==========================================
+     */
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Escape" &&
+                !eventFormSection.hidden
+            ) {
+                cerrarModalFormulario();
+            }
         }
     );
 
@@ -835,6 +902,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
+            const evento = eventoSeleccionado;
+
             const responsablesCargados =
                 await cargarResponsables();
 
@@ -843,8 +912,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             modoEdicion = true;
-
-            const evento = eventoSeleccionado;
 
             document.getElementById("eventTitle").value =
                 evento.titulo || "";
@@ -878,12 +945,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             ocultarMensajeFormulario();
 
-            eventFormSection.hidden = false;
+            eventFormTitle.textContent = "Editar evento";
 
-            eventFormSection.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
+            eventFormSubtitle.textContent =
+                "Modifica la información de esta actividad.";
+
+            abrirModalFormulario();
         }
     );
 
@@ -1116,19 +1183,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                 /*
-                 * CERRAR FORMULARIO
-                 */
-
-                setTimeout(function () {
-
-                    eventFormSection.hidden = true;
-
-                    ocultarMensajeFormulario();
-
-                }, 1000);
-
-
-                /*
                  * ACTUALIZAR DETALLE
                  */
 
@@ -1136,6 +1190,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     mostrarDetalleEvento(eventoSeleccionado);
                 }
+
+                /*
+                 * CERRAR MODAL
+                 */
+
+                setTimeout(function () {
+
+                    cerrarModalFormulario();
+
+                }, 1000);
 
                 modoEdicion = false;
 

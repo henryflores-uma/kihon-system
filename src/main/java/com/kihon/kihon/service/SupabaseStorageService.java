@@ -4,8 +4,6 @@ import com.kihon.kihon.config.SupabaseConfig;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -17,10 +15,6 @@ import java.net.http.HttpResponse;
 
 @Service
 public class SupabaseStorageService {
-
-        private final ObjectMapper objectMapper = new ObjectMapper();
-
-        
 
         private final SupabaseConfig supabaseConfig;
 
@@ -282,25 +276,31 @@ public class SupabaseStorageService {
 
                 String respuesta = response.body();
 
-                JsonNode json = objectMapper.readTree(respuesta);
+                String marcador = "\"signedURL\":\"";
 
-                JsonNode signedURLNode = json.get("signedURL");
-                
-                if (signedURLNode == null || signedURLNode.asText().isBlank()) {
-                    throw new RuntimeException(
-                            "Supabase no devolvió una URL firmada válida");
+                int inicio = respuesta.indexOf(marcador);
+
+                if (inicio == -1) {
+                        throw new RuntimeException(
+                                        "Supabase no devolvió una URL firmada");
                 }
-                
-                String signedPath = signedURLNode.asText();
-                
-                if (!signedPath.startsWith("/")) {
-                    throw new RuntimeException(
-                            "Supabase devolvió una ruta de URL firmada inválida");
+
+                inicio += marcador.length();
+
+                int fin = respuesta.indexOf("\"", inicio);
+
+                if (fin == -1) {
+                        throw new RuntimeException(
+                                        "Respuesta inválida de Supabase");
                 }
-                
+
+                String signedPath = respuesta.substring(
+                                inicio,
+                                fin);
+
                 return supabaseConfig.getUrl()
-                        + "/storage/v1"
-                        + signedPath;
+                                + "/storage/v1"
+                                + signedPath;
         }
 
         // =========================================================

@@ -10,64 +10,6 @@
     <title>Kihon | Mis asistencias</title>
 
     <link rel="stylesheet" href="/css/main.css">
-
-    <style>
-        .asistencias-pagination {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-top: 16px;
-            padding-top: 12px;
-        }
-    
-        .asistencias-pagination__controls,
-        .asistencias-pagination__pages {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 6px;
-        }
-    
-        .asistencias-pagination__controls button,
-        .asistencias-pagination__page {
-            padding: 6px 11px;
-            border: 1px solid #cbd5e1;
-            background-color: #ffffff;
-            color: #1e293b;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            line-height: 1.2;
-        }
-    
-        .asistencias-pagination__controls button:hover:not(:disabled),
-        .asistencias-pagination__page:hover:not(:disabled) {
-            background-color: #f1f5f9;
-            border-color: #94a3b8;
-        }
-    
-        .asistencias-pagination__page.is-active {
-            background-color: #0f172a;
-            border-color: #0f172a;
-            color: #ffffff;
-            font-weight: 600;
-            cursor: default;
-        }
-    
-        .asistencias-pagination__controls button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-    
-        .asistencias-pagination__ellipsis {
-            padding: 0 4px;
-            color: #64748b;
-            user-select: none;
-        }
-    </style>
-
 </head>
 
 <body>
@@ -456,7 +398,6 @@
                                         <th>Hora de llegada</th>
                                         <th>Estado</th>
                                         <th>Observación</th>
-                                        <th>Evidencias</th>
                                     </tr>
 
                                 </thead>
@@ -465,7 +406,7 @@
                                 <tbody id="asistenciasTableBody">
 
                                     <tr>
-                                        <td colspan="6">
+                                        <td colspan="5">
                                             Cargando asistencias...
                                         </td>
                                     </tr>
@@ -474,26 +415,6 @@
 
                             </table>
 
-                        </div>
-
-                        <div id="asistenciasPagination" class="asistencias-pagination" hidden>
-                            <div class="asistencias-pagination__info">
-                                <span id="asistenciasPageInfo">Página 1 de 1</span>
-                            </div>
-                        
-                            <div class="asistencias-pagination__controls">
-                                
-                        
-                                <button type="button" id="btnPaginaAnterior" disabled>
-                                    Anterior
-                                </button>
-                        
-                                <div id="asistenciasPageNumbers" class="asistencias-pagination__pages" aria-label="Páginas"></div>
-                        
-                                <button type="button" id="btnPaginaSiguiente" disabled>
-                                    Siguiente
-                                </button>
-                            </div>
                         </div>
 
 
@@ -544,13 +465,10 @@
     <!-- SCRIPTS -->
 
     <script src="/js/topbar.js"></script>
-<script src="/js/nav-acordeon.js"></script>
 
-<!-- FUNCIONES COMPARTIDAS DE EVIDENCIAS -->
-<script src="/js/evidencias-asistencia-ui.js"></script>
+    <script src="/js/nav-acordeon.js"></script>
 
-<!-- LÓGICA DEL ESTUDIANTE -->
-<script src="/js/asistencias-estudiante.js"></script>
+    <script src="/js/asistencias-estudiante.js"></script>
 
 </body>
 

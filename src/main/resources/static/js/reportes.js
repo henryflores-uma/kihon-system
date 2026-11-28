@@ -106,10 +106,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let distribucionChart = null;
   let evolucionChart = null;
 
-  const TAMANIO_PAGINA_DETALLE = 10;
-  let asistenciasReporteActual = [];
-  let paginaDetalleActual = 0;
-
 
   // ==========================================
   // CONFIGURACIÓN DE GRÁFICOS
@@ -2389,47 +2385,27 @@ document.addEventListener("DOMContentLoaded", function () {
   // MOSTRAR DETALLE DE ASISTENCIAS
   // ==========================================
 
-  // ==========================================
-  // PAGINACIÓN CLÁSICA DEL DETALLE (10 EN 10)
-  // ==========================================
+  function mostrarDetalle(asistencias) {
 
-  function construirRangoPaginasDetalle(actual, total) {
-    if (total <= 1) {
-      return total === 1 ? [0] : [];
+    if (asistencias.length === 0) {
+
+      elementos.reporteDetalle.innerHTML = `
+
+        <div class="reportes-empty">
+
+          No existen registros de asistencia
+          para el periodo seleccionado.
+
+        </div>
+
+      `;
+
+      return;
+
     }
 
-    const delta = 1;
-    const rango = [];
-    const rangoConSaltos = [];
-    let anterior;
+    const filas = asistencias.map((asistencia) => {
 
-    for (let i = 0; i < total; i++) {
-      const esPrimera = i === 0;
-      const esUltima = i === total - 1;
-      const dentroDeVentana = i >= actual - delta && i <= actual + delta;
-
-      if (esPrimera || esUltima || dentroDeVentana) {
-        rango.push(i);
-      }
-    }
-
-    for (const i of rango) {
-      if (anterior !== undefined) {
-        if (i - anterior === 2) {
-          rangoConSaltos.push(anterior + 1);
-        } else if (i - anterior > 2) {
-          rangoConSaltos.push("...");
-        }
-      }
-      rangoConSaltos.push(i);
-      anterior = i;
-    }
-
-    return rangoConSaltos;
-  }
-
-  function renderizarFilasDetallePagina(asistenciasPagina) {
-    return asistenciasPagina.map((asistencia) => {
       const estado = obtenerEstado(asistencia);
 
       const estadoClase = estados.some(
@@ -2439,221 +2415,96 @@ document.addEventListener("DOMContentLoaded", function () {
         : "sin-estado";
 
       return `
+
         <tr>
+
           <td>
             ${escaparHTML(
-              asistencia.estudianteNombre ||
-              asistencia.estudianteId ||
-              "-"
-            )}
+        asistencia.estudianteNombre ||
+        asistencia.estudianteId ||
+        "-"
+      )}
           </td>
+
           <td>
             ${escaparHTML(
-              asistencia.grupoNombre ||
-              asistencia.grupoId ||
-              "-"
-            )}
+        asistencia.grupoNombre ||
+        asistencia.grupoId ||
+        "-"
+      )}
           </td>
+
           <td>
             ${formatoFecha(asistencia.fecha)}
           </td>
+
           <td>
             ${escaparHTML(
-              asistencia.horaLlegada || "-"
-            )}
+        asistencia.horaLlegada || "-"
+      )}
           </td>
+
           <td>
+
             <span class="
               reporte-estado
               reporte-estado--${estadoClase}
             ">
+
               ${escaparHTML(
-                obtenerEtiquetaEstado(estado)
-              )}
+        obtenerEtiquetaEstado(estado)
+      )}
+
             </span>
+
           </td>
+
           <td>
             ${escaparHTML(
-              asistencia.observacion || "-"
-            )}
+        asistencia.observacion || "-"
+      )}
           </td>
+
         </tr>
+
       `;
+
     }).join("");
-  }
-
-  function renderizarBarraPaginacionDetalle(totalRegistros, totalPaginas) {
-    if (totalRegistros <= TAMANIO_PAGINA_DETALLE) {
-      return "";
-    }
-
-    const items = construirRangoPaginasDetalle(
-      paginaDetalleActual,
-      totalPaginas
-    );
-
-    const botonesPaginas = items.map((item) => {
-      if (item === "...") {
-        return `
-          <span class="reporte-paginacion__ellipsis" aria-hidden="true">
-            ...
-          </span>
-        `;
-      }
-
-      const numeroVisible = item + 1;
-      const esActiva = item === paginaDetalleActual;
-
-      return `
-        <button
-          type="button"
-          class="reporte-paginacion__page ${esActiva ? "is-active" : ""}"
-          data-pagina="${item}"
-          aria-label="Ir a la página ${numeroVisible}"
-          ${esActiva ? 'aria-current="page" disabled' : ""}
-        >
-          ${numeroVisible}
-        </button>
-      `;
-    }).join("");
-
-    return `
-      <div class="reporte-paginacion">
-        <div class="reporte-paginacion__info">
-          Página ${paginaDetalleActual + 1} de ${totalPaginas} (${totalRegistros} registros)
-        </div>
-        <div class="reporte-paginacion__controls">
-          <button
-            type="button"
-            class="reporte-paginacion__btn"
-            data-accion="anterior"
-            ${paginaDetalleActual === 0 ? "disabled" : ""}
-          >
-            Anterior
-          </button>
-          <div class="reporte-paginacion__pages" aria-label="Páginas del detalle">
-            ${botonesPaginas}
-          </div>
-          <button
-            type="button"
-            class="reporte-paginacion__btn"
-            data-accion="siguiente"
-            ${paginaDetalleActual + 1 >= totalPaginas ? "disabled" : ""}
-          >
-            Siguiente
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderizarDetallePaginado() {
-    const totalRegistros = asistenciasReporteActual.length;
-
-    if (totalRegistros === 0) {
-      elementos.reporteDetalle.innerHTML = `
-        <div class="reportes-empty">
-          No existen registros de asistencia
-          para el periodo seleccionado.
-        </div>
-      `;
-      return;
-    }
-
-    const totalPaginas = Math.ceil(
-      totalRegistros / TAMANIO_PAGINA_DETALLE
-    );
-
-    if (paginaDetalleActual >= totalPaginas) {
-      paginaDetalleActual = totalPaginas - 1;
-    }
-    if (paginaDetalleActual < 0) {
-      paginaDetalleActual = 0;
-    }
-
-    const inicio = paginaDetalleActual * TAMANIO_PAGINA_DETALLE;
-    const fin = inicio + TAMANIO_PAGINA_DETALLE;
-    const asistenciasPagina = asistenciasReporteActual.slice(inicio, fin);
-
-    const filas = renderizarFilasDetallePagina(asistenciasPagina);
-    const barraPaginacion = renderizarBarraPaginacionDetalle(
-      totalRegistros,
-      totalPaginas
-    );
 
     elementos.reporteDetalle.innerHTML = `
+
       <table class="reportes-table">
+
         <thead>
+
           <tr>
+
             <th>Estudiante</th>
+
             <th>Grupo</th>
+
             <th>Fecha</th>
+
             <th>Hora</th>
+
             <th>Estado</th>
+
             <th>Observación</th>
+
           </tr>
+
         </thead>
+
         <tbody>
+
           ${filas}
+
         </tbody>
+
       </table>
-      ${barraPaginacion}
+
     `;
 
-    const paginacionEl = elementos.reporteDetalle.querySelector(
-      ".reporte-paginacion"
-    );
-
-    if (!paginacionEl) {
-      return;
-    }
-
-    const btnAnterior = paginacionEl.querySelector(
-      '[data-accion="anterior"]'
-    );
-    const btnSiguiente = paginacionEl.querySelector(
-      '[data-accion="siguiente"]'
-    );
-
-    if (btnAnterior) {
-      btnAnterior.addEventListener("click", () => {
-        if (paginaDetalleActual > 0) {
-          paginaDetalleActual--;
-          renderizarDetallePaginado();
-        }
-      });
-    }
-
-    if (btnSiguiente) {
-      btnSiguiente.addEventListener("click", () => {
-        if (paginaDetalleActual + 1 < totalPaginas) {
-          paginaDetalleActual++;
-          renderizarDetallePaginado();
-        }
-      });
-    }
-
-    paginacionEl.querySelectorAll(".reporte-paginacion__page").forEach((boton) => {
-      boton.addEventListener("click", () => {
-        const destino = Number(boton.dataset.pagina);
-        if (Number.isInteger(destino) && destino !== paginaDetalleActual) {
-          paginaDetalleActual = destino;
-          renderizarDetallePaginado();
-        }
-      });
-    });
-  }
-
-  // ==========================================
-  // MOSTRAR DETALLE DE ASISTENCIAS
-  // ==========================================
-
-  function mostrarDetalle(asistencias) {
-    asistenciasReporteActual = Array.isArray(asistencias)
-      ? asistencias
-      : [];
-    paginaDetalleActual = 0;
-    renderizarDetallePaginado();
   }
 
 
