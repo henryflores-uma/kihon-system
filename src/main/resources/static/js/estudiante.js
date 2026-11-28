@@ -336,61 +336,51 @@ document.addEventListener("DOMContentLoaded", async function () {
     // INDICADORES DE ASISTENCIA
     // =====================================================
 
-    async function cargarAsistencias() {
+    
+async function cargarAsistencias() {
 
-        const asistencias = await obtenerDatos(API.asistencias);
+    const respuesta = await obtenerDatos(API.asistencias);
 
-        if (!Array.isArray(asistencias)) {
-            throw new Error("La respuesta de asistencias no tiene un formato válido.");
-        }
-
-        calcularIndicadores(asistencias);
-
-        return asistencias;
+    if (
+        !respuesta ||
+        !Array.isArray(respuesta.content) ||
+        !respuesta.resumen
+    ) {
+        throw new Error("La respuesta de asistencias no tiene un formato válido.");
     }
 
-    function calcularIndicadores(asistencias) {
+    calcularIndicadores(respuesta.resumen);
 
-        const total = asistencias.length;
+    return respuesta.content;
+}
 
-        let presentes = 0;
-        let tardanzas = 0;
-        let justificados = 0;
 
-        asistencias.forEach(asistencia => {
+    
+function calcularIndicadores(resumen) {
 
-            const estado = normalizarEstado(asistencia.estado);
+    const total = resumen.total ?? 0;
+    const presentes = resumen.presentes ?? 0;
+    const tardanzas = resumen.tardanzas ?? 0;
+    const justificados = resumen.justificados ?? 0;
 
-            if (estado === "PRESENTE") {
-                presentes++;
-            }
+    const totalEvaluable = total - justificados;
 
-            if (estado === "TARDANZA") {
-                tardanzas++;
-            }
+    const porcentaje = totalEvaluable > 0
+        ? ((presentes + tardanzas) / totalEvaluable) * 100
+        : null;
 
-            if (estado === "JUSTIFICADO") {
-                justificados++;
-            }
-        });
-
-        const totalEvaluable = total - justificados;
-
-        const porcentaje = totalEvaluable > 0
-            ? ((presentes + tardanzas) / totalEvaluable) * 100
-            : null;
-
-        if (elementos.asistencias) {
-            elementos.asistencias.textContent = total;
-        }
-
-        if (elementos.progreso) {
-
-            elementos.progreso.textContent = porcentaje === null
-                ? "—"
-                : `${porcentaje.toFixed(1)}%`;
-        }
+    if (elementos.asistencias) {
+        elementos.asistencias.textContent = total;
     }
+
+    if (elementos.progreso) {
+
+        elementos.progreso.textContent = porcentaje === null
+            ? "—"
+            : `${porcentaje.toFixed(1)}%`;
+    }
+}
+
 
     // =====================================================
     // ACTIVIDAD RECIENTE
