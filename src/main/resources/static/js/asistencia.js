@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
      * necesitan el token CSRF.
      */
 
+<<<<<<< HEAD
     if (!["GET", "HEAD", "OPTIONS"].includes(metodo)) {
       const csrfToken = await obtenerTokenCSRF();
 
@@ -76,6 +77,12 @@ document.addEventListener("DOMContentLoaded", function () {
       sessionStorage.removeItem("kihonUsername");
       sessionStorage.removeItem("kihonRol");
       sessionStorage.removeItem("kihonAuth");
+=======
+    /*cambio de gino*/
+
+    const username = sessionStorage.getItem("kihonUsername");
+    const rol = sessionStorage.getItem("kihonRol");
+>>>>>>> origin/master
 
       window.location.replace("/login");
 
