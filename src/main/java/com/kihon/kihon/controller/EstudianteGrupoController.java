@@ -24,10 +24,10 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * =========================================================
-         * ASIGNAR ESTUDIANTE A GRUPO
-         * =========================================================
-         */
+        * =========================================================
+        * ASIGNAR ESTUDIANTE A GRUPO
+        * =========================================================
+        */
 
         @PostMapping
         public ResponseEntity<EstudianteGrupoResponse> asignarEstudianteAGrupo(
@@ -46,10 +46,10 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * =========================================================
-         * LISTAR TODAS LAS ASIGNACIONES
-         * =========================================================
-         */
+        * =========================================================
+        * LISTAR TODAS LAS ASIGNACIONES
+        * =========================================================
+        */
 
         @GetMapping
         public ResponseEntity<List<EstudianteGrupoResponse>> listarTodas() {
@@ -64,10 +64,10 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * =========================================================
-         * CAMBIAR GRUPO
-         * =========================================================
-         */
+        * =========================================================
+        * CAMBIAR GRUPO
+        * =========================================================
+        */
 
         @PatchMapping("/asignacion/{asignacionId}/grupo/{nuevoGrupoId}")
         public ResponseEntity<EstudianteGrupoResponse> cambiarGrupo(
@@ -84,10 +84,10 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * =========================================================
-         * LISTAR POR ESTUDIANTE
-         * =========================================================
-         */
+        * =========================================================
+        * LISTAR POR ESTUDIANTE
+        * =========================================================
+        */
 
         @GetMapping("/estudiante/{estudianteId}")
         public ResponseEntity<List<EstudianteGrupoResponse>> listarPorEstudiante(
@@ -103,10 +103,10 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * =========================================================
-         * LISTAR POR GRUPO
-         * =========================================================
-         */
+        * =========================================================
+        * LISTAR POR GRUPO
+        * =========================================================
+        */
 
         @GetMapping("/grupo/{grupoId}")
         public ResponseEntity<List<EstudianteGrupoResponse>> listarPorGrupo(
@@ -122,10 +122,10 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * =========================================================
-         * CAMBIAR ESTADO
-         * =========================================================
-         */
+        * =========================================================
+        * CAMBIAR ESTADO
+        * =========================================================
+        */
 
         @PatchMapping("/{id}/estado")
         public ResponseEntity<EstudianteGrupoResponse> cambiarEstado(
@@ -142,10 +142,10 @@ public class EstudianteGrupoController {
         }
 
         /*
-         * =========================================================
-         * CONVERTIR A RESPONSE
-         * =========================================================
-         */
+        * =========================================================
+        * CONVERTIR A RESPONSE
+        * =========================================================
+        */
 
         private EstudianteGrupoResponse convertirAResponse(
                         EstudianteGrupo estudianteGrupo) {

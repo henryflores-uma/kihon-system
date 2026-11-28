@@ -18,10 +18,10 @@ public class DataInitializer {
                 return args -> {
 
                         /*
-                         * ==========================================
-                         * INICIALIZAR ROLES
-                         * ==========================================
-                         */
+                        * ==========================================
+                        * INICIALIZAR ROLES
+                        * ==========================================
+                        */
 
                         if (rolRepository.findByNombre("ADMIN").isEmpty()) {
                                 rolRepository.save(new Rol("ADMIN"));

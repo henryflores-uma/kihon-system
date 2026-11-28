@@ -22,11 +22,11 @@ public class ApoderadoController {
         }
 
         /*
-         * =========================================================
-         * LISTAR TODOS LOS APODERADOS
-         * GET /api/apoderados
-         * =========================================================
-         */
+        * =========================================================
+        * LISTAR TODOS LOS APODERADOS
+        * GET /api/apoderados
+        * =========================================================
+        */
 
         @GetMapping
         public ResponseEntity<List<Apoderado>> listarTodos() {
@@ -35,11 +35,11 @@ public class ApoderadoController {
         }
 
         /*
-         * =========================================================
-         * CONSULTAR UN APODERADO POR ID
-         * GET /api/apoderados/{apoderadoId}
-         * =========================================================
-         */
+        * =========================================================
+        * CONSULTAR UN APODERADO POR ID
+        * GET /api/apoderados/{apoderadoId}
+        * =========================================================
+        */
 
         @GetMapping("/{apoderadoId}")
         public ResponseEntity<Apoderado> buscarPorId(
@@ -50,11 +50,11 @@ public class ApoderadoController {
         }
 
         /*
-         * =========================================================
-         * CREAR / VINCULAR APODERADO
-         * POST /api/apoderados/estudiante/{estudianteId}
-         * =========================================================
-         */
+        * =========================================================
+        * CREAR / VINCULAR APODERADO
+        * POST /api/apoderados/estudiante/{estudianteId}
+        * =========================================================
+        */
 
         @PostMapping("/estudiante/{estudianteId}")
         public ResponseEntity<EstudianteApoderado> crearApoderado(
@@ -85,11 +85,11 @@ public class ApoderadoController {
         }
 
         /*
-         * =========================================================
-         * LISTAR APODERADOS DE UN ESTUDIANTE
-         * GET /api/apoderados/estudiante/{estudianteId}
-         * =========================================================
-         */
+        * =========================================================
+        * LISTAR APODERADOS DE UN ESTUDIANTE
+        * GET /api/apoderados/estudiante/{estudianteId}
+        * =========================================================
+        */
 
         @GetMapping("/estudiante/{estudianteId}")
         public ResponseEntity<List<EstudianteApoderado>> listarPorEstudiante(
@@ -100,11 +100,11 @@ public class ApoderadoController {
         }
 
         /*
-         * =========================================================
-         * LISTAR ESTUDIANTES VINCULADOS A UN APODERADO
-         * GET /api/apoderados/{apoderadoId}/estudiantes
-         * =========================================================
-         */
+        * =========================================================
+        * LISTAR ESTUDIANTES VINCULADOS A UN APODERADO
+        * GET /api/apoderados/{apoderadoId}/estudiantes
+        * =========================================================
+        */
 
         @GetMapping("/{apoderadoId}/estudiantes")
         public ResponseEntity<List<EstudianteApoderado>> listarEstudiantesPorApoderado(
@@ -116,11 +116,11 @@ public class ApoderadoController {
         }
 
         /*
-         * =========================================================
-         * ACTUALIZAR DATOS PERSONALES DEL APODERADO
-         * PUT /api/apoderados/{apoderadoId}
-         * =========================================================
-         */
+        * =========================================================
+        * ACTUALIZAR DATOS PERSONALES DEL APODERADO
+        * PUT /api/apoderados/{apoderadoId}
+        * =========================================================
+        */
 
         @PutMapping("/{apoderadoId}")
         public ResponseEntity<Apoderado> actualizarApoderado(
@@ -147,11 +147,11 @@ public class ApoderadoController {
         }
 
         /*
-         * =========================================================
-         * ACTUALIZAR PARENTESCO
-         * PUT /api/apoderados/estudiante/{estudianteId}/relacion/{apoderadoId}
-         * =========================================================
-         */
+        * =========================================================
+        * ACTUALIZAR PARENTESCO
+        * PUT /api/apoderados/estudiante/{estudianteId}/relacion/{apoderadoId}
+        * =========================================================
+        */
 
         @PutMapping("/estudiante/{estudianteId}/relacion/{apoderadoId}")
         public ResponseEntity<EstudianteApoderado> actualizarParentesco(

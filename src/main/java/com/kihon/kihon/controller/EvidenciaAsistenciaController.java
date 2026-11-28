@@ -28,10 +28,10 @@ public class EvidenciaAsistenciaController {
         }
 
         /*
-         * =========================================================
-         * SUBIR EVIDENCIA
-         * =========================================================
-         */
+        * =========================================================
+        * SUBIR EVIDENCIA
+        * =========================================================
+        */
 
         @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         public ResponseEntity<EvidenciaAsistenciaResponse> subir(
@@ -50,10 +50,10 @@ public class EvidenciaAsistenciaController {
         }
 
         /*
-         * =========================================================
-         * LISTAR POR JUSTIFICACIÓN
-         * =========================================================
-         */
+        * =========================================================
+        * LISTAR POR JUSTIFICACIÓN
+        * =========================================================
+        */
 
         @GetMapping("/justificacion/{justificacionId}")
         public ResponseEntity<List<EvidenciaAsistenciaResponse>> listarPorJustificacion(
@@ -72,10 +72,10 @@ public class EvidenciaAsistenciaController {
         }
 
         /*
-         * =========================================================
-         * GENERAR URL FIRMADA
-         * =========================================================
-         */
+        * =========================================================
+        * GENERAR URL FIRMADA
+        * =========================================================
+        */
 
         @GetMapping("/{id}/url")
         public ResponseEntity<EvidenciaAsistenciaUrlResponse> generarUrl(
@@ -102,10 +102,10 @@ public class EvidenciaAsistenciaController {
         }
 
         /*
-         * =========================================================
-         * ELIMINAR
-         * =========================================================
-         */
+        * =========================================================
+        * ELIMINAR
+        * =========================================================
+        */
 
         @DeleteMapping("/{id}")
         public ResponseEntity<Void> eliminar(
@@ -120,10 +120,10 @@ public class EvidenciaAsistenciaController {
         }
 
         /*
-         * =========================================================
-         * CONVERTIR A RESPONSE
-         * =========================================================
-         */
+        * =========================================================
+        * CONVERTIR A RESPONSE
+        * =========================================================
+        */
 
         private EvidenciaAsistenciaResponse convertirAResponse(
                         EvidenciaAsistencia evidencia) {

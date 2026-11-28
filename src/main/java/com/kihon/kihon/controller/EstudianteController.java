@@ -34,10 +34,10 @@ public class EstudianteController {
         }
 
         /*
-         * ==========================================
-         * CREAR ESTUDIANTE
-         * ==========================================
-         */
+        * ==========================================
+        * CREAR ESTUDIANTE
+        * ==========================================
+        */
 
         @PostMapping(consumes = "multipart/form-data")
         public ResponseEntity<EstudianteResponse> crearEstudiante(
@@ -71,10 +71,10 @@ public class EstudianteController {
         }
 
         /*
-         * ==========================================
-         * LISTAR ESTUDIANTES
-         * ==========================================
-         */
+        * ==========================================
+        * LISTAR ESTUDIANTES
+        * ==========================================
+        */
 
         @GetMapping
         public ResponseEntity<List<EstudianteResponse>> listarEstudiantes(
@@ -87,9 +87,9 @@ public class EstudianteController {
                 if (esSensei(authentication)) {
 
                         /*
-                         * El Sensei solo consulta estudiantes
-                         * inscritos en sus grupos asignados.
-                         */
+                        * El Sensei solo consulta estudiantes
+                        * inscritos en sus grupos asignados.
+                        */
 
                         estudiantes = estudianteService.listarPorSensei(
                                         authentication.getName(),
@@ -98,9 +98,9 @@ public class EstudianteController {
                 } else {
 
                         /*
-                         * ADMIN y SECRETARIA conservan
-                         * el comportamiento original.
-                         */
+                        * ADMIN y SECRETARIA conservan
+                        * el comportamiento original.
+                        */
 
                         if (estado == null || estado.isBlank()) {
 
@@ -121,10 +121,10 @@ public class EstudianteController {
         }
 
         /*
-         * ==========================================
-         * BUSCAR ESTUDIANTE POR ID
-         * ==========================================
-         */
+        * ==========================================
+        * BUSCAR ESTUDIANTE POR ID
+        * ==========================================
+        */
 
         @GetMapping("/{id}")
         public ResponseEntity<EstudianteResponse> buscarPorId(
@@ -137,9 +137,9 @@ public class EstudianteController {
                 if (esSensei(authentication)) {
 
                         /*
-                         * Verifica que el estudiante pertenezca
-                         * a alguno de los grupos del Sensei.
-                         */
+                        * Verifica que el estudiante pertenezca
+                        * a alguno de los grupos del Sensei.
+                        */
 
                         estudiante = estudianteService.buscarPorIdDeSensei(
                                         id,
@@ -155,10 +155,10 @@ public class EstudianteController {
         }
 
         /*
-         * ==========================================
-         * ACTUALIZAR ESTUDIANTE
-         * ==========================================
-         */
+        * ==========================================
+        * ACTUALIZAR ESTUDIANTE
+        * ==========================================
+        */
 
         @PutMapping(value = "/{id}", consumes = "multipart/form-data")
         public ResponseEntity<EstudianteResponse> actualizarEstudiante(
@@ -189,10 +189,10 @@ public class EstudianteController {
         }
 
         /*
-         * ==========================================
-         * CAMBIAR ESTADO
-         * ==========================================
-         */
+        * ==========================================
+        * CAMBIAR ESTADO
+        * ==========================================
+        */
 
         @PatchMapping("/{id}/estado")
         public ResponseEntity<EstudianteResponse> cambiarEstado(
@@ -209,10 +209,10 @@ public class EstudianteController {
         }
 
         /*
-         * ==========================================
-         * VERIFICAR ROL SENSEI
-         * ==========================================
-         */
+        * ==========================================
+        * VERIFICAR ROL SENSEI
+        * ==========================================
+        */
 
         private boolean esSensei(Authentication authentication) {
 
@@ -233,10 +233,10 @@ public class EstudianteController {
         }
 
         /*
-         * ==========================================
-         * CONVERTIR A RESPONSE
-         * ==========================================
-         */
+        * ==========================================
+        * CONVERTIR A RESPONSE
+        * ==========================================
+        */
 
         private EstudianteResponse convertirResponse(
                         Estudiante estudiante) {
@@ -244,8 +244,8 @@ public class EstudianteController {
                 String fotoUrl = null;
 
                 /*
-                 * PERSONA
-                 */
+                * PERSONA
+                */
 
                 Persona persona = estudiante.getPersona();
 
@@ -256,8 +256,8 @@ public class EstudianteController {
                 }
 
                 /*
-                 * FOTOGRAFÍA
-                 */
+                * FOTOGRAFÍA
+                */
 
                 String foto = persona.getFoto();
 
@@ -281,8 +281,8 @@ public class EstudianteController {
                 }
 
                 /*
-                 * RESPONSE
-                 */
+                * RESPONSE
+                */
 
                 return new EstudianteResponse(
 

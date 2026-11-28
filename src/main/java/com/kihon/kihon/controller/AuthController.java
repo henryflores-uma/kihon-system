@@ -32,15 +32,15 @@ public class AuthController {
         }
 
         /*
-         * =============================================================
-         * TOKEN CSRF
-         * =============================================================
-         *
-         * Este endpoint permite obtener el token antes del login.
-         * El token se almacena en la sesión HTTP.
-         *
-         * Después de iniciar sesión se debe solicitar nuevamente.
-         */
+        * =============================================================
+        * TOKEN CSRF
+        * =============================================================
+        *
+        * Este endpoint permite obtener el token antes del login.
+        * El token se almacena en la sesión HTTP.
+        *
+        * Después de iniciar sesión se debe solicitar nuevamente.
+        */
 
         @GetMapping("/csrf")
         public Map<String, String> obtenerTokenCsrf(CsrfToken csrfToken) {
@@ -51,10 +51,10 @@ public class AuthController {
         }
 
         /*
-         * =============================================================
-         * USUARIO AUTENTICADO
-         * =============================================================
-         */
+        * =============================================================
+        * USUARIO AUTENTICADO
+        * =============================================================
+        */
 
         @GetMapping("/me")
         public Map<String, String> usuarioAutenticado(
@@ -75,10 +75,10 @@ public class AuthController {
         }
 
         /*
-         * =============================================================
-         * OBTENER PERFIL
-         * =============================================================
-         */
+        * =============================================================
+        * OBTENER PERFIL
+        * =============================================================
+        */
 
         @GetMapping("/perfil")
         public ResponseEntity<PerfilResponse> obtenerPerfil(
@@ -92,10 +92,10 @@ public class AuthController {
         }
 
         /*
-         * =============================================================
-         * ACTUALIZAR PERFIL
-         * =============================================================
-         */
+        * =============================================================
+        * ACTUALIZAR PERFIL
+        * =============================================================
+        */
 
         @PutMapping(value = "/perfil", consumes = "multipart/form-data")
         public ResponseEntity<PerfilResponse> actualizarPerfil(
@@ -119,10 +119,10 @@ public class AuthController {
         }
 
         /*
-         * =============================================================
-         * CAMBIAR CONTRASEÑA
-         * =============================================================
-         */
+        * =============================================================
+        * CAMBIAR CONTRASEÑA
+        * =============================================================
+        */
 
         @PatchMapping("/perfil/password")
         public ResponseEntity<Void> cambiarPassword(
@@ -138,10 +138,10 @@ public class AuthController {
         }
 
         /*
-         * =============================================================
-         * CONVERTIR PERFIL RESPONSE
-         * =============================================================
-         */
+        * =============================================================
+        * CONVERTIR PERFIL RESPONSE
+        * =============================================================
+        */
 
         private PerfilResponse convertirPerfilResponse(
                         Usuario usuario) {

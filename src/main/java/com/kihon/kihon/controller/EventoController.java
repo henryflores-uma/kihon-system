@@ -24,10 +24,10 @@ public class EventoController {
         }
 
         /*
-         * ==========================================
-         * LISTAR EVENTOS
-         * ==========================================
-         */
+        * ==========================================
+        * LISTAR EVENTOS
+        * ==========================================
+        */
 
         @GetMapping
         public ResponseEntity<List<EventoResponse>> listarEventos(
@@ -38,8 +38,8 @@ public class EventoController {
                 List<Evento> eventos;
 
                 /*
-                 * FILTRAR POR RANGO DE FECHAS
-                 */
+                * FILTRAR POR RANGO DE FECHAS
+                */
 
                 if (fechaInicio != null || fechaFin != null) {
 
@@ -54,8 +54,8 @@ public class EventoController {
                                         fechaFin);
 
                         /*
-                         * FILTRAR POR ESTADO
-                         */
+                        * FILTRAR POR ESTADO
+                        */
 
                 } else if (estado != null && !estado.isBlank()) {
 
@@ -63,8 +63,8 @@ public class EventoController {
                                         estado.toUpperCase());
 
                         /*
-                         * TODOS
-                         */
+                        * TODOS
+                        */
 
                 } else {
 
@@ -79,10 +79,10 @@ public class EventoController {
         }
 
         /*
-         * ==========================================
-         * BUSCAR POR ID
-         * ==========================================
-         */
+        * ==========================================
+        * BUSCAR POR ID
+        * ==========================================
+        */
 
         @GetMapping("/{id}")
         public ResponseEntity<EventoResponse> buscarPorId(
@@ -95,10 +95,10 @@ public class EventoController {
         }
 
         /*
-         * ==========================================
-         * CREAR EVENTO
-         * ==========================================
-         */
+        * ==========================================
+        * CREAR EVENTO
+        * ==========================================
+        */
 
         @PostMapping
         public ResponseEntity<EventoResponse> crearEvento(
@@ -120,10 +120,10 @@ public class EventoController {
         }
 
         /*
-         * ==========================================
-         * ACTUALIZAR EVENTO
-         * ==========================================
-         */
+        * ==========================================
+        * ACTUALIZAR EVENTO
+        * ==========================================
+        */
 
         @PutMapping("/{id}")
         public ResponseEntity<EventoResponse> actualizarEvento(
@@ -146,10 +146,10 @@ public class EventoController {
         }
 
         /*
-         * ==========================================
-         * CAMBIAR ESTADO
-         * ==========================================
-         */
+        * ==========================================
+        * CAMBIAR ESTADO
+        * ==========================================
+        */
 
         @PatchMapping("/{id}/estado")
         public ResponseEntity<EventoResponse> cambiarEstado(
@@ -165,10 +165,10 @@ public class EventoController {
         }
 
         /*
-         * ==========================================
-         * ELIMINAR EVENTO
-         * ==========================================
-         */
+        * ==========================================
+        * ELIMINAR EVENTO
+        * ==========================================
+        */
 
         @DeleteMapping("/{id}")
         public ResponseEntity<Void> eliminarEvento(
@@ -180,10 +180,10 @@ public class EventoController {
         }
 
         /*
-         * ==========================================
-         * CONVERTIR RESPONSE
-         * ==========================================
-         */
+        * ==========================================
+        * CONVERTIR RESPONSE
+        * ==========================================
+        */
 
         private EventoResponse convertirResponse(
                         Evento evento) {
@@ -228,10 +228,10 @@ public class EventoController {
         }
 
         /*
-         * ==========================================
-         * REQUEST
-         * ==========================================
-         */
+        * ==========================================
+        * REQUEST
+        * ==========================================
+        */
 
         public record EventoRequest(
                         String titulo,
@@ -245,10 +245,10 @@ public class EventoController {
         }
 
         /*
-         * ==========================================
-         * RESPONSE
-         * ==========================================
-         */
+        * ==========================================
+        * RESPONSE
+        * ==========================================
+        */
 
         public record EventoResponse(
                         Long id,

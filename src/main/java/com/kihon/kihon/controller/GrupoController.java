@@ -25,11 +25,11 @@ public class GrupoController {
         }
 
         /*
-         * =============================================================
-         * CREAR GRUPO
-         * ADMIN / SECRETARIA
-         * =============================================================
-         */
+        * =============================================================
+        * CREAR GRUPO
+        * ADMIN / SECRETARIA
+        * =============================================================
+        */
 
         @PostMapping
         public ResponseEntity<GrupoResponse> crearGrupo(
@@ -48,12 +48,12 @@ public class GrupoController {
         }
 
         /*
-         * =============================================================
-         * LISTAR GRUPOS
-         * ADMIN / SECRETARIA: todos los grupos
-         * SENSEI: solamente sus grupos asignados
-         * =============================================================
-         */
+        * =============================================================
+        * LISTAR GRUPOS
+        * ADMIN / SECRETARIA: todos los grupos
+        * SENSEI: solamente sus grupos asignados
+        * =============================================================
+        */
 
         @GetMapping
         public ResponseEntity<List<GrupoResponse>> listarGrupos(
@@ -90,12 +90,12 @@ public class GrupoController {
         }
 
         /*
-         * =============================================================
-         * BUSCAR GRUPO POR ID
-         * ADMIN / SECRETARIA: cualquier grupo
-         * SENSEI: solamente sus grupos asignados
-         * =============================================================
-         */
+        * =============================================================
+        * BUSCAR GRUPO POR ID
+        * ADMIN / SECRETARIA: cualquier grupo
+        * SENSEI: solamente sus grupos asignados
+        * =============================================================
+        */
 
         @GetMapping("/{id}")
         public ResponseEntity<GrupoResponse> buscarPorId(
@@ -120,11 +120,11 @@ public class GrupoController {
         }
 
         /*
-         * =============================================================
-         * ACTUALIZAR GRUPO
-         * ADMIN / SECRETARIA
-         * =============================================================
-         */
+        * =============================================================
+        * ACTUALIZAR GRUPO
+        * ADMIN / SECRETARIA
+        * =============================================================
+        */
 
         @PutMapping("/{id}")
         public ResponseEntity<GrupoResponse> actualizarGrupo(
@@ -144,11 +144,11 @@ public class GrupoController {
         }
 
         /*
-         * =============================================================
-         * CAMBIAR ESTADO
-         * ADMIN / SECRETARIA
-         * =============================================================
-         */
+        * =============================================================
+        * CAMBIAR ESTADO
+        * ADMIN / SECRETARIA
+        * =============================================================
+        */
 
         @PatchMapping("/{id}/estado")
         public ResponseEntity<GrupoResponse> cambiarEstado(
@@ -164,11 +164,11 @@ public class GrupoController {
         }
 
         /*
-         * =============================================================
-         * ELIMINAR GRUPO
-         * ADMIN / SECRETARIA
-         * =============================================================
-         */
+        * =============================================================
+        * ELIMINAR GRUPO
+        * ADMIN / SECRETARIA
+        * =============================================================
+        */
 
         @DeleteMapping("/{id}")
         public ResponseEntity<Void> eliminarGrupo(
@@ -182,10 +182,10 @@ public class GrupoController {
         }
 
         /*
-         * =============================================================
-         * IDENTIFICAR ROL DEL USUARIO AUTENTICADO
-         * =============================================================
-         */
+        * =============================================================
+        * IDENTIFICAR ROL DEL USUARIO AUTENTICADO
+        * =============================================================
+        */
 
         private boolean esSensei(Authentication authentication) {
 
@@ -205,11 +205,11 @@ public class GrupoController {
                 return false;
         }
 
-        /*
-         * =============================================================
-         * CONVERTIR ENTIDAD A RESPONSE
-         * =============================================================
-         */
+                /*
+                * =============================================================
+                * CONVERTIR ENTIDAD A RESPONSE
+                * =============================================================
+                */
 
         private GrupoResponse convertirAResponse(Grupo grupo) {
 

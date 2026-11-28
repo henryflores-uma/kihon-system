@@ -43,10 +43,10 @@ public class EstudiantePortalController {
         }
 
         /*
-         * =========================================================
-         * PERFIL DEL ESTUDIANTE
-         * =========================================================
-         */
+        * =========================================================
+        * PERFIL DEL ESTUDIANTE
+        * =========================================================
+        */
 
         @GetMapping
         public Estudiante estudiante(
@@ -57,10 +57,10 @@ public class EstudiantePortalController {
         }
 
         /*
-         * =========================================================
-         * ASISTENCIAS
-         * =========================================================
-         */
+        * =========================================================
+        * ASISTENCIAS
+        * =========================================================
+        */
 
         @GetMapping("/asistencias")
 public ResponseEntity<AsistenciaPageResponse> listarMisAsistencias(
@@ -102,10 +102,10 @@ public ResponseEntity<AsistenciaPageResponse> listarMisAsistencias(
 }
 
         /*
-         * =========================================================
-         * GRUPOS
-         * =========================================================
-         */
+        * =========================================================
+        * GRUPOS
+        * =========================================================
+        */
 
         @GetMapping("/grupos")
         public List<GrupoEstudianteResponse> listarMisGrupos(
@@ -119,10 +119,10 @@ public ResponseEntity<AsistenciaPageResponse> listarMisAsistencias(
         }
 
         /*
-         * =========================================================
-         * CONVERTIR GRUPO A RESPONSE
-         * =========================================================
-         */
+        * =========================================================
+        * CONVERTIR GRUPO A RESPONSE
+        * =========================================================
+        */
 
         private GrupoEstudianteResponse convertirGrupoAResponse(
                         EstudianteGrupo estudianteGrupo) {
@@ -144,10 +144,10 @@ public ResponseEntity<AsistenciaPageResponse> listarMisAsistencias(
         }
 
         /*
-         * =========================================================
-         * CONVERTIR HORARIO A RESPONSE
-         * =========================================================
-         */
+        * =========================================================
+        * CONVERTIR HORARIO A RESPONSE
+        * =========================================================
+        */
 
         private GrupoEstudianteResponse.HorarioResponse convertirHorarioAResponse(
                         GrupoHorario horario) {
@@ -159,10 +159,10 @@ public ResponseEntity<AsistenciaPageResponse> listarMisAsistencias(
         }
 
         /*
-         * =========================================================
-         * CONVERTIR ASISTENCIA A RESPONSE
-         * =========================================================
-         */
+        * =========================================================
+        * CONVERTIR ASISTENCIA A RESPONSE
+        * =========================================================
+        */
 
         private AsistenciaResponse convertirAResponse(
                         Asistencia asistencia) {
@@ -190,10 +190,10 @@ public ResponseEntity<AsistenciaPageResponse> listarMisAsistencias(
         }
 
         /*
-         * =========================================================
-         * ACTUALIZAR PERFIL DEL ESTUDIANTE
-         * =========================================================
-         */
+        * =========================================================
+        * ACTUALIZAR PERFIL DEL ESTUDIANTE
+        * =========================================================
+        */
 
         @PutMapping("/perfil")
         public Estudiante actualizarPerfil(
@@ -211,10 +211,10 @@ public ResponseEntity<AsistenciaPageResponse> listarMisAsistencias(
         }
 
         /*
-         * =========================================================
-         * CAMBIAR CONTRASEÑA DEL ESTUDIANTE
-         * =========================================================
-         */
+        * =========================================================
+        * CAMBIAR CONTRASEÑA DEL ESTUDIANTE
+        * =========================================================
+        */
 
         @PutMapping("/password")
         public ResponseEntity<String> cambiarPassword(

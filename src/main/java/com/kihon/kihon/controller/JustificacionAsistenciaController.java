@@ -46,23 +46,22 @@
                                         .body(convertirAResponse(justificacion));
                 }
 
+                // ==========================================
+                // ACTUALIZAR JUSTIFICACIÓN
+                // ==========================================
 
-    // ==========================================
-    // ACTUALIZAR JUSTIFICACIÓN
-    // ==========================================
+                @PutMapping("/{id}")
+                public ResponseEntity<JustificacionAsistenciaResponse> actualizar(
+                                @PathVariable Long id,
+                                @RequestBody JustificacionAsistenciaRequest request) {
 
-    @PutMapping("/{id}")
-    public ResponseEntity<JustificacionAsistenciaResponse> actualizar(
-            @PathVariable Long id,
-            @RequestBody JustificacionAsistenciaRequest request) {
+                        JustificacionAsistencia justificacion = justificacionService.actualizarJustificacion(
+                                        id,
+                                        request.getMotivoId(),
+                                        request.getDescripcion());
 
-        JustificacionAsistencia justificacion = justificacionService.actualizarJustificacion(
-                id,
-                request.getMotivoId(),
-                request.getDescripcion());
-
-        return ResponseEntity.ok(convertirAResponse(justificacion));
-    }
+                        return ResponseEntity.ok(convertirAResponse(justificacion));
+                }
 
                 // ==========================================
                 // BUSCAR POR ID
